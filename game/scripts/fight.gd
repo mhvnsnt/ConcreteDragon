@@ -374,7 +374,11 @@ func _check_nearmiss(attacker: Fighter, victim: Fighter, mv: Dictionary) -> void
 
 
 func on_hit_landed(victim: Fighter, attacker: Fighter, mv: Dictionary, dmg: float) -> void:
-	sfx.play(str(mv["sfx"]), 1.0)
+	# jsfxr_hit alternates in on punch connects for impact variety (40%).
+	var sfx_name := str(mv["sfx"])
+	if (sfx_name == "punch_thump" or sfx_name == "punch2") and randf() < 0.4:
+		sfx_name = "jsfxr_hit"
+	sfx.play(sfx_name, 1.0)
 	juice.hit_stop(float(mv["hitstop"]))
 	juice.add_shake(float(mv["shake"]))
 	# damage number
@@ -424,6 +428,7 @@ func on_walkin_done(f: Fighter) -> void:
 
 func on_ko(victim: Fighter, attacker: Fighter) -> void:
 	sfx.play("ko_bell")
+	sfx.play("jsfxr_ko", 0.9, -2.0)  # jsfxr KO impact layered under the bell
 	juice.slow_mo(0.25, 1.1)
 	juice.add_shake(1.0)
 	_big_text("K.O.!", Color("e63946"), 150)

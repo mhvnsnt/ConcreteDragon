@@ -1,0 +1,38 @@
+{
+  "game": "Concrete Dragon",
+  "version": "0.1.1",
+  "generated_utc": "2026-10-06T19:59:23Z",
+  "tool": "build_seeds.py via ~/workspace/api-wiring/qrng_seeds.py",
+  "seeds": [
+    {
+      "purpose": "lucky-drop",
+      "seed": "181224176961645672502262182084975245350",
+      "source": "anu-qrng"
+    },
+    {
+      "purpose": "lucky-amount",
+      "seed": "187236484575174311688985199286151999940",
+      "source": "anu-qrng"
+    },
+    {
+      "purpose": "encounter",
+      "seed": "90546375835972166055002984208378854030",
+      "source": "anu-qrng"
+    },
+    {
+      "purpose": "daily",
+      "seed": "325543783661161880200441496228234301794",
+      "source": "anu-qrng"
+    },
+    {
+      "purpose": "spare-1",
+      "seed": "196776111088348084521068643214440194900",
+      "source": "anu-qrng"
+    },
+    {
+      "purpose": "spare-2",
+      "seed": "288010331506901258880055209153904754800",
+      "source": "anu-qrng"
+    }
+  ]
+}

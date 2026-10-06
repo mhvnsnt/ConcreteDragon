@@ -1,0 +1,5 @@
+asset: Concrete042A_AO.jpg
+license: CC0-1.0
+source: https://ambientcg.com/
+fetched: 2026-10-06T20:12:42Z
+set: concrete 2K-JPG (Color + NormalGL + Roughness + AmbientOcclusion)

@@ -20,9 +20,17 @@ All art, audio, and code in this slice. Rule: nothing ships that we can't relice
 - See `assets/ASSET_MANIFEST.md` for the per-file log.
 
 ## Audio (`assets/sfx/` + runtime synth)
-- All WAVs numpy-synthesized by our own tooling (`assets/tools/gen_sfx.py`) — original.
+- numpy WAVs synthesized by our own tooling (`tools/gen_sfx.py`) — original.
+- jsfxr WAVs (`jsfxr_*`) generated with **jsfxr** — **Unlicense** (public domain),
+  no attribution required. Preset roll-ups + mutate pass via
+  `tools/gen_sfx_jsfxr.mjs`; Params receipts saved as `.sfxr.json`.
 - Runtime fallback synthesizer (`scripts/sfx.gd`) generates equivalent sounds in code.
-- No samples, no loops, no third-party audio.
+- No samples, no loops, no third-party audio with restrictions.
+
+## Props (`assets/props/`)
+- ambientCG Concrete042A + Asphalt033 (2K PBR) — **CC0-1.0**, per-file `.LICENSE.txt`.
+- Kenney City Kit: Commercial v2.1 — **CC0-1.0** (pack's own License.txt).
+- Staged for the 3D stage pipeline; not consumed by M1.
 
 ## Shipped-client license audit (M1)
 - [x] No GPL/AGPL code in the client.

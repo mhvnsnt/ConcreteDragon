@@ -3,6 +3,9 @@ extends Node
 ## Pooled sound player. Loads synthesized WAVs from assets/sfx/ when present;
 ## otherwise synthesizes each sound at runtime (AudioStreamWAV) so the game
 ## always has full audio juice. All sounds original.
+## jsfxr_* entries are baked from jsfxr (Unlicense / public domain) via
+## game/tools/gen_sfx_jsfxr.mjs — preset roll-ups + one mutate pass, params
+## receipts saved as .sfxr.json next to each WAV.
 
 var _pool: Array[AudioStreamPlayer] = []
 var _bank: Dictionary = {}
@@ -17,7 +20,8 @@ func _ready() -> void:
 	var dir := "res://assets/sfx/"
 	var names := ["punch_thump", "punch2", "kick_whoosh", "whiff", "block_clack",
 		"launcher_whoosh", "hurt", "ko_bell", "cheer", "ui_click", "win_jingle",
-		"cash_blip", "counter_ding", "countdown_beep", "go"]
+		"cash_blip", "counter_ding", "countdown_beep", "go",
+		"jsfxr_ui_blip", "jsfxr_hit", "jsfxr_ko", "jsfxr_coin"]
 	for n in names:
 		var path: String = dir + n + ".wav"
 		if ResourceLoader.exists(path):
