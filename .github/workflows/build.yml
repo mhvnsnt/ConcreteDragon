@@ -3,10 +3,10 @@
 # Produces:
 #   - dist/web/            -> auto-deployed to GitHub Pages (playable latest build)
 #   - dist/street-brawl.apk -> sideload onto any Android phone
-#   - dist/street-brawl.aab -> upload to Google Play internal testing track
+#   - dist/street-brawl.aab -> kept for any future store move (sideload uses the APK)
 #
 # Version code auto-bumps from the GitHub run number (always increasing,
-# which is what Google Play requires). Version name = version.txt + run number.
+# which app stores require if we ever ship to one). Version name = version.txt + run number.
 
 name: Build Concrete Dragon
 

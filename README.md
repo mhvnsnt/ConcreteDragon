@@ -1,15 +1,15 @@
 # Concrete Dragon
 
-![Build](https://github.com/mhvnsnt/StreetBrawl/actions/workflows/build.yml/badge.svg)
+![Build](https://github.com/mhvnsnt/ConcreteDragon/actions/workflows/build.yml/badge.svg)
 
 Addictive mobile street brawler by Orion Enterprises LLC.
 
 Tap. Beat them down. Next enemy walks in. Every KO different.
 
-- **Play the latest build:** https://mhvnsnt.github.io/StreetBrawl/ (auto-updates every push)
+- **Play the latest build:** https://mhvnsnt.github.io/ConcreteDragon/ (auto-updates every push)
 - **Design:** `docs/GAME_DESIGN.md`
 - **Teardowns:** `docs/TEARDOWN.md` (what the highest-grossing mobile games do, and what we steal)
-- **Publishing:** `docs/PUBLISHING.md` (CI artifacts → Google Play internal testing)
+- **Publishing:** `docs/PUBLISHING.md` (no-store plan: itch.io, web portals, sideload APK)
 - **Playable demo:** `docs/demo.html` (open in a browser)
 
 Built with Godot 4. Live service: seasons, battle pass, DLC fighters.
