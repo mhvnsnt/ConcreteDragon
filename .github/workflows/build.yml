@@ -109,7 +109,7 @@ jobs:
             mkdir -p android/build
             unzip -q -o "$TDIR/android_source.zip" -d android/build
             touch android/build/.gdignore
-            echo "${GODOT_VERSION}.stable.official" > android/.build_version
+            echo "${GODOT_VERSION}.stable" > android/.build_version
           fi
           ls android/build | head -8
 
