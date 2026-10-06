@@ -4,9 +4,9 @@
 // Incrementing CACHE_VERSION will kick off the install event and force
 // previously cached resources to be updated from the network.
 /** @type {string} */
-const CACHE_VERSION = '1791312289|2934064';
+const CACHE_VERSION = '1791314036|3115773';
 /** @type {string} */
-const CACHE_PREFIX = 'Street Brawl-sw-cache-';
+const CACHE_PREFIX = 'Concrete Dragon-sw-cache-';
 const CACHE_NAME = CACHE_PREFIX + CACHE_VERSION;
 /** @type {string} */
 const OFFLINE_URL = 'index.offline.html';
