@@ -66,6 +66,21 @@ html,body{margin:0;height:100%;overflow:hidden;background:#150f2a;touch-action:n
 #btnSpc .ic{background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%20512%20512'%3E%3Cpath%20fill%3D%22%23ff4fd8%22%20d%3D%22M20.517%2014.64v112.715l44.386%2028.033-44.97%2078.26%2096.948%2049.056-9.343%2032.705%2078.843%2035.04-32.122%2096.947%20174.623%2046.14-112.714-69.5%2022.778-50.226%20257.55%20113.885-282.08-203.82%2029.2-90.525%2047.89%2052.562%2083.515-40.88-44.386%2087.016%20164.693%20108.628-106.292-126.148%2022.778-40.296%2074.754%2056.648-84.68-151.26-71.837%2027.45L227.263%2014.64H20.52zm77.09%20161.19l42.633%2026.865-14.6%2050.81-52.56-34.458%2024.528-43.217z%22%2F%3E%3C%2Fsvg%3E")}
 #btnSpc.ready{animation:pulse .7s infinite;box-shadow:0 0 18px #ff4fd8}
 #btnJmp{right:194px;bottom:calc(max(14px,env(safe-area-inset-bottom)) + 40px);border-color:#80ed99}
+/* ------- cinematics (letterbox / captions / mega) ------- */
+#lbTop,#lbBot{position:fixed;left:0;right:0;height:0;background:#000;z-index:40;transition:height .45s ease}
+#lbTop{top:0}#lbBot{bottom:0}
+body.cine #lbTop,body.cine #lbBot{height:9vh}
+#cineCap{position:fixed;left:0;right:0;top:50%;transform:translateY(-50%);text-align:center;z-index:41;pointer-events:none;opacity:0;transition:opacity .4s ease;padding:0 18px}
+body.cine #cineCap.on{opacity:1}
+#cineCap .cc1{font-family:'Bungee','Anton',Impact,Arial,sans-serif;font-size:44px;letter-spacing:3px;color:#fff;text-shadow:0 4px 0 #000,0 0 30px #ff4fd8}
+#cineCap .cc2{font-family:'BebasNeue','Anton',Arial,sans-serif;font-size:22px;letter-spacing:6px;color:#ffe14d;text-shadow:0 3px 0 #000;margin-top:8px}
+#cineCap .cc3{font-family:Arial,sans-serif;font-weight:700;font-size:15px;text-transform:none;color:#ffffffd8;margin-top:10px;line-height:1.5}
+#cineSkip{position:fixed;bottom:calc(9vh + 14px);left:0;right:0;text-align:center;z-index:41;font-family:Arial,sans-serif;font-size:12px;letter-spacing:3px;color:#ffffff88;pointer-events:none;display:none}
+body.cine #cineSkip{display:block}
+#megaName{position:fixed;left:0;right:0;top:34%;text-align:center;z-index:42;pointer-events:none;font-family:'Bungee','Anton',Impact,Arial,sans-serif;font-size:52px;letter-spacing:4px;color:#ffe14d;text-shadow:0 5px 0 #000,0 0 44px #ff4fd8,0 0 90px #ff4fd8;opacity:0;transform:scale(.6)}
+#megaName.slam{animation:megaslam .9s ease forwards}
+@keyframes megaslam{0%{opacity:0;transform:scale(2.2)}18%{opacity:1;transform:scale(.92)}32%{transform:scale(1.05)}48%{transform:scale(1)}80%{opacity:1}100%{opacity:0;transform:scale(1.02)}}
+#nrgFlash{position:fixed;inset:0;z-index:41;pointer-events:none;background:radial-gradient(circle at 50% 55%,#ffe14d55,transparent 65%);opacity:0;transition:opacity .25s}
 /* ------- overlays ------- */
 .screen{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;color:#fff;text-align:center;text-transform:uppercase;z-index:10;overflow-y:auto;padding:max(18px,env(safe-area-inset-top)) 12px calc(max(18px,env(safe-area-inset-bottom)) + 10px);box-sizing:border-box}
 .screen.hidden{display:none}
@@ -101,6 +116,10 @@ html,body{margin:0;height:100%;overflow:hidden;background:#150f2a;touch-action:n
 #skinsRow .cap{font-family:Arial,sans-serif;font-weight:700;font-size:12px;opacity:.75;width:100%;text-transform:none}
 .skinDot{width:34px;height:34px;border-radius:50%;border:3px solid #0008;cursor:pointer;pointer-events:auto}
 .skinDot.sel{border-color:#ffe14d;box-shadow:0 0 10px #ffe14d}
+#texRow{display:flex;gap:10px;margin-top:10px;align-items:center;flex-wrap:wrap;justify-content:center}
+#texRow .cap{font-family:Arial,sans-serif;font-weight:700;font-size:12px;opacity:.75;width:100%;text-transform:none}
+.texBtn{padding:8px 14px;border-radius:10px;border:3px solid #0008;cursor:pointer;pointer-events:auto;font-family:'BebasNeue','Anton',Arial,sans-serif;font-size:14px;letter-spacing:2px;color:#fff;background:#2a2438}
+.texBtn.sel{border-color:#ffe14d;box-shadow:0 0 10px #ffe14d;background:#3a3050}
 #shopRow{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;justify-content:center}
 .shopItem{padding:4px 6px;min-width:112px;pointer-events:auto}
 .shopItem .un{font-size:16px;letter-spacing:2px;color:#ffe14d}
@@ -159,9 +178,9 @@ html,body{margin:0;height:100%;overflow:hidden;background:#150f2a;touch-action:n
   <div class="bar" id="ebar"><i id="ehp" style="width:100%"></i></div><div class="lbl" id="ename"></div>
   <div id="progWrap"><div id="prog"></div></div>
   <button id="pauseBtn">❚❚</button>
-  <button id="tauntBtn" title="Taunt: +special">🗣</button>
+  <button id="tauntBtn" title="Taunt: +energy">🗣</button>
   <div id="cash"></div>
-  <div id="spcWrap"><div id="spc"></div></div><div id="spcLbl">SPECIAL</div>
+  <div id="spcWrap"><div id="spc"></div></div><div id="spcLbl">ENERGY</div>
   <div id="bossWrap"><div class="bn" id="bossName"></div><div id="bossBar"><i id="bossHp" style="width:100%"></i></div></div>
   <div id="combo"></div><div id="warn">! COUNTER NOW !</div>
   <div id="hint"><div class="ring"></div><b id="hintT">DRAG LEFT SIDE TO MOVE</b><small id="hintS">Tap right side to punch · dodge the <span style="color:#ff4d4d">!</span> or tap to counter</small></div>
@@ -176,6 +195,8 @@ html,body{margin:0;height:100%;overflow:hidden;background:#150f2a;touch-action:n
   <div class="abtn" id="btnJmp"><div class="tx">JMP</div></div>
 </div>
 <div id="flash"></div>
+<div id="lbTop"></div><div id="lbBot"></div><div id="nrgFlash"></div>
+<div id="cineCap"></div><div id="cineSkip">TAP TO SKIP ▸</div><div id="megaName"></div>
 <div id="title" class="screen hidden" style="justify-content:center;background:linear-gradient(to bottom,rgba(10,6,24,.15),rgba(10,6,24,.75))">
   <div id="logo">CONCRETE DRAGON<small>STREET BRAWLER</small></div>
   <div id="tapStart">TAP TO START</div>
@@ -196,6 +217,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#150f2a;touch-action:n
     <div class="subtitle" style="margin:10px 0 0">Pick your fighter</div>
     <div id="cards"></div>
     <div id="skinsRow"><div class="cap">Skin (style only — no power)</div></div>
+    <div id="texRow"><div class="cap">Texture (style only — no power)</div></div>
     <div id="shopRow"></div>
     <div id="metaLine"></div>
     <button class="bigBtn btn9" id="fightBtn">Missions</button>

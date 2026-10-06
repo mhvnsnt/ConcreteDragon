@@ -30,7 +30,7 @@ const ev = (name, data) => { T.events.push({ t: +performance.now().toFixed(0), n
 const SAVE_KEY = 'concretedragon.save.v2';
 const save = {
   cash: 0, up_power: 0, up_tough: 0, up_hustle: 0, wins: 0, losses: 0,
-  best_wave: 0, selected: 'kidblue', skins: {},
+  best_wave: 0, selected: 'kidblue', skins: {}, tex: {},
   unlocked: ['kidblue', 'ghost', 'brick'], missionsDone: [],
   daily: { date: '', score: 0 }, boards: {}, seenHint: false,
   muted: false, quality: 'auto', difficulty: 'normal', circuitN: 0,
@@ -42,6 +42,7 @@ function loadSave() {
     if (s && typeof s === 'object') for (const k of Object.keys(save)) if (k in s) save[k] = s[k];
   } catch (e) { /* fresh save */ }
   if (!save.skins || typeof save.skins !== 'object') save.skins = {};
+  if (!save.tex || typeof save.tex !== 'object') save.tex = {};
   if (!Array.isArray(save.unlocked) || !save.unlocked.length) save.unlocked = ['kidblue', 'ghost', 'brick'];
   if (!Array.isArray(save.missionsDone)) save.missionsDone = [];
   if (!save.boards || typeof save.boards !== 'object') save.boards = {};
@@ -55,7 +56,11 @@ const hustleMult = () => 1 + save.up_hustle * 0.15;
 // ---------- data: roster (data-driven; unlock via missions/bosses) ----------
 const FIGHTERS = [
   { id: 'kidblue', name: 'KID BLUE', tag: 'Balanced brawler. Big heart, bigger hands.', hp: 100, dmg: 1.0, spd: 1.0, unlock: { type: 'start' },
-    spc2: { name: 'DRAGON RUSH', cost: 50, desc: 'Shoulder-first dash through the whole pack.' },
+    spc2: { name: 'DRAGON RUSH', cost: 35, desc: 'Shoulder-first dash through the whole pack.' },
+    qcf: { name: "DRAGON'S BREATH", kind: 'fire', dmg: 30, speed: 9.5, color: 0xff7a2a, desc: 'Fireball' },
+    bfname: 'STREET DASH', duname: 'SKY UPPER',
+    mega: { name: "DRAGON'S JUDGMENT" },
+    fin: 'launch', finname: 'LAUNCHER', findesc: 'Pop-up finisher — juggle them in the air',
     moves: [
       ['STREET JAB', 'HIT', 'Quick jab. Chains into cross and kick.'],
       ['LUNGE STRIKE', '→ + HIT', 'Dash punch. Closes distance fast.'],
@@ -69,7 +74,11 @@ const FIGHTERS = [
       ['DRAGON RUSH', '↓ + SPC (50 meter)', 'Shoulder dash straight through the pack.'],
     ] },
   { id: 'ghost', name: 'GHOST', tag: 'Fast striker. Blink and you lose.', hp: 85, dmg: 0.9, spd: 1.25, unlock: { type: 'start' },
-    spc2: { name: 'BLINK FLURRY', cost: 50, desc: 'Blink between the 3 nearest enemies, striking each.' },
+    spc2: { name: 'BLINK FLURRY', cost: 35, desc: 'Blink between the 3 nearest enemies, striking each.' },
+    qcf: { name: 'PHANTOM LANCE', kind: 'beam', dmg: 24, speed: 13, color: 0x9a7bff, desc: 'Piercing beam' },
+    bfname: 'PHASE STEP', duname: 'WRAITH RISE',
+    mega: { name: 'MIDNIGHT REQUIEM' },
+    fin: 'blink', finname: 'BLINK STRIKE', findesc: 'Teleports behind — the unseen finisher',
     moves: [
       ['STREET JAB', 'HIT', 'Fastest jab in the game. Chains into cross and kick.'],
       ['LUNGE STRIKE', '→ + HIT', 'Blink-step punch. Closes distance instantly.'],
@@ -83,7 +92,11 @@ const FIGHTERS = [
       ['BLINK FLURRY', '↓ + SPC (50 meter)', 'Blink between the 3 nearest enemies.'],
     ] },
   { id: 'brick', name: 'BRICK', tag: 'Walking wall. Hits like rent day.', hp: 135, dmg: 1.25, spd: 0.85, unlock: { type: 'start' },
-    spc2: { name: 'SEISMIC SLAM', cost: 50, desc: 'Ground pound: shockwave launches everyone near.' },
+    spc2: { name: 'SEISMIC SLAM', cost: 35, desc: 'Ground pound: shockwave launches everyone near.' },
+    qcf: { name: 'BLACKTOP HOWL', kind: 'shock', dmg: 34, speed: 7, color: 0xffb02e, desc: 'Ground shockwave' },
+    bfname: 'PAVEMENT RUSH', duname: 'HIGH-RISE',
+    mega: { name: 'RENT DUE' },
+    fin: 'slam', finname: 'CURB STOMP', findesc: 'AOE slam — shakes the whole block',
     moves: [
       ['STREET JAB', 'HIT', 'Heavy jab. Chains into cross and kick.'],
       ['LUNGE STRIKE', '→ + HIT', 'Bulldozer dash punch.'],
@@ -97,7 +110,11 @@ const FIGHTERS = [
       ['SEISMIC SLAM', '↓ + SPC (50 meter)', 'Ground pound launches everyone nearby.'],
     ] },
   { id: 'kingpin', name: 'KINGPIN', tag: 'Used to run this block. Now he runs with you.', hp: 150, dmg: 1.3, spd: 0.9, unlock: { type: 'boss', boss: 'kingpin' },
-    spc2: { name: "KINGPIN'S WRATH", cost: 50, desc: 'Royal beatdown: massive AOE around him.' },
+    spc2: { name: "KINGPIN'S WRATH", cost: 35, desc: 'Royal beatdown: massive AOE around him.' },
+    qcf: { name: 'ROYAL DECREE', kind: 'orb', dmg: 40, speed: 5, color: 0xffd166, desc: 'Slow explosive orb' },
+    bfname: 'HOSTILE MARCH', duname: 'THRONE RISE',
+    mega: { name: 'HOSTILE TAKEOVER' },
+    fin: 'gavel', finname: 'GAVEL DROP', findesc: 'Heavy single hit — long hit-stop',
     moves: [
       ['STREET JAB', 'HIT', 'Boss-grade jab. Chains into cross and kick.'],
       ['LUNGE STRIKE', '→ + HIT', 'Power dash punch.'],
@@ -111,7 +128,11 @@ const FIGHTERS = [
       ["KINGPIN'S WRATH", '↓ + SPC (50 meter)', 'Massive shockwave around him.'],
     ] },
   { id: 'sledge', name: 'SLEDGE', tag: 'Yard enforcer. Swings first, talks never.', hp: 165, dmg: 1.45, spd: 0.8, unlock: { type: 'boss', boss: 'sledge' },
-    spc2: { name: 'WRECKING SWING', cost: 50, desc: '360° swing that clears the whole circle.' },
+    spc2: { name: 'WRECKING SWING', cost: 35, desc: '360° swing that clears the whole circle.' },
+    qcf: { name: 'IRON CYCLONE', kind: 'spin', dmg: 28, speed: 6.5, color: 0x80ed99, desc: 'Traveling vortex' },
+    bfname: 'WRECKING RUSH', duname: 'CRANE UPPER',
+    mega: { name: 'DEMOLITION DAY' },
+    fin: 'demo', finname: 'DEMOLITION', findesc: 'Far knockback — total wreckage',
     moves: [
       ['STREET JAB', 'HIT', 'Sledgehammer jab. Chains into cross and kick.'],
       ['LUNGE STRIKE', '→ + HIT', 'Charging shoulder tackle.'],
@@ -125,7 +146,11 @@ const FIGHTERS = [
       ['WRECKING SWING', '↓ + SPC (50 meter)', '360° swing clears the whole circle.'],
     ] },
   { id: 'viper', name: 'VIPER', tag: 'Fast hands, faster mouth.', hp: 95, dmg: 1.05, spd: 1.35, unlock: { type: 'boss', boss: 'viper' },
-    spc2: { name: 'VENOM DASH', cost: 50, desc: 'Serpent dash: strikes everything in a line.' },
+    spc2: { name: 'VENOM DASH', cost: 35, desc: 'Serpent dash: strikes everything in a line.' },
+    qcf: { name: 'VENOM SPIT', kind: 'arc', dmg: 26, speed: 8.5, color: 0x7cff6b, desc: 'Arcing venom bolt' },
+    bfname: 'SERPENT DASH', duname: 'COIL SPRING',
+    mega: { name: "SERPENT'S COIL" },
+    fin: 'dot', finname: 'FANG BARB', findesc: 'Venom keeps chewing — damage over time',
     moves: [
       ['STREET JAB', 'HIT', 'Flicker jab. Chains into cross and kick.'],
       ['LUNGE STRIKE', '→ + HIT', 'Serpent strike dash.'],
@@ -139,7 +164,11 @@ const FIGHTERS = [
       ['VENOM DASH', '↓ + SPC (50 meter)', 'Dash in a line, striking everything.'],
     ] },
   { id: 'dust', name: 'DUST', tag: 'Quick hands. Gone before you blink.', hp: 80, dmg: 0.95, spd: 1.4, unlock: { type: 'boss', boss: 'rust' },
-    spc2: { name: 'DUST DEVIL', cost: 50, desc: 'Spin into the pack: AOE hits while moving.' },
+    spc2: { name: 'DUST DEVIL', cost: 35, desc: 'Spin into the pack: AOE hits while moving.' },
+    qcf: { name: 'SANDSTORM', kind: 'storm', dmg: 22, speed: 5.5, color: 0xd8b56b, desc: 'Wide grinding vortex' },
+    bfname: 'DUST RUSH', duname: 'HABOOB RISE',
+    mega: { name: 'DUST BOWL' },
+    fin: 'cyclone', finname: 'CYCLONE LIFT', findesc: 'Extended air — juggle them longer',
     moves: [
       ['STREET JAB', 'HIT', 'Fastest hands on the block. Chains into cross and kick.'],
       ['LUNGE STRIKE', '→ + HIT', 'Dust-step punch. Closes distance like smoke.'],
@@ -151,6 +180,21 @@ const FIGHTERS = [
       ['DUST DEVIL', '↓ + SPC (50 meter)', 'Spinning AOE that travels through the pack.'],
     ] },
 ];
+// ---------- fighting-game move sets: motion inputs + energy costs per fighter ----------
+for (const f of FIGHTERS) {
+  for (const m of f.moves) {
+    if (m[0] === 'DRAGON FURY') m[2] = '60 energy: screen-filling spin blast';
+    else if (m[1].startsWith('↓ + SPC')) m[1] = '↓ + SPC (35 energy)';
+    else if (m[0] === 'TAUNT') m[2] = 'Talk trash, gain energy.';
+  }
+  f.moves.push(
+    ['↓→ + HIT', f.qcf.name, f.qcf.desc + ' projectile — 25 energy'],
+    ['←→ + HIT', f.bfname, 'Dash-through strike — 25 energy'],
+    ['↓↑ + HIT', f.duname, 'Rising launcher — 25 energy'],
+    ['↑↑↓←→ + SPC', f.mega.name, 'MEGA SUPER — needs FULL energy. Cinematic.'],
+    ['4TH HIT', f.finname, f.findesc],
+  );
+}
 const DIFFS = [
   { id: 'rookie', name: 'ROOKIE', hpMul: 0.55, dmgMul: 0.55, aggro: 0.55, desc: 'Learn the streets.' },
   { id: 'street', name: 'STREET', hpMul: 0.8, dmgMul: 0.8, aggro: 0.8, desc: 'A fair fight.' },
@@ -172,6 +216,33 @@ const SKINS = { // style only — zero power. New packs drop in here.
 const SUPPORT_PACKS = [
   { id: 'kings', name: 'SEASON 1: CONCRETE KINGS', desc: '5 royal tints. Style only, never power.', price: 'PWYW on itch.io' },
 ];
+// ---------- texture variants: tint x texture, chosen independently (owner 2026-10-06) ----------
+// Future custom textures (part packs etc.) drop in here: { id, name, file } or { id, name, embedded: true }.
+const TEXVARIANTS = [
+  { id: 'patchwork', name: 'PATCHWORK', file: 'tex-patchwork.png', desc: 'Signature painted pieces' },
+  { id: 'original', name: 'KAYKIT ORIGINAL', embedded: true, desc: 'Stock mannequin texture' },
+];
+const texObjs = {}; // id -> THREE.Texture (filled at boot)
+const texVar = (fid) => {
+  const v = (save.tex && save.tex[fid]) || 'patchwork';
+  return TEXVARIANTS.find((t) => t.id === v) || TEXVARIANTS[0];
+};
+const texObj = (fid) => texObjs[texVar(fid).id] || texObjs.patchwork || null;
+function loadTexVariants() {
+  // returns a promise; resolves when the patchwork PNG is decoded
+  return new Promise((res) => {
+    const img = new Image();
+    img.onload = () => {
+      const t = new THREE.Texture(img);
+      t.colorSpace = THREE.SRGBColorSpace;
+      t.needsUpdate = true;
+      texObjs.patchwork = t;
+      res();
+    };
+    img.onerror = () => res();
+    img.src = 'data:image/png;base64,' + A['tex-patchwork.png'];
+  });
+}
 const UPS = [
   { key: 'up_power', name: 'POWER', desc: '+12% damage' },
   { key: 'up_tough', name: 'TOUGH', desc: '+12 max HP' },
@@ -272,19 +343,19 @@ const districtDef = (id) => DISTRICTS.find((d) => d.id === id) || DISTRICTS[0];
 const MISSIONS = [
   { id: 'm1', district: 'neon', name: 'FIRST BLOOD', len: 55, crowd: false,
     spawns: [{ at: 10, fam: 'thug', n: 2 }, { at: 22, fam: 'thug', n: 2 }, { at: 34, fam: 'rico', n: 2 }, { at: 44, fam: 'jabber', n: 2 }],
-    boss: 'kingpin', unlock: { type: 'start' }, reward: 'Unlocks KINGPIN as playable' },
+    card: 'The block talks. Make it listen.', boss: 'kingpin', unlock: { type: 'start' }, reward: 'Unlocks KINGPIN as playable' },
   { id: 'm2', district: 'yards', name: 'SCRAP YARD', len: 70, crowd: true,
     spawns: [{ at: 10, fam: 'thug', n: 2 }, { at: 24, fam: 'heavyd', n: 2 }, { at: 38, fam: 'rico', n: 3 }, { at: 52, fam: 'jabber', n: 3 }],
-    boss: 'sledge', unlock: { type: 'mission', id: 'm1' }, reward: 'Unlocks SLEDGE as playable' },
+    card: 'Rust, rails, and bad intentions.', boss: 'sledge', unlock: { type: 'mission', id: 'm1' }, reward: 'Unlocks SLEDGE as playable' },
   { id: 'm3', district: 'havana', name: 'NIGHT MARKET', len: 85, crowd: true,
     spawns: [{ at: 10, fam: 'jabber', n: 3 }, { at: 26, fam: 'thug', n: 3 }, { at: 42, fam: 'rico', n: 3 }, { at: 58, fam: 'heavyd', n: 3 }, { at: 70, fam: 'thug', n: 4 }],
-    boss: 'viper', unlock: { type: 'mission', id: 'm2' }, reward: 'Unlocks VIPER as playable' },
+    card: 'The heat never left this street.', boss: 'viper', unlock: { type: 'mission', id: 'm2' }, reward: 'Unlocks VIPER as playable' },
   { id: 'm4', district: 'docks', name: 'RUST BELT', len: 100, crowd: true,
     spawns: [{ at: 12, fam: 'stray', n: 3 }, { at: 28, fam: 'heavyd', n: 2 }, { at: 44, fam: 'stray', n: 4 }, { at: 60, fam: 'rico', n: 3 }, { at: 78, fam: 'stray', n: 4 }, { at: 90, fam: 'heavyd', n: 2 }],
-    boss: 'rust', unlock: { type: 'mission', id: 'm3' }, reward: 'Unlocks DUST as playable' },
-  { id: 'endless', district: 'neon', name: 'ENDLESS SCRAP', len: Infinity, crowd: false, endless: true,
+    card: 'Everything here is for sale. Even kings.', boss: 'rust', unlock: { type: 'mission', id: 'm3' }, reward: 'Unlocks DUST as playable' },
+  { id: 'endless', district: 'neon', name: 'ENDLESS SCRAP', len: Infinity, crowd: false, endless: true, card: 'How long can you hold the block?',
     spawns: [], boss: null, unlock: { type: 'mission', id: 'm1' }, reward: 'Survival ladder — how far can you walk?' },
-  { id: 'daily', district: 'neon', name: 'DAILY SCRAP', len: 70, crowd: false, daily: true,
+  { id: 'daily', district: 'neon', name: 'DAILY SCRAP', len: 70, crowd: false, daily: true, card: 'One shot. One leaderboard.',
     spawns: [], boss: 'kingpin', unlock: { type: 'mission', id: 'm1' }, reward: 'Same seed for everyone today. One scored run.' },
 ];
 const missionDef = (id) => MISSIONS.find((m) => m.id === id);
@@ -335,6 +406,7 @@ function procMission(n) {
   return {
     id: 'circuit', circuitN: n, district, name: name + ' #' + (n + 1), len,
     crowd: R() < 0.5, spawns, boss, proc: true,
+    card: 'The road does not end. Neither do you.',
     unlock: { type: 'mission', id: 'm1' }, reward: 'Circuit #' + (n + 1) + ' cleared',
   };
 }
@@ -614,7 +686,7 @@ function updatePickups(dt) {
       const sp = screenPos(pk.mesh.position.clone());
       if (pk.type === 'health') { player.hp = Math.min(player.maxHp, player.hp + player.maxHp * 0.3); popText('+HP', 'gold', sp.x, sp.y); }
       else if (pk.type === 'cash') { const c = Math.round(rnd(15, 40)); awardCash(c, pk.mesh.position.clone()); }
-      else { player.spc = clamp(player.spc + 35, 0, 100); popText('+SPC', 'big', sp.x, sp.y); }
+      else { player.energy = clamp(player.energy + 35, 0, 100); popText('+ENERGY', 'big', sp.x, sp.y); }
       sfx('coin', 0.6, false, pk.type === 'health' ? 0.8 : 1.2);
       streetGroup.remove(pk.mesh);
       pickups.splice(i, 1);
@@ -631,7 +703,7 @@ let crowdMembers = [];
 function spawnCrowd(R) {
   clearCrowd();
   for (let i = 0; i < 14; i++) {
-    const f = makeFighterRaw(0x888899, 0, 0, rnd(0.9, 1.05));
+    const f = makeFighterRaw(0x888899, 0, 0, rnd(0.9, 1.05), texObjs.patchwork);
     const side = i % 2 === 0 ? -1 : 1;
     f.root.position.set(rnd(-6, 26), 0, side * rnd(2.6, 3.4));
     f.root.rotation.y = side > 0 ? Math.PI : 0;
@@ -647,10 +719,10 @@ function crowdCheer() { for (const f of crowdMembers) { f.cheerT = 1.2; } sfx('c
 const clips = {};
 const fighters = [];
 let fighterTemplate = null, fighterHeight = 1.8;
-function makeFighterRaw(tint, x, face, scale = 1) {
+function makeFighterRaw(tint, x, face, scale = 1, tex = null) {
   const root = skClone(fighterTemplate);
   root.scale.multiplyScalar(scale);
-  root.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.material = o.material.clone(); o.material.color = new THREE.Color(tint); } });
+  root.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.material = o.material.clone(); o.material.color = new THREE.Color(tint); if (tex) o.material.map = tex; } });
   root.position.set(x, 0, 0); root.rotation.y = face; scene.add(root);
   const mixer = new THREE.AnimationMixer(root);
   const f = { root, mixer, cur: null, hp: 100, maxHp: 100, busy: 0, tint, sc: scale, dmgMult: 1, vy: 0, airborne: false };
@@ -689,6 +761,10 @@ function updateFx(dt) {
   }
 }
 let shake = 0, hitstop = 0, slowmo = 1, slowmoT = 0;
+const lerp = (a, b, t) => a + (b - a) * t;
+function sparkFX(x, y, z, color, n) { burst(new THREE.Vector3(x, y, z), n || 10, color); }
+function addHitstop(t) { hitstop = Math.max(hitstop, t); }
+function addSlowmo(mult, t) { slowmo = mult; slowmoT = Math.max(slowmoT, t); }
 function popText(txt, cls, x, y) {
   const d = document.createElement('div'); d.className = 'pop ' + (cls || ''); d.textContent = txt;
   d.style.left = x + 'px'; d.style.top = y + 'px'; $('hud').appendChild(d); setTimeout(() => d.remove(), 900);
@@ -742,7 +818,7 @@ function shuffleSkin() {
 function refreshShowcase() {
   if (showcase) { removeFighter(showcase); showcase = null; }
   const fd = fighterDef();
-  showcase = makeFighterRaw(skinTint(fd.id), 0, 0, 1);
+  showcase = makeFighterRaw(skinTint(fd.id), 0, 0, 1, texObj(fd.id));
   playAnim(showcase, 'Melee_Unarmed_Idle', { loop: true });
   $('showName').textContent = fd.name;
   $('showTag').textContent = fd.tag;
@@ -789,6 +865,15 @@ function showSelect() {
     d.textContent = '🎲'; d.style.fontSize = '18px'; d.style.lineHeight = '30px'; d.style.textAlign = 'center';
     d.onclick = () => shuffleSkin();
     sr.appendChild(d);
+  }
+  { // texture variants: tint x texture chosen independently (owner 2026-10-06)
+    const tr = $('texRow'); tr.querySelectorAll('.texBtn').forEach((d) => d.remove());
+    for (const t of TEXVARIANTS) {
+      const b = el('button', 'texBtn' + (texVar(save.selected).id === t.id ? ' sel' : ''), t.name);
+      b.title = t.desc + ' — style only';
+      b.onclick = () => { save.tex[save.selected] = t.id; writeSave(); sfx('click', 0.7); refreshShowcase(); showSelect(); };
+      tr.appendChild(b);
+    }
   }
   renderShop($('shopRow')); renderMeta();
   showOnly('select');
@@ -954,14 +1039,14 @@ function startMission(id) {
   if (mission.crowd) spawnCrowd(R); // CONDITIONAL crowd only — owner directive
   setRain(hasMod('rain'));
   const fd = fighterDef();
-  player = makeFighterRaw(skinTint(fd.id), 0, Math.PI / 2, 1);
+  player = makeFighterRaw(skinTint(fd.id), 0, Math.PI / 2, 1, texObj(fd.id));
   player.isPlayer = true;
   player.maxHp = Math.round(fd.hp + toughBonus());
   player.hp = player.maxHp;
   player.dmgMult = fd.dmg * powerMult();
   player.spd = fd.spd;
   player.px = 2; player.pz = 0; player.face = 1;
-  player.spc = 0; player.dodgeT = 0; player.dodgeCD = 0; player.busy = 0;
+  player.energy = 50; player.dodgeT = 0; player.dodgeCD = 0; player.busy = 0;
   player.animMove = false;
   playAnim(player, 'Melee_Unarmed_Idle', { loop: true });
   spawnQueue = mission.spawns.map((s) => Object.assign({}, s, { done: false })).sort((a, b) => a.at - b.at);
@@ -974,6 +1059,12 @@ function startMission(id) {
   $('touch').classList.add('on');
   $('bossWrap').style.display = 'none';
   if (!save.seenHint) hint(true);
+  // story beat: letterboxed mission card before the action (Nintendo-style)
+  playCine({
+    mode: 'card', dur: 2.3,
+    caps: [{ t: 0.15, html: '<div class="cc2">' + mission.name + '</div><div class="cc3">' + (mission.card || 'CLEAR THE BLOCK') + '</div>' }],
+    onDone: () => { const b = mission.boss && BOSSES.find((x) => x.id === mission.boss); banner(mission.name + ' — ' + (b ? 'BOSS: ' + b.name : 'CLEAR THE BLOCK'), 'gold'); sfx(196, 0.5, 'sawtooth', 0.4); },
+  });
   setHud();
 }
 function syncPos(f) { f.root.position.x = f.px; f.root.position.z = f.pz; f.root.position.y = f.py || 0; }
@@ -989,7 +1080,7 @@ function nearestEnemy(range) {
 function spawnEnemy(famId, mi, bx, bz) {
   const fam = ENEMY_FAMS.find((f) => f.id === famId) || ENEMY_FAMS[0];
   const v = famVariant(fam, mi);
-  const e = makeFighterRaw(v.tint, bx, -Math.PI / 2, v.scale);
+  const e = makeFighterRaw(v.tint, bx, -Math.PI / 2, v.scale, texObjs.patchwork);
   if (hasMod('titans') && missionR() < 0.18 && !v.boss) { e.sc = (e.sc || 1) * 1.35; e.root.scale.multiplyScalar(1.35); e.maxHp = e.hp = Math.round(e.hp * 2.2); e.name = 'TITAN ' + e.name; }
   else if (hasMod('frenzy') && missionR() < 0.25) { e.spd *= 1.5; e.dmgMult *= 1.25; e.name = 'FRENZIED ' + e.name; }
   const df = diffDef();
@@ -1004,7 +1095,7 @@ function spawnEnemy(famId, mi, bx, bz) {
 }
 function spawnBoss(bossId, bx) {
   const b = BOSSES.find((x) => x.id === bossId);
-  const e = makeFighterRaw(b.tint, bx, -Math.PI / 2, b.scale);
+  const e = makeFighterRaw(b.tint, bx, -Math.PI / 2, b.scale, texObjs.patchwork);
   const dfb = diffDef();
   e.isPlayer = false; e.boss = b; e.name = b.name;
   e.maxHp = e.hp = Math.round(b.hp * dfb.hpMul); e.dmgMult = b.dmg * dfb.dmgMul; e.spd = b.spd; e.aggro = dfb.aggro;
@@ -1012,6 +1103,7 @@ function spawnBoss(bossId, bx) {
   syncPos(e);
   playAnim(e, 'Running_A', { loop: true });
   enemies.push(e); bossRef = e;
+  bossBeat(b.name); // letterboxed boss entrance card
   banner('⚠ ' + b.name + ' ⚠');
   $('bossWrap').style.display = 'block'; $('bossName').textContent = b.name + ' — ' + b.intro;
   sfx('bell', 0.9);
@@ -1038,9 +1130,47 @@ const ATK = [ // [clip, timeScale, impact delay, dmg, label, hitstop, shake]
   ['Melee_Unarmed_Attack_Punch_A', 2.1, 0.15, 10, 'CROSS', 0.04, 0.15],
   ['Melee_Unarmed_Attack_Kick', 1.7, 0.2, 15, 'KICK', 0.08, 0.25],
 ];
+// unique 4th-hit finishers: the every-3rd-hit launcher is per-fighter now
+function doFinisher(t) {
+  const fd = fighterDef(), fin = fd.fin || 'launch';
+  const bdmg = Math.round(26 * player.dmgMult);
+  const sp = screenPos(t.root.position.clone().add(new THREE.Vector3(0, 2.2, 0)));
+  if (fin === 'blink') { // GHOST: teleport behind, unseen strike
+    sparkFX(player.px, 1.1, player.pz, 0x9a7bff, 12);
+    player.px = clamp(t.px - player.face * 0.9, 0.5, mission.len === Infinity ? 1e6 : mission.len - 1.5);
+    player.pz = clamp(t.pz, -4.5, 4.5);
+    player.root.position.set(player.px, 0, player.pz);
+    sparkFX(player.px, 1.1, player.pz, 0x9a7bff, 12);
+    flash('#9a7bff');
+    landHit(t, bdmg, 'BLINK STRIKE', 0.1, 0.4, false, false);
+  } else if (fin === 'slam') { // BRICK: AOE curb stomp
+    for (const o of enemies) if (o.hp > 0 && Math.abs(o.px - t.px) < 2.4 && Math.abs(o.pz - t.pz) < 1.7) landHit(o, bdmg, 'CURB STOMP', 0.08, 0.5, true, false);
+    shake=Math.max(shake,0.5);
+  } else if (fin === 'gavel') { // KINGPIN: heavy single, long hit-stop
+    landHit(t, Math.round(bdmg * 1.2), 'GAVEL DROP', 0.16, 0.6, false, false);
+    addHitstop(0.14);
+  } else if (fin === 'demo') { // SLEDGE: far knockback wreckage
+    landHit(t, Math.round(34 * player.dmgMult), 'DEMOLITION', 0.1, 0.7, true, false);
+    shake=Math.max(shake,0.55);
+  } else if (fin === 'dot') { // VIPER: venom keeps chewing
+    landHit(t, Math.round(bdmg * 0.7), 'FANG BARB', 0.06, 0.3, false, false);
+    t.dotT = 3; t.dotDps = 9 * player.dmgMult;
+    popText('VENOM!', 'spc', sp.x, sp.y - 40);
+  } else if (fin === 'cyclone') { // DUST: extended air juggle
+    landHit(t, bdmg, 'CYCLONE LIFT', 0.08, 0.4, true, false);
+    t.airT = Math.max(t.airT || 0, 0.9);
+  } else { // KID BLUE: classic pop-up launcher
+    landHit(t, bdmg, 'LAUNCHER', 0.08, 0.4, true, false);
+  }
+  popText(fd.finname, 'spc', sp.x, sp.y - 70);
+  sfx(392, 0.12, 'square', 0.5);
+}
 function doPunch() {
   if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.busy > 0) return;
   unlockAudio(); T.taps++; hint(false); save.seenHint = true;
+  // fighting-game motion input + HIT (additive: plain tap combat unchanged)
+  const mot = detectMotion();
+  if (mot) { doMotionSpecial(mot); return; }
   // aerial: dive kick
   if (player.airT > 0) { doJumpAttack(); return; }
   let ce = null;
@@ -1072,7 +1202,8 @@ function doPunch() {
     const t = nearestEnemy(range);
     if (t) {
       if (t.airborne) { t.vy = Math.max(t.vy, 2.2); landHit(t, Math.round(dmg * player.dmgMult * 0.6), 'JUGGLE', 0.03, 0.12, false, false); }
-      else landHit(t, Math.round(dmg * player.dmgMult), label, hs, sh, launcher, false);
+      else if (launcher) doFinisher(t);
+      else landHit(t, Math.round(dmg * player.dmgMult), label, hs, sh, false, false);
     }
     damageDestructibles(1.7);
     damageDestructibles(range);
@@ -1084,7 +1215,7 @@ function doTaunt() {
   unlockAudio();
   player.busy = 0.8;
   playAnim(player, 'Melee_Unarmed_Idle', { ts: 0.7, fade: 0.1 });
-  player.spc = clamp(player.spc + 25, 0, 100);
+  player.energy = clamp(player.energy + 25, 0, 100);
   const sp = screenPos(player.root.position.clone().add(new THREE.Vector3(0, 2.2, 0)));
   popText('COME ON!', 'spc', sp.x, sp.y);
   sfx('uiclick', 0.6, false, 0.7);
@@ -1132,10 +1263,18 @@ function doSpecial() {
   if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0) return;
   unlockAudio();
   const fd = fighterDef();
-  // v + SPC: second special at 50 meter
-  if (stick.dy > 0.5 && player.spc >= (fd.spc2 ? fd.spc2.cost : 50)) { doSpecial2(fd); return; }
-  if (player.spc < 100) { popText('CHARGE THE METER', '', innerWidth / 2, innerHeight * 0.4); return; }
-  player.spc = 0;
+  // MEGA SUPER: ↑↑↓←→ + SPC — cinematic super attack, needs FULL energy
+  if (seqMatch(['U', 'U', 'D', 'L', 'R'], 1.8)) {
+    inputHist.length = 0;
+    if (player.energy >= 100) { doMega(); return; }
+    popText('MEGA NEEDS FULL ENERGY', 'bad', innerWidth / 2, innerHeight * 0.4);
+    sfx(140, 0.2, 'square', 0.3);
+    return;
+  }
+  // v + SPC: second special at 35 energy
+  if (stick.dy > 0.5 && player.energy >= (fd.spc2 ? fd.spc2.cost : 35)) { doSpecial2(fd); return; }
+  if (player.energy < 60) { popText('NOT ENOUGH ENERGY', 'bad', innerWidth / 2, innerHeight * 0.4); return; }
+  player.energy = Math.max(0, player.energy - 60);
   slowmo = 0.35; slowmoT = 0.8; shake = 0.6; flash('#ff4fd8');
   banner('DRAGON FURY!', 'spc');
   sfx('hit3', 1, false, 0.6); sfx('bell', 0.7, false, 0.8);
@@ -1167,7 +1306,7 @@ function doDesperation() {
 }
 function doSpecial2(fd) {
   const sp = fd.spc2 || { name: 'RUSH', cost: 50 };
-  player.spc = Math.max(0, player.spc - sp.cost);
+  player.energy = Math.max(0, player.energy - sp.cost);
   slowmo = 0.4; slowmoT = 0.7; shake = 0.55; flash('#ff4fd8');
   banner(sp.name + '!', 'spc');
   sfx('hit3', 1, false, 0.7); sfx('whoosh', 0.8, false, 0.8);
@@ -1217,7 +1356,7 @@ function landHit(e, dmg, label, hs, sh, launcher, counter) {
   if (!e || e.hp <= 0 || state !== 'fight') return;
   T.hits++; if (counter) T.counters++;
   e.hp -= dmg; combo++; comboT = 1.2; maxCombo = Math.max(maxCombo, combo);
-  if (player) player.spc = clamp(player.spc + 8, 0, 100);
+  if (player) player.energy = clamp(player.energy + 8, 0, 100);
   const head = e.root.position.clone().add(new THREE.Vector3(0, fighterHeight * 0.78 * e.sc, 0.15));
   burst(head, counter ? 30 : 16, counter ? 0x7af0ff : 0xffd27a, counter ? 6 : 4);
   shake = sh; hitstop = hs; // snappy: tiny freeze on light hits, bigger only for counter/heavy/special/KO
@@ -1259,7 +1398,7 @@ function killEnemy(e) {
   }
   if (player && player.hp > 0) {
     player.hp = Math.min(player.maxHp, player.hp + player.maxHp * 0.06);
-    player.spc = clamp(player.spc + 15, 0, 100);
+    player.energy = clamp(player.energy + 15, 0, 100);
   }
   setTimeout(() => {
     removeFighter(e);
@@ -1272,7 +1411,7 @@ function hurtPlayer(dmg) {
   if (!player || player.hp <= 0 || missionOver || ended) return;
   if (player.dodgeT > 0) return;
   player.hp -= dmg; combo = 0; shake = 0.3; hitstop = 0.05; flash('#ff2a2a'); sfx('hit2', 0.8, false, 0.7);
-  player.spc = clamp(player.spc + 12, 0, 100);
+  player.energy = clamp(player.energy + 12, 0, 100);
   playAnim(player, 'Hit_A', { ts: 1.4 });
   const sp = screenPos(player.root.position.clone().add(new THREE.Vector3(0, fighterHeight * 0.8, 0)));
   popText('-' + dmg, 'bad', sp.x, sp.y - 20);
@@ -1317,9 +1456,10 @@ function setupInput() {
   const bind = (id, fn) => $(id).addEventListener('pointerdown', (e) => { e.stopPropagation(); e.preventDefault(); fn(); }, { passive: false });
   bind('btnAtk', doPunch); bind('btnHvy', doHeavy); bind('btnDdg', doDodge); bind('btnSpc', doSpecial); bind('btnJmp', doJump);
   document.addEventListener('pointerdown', (e) => {
+    if (cine && (cine.mode !== 'mega' || cine.t > 1.5)) { endCine(); return; } // tap to skip cinematics
     if (e.target.closest('.abtn,button,.card,.skinDot,.shopItem,.mcard,.skinDot')) return;
     unlockAudio();
-    if (state === 'title') { showSelect(); return; }
+    if (state === 'title') { playIntro(); return; }
     if (state === 'select') { showcaseDragX = e.clientX; return; }
     if (state !== 'fight' || missionOver || ended) return;
     if (e.clientX < innerWidth * 0.45) stickStart(e);
@@ -1597,6 +1737,234 @@ function playerUpdate(dt) {
     }
   }
 }
+// ---------- fighting-game motion inputs (SF/KoF style on touch) ----------
+// The stick feeds a direction-history buffer; button presses complete motions:
+//   ↓→ + HIT = projectile special · ←→ + HIT = dash strike · ↓↑ + HIT = rising launcher
+//   ↑↑↓←→ + SPC = MEGA SUPER (cinematic). Base tap combat is untouched.
+const inputHist = []; // {d:'U'|'D'|'L'|'R'|'UR'|'DR'|'DL'|'UL', t}
+let lastQDir = '';
+const sstep = (t) => t * t * (3 - 2 * t);
+function quantDir(dx, dy) {
+  if (Math.hypot(dx, dy) < 0.32) return '';
+  const a = Math.atan2(dy, dx) * 180 / Math.PI; // dy+ = down on screen
+  if (a >= -22.5 && a < 22.5) return 'R';
+  if (a >= 22.5 && a < 67.5) return 'DR';
+  if (a >= 67.5 && a < 112.5) return 'D';
+  if (a >= 112.5 && a < 157.5) return 'DL';
+  if (a >= 157.5 || a < -157.5) return 'L';
+  if (a >= -157.5 && a < -112.5) return 'UL';
+  if (a >= -112.5 && a < -67.5) return 'U';
+  return 'UR';
+}
+function recordStick() {
+  if (state !== 'fight' || cine || !player) return;
+  const q = quantDir(stick.dx, stick.dy);
+  if (q && q !== lastQDir) { inputHist.push({ d: q, t: gameTime }); if (inputHist.length > 24) inputHist.shift(); }
+  if (!q) lastQDir = '';
+}
+// pattern elements fuzzy-match diagonals ('DR' counts as 'D' or 'R')
+function seqMatch(pattern, window) {
+  const n = inputHist.length;
+  if (!n || gameTime - inputHist[n - 1].t > 0.4) return false; // motion must be fresh
+  let pi = pattern.length - 1;
+  for (let i = n - 1; i >= 0 && pi >= 0; i--) {
+    const h = inputHist[i];
+    if (gameTime - h.t > window) break;
+    if (h.d === pattern[pi] || h.d.indexOf(pattern[pi]) >= 0) pi--;
+  }
+  return pi < 0;
+}
+function detectMotion() {
+  const f = player.face > 0 ? 'R' : 'L', b = player.face > 0 ? 'L' : 'R';
+  if (seqMatch(['D', f], 0.65)) return 'qcf';
+  if (seqMatch([b, f], 0.6)) return 'bf';
+  if (seqMatch(['D', 'U'], 0.6)) return 'du';
+  return null;
+}
+// ---------- projectiles (motion-input specials) ----------
+const projs = []; // {spr,x,y,z,vx,vy,vz,kind,dmg,from,color,pierce,life,arc,radius,hitSet}
+function fireProj(o) {
+  const mat = new THREE.SpriteMaterial({ map: sparkTex, color: o.color, transparent: true, opacity: 1, depthWrite: false });
+  const s = new THREE.Sprite(mat);
+  const sc = o.kind === 'beam' ? [1.9, 0.6] : o.kind === 'shock' ? [1.3, 0.55] : o.kind === 'orb' ? [1.15, 1.15] : [0.9, 0.9];
+  s.scale.set(sc[0], sc[1], 1);
+  s.position.set(o.x, o.y || 1.15, o.z);
+  scene.add(s);
+  projs.push({ spr: s, x: o.x, y: o.y || 1.15, z: o.z, vx: o.vx, vy: o.vy || 0, vz: o.vz || 0, kind: o.kind, dmg: o.dmg, from: o.fromPlayer ? 'p' : 'e', color: o.color, pierce: o.pierce || 0, life: o.life || 1.6, arc: o.arc || 0, radius: o.radius || 0.55, hitSet: new Set() });
+  sfx(520, 0.25, 'square', 0.3);
+  shake=Math.max(shake,0.25);
+}
+function projHitEnemy(p, e) {
+  if (p.hitSet.has(e)) return;
+  p.hitSet.add(e);
+  landHit(e, Math.round(p.dmg), p.kind === 'orb' ? 'ORB BURST' : 'PROJ', 0.06, 0.35, p.kind === 'orb' || p.kind === 'spin', false);
+  sparkFX(p.x, p.y, p.z, p.color, 10);
+  if (p.kind === 'orb') { // explosive orb: AOE
+    for (const o of enemies) { if (o !== e && !o.dead && o.hp > 0 && Math.abs(o.px - p.x) < 2.4 && Math.abs(o.pz - p.z) < 1.8) landHit(o, Math.round(p.dmg * 0.7), 'ORB BURST', 0.06, 0.4, true, false); }
+    sparkFX(p.x, p.y, p.z, 0xffffff, 16); shake=Math.max(shake,0.5); sfx(180, 0.4, 'sawtooth', 0.5);
+  }
+  addHitstop(0.05);
+}
+function updateProjs(dt) {
+  for (let i = projs.length - 1; i >= 0; i--) {
+    const p = projs[i];
+    p.life -= dt;
+    if (p.arc) p.vy -= 14 * dt;
+    p.x += p.vx * dt; p.z += p.vz * dt; p.y += p.vy * dt;
+    if (p.y < 0.15) { p.y = 0.15; p.vy = 0; if (p.arc) { sparkFX(p.x, 0.3, p.z, p.color, 6); p.life = 0; } }
+    p.spr.position.set(p.x, p.y, p.z);
+    p.spr.material.rotation += dt * 9;
+    if (Math.random() < 0.45) sparkFX(p.x, p.y, p.z, p.color, 2);
+    let dead = p.life <= 0 || Math.abs(p.x) > 32 || Math.abs(p.z) > 15;
+    if (!dead && p.from === 'p') {
+      for (const e of enemies) {
+        if (e.dead || e.hp <= 0 || (p.hitSet.has(e) && p.pierce < 99)) continue;
+        if (Math.abs(e.px - p.x) < 0.75 + p.radius * 0.3 && Math.abs(e.pz - p.z) < 1.15 && p.y < 2.8) {
+          projHitEnemy(p, e);
+          if (!p.pierce) { dead = true; break; }
+        }
+      }
+      if (!dead) for (const d of destructibles) {
+        if (!d.dead && Math.abs(d.px - p.x) < 1.0 && Math.abs(d.pz - p.z) < 1.0) { destroyDestructible(d); if (!p.pierce) { dead = true; break; } }
+      }
+    } else if (!dead && p.from === 'e' && player && player.hp > 0) {
+      if (Math.abs(player.px - p.x) < 0.8 && Math.abs(player.pz - p.z) < 1.1 && p.y < 2.4) { hurtPlayer(p.dmg, p.vx >= 0 ? 1 : -1); dead = true; }
+    }
+    if (dead) { scene.remove(p.spr); p.spr.material.dispose(); projs.splice(i, 1); }
+  }
+}
+// ---------- motion specials (25 energy each) ----------
+function doMotionSpecial(kind) {
+  const fd = fighterDef();
+  inputHist.length = 0;
+  if (player.energy < 25) { const sp = screenPos(player.root.position); popText('NOT ENOUGH ENERGY', 'bad', sp.x, sp.y - 60); sfx(140, 0.15, 'square', 0.3); return; }
+  player.energy = Math.max(0, player.energy - 25); setHud();
+  if (kind === 'qcf') {
+    const pr = fd.qcf;
+    playAnim(player, 'Melee_Unarmed_Attack_Punch_A', { once: true, dur: 0.35 });
+    player.busy = Math.max(player.busy, 0.3);
+    fireProj({ x: player.px + player.face * 0.8, z: player.pz, y: 1.15, vx: player.face * pr.speed, kind: pr.kind, dmg: pr.dmg * player.dmgMult, color: pr.color, fromPlayer: true, pierce: (pr.kind === 'beam' || pr.kind === 'spin' || pr.kind === 'storm') ? 99 : 0, life: pr.kind === 'orb' ? 2.4 : pr.kind === 'spin' ? 0.9 : 1.5, arc: pr.kind === 'arc' ? -2.5 : 0, radius: pr.kind === 'shock' || pr.kind === 'storm' ? 0.95 : 0.55 });
+    const sp = screenPos(player.root.position); popText(pr.name, 'spc', sp.x, sp.y - 80);
+    banner(pr.name, 'spc');
+    addHitstop(0.08); addSlowmo(0.3, 0.35);
+    flash('#' + pr.color.toString(16).padStart(6, '0'));
+    if (navigator.vibrate) navigator.vibrate(25);
+  } else if (kind === 'bf') {
+    playAnim(player, 'Melee_Unarmed_Attack_Kick_A', { once: true, dur: 0.35 });
+    player.busy = 0.45; player.dodgeT = 0.35; player.dodgeDX = player.face * 16; player.dodgeCD = 0.6;
+    const sp = screenPos(player.root.position); popText(fd.bfname, 'spc', sp.x, sp.y - 80);
+    setTimeout(() => { for (const e of enemies) { if (!e.dead && e.hp > 0 && Math.abs(e.px - player.px) < 2.8 && Math.abs(e.pz - player.pz) < 1.5) landHit(e, Math.round(26 * player.dmgMult), fd.bfname, 0.07, 0.4, false, false); } sparkFX(player.px + player.face * 1.5, 1.1, player.pz, 0x7af0ff, 8); }, 150);
+    addSlowmo(0.35, 0.3);
+  } else if (kind === 'du') {
+    playAnim(player, 'Melee_Unarmed_Attack_Punch_B', { once: true, dur: 0.4 });
+    player.busy = 0.5; player.airT = 0.35; player.vy = 6;
+    const sp = screenPos(player.root.position); popText(fd.duname, 'spc', sp.x, sp.y - 80);
+    setTimeout(() => { for (const e of enemies) { if (!e.dead && e.hp > 0 && Math.abs(e.px - player.px) < 1.7 && Math.abs(e.pz - player.pz) < 1.3) landHit(e, Math.round(30 * player.dmgMult), fd.duname, 0.08, 0.4, true, false); } sparkFX(player.px, 1.6, player.pz, 0xffe14d, 10); }, 130);
+    addHitstop(0.08); addSlowmo(0.35, 0.35);
+  }
+}
+// ---------- MEGA SUPER (full energy, cinematic) ----------
+function doMega() {
+  const fd = fighterDef();
+  player.energy = 0; setHud(); inputHist.length = 0;
+  playAnim(player, 'Melee_Unarmed_Idle', { ts: 0.35 });
+  cine = { mode: 'mega', t: 0, dur: 3.2, hit: false };
+  document.body.classList.add('cine');
+  const mn = $('megaName'); mn.textContent = fd.mega.name;
+  mn.classList.remove('slam'); void mn.offsetWidth; mn.classList.add('slam');
+  flash('#ffe14d');
+  sfx(880, 0.5, 'sawtooth', 0.5); sfx(110, 0.9, 'square', 0.5);
+  shake=Math.max(shake,0.7);
+  if (navigator.vibrate) navigator.vibrate([60, 40, 120]);
+}
+function megaHit() {
+  const fd = fighterDef();
+  const dmg = 110 * player.dmgMult;
+  for (const e of enemies) {
+    if (e.dead) continue;
+    if (Math.abs(e.px - player.px) < 7.5 && Math.abs(e.pz - player.pz) < 3.4)
+      landHit(e, Math.round(dmg * (e.boss ? 0.55 : 1)), fd.mega.name, 0.12, 0.9, !e.boss, false);
+  }
+  for (let i = -2; i <= 2; i++) // projectile fan for spectacle
+    fireProj({ x: player.px + player.face, z: player.pz, y: 1.25 + Math.abs(i) * 0.2, vx: player.face * (10 + Math.abs(i) * 1.5), vz: i * 1.4, kind: 'fire', dmg: 20 * player.dmgMult, color: fd.qcf.color, fromPlayer: true, life: 1.0 });
+  sparkFX(player.px + player.face * 1.5, 1.2, player.pz, 0xffe14d, 42);
+  sparkFX(player.px + player.face * 1.5, 1.2, player.pz, 0xff4fd8, 30);
+  flash('#ffffff');
+  shake=Math.max(shake,0.9);
+  sfx(220, 0.9, 'sawtooth', 0.6); sfx(55, 1.2, 'square', 0.6);
+  if (navigator.vibrate) navigator.vibrate(150);
+}
+// ---------- cinematics (letterbox / captions / camera) ----------
+// Nintendo-style presentation: letterbox bars, slow push-ins, timed text cards,
+// logo slam for megas, tap-to-skip. Gameplay freezes during 'mega'; intro/card play over the scene.
+let cine = null; // {mode, t, dur, caps:[{t,html}], capIdx, cam(t), onDone, hit}
+function letterbox(on) { document.body.classList.toggle('cine', on); }
+function playCine(o) {
+  cine = Object.assign({ t: 0, caps: [], capIdx: -1 }, o);
+  letterbox(true);
+  $('cineCap').innerHTML = '';
+  $('cineCap').classList.remove('on');
+}
+function endCine() {
+  const cb = cine && cine.onDone;
+  cine = null;
+  letterbox(false);
+  $('cineCap').classList.remove('on');
+  if (cb) cb();
+}
+function updateCine(dt) {
+  if (!cine) return;
+  cine.t += dt;
+  const caps = cine.caps || [];
+  for (let i = 0; i < caps.length; i++) {
+    if (cine.t >= caps[i].t && cine.capIdx < i) {
+      cine.capIdx = i;
+      $('cineCap').innerHTML = caps[i].html;
+      $('cineCap').classList.remove('on'); void $('cineCap').offsetWidth; $('cineCap').classList.add('on');
+    }
+  }
+  if (cine.mode === 'mega' && player) {
+    const t = cine.t, p = player;
+    const bx = camX, by = 2.6, bz = 7.6;
+    const cx = p.px + 1.7, cy = 1.75, cz = 4.4;
+    let k;
+    if (t < 0.7) k = sstep(Math.min(1, t / 0.7));
+    else if (t > 2.4) k = 1 - sstep(Math.min(1, (t - 2.4) / 0.8));
+    else k = 1;
+    const jx = (Math.random() - 0.5) * shake * 0.08, jy = (Math.random() - 0.5) * shake * 0.08;
+    camera.position.set(lerp(bx, cx, k) + jx, lerp(by, cy, k) + jy, lerp(bz, cz, k));
+    camera.lookAt(lerp(bx + 0.2, p.px, k), lerp(1.25, 1.35, k), 0);
+    if (!cine.hit && t >= 0.95) { cine.hit = true; megaHit(); }
+  } else if (cine.cam) cine.cam(cine.t);
+  if (cine.t >= cine.dur) endCine();
+}
+// cinematic intro: plays once from the title screen, then character select
+function playIntro() {
+  showOnly(null);
+  playCine({
+    mode: 'intro', dur: 7.5,
+    caps: [
+      { t: 0.4, html: '<div class="cc1">CONCRETE DRAGON</div>' },
+      { t: 2.6, html: '<div class="cc2">EVERY BLOCK HAS A KING</div><div class="cc3">Neon streets. Heavy fists.<br>No backup coming.</div>' },
+      { t: 5.0, html: '<div class="cc2">TAKE IT BACK</div>' },
+    ],
+    cam: (t) => {
+      const k = Math.min(1, t / 7.5);
+      camera.position.set(lerp(-9, 9, k), 2.4 - k * 0.7, 9.5 - k * 2.5);
+      camera.lookAt(lerp(-4, 4, k), 1.0, 0);
+    },
+    onDone: () => showSelect(),
+  });
+  sfx(98, 1.6, 'sawtooth', 0.35);
+}
+// boss beat: non-blocking letterboxed name card when a boss enters
+function bossBeat(name) {
+  if (cine) return;
+  letterbox(true);
+  $('cineCap').innerHTML = '<div class="cc1" style="font-size:34px">' + name + '</div><div class="cc2">BOSS</div>';
+  $('cineCap').classList.add('on');
+  setTimeout(() => { letterbox(false); $('cineCap').classList.remove('on'); }, 1400);
+}
 // ---------- HUD ----------
 function setHud() {
   if (!player) return;
@@ -1609,8 +1977,8 @@ function setHud() {
   $('cash').textContent = 'CASH: $' + (save.cash + cashRun);
   $('combo').style.opacity = combo >= 2 ? 1 : 0;
   $('combo').textContent = combo + ' HIT COMBO';
-  $('spc').style.width = clamp(player.spc, 0, 100) + '%';
-  $('btnSpc').classList.toggle('ready', player.spc >= 100);
+  $('spc').style.width = clamp(player.energy, 0, 100) + '%';
+  $('btnSpc').classList.toggle('ready', player.energy >= 60);
   const prog = mission && isFinite(mission.len) ? clamp(player.px / mission.len, 0, 1) : clamp(distWalked / 220, 0, 1);
   $('prog').style.width = (prog * 100) + '%';
   if (bossRef && bossRef.hp > 0) $('bossHp').style.width = Math.max(0, bossRef.hp / bossRef.maxHp * 100) + '%';
@@ -1629,6 +1997,7 @@ function loop() {
   requestAnimationFrame(loop);
   let dt = Math.min(clock.getDelta(), 0.05);
   if (paused) { renderer.render(scene, camera); return; }
+  if (cine) { updateCine(dt); updateFx(dt); updateProjs(dt); renderer.render(scene, camera); return; }
   gameTime += dt;
   if (hitstop > 0) { hitstop -= dt; dt *= 0.05; }
   if (slowmoT > 0) { slowmoT -= dt; dt *= slowmo; }
@@ -1647,13 +2016,18 @@ function loop() {
     camera.lookAt(6, 1.2, 0);
   } else if (state === 'fight' && player) {
     playerUpdate(dt);
+    recordStick(); // fighting-game motion input history
     director(dt);
     for (const e of enemies.slice()) enemyAI(e, dt);
     for (const e of enemies) positionWarn(e);
+    for (const e of enemies) if (e.dotT > 0 && e.hp > 0 && !e.dead) { e.dotT -= dt; e.hp -= e.dotDps * dt; sparkFX(e.px, 1.2, e.pz, 0x7cff6b, 1); if (e.hp <= 0) killEnemy(e); }
     if (comboT > 0 && (comboT -= dt) <= 0) { combo = 0; setHud(); }
     if (gameTime > 2 && !save.seenHint) hint(false);
     updatePickups(dt);
     updateRain(dt);
+    updateProjs(dt);
+    player.energy = Math.min(100, player.energy + 5 * dt); // energy trickles back
+    setHud();
     camX += ((player.px + 0.8) - camX) * Math.min(1, dt * 5);
     if (pushT > 0) { // KO camera push-in (F6): lean toward the fallen enemy during slow-mo
       pushT -= dt;
@@ -1691,6 +2065,9 @@ async function boot() {
   fighterTemplate = fg.scene;
   const names = new Set(); fighterTemplate.traverse((o) => names.add(o.name));
   for (const c of Object.values(clips)) c.tracks = c.tracks.filter((t) => names.has(t.name.split('.')[0]));
+  // texture variants: capture the GLB's embedded map as 'original', decode patchwork PNG
+  fighterTemplate.traverse((o) => { if (o.isMesh && o.material && o.material.map && !texObjs.original) texObjs.original = o.material.map; });
+  await loadTexVariants();
   const box = new THREE.Box3().setFromObject(fighterTemplate); fighterHeight = box.max.y - box.min.y;
   const s = 1.8 / fighterHeight; fighterTemplate.scale.setScalar(s); fighterHeight = 1.8;
   streetParts = {}; st.scene.children.slice().forEach((c) => { streetParts[c.name] = c; });
@@ -1721,4 +2098,21 @@ window.__cdtest = {
   setDiff: (id) => { save.difficulty = id; writeSave(); },
   info: () => ({ px: player ? +player.px.toFixed(1) : 0, hp: player ? Math.round(player.hp) : 0, foes: enemies.length, boss: bossRef ? Math.round(bossRef.hp) : 0, cash: cashRun, kills }),
   foes: () => enemies.map((e) => ({ px: +e.px.toFixed(2), ai: e.ai, hp: Math.round(e.hp), name: e.name, wu: +((e.windup || 0).toFixed(2)) })),
+  // combat+cinematics wave: motion inputs, energy, mega, projectiles, cine
+  energy: () => player ? Math.round(player.energy) : 0,
+  setEnergy: (v) => { if (player) { player.energy = v; setHud(); } },
+  motion: (dirs) => { for (const d of dirs) inputHist.push({ d, t: gameTime }); }, // feed stick history, e.g. ['D','DR','R']
+  doMotion: (k) => doMotionSpecial(k),
+  doMega: () => doMega(),
+  cine: () => !!cine,
+  cineMode: () => cine ? cine.mode : null,
+  skipCine: () => endCine(),
+  playIntro: () => playIntro(),
+  projs: () => projs.length,
+  fireTest: () => fireProj({ x: player.px + 1, z: player.pz, y: 1.15, vx: 8, kind: 'fire', dmg: 10, color: 0xff7a2a, fromPlayer: true, life: 1 }),
+  fin: () => fighterDef().fin,
+  qcfName: () => fighterDef().qcf.name,
+  megaName: () => fighterDef().mega.name,
+  texName: () => texVar(save.selected).id,
+  setTex: (id) => { save.tex[save.selected] = id; writeSave(); refreshShowcase(); },
 };
