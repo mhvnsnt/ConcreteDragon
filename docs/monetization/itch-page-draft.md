@@ -5,6 +5,15 @@ Page URL will be: `https://<owner-username>.itch.io/concrete-dragon`
 
 ---
 
+## TIP JAR (donations)
+
+- **In-game tip buttons** (title screen + results screen) link to his public PayPal: **https://paypal.me/MarquisWhitacre**
+- **itch.io PWYW pricing** also routes tips to him (Direct to you → PayPal/Stripe, instant payout).
+- Also paste the PayPal link into the page body's "Free to play" line: `Toss a tip — https://paypal.me/MarquisWhitacre — every dollar goes straight back into the build.`
+- Donations only. No paid power, no pay-to-win — style-not-power stays inviolable.
+
+---
+
 ## Page settings
 
 - **Title:** Concrete Dragon

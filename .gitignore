@@ -1,0 +1,12 @@
+# build outputs
+
+game-3d/dist/
+game-3d/node_modules/
+# local pull-in staging area (wire into game-3d/build/assets instead)
+
+game/assets/staging/
+# test harnesses (local only)
+
+game-3d/dbg*.mjs
+game-3d/verify*.mjs
+game-3d/build/asset-manifest.shipped.json

@@ -46,5 +46,25 @@
   {
     "file": "click.mp3",
     "source": "Kenney Interface Sounds (CC0 1.0)"
+  },
+  {
+    "file": "whoosh.mp3",
+    "source": "Kenney RPG Audio (CC0 1.0)"
+  },
+  {
+    "file": "step.mp3",
+    "source": "Kenney RPG Audio (CC0 1.0)"
+  },
+  {
+    "file": "crack.mp3",
+    "source": "Kenney RPG Audio (CC0 1.0)"
+  },
+  {
+    "file": "coin.mp3",
+    "source": "Kenney RPG Audio (CC0 1.0)"
+  },
+  {
+    "file": "uiclick.mp3",
+    "source": "Kenney UI Audio (CC0 1.0)"
   }
 ]

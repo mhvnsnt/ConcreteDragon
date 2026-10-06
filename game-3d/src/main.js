@@ -33,7 +33,7 @@ const save = {
   best_wave: 0, selected: 'kidblue', skins: {},
   unlocked: ['kidblue', 'ghost', 'brick'], missionsDone: [],
   daily: { date: '', score: 0 }, boards: {}, seenHint: false,
-  muted: false, quality: 'auto', difficulty: 'normal',
+  muted: false, quality: 'auto', difficulty: 'normal', circuitN: 0,
 };
 const TIP_URL = 'https://paypal.me/MarquisWhitacre';
 function loadSave() {
@@ -63,6 +63,8 @@ const FIGHTERS = [
       ['LOW SWEEP', '↓ + HIT', 'Sweep the legs — launches for juggles.'],
       ['HEAVY HOOK', 'HVY', 'Slow, crushing hook. Big damage.'],
       ['JUMP KICK', 'JUMP, then HIT', 'Aerial dive kick. Hits on the way down.'],
+      ['DESPERATION', 'DDG ×2', '360° panic spin. Costs 10% HP.'],
+      ['TAUNT', 'TAUNT btn / T', 'Talk trash, gain special meter.'],
       ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
       ['DRAGON RUSH', '↓ + SPC (50 meter)', 'Shoulder dash straight through the pack.'],
     ] },
@@ -75,6 +77,8 @@ const FIGHTERS = [
       ['LOW SWEEP', '↓ + HIT', 'Ankle sweep — launches for juggles.'],
       ['HEAVY HOOK', 'HVY', 'Charged hook. Big damage.'],
       ['JUMP KICK', 'JUMP, then HIT', 'Aerial dive kick.'],
+      ['DESPERATION', 'DDG ×2', '360° panic spin. Costs 10% HP.'],
+      ['TAUNT', 'TAUNT btn / T', 'Talk trash, gain special meter.'],
       ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
       ['BLINK FLURRY', '↓ + SPC (50 meter)', 'Blink between the 3 nearest enemies.'],
     ] },
@@ -87,6 +91,8 @@ const FIGHTERS = [
       ['LOW SWEEP', '↓ + HIT', 'Tree-trunk sweep — launches for juggles.'],
       ['HEAVY HOOK', 'HVY', 'The rent collector. Huge damage.'],
       ['JUMP KICK', 'JUMP, then HIT', 'Aerial drop kick.'],
+      ['DESPERATION', 'DDG ×2', '360° panic spin. Costs 10% HP.'],
+      ['TAUNT', 'TAUNT btn / T', 'Talk trash, gain special meter.'],
       ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
       ['SEISMIC SLAM', '↓ + SPC (50 meter)', 'Ground pound launches everyone nearby.'],
     ] },
@@ -99,6 +105,8 @@ const FIGHTERS = [
       ['LOW SWEEP', '↓ + HIT', 'Cane sweep — launches for juggles.'],
       ['HEAVY HOOK', 'HVY', 'The gavel. Enormous damage.'],
       ['JUMP KICK', 'JUMP, then HIT', 'Aerial stomp kick.'],
+      ['DESPERATION', 'DDG ×2', '360° panic spin. Costs 10% HP.'],
+      ['TAUNT', 'TAUNT btn / T', 'Talk trash, gain special meter.'],
       ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
       ["KINGPIN'S WRATH", '↓ + SPC (50 meter)', 'Massive shockwave around him.'],
     ] },
@@ -111,6 +119,8 @@ const FIGHTERS = [
       ['LOW SWEEP', '↓ + HIT', 'Demolition sweep — launches for juggles.'],
       ['HEAVY HOOK', 'HVY', 'Full sledge. Devastating.'],
       ['JUMP KICK', 'JUMP, then HIT', 'Aerial demolition kick.'],
+      ['DESPERATION', 'DDG ×2', '360° panic spin. Costs 10% HP.'],
+      ['TAUNT', 'TAUNT btn / T', 'Talk trash, gain special meter.'],
       ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
       ['WRECKING SWING', '↓ + SPC (50 meter)', '360° swing clears the whole circle.'],
     ] },
@@ -123,6 +133,8 @@ const FIGHTERS = [
       ['LOW SWEEP', '↓ + HIT', 'Tail sweep — launches for juggles.'],
       ['HEAVY HOOK', 'HVY', 'The fang. Big damage.'],
       ['JUMP KICK', 'JUMP, then HIT', 'Aerial fang kick.'],
+      ['DESPERATION', 'DDG ×2', '360° panic spin. Costs 10% HP.'],
+      ['TAUNT', 'TAUNT btn / T', 'Talk trash, gain special meter.'],
       ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
       ['VENOM DASH', '↓ + SPC (50 meter)', 'Dash in a line, striking everything.'],
     ] },
@@ -167,8 +179,10 @@ const UPS = [
 ];
 const fighterDef = (id) => FIGHTERS.find((f) => f.id === (id || save.selected)) || FIGHTERS[0];
 const skinTint = (fid) => {
+  const sv = save.skins[fid];
+  if (typeof sv === 'string' && sv.startsWith('custom:')) return parseInt(sv.slice(7), 16);
   const list = SKINS[fid] || SKINS.kidblue;
-  const s = list.find((x) => x.id === save.skins[fid]) || list[0];
+  const s = list.find((x) => x.id === sv) || list[0];
   return s.tint;
 };
 const isUnlocked = (f) => save.unlocked.includes(f.id);
@@ -279,6 +293,51 @@ const missionUnlocked = (m) => {
   return save.missionsDone.includes(m.unlock.id);
 };
 const missionIndex = (m) => MISSIONS.indexOf(m);
+// ---------- INFINITE vision: wildness escalates as you clear missions (owner 2026-10-06) ----------
+// wildness = 1 + wins/2. Each mission rolls 0-3 modifiers from the table (seeded) —
+// familiar streets, but every run feels different. Surprise + comfort.
+const wildLevel = () => 1 + Math.floor((save.wins || 0) / 2);
+const MODIFIERS = [
+  { id: 'rush', name: 'RUSH HOUR', desc: '+50% enemies per wave', minWild: 2 },
+  { id: 'brutes', name: 'BRUTE SQUAD', desc: 'Heavies walk with the thugs', minWild: 2 },
+  { id: 'night', name: 'BLACKOUT', desc: 'Dark streets, hot lamps', minWild: 1 },
+  { id: 'rain', name: 'ACID RAIN', desc: 'Rain over neon', minWild: 3 },
+  { id: 'party', name: 'PICKUP PARTY', desc: 'Extra breakables, extra loot', minWild: 1 },
+  { id: 'frenzy', name: 'FRENZY', desc: 'Frenzied variants: faster, meaner', minWild: 4 },
+  { id: 'titans', name: 'TITANS', desc: 'Titan variants walk the block', minWild: 6 },
+];
+function rollModifiers(seedNum, wild) {
+  const R = seedPRNG(seedNum);
+  const pool = MODIFIERS.filter((m) => wild >= m.minWild);
+  const n = wild < 3 ? (R() < 0.5 ? 0 : 1) : wild < 5 ? 1 + (R() < 0.5 ? 1 : 0) : 2 + (R() < 0.4 ? 1 : 0);
+  const out = [];
+  const cp = pool.slice();
+  for (let i = 0; i < n && cp.length; i++) out.push(cp.splice(Math.floor(R() * cp.length), 1)[0].id);
+  return out;
+}
+const hasMod = (id) => (mission.mods || []).includes(id);
+// ---------- STREET CIRCUIT: infinite procedural missions (one card, endless series) ----------
+const PM_A = ['RUST', 'NEON', 'CONCRETE', 'MIDNIGHT', 'IRON', 'VELVET', 'CHROME', 'ASHEN', 'COPPER', 'JAGUAR', 'SMOKE', 'TAR'];
+const PM_B = ['ALLEY', 'BLOCK', 'STRIP', 'YARDS', 'CORNER', 'DIVE', 'ROW', 'MILE', 'SECTOR', 'WARD', 'DEAD END', 'OVERPASS'];
+function procMission(n) {
+  const R = seedPRNG(n * 7919 + 13);
+  const district = DISTRICTS[n % DISTRICTS.length].id;
+  const name = PM_A[Math.floor(R() * PM_A.length)] + ' ' + PM_B[Math.floor(R() * PM_B.length)];
+  const len = 60 + n * 6;
+  const fams = ['thug', 'rico', 'jabber', 'heavyd', 'stray'];
+  const spawns = [];
+  const waves = 4 + Math.min(6, Math.floor(n / 2));
+  for (let w = 0; w < waves; w++) {
+    spawns.push({ at: 10 + w * ((len - 20) / waves), fam: fams[Math.floor(R() * fams.length)], n: 2 + Math.min(3, Math.floor(n / 3)) });
+  }
+  const bossCycle = ['kingpin', 'sledge', 'viper', 'rust'];
+  const boss = n % 3 === 2 ? bossCycle[Math.floor(n / 3) % bossCycle.length] : null;
+  return {
+    id: 'circuit', circuitN: n, district, name: name + ' #' + (n + 1), len,
+    crowd: R() < 0.5, spawns, boss, proc: true,
+    unlock: { type: 'mission', id: 'm1' }, reward: 'Circuit #' + (n + 1) + ' cleared',
+  };
+}
 
 // ---------- audio (nothing plays before first user gesture) ----------
 let actx = null; const sbuf = {}; let muted = false;
@@ -361,13 +420,19 @@ moon.shadow.mapSize.set(1024, 1024); Object.assign(moon.shadow.camera, { left: -
 const rim = new THREE.DirectionalLight(0xff4fd8, 1.6); rim.position.set(3, 3, -5); scene.add(rim);
 const lampL = new THREE.PointLight(0xffa64d, 22, 9, 1.6); lampL.position.set(-3.2, 3.2, -1.2); scene.add(lampL);
 const lampR = new THREE.PointLight(0x4de1ff, 18, 9, 1.6); lampR.position.set(3.4, 3.0, -1.2); scene.add(lampR);
-function applyDistrict(d) {
+function applyDistrict(d, seedNum) {
+  const R = seedPRNG(seedNum || 1);
+  const hueShift = (R() - 0.5) * 0.1; // seeded palette mutation — same district, different night
+  const shift = (hex) => { const c = new THREE.Color(hex); const h = {}; c.getHSL(h); c.setHSL((h.h + hueShift + 1) % 1, h.s, h.l); return c; };
+  const blackout = typeof hasMod === 'function' && mission && hasMod('night');
   scene.background = new THREE.Color(d.sky);
+  if (blackout) scene.background.multiplyScalar(0.35);
   scene.fog = new THREE.Fog(d.fog[0], d.fog[1], d.fog[2]);
-  hemi.color.set(d.hemi[0]); hemi.groundColor.set(d.hemi[1]); hemi.intensity = d.hemi[2];
-  moon.color.set(d.moon[0]); moon.intensity = d.moon[1];
-  rim.color.set(d.rim[0]); rim.intensity = d.rim[1];
-  lampL.color.set(d.lampA); lampR.color.set(d.lampB);
+  hemi.color.set(d.hemi[0]); hemi.groundColor.set(d.hemi[1]); hemi.intensity = d.hemi[2] * (blackout ? 0.45 : 1);
+  moon.color.copy(shift(d.moon[0])); moon.intensity = d.moon[1] * (blackout ? 0.5 : 1);
+  rim.color.copy(shift(d.rim[0])); rim.intensity = d.rim[1];
+  lampL.color.copy(shift(d.lampA)); lampR.color.copy(shift(d.lampB));
+  if (blackout) { lampL.intensity = 2.2; lampR.intensity = 2.2; }
 }
 
 const loader = new GLTFLoader(); loader.setMeshoptDecoder(MeshoptDecoder);
@@ -376,6 +441,28 @@ const parse = (name) => new Promise((res, rej) => loader.parse(b64ToBuf(A[name])
 // ---------- street builder (mission-length, district-styled) ----------
 const streetGroup = new THREE.Group(); scene.add(streetGroup);
 let streetParts = {};
+let rainPts = null;
+function setRain(on) {
+  if (rainPts) { streetGroup.remove(rainPts); rainPts.geometry.dispose(); rainPts = null; }
+  if (!on) return;
+  const N = 320, pos = new Float32Array(N * 3);
+  for (let i = 0; i < N; i++) { pos[i * 3] = rnd(-10, 30); pos[i * 3 + 1] = rnd(0, 12); pos[i * 3 + 2] = rnd(-6, 6); }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  rainPts = new THREE.Points(g, new THREE.PointsMaterial({ color: 0x7af0ff, size: 0.08, transparent: true, opacity: 0.7 }));
+  streetGroup.add(rainPts);
+}
+function updateRain(dt) {
+  if (!rainPts || !player) return;
+  const a = rainPts.geometry.attributes.position;
+  for (let i = 0; i < a.count; i++) {
+    let y = a.getY(i) - dt * 14;
+    if (y < 0) { y = 12; a.setX(i, player.px + rnd(-10, 20)); }
+    a.setY(i, y);
+  }
+  a.needsUpdate = true;
+  rainPts.position.x = 0;
+}
 function clearStreet() {
   while (streetGroup.children.length) streetGroup.remove(streetGroup.children[0]);
   colliders.length = 0; destructibles.length = 0; clearPickups();
@@ -383,7 +470,7 @@ function clearStreet() {
 function buildStreet(district, missionLen, seedFn) {
   clearStreet();
   const d = districtDef(district);
-  applyDistrict(d);
+  applyDistrict(d, (mission && mission.circuitN || 0) * 31 + (mission && mission.id ? mission.id.length : 0) + 7);
   const R = seedFn || Math.random;
   const parts = streetParts;
   const place = (name, x, z, ry = 0, sc = 1, tint = null) => placeProp(name, x, z, ry, sc, tint);
@@ -476,7 +563,8 @@ function destroyDestructible(d) {
 function spawnBreakables(district, missionLen, R) {
   const L = isFinite(missionLen) ? missionLen : 200;
   const names = ['trash_A', 'trash_B', 'box_A'];
-  for (let px = 8; px < L; px += rnd(9, 16)) {
+  const step = (typeof hasMod === 'function' && mission && hasMod('party')) ? 5 : 9;
+  for (let px = 8; px < L; px += rnd(step, step + 7)) {
     const nm = names[Math.floor(R() * names.length)];
     placeProp(nm, px + rnd(-2, 2), rnd(-1.5, 1.5), R() * 3);
   }
@@ -644,6 +732,13 @@ function renderShop(into) {
 
 // --- 3D showcase: the ACTUAL fighter model on a turntable (never colored circles) ---
 let showcase = null, showcaseRot = 0, showcaseDrag = null;
+function shuffleSkin() {
+  const fid = save.selected;
+  const tint = Math.floor(Math.random() * 0xffffff);
+  save.skins[fid] = 'custom:' + tint.toString(16).padStart(6, '0');
+  writeSave(); sfx('uiclick', 0.8);
+  showSelect();
+}
 function refreshShowcase() {
   if (showcase) { removeFighter(showcase); showcase = null; }
   const fd = fighterDef();
@@ -687,6 +782,14 @@ function showSelect() {
     d.onclick = () => { save.skins[save.selected] = s.id; writeSave(); sfx('click', 0.7); refreshShowcase(); showSelectCards(); };
     sr.appendChild(d);
   }
+  { // infinite tints: shuffle die (style-only, free) — owner vision 2026-10-06
+    const d = el('div', 'skinDot' + (String(save.skins[save.selected] || '').startsWith('custom:') ? ' sel' : ''));
+    d.style.background = 'conic-gradient(#f55,#ff5,#5f5,#5ff,#55f,#f5f,#f55)';
+    d.title = 'SHUFFLE — random tint, style only';
+    d.textContent = '🎲'; d.style.fontSize = '18px'; d.style.lineHeight = '30px'; d.style.textAlign = 'center';
+    d.onclick = () => shuffleSkin();
+    sr.appendChild(d);
+  }
   renderShop($('shopRow')); renderMeta();
   showOnly('select');
 }
@@ -727,6 +830,27 @@ function showMission() {
     }
     list.appendChild(card);
   }
+  // STREET CIRCUIT: infinite procedural missions — one card, endless series (owner vision 2026-10-06)
+  {
+    const n = save.circuitN || 0;
+    const preview = procMission(n);
+    const d = districtDef(preview.district);
+    const locked = !save.missionsDone.includes('m1');
+    const card = el('div', 'mcard panel9' + (locked ? ' locked' : ''));
+    card.appendChild(el('div', 'dn', '∞ STREET CIRCUIT'));
+    card.appendChild(el('div', 'mn', '#' + (n + 1) + ' ' + preview.name));
+    const sw = el('div', 'sw'); sw.style.background = `linear-gradient(90deg, ${d.sw[0]}, ${d.sw[1]})`;
+    card.appendChild(sw);
+    card.appendChild(el('div', 'inf', `Procedural mission, wildness ${wildLevel()}.<br>District: ${d.name} · Boss: ${preview.boss ? missionBossName(preview) : '—'}`));
+    if (save.circuitN > 0) card.appendChild(el('div', 'best', `CLEARED: ${save.circuitN}`));
+    card.appendChild(el('div', 'rw', locked ? '🔒 Clear FIRST BLOOD' : '★ Infinite missions — always something new'));
+    if (!locked) {
+      const go = el('button', 'go', 'GO');
+      go.onclick = (e) => { e.stopPropagation(); unlockAudio(); sfx('uiclick', 0.8); startMission('circuit'); };
+      card.appendChild(go);
+    }
+    list.appendChild(card);
+  }
   $('dailyTag').textContent = 'DAILY SEED: ' + todayStr() + (save.daily.date === todayStr() ? ` · YOUR BEST: ${save.daily.score}` : '');
   renderMeta(); showOnly('mission');
 }
@@ -737,7 +861,8 @@ function showResults(win, mission, stats) {
   $('touch').classList.remove('on');
   const ub = $('unlockBanner'); ub.textContent = '';
   if (win) {
-    if (!save.missionsDone.includes(mission.id)) save.missionsDone.push(mission.id);
+    if (mission.proc) { save.circuitN = Math.max(save.circuitN, mission.circuitN + 1); }
+    else if (!save.missionsDone.includes(mission.id)) save.missionsDone.push(mission.id);
     save.wins++;
     // boss -> unlock as playable (owner directive) + unlock ceremony (U11)
     if (mission.boss) {
@@ -760,11 +885,17 @@ function showResults(win, mission, stats) {
     resEl.classList.add('win'); resEl.classList.remove('lose');
     $('resTitle').textContent = 'MISSION COMPLETE';
     // next-mission flow: button starts the next mission in order (or back to list)
-    const idx = MISSIONS.findIndex((m) => m.id === mission.id);
-    const nxt = idx >= 0 ? MISSIONS[idx + 1] : null;
     const nb = $('nextBtn');
-    if (nxt) { nb.style.display = ''; nb.textContent = 'NEXT: ' + nxt.name + ' →'; nb.onclick = (e) => { e.stopPropagation(); unlockAudio(); sfx('uiclick', 0.8); startMission(nxt.id); }; }
-    else { nb.style.display = 'none'; }
+    if (mission.proc) {
+      const nxt = procMission(mission.circuitN + 1);
+      nb.style.display = ''; nb.textContent = 'NEXT: ' + nxt.name + ' →';
+      nb.onclick = (e) => { e.stopPropagation(); unlockAudio(); sfx('uiclick', 0.8); startMission('circuit'); };
+    } else {
+      const idx = MISSIONS.findIndex((m) => m.id === mission.id);
+      const nxt = idx >= 0 ? MISSIONS[idx + 1] : null;
+      if (nxt) { nb.style.display = ''; nb.textContent = 'NEXT: ' + nxt.name + ' →'; nb.onclick = (e) => { e.stopPropagation(); unlockAudio(); sfx('uiclick', 0.8); startMission(nxt.id); }; }
+      else { nb.style.display = 'none'; }
+    }
   } else {
     resEl.classList.remove('win'); resEl.classList.add('lose');
     $('resTitle').textContent = 'KNOCKED OUT';
@@ -774,6 +905,10 @@ function showResults(win, mission, stats) {
     `<div class="stat">${win ? 'CLEARED' : 'REACHED'} <b>${mission.name}</b></div>` +
     `<div class="stat"><b>${stats.kills}</b> K.O.s &nbsp;·&nbsp; BEST COMBO <b>${stats.maxCombo}</b></div>` +
     (stats.dist ? `<div class="stat">DISTANCE <b>${Math.round(stats.dist)}m</b></div>` : '');
+  if (win && mission.mods && mission.mods.length) {
+    const mnames = mission.mods.map((id) => (MODIFIERS.find((m) => m.id === id) || {}).name).filter(Boolean);
+    $('resStats').innerHTML += `<div class="stat" style="color:#ff9df0">WILDNESS ${mission.wild}: ${mnames.join(' · ')}</div>`;
+  }
   $('cashLines').innerHTML =
     `<div>Fight cash <b>+$${stats.cash}</b></div>` +
     (stats.waveBonus ? `<div>Wave bonus <b>+$${stats.waveBonus}</b></div>` : '') +
@@ -803,7 +938,7 @@ function genDailySpawns(R) {
   return sp;
 }
 function startMission(id) {
-  mission = missionDef(id);
+  mission = id === 'circuit' ? procMission(save.circuitN || 0) : missionDef(id);
   let R = Math.random;
   if (mission.daily) {
     const s = [...todayStr()].reduce((a, c) => a + c.charCodeAt(0), 0);
@@ -811,10 +946,13 @@ function startMission(id) {
     mission = Object.assign({}, mission, { spawns: genDailySpawns(R) });
   }
   missionR = R;
+  const wild = wildLevel();
+  mission = Object.assign({}, mission, { mods: rollModifiers((mission.circuitN || 0) * 131 + wild * 17 + mission.id.length, wild), wild });
   clearFighters(); clearCrowd(); enemies = [];
   buildStreet(mission.district, mission.len, R);
   spawnBreakables(mission.district, mission.len, R);
   if (mission.crowd) spawnCrowd(R); // CONDITIONAL crowd only — owner directive
+  setRain(hasMod('rain'));
   const fd = fighterDef();
   player = makeFighterRaw(skinTint(fd.id), 0, Math.PI / 2, 1);
   player.isPlayer = true;
@@ -822,7 +960,7 @@ function startMission(id) {
   player.hp = player.maxHp;
   player.dmgMult = fd.dmg * powerMult();
   player.spd = fd.spd;
-  player.px = 2; player.pz = 0;
+  player.px = 2; player.pz = 0; player.face = 1;
   player.spc = 0; player.dodgeT = 0; player.dodgeCD = 0; player.busy = 0;
   player.animMove = false;
   playAnim(player, 'Melee_Unarmed_Idle', { loop: true });
@@ -852,6 +990,8 @@ function spawnEnemy(famId, mi, bx, bz) {
   const fam = ENEMY_FAMS.find((f) => f.id === famId) || ENEMY_FAMS[0];
   const v = famVariant(fam, mi);
   const e = makeFighterRaw(v.tint, bx, -Math.PI / 2, v.scale);
+  if (hasMod('titans') && missionR() < 0.18 && !v.boss) { e.sc = (e.sc || 1) * 1.35; e.root.scale.multiplyScalar(1.35); e.maxHp = e.hp = Math.round(e.hp * 2.2); e.name = 'TITAN ' + e.name; }
+  else if (hasMod('frenzy') && missionR() < 0.25) { e.spd *= 1.5; e.dmgMult *= 1.25; e.name = 'FRENZIED ' + e.name; }
   const df = diffDef();
   e.isPlayer = false; e.name = v.name; e.maxHp = e.hp = Math.round(v.hp * df.hpMul);
   e.dmgMult = v.dmg * df.dmgMul; e.spd = v.spd; e.move = v.move;
@@ -910,10 +1050,10 @@ function doPunch() {
   let clip, ts, delay, dmg, label, hs, sh, range = 1.9, launcher = false, dash = 0, retreat = 0;
   if (dx > 0.5) { // -> + HIT: LUNGE STRIKE
     [clip, ts, delay, dmg, label, hs, sh] = ['Melee_Unarmed_Attack_Punch_A', 2.2, 0.14, 14, 'LUNGE', 0.05, 0.2];
-    range = 2.3; dash = 1.3 * player.face;
+    range = 2.3; dash = 1.3 * (player.face || 1);
   } else if (dx < -0.5) { // <- + HIT: RETREAT BACKFIST
     [clip, ts, delay, dmg, label, hs, sh] = ['Melee_Unarmed_Attack_Punch_A', 2.0, 0.16, 12, 'BACKFIST', 0.06, 0.3];
-    range = 2.0; retreat = 0.9 * player.face;
+    range = 2.0; retreat = 0.9 * (player.face || 1);
   } else if (dy > 0.5) { // v + HIT: LOW SWEEP (launcher)
     [clip, ts, delay, dmg, label, hs, sh] = ['Melee_Unarmed_Attack_Kick', 1.9, 0.18, 10, 'SWEEP', 0.06, 0.2];
     range = 2.0; launcher = true;
@@ -937,6 +1077,18 @@ function doPunch() {
     damageDestructibles(1.7);
     damageDestructibles(range);
   }, delay * 1000);
+}
+function doTaunt() {
+  // TMNT taunt: talk trash, build special meter. Pure addition — costs a beat of vulnerability.
+  if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.busy > 0 || player.airT > 0) return;
+  unlockAudio();
+  player.busy = 0.8;
+  playAnim(player, 'Melee_Unarmed_Idle', { ts: 0.7, fade: 0.1 });
+  player.spc = clamp(player.spc + 25, 0, 100);
+  const sp = screenPos(player.root.position.clone().add(new THREE.Vector3(0, 2.2, 0)));
+  popText('COME ON!', 'spc', sp.x, sp.y);
+  sfx('uiclick', 0.6, false, 0.7);
+  setHud(); ev('taunt', {});
 }
 function doJump() {
   if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.busy > 0) return;
@@ -995,6 +1147,24 @@ function doSpecial() {
   }
   setHud();
 }
+function doDesperation() {
+  // Final Fight desperation: 360° spin that costs 10% current HP (never lethal) — the panic button
+  if (player.busy > 0 || player.airT > 0) return;
+  const cost = Math.max(1, Math.round(player.hp * 0.10));
+  if (player.hp - cost < 1) { popText('TOO WEAK', 'bad', innerWidth / 2, innerHeight * 0.4); return; }
+  player.hp -= cost; player.busy = 0.55; player.dodgeCD = 1.2;
+  playAnim(player, 'Melee_Unarmed_Attack_Kick', { ts: 2.8, fade: 0.04 });
+  slowmo = 0.5; slowmoT = 0.4; flash('#ff2a2a');
+  banner('DESPERATION!', 'bad');
+  sfx('whoosh', 0.8, false, 0.7); sfx('hit3', 0.8, false, 0.9);
+  burst(player.root.position.clone().add(new THREE.Vector3(0, 1, 0)), 30, 0xff4d4d, 6);
+  for (const e of enemies.slice()) {
+    if (e.hp > 0 && Math.abs(e.px - player.px) < 2.6 && Math.abs(e.pz - player.pz) < 1.8)
+      landHit(e, Math.round(26 * player.dmgMult), 'DESPERATION', 0.08, 0.35, false, false);
+  }
+  damageDestructibles(2.6);
+  setHud(); ev('desperation', {});
+}
 function doSpecial2(fd) {
   const sp = fd.spc2 || { name: 'RUSH', cost: 50 };
   player.spc = Math.max(0, player.spc - sp.cost);
@@ -1028,9 +1198,14 @@ function doSpecial2(fd) {
   damageDestructibles(3.4);
   setHud();
 }
+let lastDodgeTap = 0;
 function doDodge() {
-  if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.dodgeCD > 0) return;
+  if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0) return;
   unlockAudio();
+  const now = performance.now();
+  if (now - lastDodgeTap < 320 && player.dodgeCD <= 0) { lastDodgeTap = 0; doDesperation(); return; }
+  lastDodgeTap = now;
+  if (player.dodgeCD > 0) return;
   player.dodgeCD = 0.9; player.dodgeT = 0.35;
   const m = Math.hypot(stick.dx, stick.dy);
   if (m > 0.25) { player.dodgeDx = stick.dx / m; player.dodgeDz = stick.dy / m; }
@@ -1162,6 +1337,7 @@ function setupInput() {
   $('againBtn').addEventListener('click', (e) => { e.stopPropagation(); unlockAudio(); sfx('uiclick', 0.8); showMission(); });
   $('backBtn').addEventListener('click', (e) => { e.stopPropagation(); sfx('uiclick', 0.8); showSelect(); });
   $('pauseBtn').addEventListener('click', (e) => { e.stopPropagation(); togglePause(); });
+  $('tauntBtn').addEventListener('click', (e) => { e.stopPropagation(); doTaunt(); });
   $('resumeBtn').addEventListener('click', (e) => { e.stopPropagation(); togglePause(false); });
   $('restartBtn').addEventListener('click', (e) => { e.stopPropagation(); togglePause(false); startMission(mission.id); });
   $('quitBtn').addEventListener('click', (e) => { e.stopPropagation(); setPaused(false); $('pauseOv').classList.add('hidden'); showMission(); });
@@ -1185,6 +1361,7 @@ function setupInput() {
     if (k === 'k') doHeavy();
     if (k === 'l') doDodge();
     if (k === 'u') doSpecial();
+    if (k === 't') doTaunt();
     if (k === ' ') { e.preventDefault(); doJump(); }
   });
   document.addEventListener('keyup', (e) => {
@@ -1337,7 +1514,10 @@ function director(dt) {
     for (const s of spawnQueue) {
       if (!s.done && player.px >= s.at - 11) {
         s.done = true;
-        for (let i = 0; i < s.n; i++) spawnEnemy(s.fam, mi, player.px + 9 + i * 1.6, rnd(-1.2, 1.2));
+        let fam = s.fam;
+        if (hasMod('brutes') && fam === 'thug' && missionR() < 0.5) fam = 'heavyd';
+        let n = s.n + (hasMod('rush') ? Math.ceil(s.n / 2) : 0);
+        for (let i = 0; i < n; i++) spawnEnemy(fam, mi, player.px + 9 + i * 1.6, rnd(-1.2, 1.2));
       }
     }
     if (!bossSpawned && mission.boss && player.px >= mission.len - 11) {
@@ -1373,7 +1553,9 @@ function missionComplete(win) {
   setTimeout(() => showResults(win, mission, stats), win ? 1400 : 800);
 }
 // ---------- player movement ----------
+let dbgFrames = 0;
 function playerUpdate(dt) {
+  dbgFrames++;
   const p = player;
   if (p.dodgeT > 0) p.dodgeT -= dt;
   if (p.dodgeCD > 0) p.dodgeCD -= dt;
@@ -1397,8 +1579,8 @@ function playerUpdate(dt) {
     }
   }
   const tgt = nearestEnemy(99);
-  if (tgt) p.root.rotation.y = tgt.px >= p.px ? Math.PI / 2 : -Math.PI / 2;
-  else if (Math.abs(mx) > 0.4) p.root.rotation.y = mx > 0 ? Math.PI / 2 : -Math.PI / 2;
+  if (tgt) { p.face = tgt.px >= p.px ? 1 : -1; p.root.rotation.y = p.face > 0 ? Math.PI / 2 : -Math.PI / 2; }
+  else if (Math.abs(mx) > 0.4) { p.face = mx > 0 ? 1 : -1; p.root.rotation.y = p.face > 0 ? Math.PI / 2 : -Math.PI / 2; }
   const moving = Math.abs(mx) + Math.abs(mz) > 0.5;
   if (moving && !p.animMove && p.dodgeT <= 0 && p.busy <= 0) { p.animMove = true; playAnim(p, 'Running_A', { loop: true }); }
   if (!moving && p.animMove && p.dodgeT <= 0) { p.animMove = false; playAnim(p, 'Melee_Unarmed_Idle', { loop: true }); }
@@ -1471,6 +1653,7 @@ function loop() {
     if (comboT > 0 && (comboT -= dt) <= 0) { combo = 0; setHud(); }
     if (gameTime > 2 && !save.seenHint) hint(false);
     updatePickups(dt);
+    updateRain(dt);
     camX += ((player.px + 0.8) - camX) * Math.min(1, dt * 5);
     if (pushT > 0) { // KO camera push-in (F6): lean toward the fallen enemy during slow-mo
       pushT -= dt;
@@ -1526,7 +1709,9 @@ window.__cdtest = {
   tp: (x) => { if (player) player.px = x; },
   spawnBoss: (id) => { if (player) return spawnBoss(id || 'kingpin', player.px + 6); },
   hurt: (n) => { if (player) hurtPlayer(n); },
-  doJump, doPunch, doHeavy, doSpecial,
+  doJump, doPunch, doHeavy, doSpecial, doTaunt, doDesperation,
+  step: (dt) => { playerUpdate(dt || 1 / 60); }, // drive the real physics deterministically
+  dbg: () => player ? { st: state, mo: missionOver, en: ended, hp: player.hp, busy: player.busy, airT: player.airT, py: player.py, vy: player.vy, frames: dbgFrames } : null,
   setStick: (dx, dy) => { stick.dx = dx; stick.dy = dy; },
   playerPos: () => player ? { px: +player.px.toFixed(2), pz: +player.pz.toFixed(2), py: +(player.py || 0).toFixed(2), airT: +(player.airT || 0).toFixed(2) } : null,
   props: () => destructibles.map((d) => ({ name: d.name, px: +d.px.toFixed(1), pz: +d.pz.toFixed(1), hp: d.hp, minY: +(d.mesh.position.y).toFixed(3) })),
