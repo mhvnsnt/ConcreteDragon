@@ -536,7 +536,7 @@ function startMission(id) {
     mission = Object.assign({}, mission, { spawns: genDailySpawns(R) });
   }
   missionR = R;
-  clearFighters(); clearCrowd();
+  clearFighters(); clearCrowd(); enemies = [];
   buildStreet(mission.district, mission.len, R);
   spawnBreakables(mission.district, mission.len, R);
   if (mission.crowd) spawnCrowd(R); // CONDITIONAL crowd only — owner directive
@@ -1116,4 +1116,5 @@ window.__cdtest = {
   spawnBoss: (id) => { if (player) return spawnBoss(id || 'kingpin', player.px + 6); },
   hurt: (n) => { if (player) hurtPlayer(n); },
   info: () => ({ px: player ? +player.px.toFixed(1) : 0, hp: player ? Math.round(player.hp) : 0, foes: enemies.length, boss: bossRef ? Math.round(bossRef.hp) : 0, cash: cashRun, kills }),
+  foes: () => enemies.map((e) => ({ px: +e.px.toFixed(2), ai: e.ai, hp: Math.round(e.hp), name: e.name, wu: +((e.windup || 0).toFixed(2)) })),
 };
