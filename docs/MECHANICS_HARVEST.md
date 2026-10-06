@@ -381,3 +381,294 @@ Games covered so far: 0 (waves below).
 - **Effort:** — (principle)
 
 *Games covered: 36 (waves 1–2 complete)*
+
+---
+
+## WAVE 3 — 3D PLATFORMERS + UNDERRATED GEMS (movement, style, world)
+
+### Triple jump / long jump / wall kick — *Super Mario 64* (1996)
+- **Why players love it:** movement IS the game — chaining jumps is expressive,
+  and every surface is a question. Speedrunners still find new jumps 30 years on.
+- **Additive fit:** jump already approved — add the Mario triple: run + jump ×3
+  = higher triple jump; wall kick off walls/props. Movement depth, same button.
+- **Effort:** M
+
+### Capture (possess enemies, steal their moves) — *Super Mario Odyssey* (2017)
+- **Why players love it:** throwing your hat on an enemy POSSESSES it — you
+  play AS the frog, the tank, the T-Rex. Every enemy is a new toy.
+- **Additive fit:** "TAKEOVER" special: possess a downed elite for 15s and use
+  ITS moveset. The wildest additive idea on this list.
+- **Effort:** L
+
+### Crate taxonomy (TNT / Nitro / checkpoint / Aku Aku) — *Crash Bandicoot* (1996+)
+- **Why players love it:** not all boxes are equal — TNT chains, Nitro kills,
+  Aku Aku saves you. Breaking boxes is a risk assessment.
+- **Additive fit:** destructible variety: TNT crates (chain explosions),
+  NITRO (don't touch — or knock enemies into them), MASK pickup (one free
+  hit). Builds on approved destructibles.
+- **Effort:** M
+
+### Quantum masks (phase / gravity / time powers) — *Crash Bandicoot 4* (2020)
+- **Why players love it:** four masks grant reality-bending powers in
+  dedicated segments — variety without new characters.
+- **Additive fit:** mission mutators as "MASK" pickups: phase (walk through
+  enemies), gravity (jump flip), slow-mo bubble. Level variety levers.
+- **Effort:** L
+
+### Charge vs flame (two attack modes) — *Spyro the Dragon* (1998)
+- **Why players love it:** charge for small enemies, flame for armored — two
+  tools, constant quick decisions.
+- **Additive fit:** punch vs kick already differ; formalize the split:
+  punches = fast/weak, kicks = slow/armor-break. Tutorializes itself.
+- **Effort:** S (tuning note)
+
+### Spin dash charge — *Sonic Adventure* (1998)
+- **Why players love it:** hold to rev, release to BLAST — charging is
+  anticipation, release is payoff. The best risk/reward 2 seconds in games.
+- **Additive fit:** hold dodge = rev a dash attack; release to launch.
+  Converges with blitz — pick one implementation.
+- **Effort:** M (shared)
+
+### Boost meter (speed as a resource) — *Sonic Generations* (2011)
+- **Why players love it:** boost turns levels into a flow state — and running
+  out at the wrong moment is YOUR fault. Speed with an economy.
+- **Additive fit:** sprint meter: hold to sprint (drains), refills on hits.
+  Speed is earned, not free.
+- **Effort:** S
+
+### S-rank chase (ranked level grades) — *Sonic Generations* (2011)
+- **Why players love it:** S rank is a reason to replay every level forever —
+  grades turn completion into mastery.
+- **Additive fit:** mission grades (D→S) on time + combo + damage taken.
+  Leaderboard fuel, zero gameplay change.
+- **Effort:** S
+
+### Weapons level by USE — *Ratchet & Clank* (2002+)
+- **Why players love it:** the gun you love gets stronger BECAUSE you use it —
+  attachment through use, not purchase.
+- **Additive fit:** weapon pickups level up the more you swing them
+  (within a run): Lv3 bat hits different. Use-based attachment.
+- **Effort:** M
+
+### Sneak takedowns + clue bottles — *Sly Cooper* (2002)
+- **Why players love it:** ghosting past guards for a silent takedown feels
+  like a heist; bottles are breadcrumbs that reward explorers.
+- **Additive fit:** stealth takedown prompt on unaware enemies (bonus cash);
+  hidden "TAGS" collectibles per mission (graffiti collectibles — street!).
+- **Effort:** M
+
+### Gadget wheel — *Ape Escape* (1999)
+- **Why players love it:** net, slingshot, RC car, magnet — each gadget solves
+  problems differently, and switching is instant.
+- **Additive fit:** pickup gadgets: net (catch projectiles?), magnet (cash
+  vacuum), horn (stun). Gadget-class pickups beyond weapons.
+- **Effort:** L
+
+### Graffiti tagging (spray spots for style) — *Jet Set Radio* (2000)
+- **Why players love it:** tagging is territorial ART — you claim the city
+  with style, and the cel-shaded look made it timeless.
+- **Additive fit:** TAG SPOTS in missions: stop and spray (hold button,
+  vulnerable) for big style cash + district rep. THE street-brawler mechanic.
+- **Effort:** M
+
+### VFX slow-mo (dodge into the Matrix) — *Viewtiful Joe* (2003)
+- **Why players love it:** dodging triggers slow-mo + zoom — defense becomes
+  cinema. The film-grain VFX made every fight a movie.
+- **Additive fit:** perfect dodge = brief VFX slow-mo + zoom (already have
+  slow-mo law — this is its highest expression). Style over slow-mo spam.
+- **Effort:** S
+
+### Style meter (D/C/B/A/S/SS/SSS) — *Devil May Cry* (2001)
+- **Why players love it:** the game GRADES your creativity — spamming one
+  move tanks your rank, variety raises it. It teaches style as a skill.
+- **Additive fit:** STYLE RANK beside the combo counter: grades move variety,
+  not just hit count. The anti-spam, pro-expression scoring layer.
+- **Effort:** M
+
+### Witch Time (perfect dodge = slow-mo world) — *Bayonetta* (2009)
+- **Why players love it:** dodge at the last frame and the WORLD slows while
+  you don't — the ultimate reward for courage.
+- **Additive fit:** converges with VFX slow-mo above — one implementation,
+  tuned to the owner's feel law.
+- **Effort:** S (shared)
+
+### Wrestling finishers on stunned enemies — *No More Heroes* (2007)
+- **Why players love it:** stun an enemy, then suplex them through a table —
+  wrestling moves as earned finishers in a sword game. Absurd and perfect.
+- **Additive fit:** stunned enemies (after parry/counter) get a GRAPPLE
+  prompt: suplex, piledriver, powerbomb. Wrestling flavor for the
+  wrestling-rooted roster.
+- **Effort:** M
+
+### Context kills + sports commentary — *MadWorld* (2009)
+- **Why players love it:** throwing a guy into a jet engine while announcers
+  lose their minds — ultraviolence with a laugh track.
+- **Additive fit:** environmental KOs already planned; add a hype-man
+  announcer line on big moments (ties to the narrator concept — curated,
+  not constant).
+- **Effort:** M
+
+### Rage of Sparta (screen-clearing rage) — *God of War* (2005+)
+- **Why players love it:** when Kratos snaps, the game changes genre for 20
+  seconds — rage as a playable event.
+- **Additive fit:** converges with Radical Mode/GRIT above — one rage system.
+- **Effort:** M (shared)
+
+### Multi-target arrow planning — *The Mark of Kri* (2002)
+- **Why players love it:** assign attacks to multiple surrounding enemies,
+  then unleash — crowd combat as strategy, not mashing.
+- **Additive fit:** "FOCUS" on grab: queue hits on up to 3 nearby enemies,
+  unleash the chain. Crowd-control depth.
+- **Effort:** L
+
+### Minds as levels (powers as mechanics) — *Psychonauts* (2005)
+- **Why players love it:** each mind is a mechanic — time moves differently,
+  gravity flips. Levels ARE the power fantasy.
+- **Additive fit:** design law for districts: each district needs ONE
+  mechanical twist (low-grav rooftops? blackout with flashlight?).
+  Districts as mechanics, not palettes.
+- **Effort:** L (design law)
+
+*Games covered: 56 (waves 1–3 complete)*
+
+---
+
+## WAVE 4 — UNDERRATED + MODERN (indie lessons, new shapes)
+
+### Recruit defeated enemies — *River City Girls* (2019)
+- **Why players love it:** beat an enemy and RECRUIT them — your victim
+  becomes your assist. Every fight is a job interview.
+- **Additive fit:** "PUT 'EM ON": elite enemies at low HP can be recruited
+  (one per mission) as a one-wave ally. Gang-building fantasy.
+- **Effort:** M
+
+### Combat deck building — *Absolver* (2017)
+- **Why players love it:** build your moveset like a card deck — stances flow
+  into each other, and your deck IS your style.
+- **Additive fit:** converges with God Hand roulette — one loadout system,
+  Absolver's stance-flow as the advanced layer.
+- **Effort:** L (shared)
+
+### Age on death (roguelike aging) — *Sifu* (2022)
+- **Why players love it:** die and you AGE — stronger but frailer, and too
+  many deaths ends the run. Death has a visible, brutal cost.
+- **Additive fit:** "HARD MILES" mode: deaths age your fighter (visual +
+  +damage/−HP). Permadeath-adjacent prestige mode.
+- **Effort:** M
+
+### Rhythm combat (attack on the beat) — *Hi-Fi Rush* (2023)
+- **Why players love it:** the world moves to the music — hitting on-beat
+  deals bonus damage. Combat becomes dancing.
+- **Additive fit:** "ON BEAT" bonus: hits landing on the music's beat deal
+  +25% and spark. Optional, toggleable — rhythm as a skill layer.
+- **Effort:** M
+
+### Blade Mode (free-slice slow-mo) — *Metal Gear Rising: Revengeance* (2013)
+- **Why players love it:** slow-mo lets you SLICE enemies into pieces along
+  any angle — precision violence as a minigame.
+- **Additive fit:** FINISHER variant: blade-mode slice prompt on bosses
+  (trace lines to carve). Cinematic skill moment.
+- **Effort:** L
+
+### Tether partner (dual-character control) — *Astral Chain* (2019)
+- **Why players love it:** you and your Legion fight as one — the chain
+  between you is a weapon (trip enemies with it).
+- **Additive fit:** with crew backup: chain-grapple between you and ally —
+  enemies crossing the line get clotheslined. Team geometry.
+- **Effort:** L
+
+### Draw-to-morph weapons — *The Wonderful 101* (2013)
+- **Why players love it:** draw a circle = giant fist, a line = sword —
+  your doodle becomes the weapon. Playful and deep.
+- **Additive fit:** gesture specials: draw shapes on touch to morph your
+  special (circle = fist slam, line = dash slash). Touch-native magic.
+- **Effort:** L
+
+### Two-button timing perfection — *One Finger Death Punch* (2013)
+- **Why players love it:** left/right mouse = left/right attack. That's the
+  whole game, and it's perfect — timing IS the genre.
+- **Additive fit:** philosophy anchor (with Divekick): the base loop must stay
+  this pure. New mechanics orbit the tap, never replace it.
+- **Effort:** — (principle)
+
+### Slow-mo planning + one-hit duels — *Katana Zero* (2019)
+- **Why players love it:** everyone dies in one hit — including you. Time
+  slows so you can plan the perfect room clear. Every room is a puzzle.
+- **Additive fit:** "ONE-HIT" challenge missions: you and enemies die in one
+  hit, with brief planning slow-mo. Hardcore mission mutator.
+- **Effort:** M
+
+### Masks as modifiers — *Hotline Miami* (2012)
+- **Why players love it:** each animal mask = a gameplay modifier (faster,
+  silent, more guns). Your loadout is a personality.
+- **Additive fit:** MASK loadout per mission: pick one modifier (faster
+  meter, silent takedowns, longer combos). Pre-mission strategy.
+- **Effort:** S
+
+### Slow-mo dive + dual aim — *My Friend Pedro* (2019)
+- **Why players love it:** diving through the air in slow-mo while aiming
+  two guns independently — ballet with bullets.
+- **Additive fit:** dive move: dodge becomes an aerial flip with brief
+  slow-mo; attacks during the flip auto-target. Style incarnate.
+- **Effort:** M
+
+### Dash-centric combat — *Ruiner* (2017)
+- **Why players love it:** the dash IS the moveset — dash through enemies to
+  damage, dash to reposition, dash to survive. One verb, infinite uses.
+- **Additive fit:** dash already exists as dodge — add dash-STRIKE (dodge
+  into an enemy = damage). One verb, two uses.
+- **Effort:** S
+
+### Pounce + grindhouse weapons — *Shank* (2010)
+- **Why players love it:** pounce on downed enemies, chainsaws and machetes
+  everywhere — grindhouse excess with tight controls.
+- **Additive fit:** converges with pummel/ground-and-pound — one system.
+- **Effort:** S (shared)
+
+### Vision cones + noise (stealth layer) — *Mark of the Ninja* (2012)
+- **Why players love it:** you SEE what enemies see — stealth is readable,
+  fair, and delicious.
+- **Additive fit:** stealth missions show vision cones; takedowns from
+  behind. Full stealth mission type.
+- **Effort:** L
+
+### Training tycoon (manage the fighter's life) — *Punch Club* (2016)
+- **Why players love it:** half the game is managing training, work, and
+  hunger between fights — the fighter's LIFE is the game.
+- **Additive fit:** between-mission HUB: corner gym — train (minigames),
+  rest, take side gigs for cash. The street-life layer the owner wants.
+- **Effort:** XL
+
+### Draw/sheathe stance (sword etiquette) — *Way of the Samurai* (2002)
+- **Why players love it:** drawing your sword is a commitment — sheathed =
+  fast movement, drawn = combat. Stance as philosophy.
+- **Additive fit:** "CHILL" stance: fists down = faster walk + taunt builds
+  meter; fists up = combat. Stance with social meaning.
+- **Effort:** M
+
+### Real-time style switching — *Jade Empire* (2005)
+- **Why players love it:** swap martial arts / weapons / magic mid-combo —
+  your fighter is a toolkit, not a moveset.
+- **Additive fit:** converges with mixtape/stance entries — one system.
+- **Effort:** L (shared)
+
+### School schedule + training minigames — *The Friends of Ringo Ishikawa* (2018)
+- **Why players love it:** go to class, train at the dojo, read books that
+  teach moves — the brawler has a LIFE, and moves come from living it.
+- **Additive fit:** converges with Punch Club hub — one hub system, Ringo's
+  book-teaches-move as the unlock fiction.
+- **Effort:** XL (shared)
+
+*Games covered: 74 (waves 1–4 complete)*
+
+---
+
+## VERIFICATION NOTE
+Entries are harvested from design knowledge of each game (2026-10-06). Before
+any mechanic is implemented, verify the details against the source game
+(footage, wiki, or the teardown docs). This file is a design mine, not a spec.
+
+## STAGED IMPLEMENTATIONS
+See `game/assets/staging/mechanics/` + `PULL_INS_LOG.md` — CC0/MIT code and
+reference implementations staged per mechanic, licenses verified at pull time.
+Nothing here is wired into the playable build; the build worker owns wiring.
