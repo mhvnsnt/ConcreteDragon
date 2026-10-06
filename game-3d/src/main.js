@@ -57,17 +57,17 @@ const hustleMult = () => 1 + save.up_hustle * 0.15;
 const FIGHTERS = [
   { id: 'kidblue', name: 'KID BLUE', tag: 'Balanced brawler. Big heart, bigger hands.', hp: 100, dmg: 1.0, spd: 1.0, unlock: { type: 'start' },
     spc2: { name: 'DRAGON RUSH', cost: 35, desc: 'Shoulder-first dash through the whole pack.' },
-    qcf: { name: "DRAGON'S BREATH", kind: 'fire', dmg: 30, speed: 9.5, color: 0xff7a2a, desc: 'Fireball' },
+    qcf: { name: "DRAGON'S BREATH", sigkind: 'fireball', kind: 'fire', dmg: 30, speed: 9.5, color: 0xff7a2a, desc: 'Fireball', tag: 'Fireball projectile — 25 energy' },
     bfname: 'STREET DASH', duname: 'SKY UPPER',
     mega: { name: "DRAGON'S JUDGMENT" },
     fin: 'launch', finname: 'LAUNCHER', findesc: 'Pop-up finisher — juggle them in the air',
     moves: [
       ['STREET JAB', 'HIT', 'Quick jab. Chains into cross and kick.'],
-      ['LUNGE STRIKE', '→ + HIT', 'Dash punch. Closes distance fast.'],
-      ['RETREAT BACKFIST', '← + HIT', 'Step back, spinning backfist with knockback.'],
-      ['LOW SWEEP', '↓ + HIT', 'Sweep the legs — launches for juggles.'],
-      ['HEAVY HOOK', 'HVY', 'Slow, crushing hook. Big damage.'],
-      ['JUMP KICK', 'JUMP, then HIT', 'Aerial dive kick. Hits on the way down.'],
+      ['DRAGON LUNGE', '→ + HIT', 'Dash punch. Closes distance fast.'],
+      ['DRAGON BACKFIST', '← + HIT', 'Step back, spinning backfist with knockback.'],
+      ['DRAGON SWEEP', '↓ + HIT', 'Sweep the legs — launches for juggles.'],
+      ['DRAGON HOOK', 'HVY', 'Slow, crushing hook. Big damage.'],
+      ['DRAGON DROP', 'JUMP, then HIT', 'Aerial dive kick. Hits on the way down.'],
       ['DESPERATION', 'DDG ×2', '360° panic spin. Costs 10% HP.'],
       ['TAUNT', 'TAUNT btn / T', 'Talk trash, gain special meter.'],
       ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
@@ -75,17 +75,17 @@ const FIGHTERS = [
     ] },
   { id: 'ghost', name: 'GHOST', tag: 'Fast striker. Blink and you lose.', hp: 85, dmg: 0.9, spd: 1.25, unlock: { type: 'start' },
     spc2: { name: 'BLINK FLURRY', cost: 35, desc: 'Blink between the 3 nearest enemies, striking each.' },
-    qcf: { name: 'PHANTOM LANCE', kind: 'beam', dmg: 24, speed: 13, color: 0x9a7bff, desc: 'Piercing beam' },
+    qcf: { name: 'PHANTOM STEP', sigkind: 'teleport', dmg: 36, color: 0x9a7bff, desc: 'Blink behind the nearest enemy and strike', tag: 'Teleport strike — 25 energy' },
     bfname: 'PHASE STEP', duname: 'WRAITH RISE',
     mega: { name: 'MIDNIGHT REQUIEM' },
     fin: 'blink', finname: 'BLINK STRIKE', findesc: 'Teleports behind — the unseen finisher',
     moves: [
-      ['STREET JAB', 'HIT', 'Fastest jab in the game. Chains into cross and kick.'],
-      ['LUNGE STRIKE', '→ + HIT', 'Blink-step punch. Closes distance instantly.'],
-      ['RETREAT BACKFIST', '← + HIT', 'Fade back, snapping backfist.'],
-      ['LOW SWEEP', '↓ + HIT', 'Ankle sweep — launches for juggles.'],
-      ['HEAVY HOOK', 'HVY', 'Charged hook. Big damage.'],
-      ['JUMP KICK', 'JUMP, then HIT', 'Aerial dive kick.'],
+      ['PHANTOM JAB', 'HIT', 'Fastest jab in the game. Chains into cross and kick.'],
+      ['BLINK STEP', '→ + HIT', 'Blink-step punch. Closes distance instantly.'],
+      ['WRAITH FADE', '← + HIT', 'Fade back, snapping backfist.'],
+      ['ANKLE BITER', '↓ + HIT', 'Ankle sweep — launches for juggles.'],
+      ['WRAITH HOOK', 'HVY', 'Charged hook. Big damage.'],
+      ['GHOST DROP', 'JUMP, then HIT', 'Aerial dive kick.'],
       ['DESPERATION', 'DDG ×2', '360° panic spin. Costs 10% HP.'],
       ['TAUNT', 'TAUNT btn / T', 'Talk trash, gain special meter.'],
       ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
@@ -93,17 +93,17 @@ const FIGHTERS = [
     ] },
   { id: 'brick', name: 'BRICK', tag: 'Walking wall. Hits like rent day.', hp: 135, dmg: 1.25, spd: 0.85, unlock: { type: 'start' },
     spc2: { name: 'SEISMIC SLAM', cost: 35, desc: 'Ground pound: shockwave launches everyone near.' },
-    qcf: { name: 'BLACKTOP HOWL', kind: 'shock', dmg: 34, speed: 7, color: 0xffb02e, desc: 'Ground shockwave' },
+    qcf: { name: 'RENT COLLECTION', sigkind: 'grab', dmg: 46, color: 0xffb02e, desc: 'Command grab — yank and slam', tag: 'Command grab — 25 energy' },
     bfname: 'PAVEMENT RUSH', duname: 'HIGH-RISE',
     mega: { name: 'RENT DUE' },
     fin: 'slam', finname: 'CURB STOMP', findesc: 'AOE slam — shakes the whole block',
     moves: [
-      ['STREET JAB', 'HIT', 'Heavy jab. Chains into cross and kick.'],
-      ['LUNGE STRIKE', '→ + HIT', 'Bulldozer dash punch.'],
-      ['RETREAT BACKFIST', '← + HIT', 'Step back, wrecking-ball backfist.'],
-      ['LOW SWEEP', '↓ + HIT', 'Tree-trunk sweep — launches for juggles.'],
-      ['HEAVY HOOK', 'HVY', 'The rent collector. Huge damage.'],
-      ['JUMP KICK', 'JUMP, then HIT', 'Aerial drop kick.'],
+      ['CONCRETE JAB', 'HIT', 'Heavy jab. Chains into cross and kick.'],
+      ['BULLDOZER', '→ + HIT', 'Bulldozer dash punch.'],
+      ['WRECKING BACKFIST', '← + HIT', 'Step back, wrecking-ball backfist.'],
+      ['TREE-TRUNK SWEEP', '↓ + HIT', 'Tree-trunk sweep — launches for juggles.'],
+      ['RENT COLLECTOR', 'HVY', 'The rent collector. Huge damage.'],
+      ['CURB DROP', 'JUMP, then HIT', 'Aerial drop kick.'],
       ['DESPERATION', 'DDG ×2', '360° panic spin. Costs 10% HP.'],
       ['TAUNT', 'TAUNT btn / T', 'Talk trash, gain special meter.'],
       ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
@@ -111,17 +111,17 @@ const FIGHTERS = [
     ] },
   { id: 'kingpin', name: 'KINGPIN', tag: 'Used to run this block. Now he runs with you.', hp: 150, dmg: 1.3, spd: 0.9, unlock: { type: 'boss', boss: 'kingpin' },
     spc2: { name: "KINGPIN'S WRATH", cost: 35, desc: 'Royal beatdown: massive AOE around him.' },
-    qcf: { name: 'ROYAL DECREE', kind: 'orb', dmg: 40, speed: 5, color: 0xffd166, desc: 'Slow explosive orb' },
+    qcf: { name: 'ROYAL DECREE', sigkind: 'orb', kind: 'orb', dmg: 40, speed: 5, color: 0xffd166, desc: 'Slow explosive orb', tag: 'Explosive orb — 25 energy' },
     bfname: 'HOSTILE MARCH', duname: 'THRONE RISE',
     mega: { name: 'HOSTILE TAKEOVER' },
     fin: 'gavel', finname: 'GAVEL DROP', findesc: 'Heavy single hit — long hit-stop',
     moves: [
-      ['STREET JAB', 'HIT', 'Boss-grade jab. Chains into cross and kick.'],
-      ['LUNGE STRIKE', '→ + HIT', 'Power dash punch.'],
-      ['RETREAT BACKFIST', '← + HIT', 'Step back, royal backhand.'],
-      ['LOW SWEEP', '↓ + HIT', 'Cane sweep — launches for juggles.'],
-      ['HEAVY HOOK', 'HVY', 'The gavel. Enormous damage.'],
-      ['JUMP KICK', 'JUMP, then HIT', 'Aerial stomp kick.'],
+      ['BOSS JAB', 'HIT', 'Boss-grade jab. Chains into cross and kick.'],
+      ['POWER MARCH', '→ + HIT', 'Power dash punch.'],
+      ['ROYAL BACKHAND', '← + HIT', 'Step back, royal backhand.'],
+      ['CANE SWEEP', '↓ + HIT', 'Cane sweep — launches for juggles.'],
+      ['THE GAVEL', 'HVY', 'The gavel. Enormous damage.'],
+      ['THRONE STOMP', 'JUMP, then HIT', 'Aerial stomp kick.'],
       ['DESPERATION', 'DDG ×2', '360° panic spin. Costs 10% HP.'],
       ['TAUNT', 'TAUNT btn / T', 'Talk trash, gain special meter.'],
       ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
@@ -129,17 +129,17 @@ const FIGHTERS = [
     ] },
   { id: 'sledge', name: 'SLEDGE', tag: 'Yard enforcer. Swings first, talks never.', hp: 165, dmg: 1.45, spd: 0.8, unlock: { type: 'boss', boss: 'sledge' },
     spc2: { name: 'WRECKING SWING', cost: 35, desc: '360° swing that clears the whole circle.' },
-    qcf: { name: 'IRON CYCLONE', kind: 'spin', dmg: 28, speed: 6.5, color: 0x80ed99, desc: 'Traveling vortex' },
+    qcf: { name: 'IRON CYCLONE', sigkind: 'spin', dmg: 16, color: 0x80ed99, desc: 'Traveling spin — multi-hit', tag: 'Traveling spin — 25 energy' },
     bfname: 'WRECKING RUSH', duname: 'CRANE UPPER',
     mega: { name: 'DEMOLITION DAY' },
     fin: 'demo', finname: 'DEMOLITION', findesc: 'Far knockback — total wreckage',
     moves: [
-      ['STREET JAB', 'HIT', 'Sledgehammer jab. Chains into cross and kick.'],
-      ['LUNGE STRIKE', '→ + HIT', 'Charging shoulder tackle.'],
-      ['RETREAT BACKFIST', '← + HIT', 'Step back, wrecking swing.'],
-      ['LOW SWEEP', '↓ + HIT', 'Demolition sweep — launches for juggles.'],
-      ['HEAVY HOOK', 'HVY', 'Full sledge. Devastating.'],
-      ['JUMP KICK', 'JUMP, then HIT', 'Aerial demolition kick.'],
+      ['SLEDGE JAB', 'HIT', 'Sledgehammer jab. Chains into cross and kick.'],
+      ['TACKLE CHARGE', '→ + HIT', 'Charging shoulder tackle.'],
+      ['YARD SWING', '← + HIT', 'Step back, wrecking swing.'],
+      ['DEMOLITION SWEEP', '↓ + HIT', 'Demolition sweep — launches for juggles.'],
+      ['FULL SLEDGE', 'HVY', 'Full sledge. Devastating.'],
+      ['WRECKING DROP', 'JUMP, then HIT', 'Aerial demolition kick.'],
       ['DESPERATION', 'DDG ×2', '360° panic spin. Costs 10% HP.'],
       ['TAUNT', 'TAUNT btn / T', 'Talk trash, gain special meter.'],
       ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
@@ -147,17 +147,17 @@ const FIGHTERS = [
     ] },
   { id: 'viper', name: 'VIPER', tag: 'Fast hands, faster mouth.', hp: 95, dmg: 1.05, spd: 1.35, unlock: { type: 'boss', boss: 'viper' },
     spc2: { name: 'VENOM DASH', cost: 35, desc: 'Serpent dash: strikes everything in a line.' },
-    qcf: { name: 'VENOM SPIT', kind: 'arc', dmg: 26, speed: 8.5, color: 0x7cff6b, desc: 'Arcing venom bolt' },
+    qcf: { name: "SERPENT'S WAKE", sigkind: 'groundwave', kind: 'fangwave', dmg: 26, speed: 9, color: 0x7cff6b, desc: 'Ground fang wave', tag: 'Ground fang wave — 25 energy' },
     bfname: 'SERPENT DASH', duname: 'COIL SPRING',
     mega: { name: "SERPENT'S COIL" },
     fin: 'dot', finname: 'FANG BARB', findesc: 'Venom keeps chewing — damage over time',
     moves: [
-      ['STREET JAB', 'HIT', 'Flicker jab. Chains into cross and kick.'],
-      ['LUNGE STRIKE', '→ + HIT', 'Serpent strike dash.'],
-      ['RETREAT BACKFIST', '← + HIT', 'Slither back, snapping strike.'],
-      ['LOW SWEEP', '↓ + HIT', 'Tail sweep — launches for juggles.'],
-      ['HEAVY HOOK', 'HVY', 'The fang. Big damage.'],
-      ['JUMP KICK', 'JUMP, then HIT', 'Aerial fang kick.'],
+      ['FANG FLICKER', 'HIT', 'Flicker jab. Chains into cross and kick.'],
+      ['SERPENT STRIKE', '→ + HIT', 'Serpent strike dash.'],
+      ['SLITHER BACK', '← + HIT', 'Slither back, snapping strike.'],
+      ['TAIL SWEEP', '↓ + HIT', 'Tail sweep — launches for juggles.'],
+      ['THE FANG', 'HVY', 'The fang. Big damage.'],
+      ['VIPER DROP', 'JUMP, then HIT', 'Aerial fang kick.'],
       ['DESPERATION', 'DDG ×2', '360° panic spin. Costs 10% HP.'],
       ['TAUNT', 'TAUNT btn / T', 'Talk trash, gain special meter.'],
       ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
@@ -165,17 +165,17 @@ const FIGHTERS = [
     ] },
   { id: 'dust', name: 'DUST', tag: 'Quick hands. Gone before you blink.', hp: 80, dmg: 0.95, spd: 1.4, unlock: { type: 'boss', boss: 'rust' },
     spc2: { name: 'DUST DEVIL', cost: 35, desc: 'Spin into the pack: AOE hits while moving.' },
-    qcf: { name: 'SANDSTORM', kind: 'storm', dmg: 22, speed: 5.5, color: 0xd8b56b, desc: 'Wide grinding vortex' },
+    qcf: { name: 'DESERT SPIKES', sigkind: 'erupt', dmg: 30, color: 0xd8b56b, desc: 'Spikes erupt under nearby enemies', tag: 'Ground eruption — 25 energy' },
     bfname: 'DUST RUSH', duname: 'HABOOB RISE',
     mega: { name: 'DUST BOWL' },
     fin: 'cyclone', finname: 'CYCLONE LIFT', findesc: 'Extended air — juggle them longer',
     moves: [
-      ['STREET JAB', 'HIT', 'Fastest hands on the block. Chains into cross and kick.'],
-      ['LUNGE STRIKE', '→ + HIT', 'Dust-step punch. Closes distance like smoke.'],
-      ['RETREAT BACKFIST', '← + HIT', 'Slip back, whipping backfist.'],
-      ['LOW SWEEP', '↓ + HIT', 'Dust-cloud sweep — launches for juggles.'],
-      ['HEAVY HOOK', 'HVY', 'The backhand of the storm. Big damage.'],
-      ['JUMP KICK', 'JUMP, then HIT', 'Aerial cyclone kick.'],
+      ['DUST JAB', 'HIT', 'Fastest hands on the block. Chains into cross and kick.'],
+      ['SMOKE STEP', '→ + HIT', 'Dust-step punch. Closes distance like smoke.'],
+      ['WHIP BACKFIST', '← + HIT', 'Slip back, whipping backfist.'],
+      ['DUST-CLOUD SWEEP', '↓ + HIT', 'Dust-cloud sweep — launches for juggles.'],
+      ['STORM BACKHAND', 'HVY', 'The backhand of the storm. Big damage.'],
+      ['CYCLONE KICK', 'JUMP, then HIT', 'Aerial cyclone kick.'],
       ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
       ['DUST DEVIL', '↓ + SPC (50 meter)', 'Spinning AOE that travels through the pack.'],
     ] },
@@ -188,7 +188,7 @@ for (const f of FIGHTERS) {
     else if (m[0] === 'TAUNT') m[2] = 'Talk trash, gain energy.';
   }
   f.moves.push(
-    ['↓→ + HIT', f.qcf.name, f.qcf.desc + ' projectile — 25 energy'],
+    ['↓→ + HIT', f.qcf.name, f.qcf.desc + ' — ' + f.qcf.tag],
     ['←→ + HIT', f.bfname, 'Dash-through strike — 25 energy'],
     ['↓↑ + HIT', f.duname, 'Rising launcher — 25 energy'],
     ['↑↑↓←→ + SPC', f.mega.name, 'MEGA SUPER — needs FULL energy. Cinematic.'],
@@ -1046,7 +1046,7 @@ function startMission(id) {
   player.dmgMult = fd.dmg * powerMult();
   player.spd = fd.spd;
   player.px = 2; player.pz = 0; player.face = 1;
-  player.energy = 50; player.dodgeT = 0; player.dodgeCD = 0; player.busy = 0;
+  player.energy = 50; player.dodgeT = 0; player.dodgeCD = 0; player.busy = 0; player.spinT = 0;
   player.animMove = false;
   playAnim(player, 'Melee_Unarmed_Idle', { loop: true });
   spawnQueue = mission.spawns.map((s) => Object.assign({}, s, { done: false })).sort((a, b) => a.at - b.at);
@@ -1073,6 +1073,17 @@ function nearestEnemy(range) {
   for (const e of enemies) {
     if (e.hp <= 0) continue;
     const d = Math.abs(e.px - player.px) + Math.abs(e.pz - player.pz) * 0.7;
+    if (d < bd) { bd = d; best = e; }
+  }
+  return best;
+}
+function nearestEnemyFront(range) {
+  let best = null, bd = range;
+  for (const e of enemies) {
+    if (e.hp <= 0) continue;
+    const dx = (e.px - player.px) * player.face;
+    if (dx < 0) continue;
+    const d = dx + Math.abs(e.pz - player.pz) * 0.7;
     if (d < bd) { bd = d; best = e; }
   }
   return best;
@@ -1699,6 +1710,7 @@ function playerUpdate(dt) {
   const p = player;
   if (p.dodgeT > 0) p.dodgeT -= dt;
   if (p.dodgeCD > 0) p.dodgeCD -= dt;
+  if (p.spinT > 0) p.spinT -= dt;
   const spd = 4.4 * (p.spd || 1);
   let mx = stick.dx * spd, mz = stick.dy * spd;
   if (p.dodgeT > 0) { mx = p.dodgeDx * 10; mz = p.dodgeDz * 10; }
@@ -1718,9 +1730,22 @@ function playerUpdate(dt) {
       if (p.busy <= 0) playAnim(p, 'Melee_Unarmed_Idle', { loop: true });
     }
   }
-  const tgt = nearestEnemy(99);
-  if (tgt) { p.face = tgt.px >= p.px ? 1 : -1; p.root.rotation.y = p.face > 0 ? Math.PI / 2 : -Math.PI / 2; }
-  else if (Math.abs(mx) > 0.4) { p.face = mx > 0 ? 1 : -1; p.root.rotation.y = p.face > 0 ? Math.PI / 2 : -Math.PI / 2; }
+  if (p.spinT > 0) { // IRON CYCLONE: spinning travel, multi-hit
+    const maxX = mission.len === Infinity ? 1e6 : mission.len - 1.5;
+    p.px = clamp(p.px + p.face * 9.5 * dt, 0.5, maxX);
+    p.root.rotation.y += dt * 16 * p.face;
+    for (const e of enemies) {
+      if (!e.dead && e.hp > 0 && !p.spinHit.has(e) && Math.abs(e.px - p.px) < 1.6 && Math.abs(e.pz - p.pz) < 1.25) {
+        p.spinHit.add(e);
+        landHit(e, Math.round((p.spinDmg || 16) * p.dmgMult), p.spinName || 'SPIN', 0.05, 0.3, false, false);
+      }
+    }
+    if (Math.random() < 0.65) sparkFX(p.px, 0.9, p.pz, p.spinColor || 0x80ed99, 3);
+  } else {
+    const tgt = nearestEnemy(99);
+    if (tgt) { p.face = tgt.px >= p.px ? 1 : -1; p.root.rotation.y = p.face > 0 ? Math.PI / 2 : -Math.PI / 2; }
+    else if (Math.abs(mx) > 0.4) { p.face = mx > 0 ? 1 : -1; p.root.rotation.y = p.face > 0 ? Math.PI / 2 : -Math.PI / 2; }
+  }
   const moving = Math.abs(mx) + Math.abs(mz) > 0.5;
   if (moving && !p.animMove && p.dodgeT <= 0 && p.busy <= 0) { p.animMove = true; playAnim(p, 'Running_A', { loop: true }); }
   if (!moving && p.animMove && p.dodgeT <= 0) { p.animMove = false; playAnim(p, 'Melee_Unarmed_Idle', { loop: true }); }
@@ -1790,14 +1815,14 @@ function fireProj(o) {
   s.scale.set(sc[0], sc[1], 1);
   s.position.set(o.x, o.y || 1.15, o.z);
   scene.add(s);
-  projs.push({ spr: s, x: o.x, y: o.y || 1.15, z: o.z, vx: o.vx, vy: o.vy || 0, vz: o.vz || 0, kind: o.kind, dmg: o.dmg, from: o.fromPlayer ? 'p' : 'e', color: o.color, pierce: o.pierce || 0, life: o.life || 1.6, arc: o.arc || 0, radius: o.radius || 0.55, hitSet: new Set() });
+  projs.push({ spr: s, x: o.x, y: o.y || 1.15, z: o.z, vx: o.vx, vy: o.vy || 0, vz: o.vz || 0, kind: o.kind, label: o.label || null, dmg: o.dmg, from: o.fromPlayer ? 'p' : 'e', color: o.color, pierce: o.pierce || 0, life: o.life || 1.6, arc: o.arc || 0, radius: o.radius || 0.55, hitSet: new Set() });
   sfx(520, 0.25, 'square', 0.3);
   shake=Math.max(shake,0.25);
 }
 function projHitEnemy(p, e) {
   if (p.hitSet.has(e)) return;
   p.hitSet.add(e);
-  landHit(e, Math.round(p.dmg), p.kind === 'orb' ? 'ORB BURST' : 'PROJ', 0.06, 0.35, p.kind === 'orb' || p.kind === 'spin', false);
+  landHit(e, Math.round(p.dmg), p.label || (p.kind === 'orb' ? 'ORB BURST' : 'PROJ'), 0.06, 0.35, p.kind === 'orb' || p.kind === 'spin', false);
   sparkFX(p.x, p.y, p.z, p.color, 10);
   if (p.kind === 'orb') { // explosive orb: AOE
     for (const o of enemies) { if (o !== e && !o.dead && o.hp > 0 && Math.abs(o.px - p.x) < 2.4 && Math.abs(o.pz - p.z) < 1.8) landHit(o, Math.round(p.dmg * 0.7), 'ORB BURST', 0.06, 0.4, true, false); }
@@ -1815,6 +1840,7 @@ function updateProjs(dt) {
     p.spr.position.set(p.x, p.y, p.z);
     p.spr.material.rotation += dt * 9;
     if (Math.random() < 0.45) sparkFX(p.x, p.y, p.z, p.color, 2);
+    if (p.kind === 'fangwave' && Math.random() < 0.7) sparkFX(p.x, 0.18, p.z, p.color, 3);
     let dead = p.life <= 0 || Math.abs(p.x) > 32 || Math.abs(p.z) > 15;
     if (!dead && p.from === 'p') {
       for (const e of enemies) {
@@ -1840,15 +1866,82 @@ function doMotionSpecial(kind) {
   if (player.energy < 25) { const sp = screenPos(player.root.position); popText('NOT ENOUGH ENERGY', 'bad', sp.x, sp.y - 60); sfx(140, 0.15, 'square', 0.3); return; }
   player.energy = Math.max(0, player.energy - 25); setHud();
   if (kind === 'qcf') {
-    const pr = fd.qcf;
-    playAnim(player, 'Melee_Unarmed_Attack_Punch_A', { once: true, dur: 0.35 });
-    player.busy = Math.max(player.busy, 0.3);
-    fireProj({ x: player.px + player.face * 0.8, z: player.pz, y: 1.15, vx: player.face * pr.speed, kind: pr.kind, dmg: pr.dmg * player.dmgMult, color: pr.color, fromPlayer: true, pierce: (pr.kind === 'beam' || pr.kind === 'spin' || pr.kind === 'storm') ? 99 : 0, life: pr.kind === 'orb' ? 2.4 : pr.kind === 'spin' ? 0.9 : 1.5, arc: pr.kind === 'arc' ? -2.5 : 0, radius: pr.kind === 'shock' || pr.kind === 'storm' ? 0.95 : 0.55 });
-    const sp = screenPos(player.root.position); popText(pr.name, 'spc', sp.x, sp.y - 80);
-    banner(pr.name, 'spc');
-    addHitstop(0.08); addSlowmo(0.3, 0.35);
-    flash('#' + pr.color.toString(16).padStart(6, '0'));
-    if (navigator.vibrate) navigator.vibrate(25);
+    // SIGNATURE ATTACKS (owner 2026-10-06): only Kid Blue throws a fireball.
+    // Every fighter's ↓→ + HIT is their own personal special, SF-style.
+    const pr = fd.qcf, dmgM = player.dmgMult;
+    const sp = screenPos(player.root.position);
+    const present = () => {
+      popText(pr.name, 'spc', sp.x, sp.y - 80);
+      banner(pr.name, 'spc');
+      addHitstop(0.08); addSlowmo(0.3, 0.35);
+      flash('#' + pr.color.toString(16).padStart(6, '0'));
+      if (navigator.vibrate) navigator.vibrate(25);
+    };
+    if (pr.sigkind === 'fireball' || pr.sigkind === 'orb') {
+      playAnim(player, 'Melee_Unarmed_Attack_Punch_A', { once: true, dur: 0.35 });
+      player.busy = Math.max(player.busy, 0.3);
+      fireProj({ x: player.px + player.face * 0.8, z: player.pz, y: 1.15, vx: player.face * pr.speed, kind: pr.kind, label: pr.name, dmg: pr.dmg * dmgM, color: pr.color, fromPlayer: true, life: pr.sigkind === 'orb' ? 2.4 : 1.5, radius: 0.55 });
+      present();
+    } else if (pr.sigkind === 'groundwave') {
+      playAnim(player, 'Melee_Unarmed_Attack_Kick_A', { once: true, dur: 0.35 });
+      player.busy = Math.max(player.busy, 0.3);
+      fireProj({ x: player.px + player.face * 0.8, z: player.pz, y: 0.28, vx: player.face * pr.speed, kind: 'fangwave', label: pr.name, dmg: pr.dmg * dmgM, color: pr.color, fromPlayer: true, pierce: 99, life: 1.1, radius: 0.9 });
+      present();
+    } else if (pr.sigkind === 'teleport') {
+      const e = nearestEnemy(9);
+      playAnim(player, 'Melee_Unarmed_Attack_Punch_A', { once: true, dur: 0.35 });
+      player.busy = Math.max(player.busy, 0.35);
+      sparkFX(player.px, 1.1, player.pz, pr.color, 12);
+      sfx(880, 0.2, 'sine', 0.35);
+      if (e) {
+        player.px = clamp(e.px - player.face * 1.15, 0.5, 1e6); player.pz = e.pz; syncPos(player);
+        sparkFX(player.px, 1.1, player.pz, pr.color, 14);
+        landHit(e, Math.round(pr.dmg * dmgM), pr.name, 0.09, 0.45, false, false);
+      }
+      present();
+    } else if (pr.sigkind === 'grab') {
+      playAnim(player, 'Melee_Unarmed_Attack_Punch_A', { once: true, dur: 0.4 });
+      player.busy = Math.max(player.busy, 0.6);
+      const e = nearestEnemyFront(3.4);
+      if (e) {
+        e.px = player.px + player.face * 0.95; e.pz = player.pz; syncPos(e);
+        playAnim(e, 'Hit_A', { ts: 1.2 });
+        sparkFX(e.px, 1.2, e.pz, pr.color, 12);
+        sfx(220, 0.25, 'sawtooth', 0.5);
+        setTimeout(() => {
+          if (state !== 'fight' || !e || e.hp <= 0) return;
+          landHit(e, Math.round(pr.dmg * player.dmgMult), pr.name, 0.12, 0.6, true, false);
+          for (const o of enemies) { if (o !== e && !o.dead && o.hp > 0 && Math.abs(o.px - e.px) < 2.2 && Math.abs(o.pz - e.pz) < 1.6) landHit(o, Math.round(20 * player.dmgMult), 'SHOCKWAVE', 0.06, 0.35, false, false); }
+          burst(new THREE.Vector3(e.px, 0.4, e.pz), 18, pr.color, 5);
+          shake = Math.max(shake, 0.55);
+        }, 300);
+      } else {
+        player.px = clamp(player.px + player.face * 1.4, 0.5, 1e6); syncPos(player);
+      }
+      present();
+    } else if (pr.sigkind === 'spin') {
+      playAnim(player, 'Melee_Unarmed_Attack_Punch_A', { once: true, dur: 0.5 });
+      player.busy = Math.max(player.busy, 0.55);
+      player.spinT = 0.55; player.spinHit = new Set();
+      player.spinName = pr.name; player.spinColor = pr.color; player.spinDmg = pr.dmg;
+      sfx(300, 0.4, 'sawtooth', 0.4);
+      present();
+    } else if (pr.sigkind === 'erupt') {
+      playAnim(player, 'Melee_Unarmed_Attack_Kick_A', { once: true, dur: 0.4 });
+      player.busy = Math.max(player.busy, 0.45);
+      const targets = enemies.filter(e => !e.dead && e.hp > 0 && Math.hypot(e.px - player.px, e.pz - player.pz) < 5.5);
+      targets.forEach((e, i) => {
+        setTimeout(() => {
+          if (state !== 'fight' || !e || e.hp <= 0) return;
+          burst(new THREE.Vector3(e.px, 0.25, e.pz), 14, pr.color, 5);
+          sparkFX(e.px, 0.6, e.pz, 0x8a6b3d, 8);
+          landHit(e, Math.round(pr.dmg * player.dmgMult), pr.name, 0.07, 0.42, true, false);
+          shake = Math.max(shake, 0.4); sfx(120, 0.3, 'sawtooth', 0.5);
+        }, i * 90);
+      });
+      if (!targets.length) sparkFX(player.px + player.face, 0.3, player.pz, pr.color, 8);
+      present();
+    }
   } else if (kind === 'bf') {
     playAnim(player, 'Melee_Unarmed_Attack_Kick_A', { once: true, dur: 0.35 });
     player.busy = 0.45; player.dodgeT = 0.35; player.dodgeDX = player.face * 16; player.dodgeCD = 0.6;
