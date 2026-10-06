@@ -219,3 +219,165 @@ Games covered so far: 0 (waves below).
 - **Effort:** S
 
 *Games covered: 18 (wave 1 complete)*
+
+---
+
+## WAVE 2 — FIGHTERS (1v1 depth, stolen for brawler combat)
+
+### Motion-input special moves — *Street Fighter II* (1991)
+- **Why players love it:** quarter-circle + punch = fireball. The input IS the
+  ritual — execution skill separates players and makes every special feel earned.
+- **Additive fit:** touch-friendly motion inputs: swipe-forward + punch =
+  fighter's projectile/rush special. Execution depth on mobile.
+- **Effort:** M
+
+### Parry (tap toward on impact) — *Street Fighter III: 3rd Strike* (1999)
+- **Why players love it:** the Daigo moment — parrying Chun-Li's entire super
+  is the most famous fighting game clip ever. Perfect defense as pure hype.
+- **Additive fit:** converges with Fight'N Rage parry above — implement once,
+  tune for brawler crowds.
+- **Effort:** M (shared)
+
+### Focus attack (absorb one hit, crumple) — *Street Fighter IV* (2008)
+- **Why players love it:** hold to absorb a hit with armor, release for a
+  crumple — offense and defense in one button, and the mind games are endless.
+- **Additive fit:** hold heavy = armored charge attack; release timing sets
+  damage. New heavy variant, same button.
+- **Effort:** M
+
+### Drive system (one resource, many options) — *Street Fighter 6* (2023)
+- **Why players love it:** a single Drive meter fuels parry, rush, reversal,
+  and armored attacks — one resource, five decisions. Elegant depth.
+- **Additive fit:** merge special/grit meters into one DRIVE-style meter with
+  multiple spends (super, parry-cancel, burst movement). Simplifies UI too.
+- **Effort:** L
+
+### Modern controls (one-button specials) — *Street Fighter 6* (2023)
+- **Why players love it:** accessibility that doesn't insult veterans — new
+  players do cool moves instantly, pros still optimize.
+- **Additive fit:** "ASSIST" toggle in settings: special button does the
+  optimal special automatically. Accessibility = the owner's humanity rule.
+- **Effort:** S
+
+### 3v3 team elimination — *The King of Fighters* (1994+)
+- **Why players love it:** your team of 3 vs theirs, elimination order — team
+  composition and order strategy before a punch is thrown.
+- **Additive fit:** "CREW BATTLE" mode: pick 3 unlocked fighters, elimination
+  rules. Uses the unlockable roster directly.
+- **Effort:** M
+
+### Hops, rolls, Just Defend — *KOF / Garou: Mark of the Wolves* (1999)
+- **Why players love it:** short hops beat lows, rolls beat throws, Just Defend
+  (block at the last frame) refunds health and meter — defense with teeth.
+- **Additive fit:** hop (up-flick) over sweeps; roll through enemies;
+  last-frame block = Just Defend (health back + meter). Defensive toolkit.
+- **Effort:** M
+
+### TOP system (comeback zone at low HP) — *Garou: Mark of the Wolves* (1999)
+- **Why players love it:** pick a HP range where you deal bonus damage — when
+  you're bleeding, you're DANGEROUS. Comebacks are designed in.
+- **Additive fit:** "LAST STAND": below 30% HP, damage +25% and screen edges
+  burn. The comeback fantasy, always on.
+- **Effort:** S
+
+### Plane switching (dodge into background) — *Fatal Fury* (1991)
+- **Why players love it:** hop between foreground/background planes to dodge —
+  the arena has depth you can weaponize.
+- **Additive fit:** converges with Guardian Heroes 3-plane above — one system.
+- **Effort:** M (shared)
+
+### Roman Cancel (cancel anything for meter) — *Guilty Gear* (1998+)
+- **Why players love it:** spend meter to cancel any move's recovery — combos
+  become jazz improvisation, and the yellow/purple/red variants add layers.
+- **Additive fit:** "FLOW CANCEL": spend half special meter to cancel recovery
+  into dodge or another attack. High-level expression tool.
+- **Effort:** M
+
+### Burst (combo breaker with risk) — *Guilty Gear / BlazBlue*
+- **Why players love it:** one per round, break any combo — but whiff it and
+  you're punished. The panic button with a brain.
+- **Additive fit:** once-per-mission BURST: breaks enemy combo/grab, punishable
+  if baited. Bosses can have it too (fair warning telegraph).
+- **Effort:** M
+
+### Dust launcher (universal overhead launcher) — *Guilty Gear* (1998+)
+- **Why players love it:** one universal launcher everyone shares — the
+  combo system has a common language.
+- **Additive fit:** down+heavy = universal launcher across all fighters.
+  Standardizes juggle starters.
+- **Effort:** S
+
+### Custom assists — *Skullgirls* (2012)
+- **Why players love it:** pick ANY move as your teammate's assist — team
+  building is lab work, and no two teams play alike.
+- **Additive fit:** with crew backup (Warriors entry): choose your backup
+  fighter's assist move. Team expression.
+- **Effort:** M
+
+### Anti-infinite (Undizzy/IPS) — *Skullgirls* (2012)
+- **Why players love it:** the game detects repeated combo loops and bursts
+  them — infinites are impossible BY DESIGN. Fairness as a feature.
+- **Additive fit:** combo system caps: same move 3x in one juggle = auto-drop
+  with a "READ!" popup. Keeps juggles honest.
+- **Effort:** S
+
+### Fatalities / finishers — *Mortal Kombat* (1992+)
+- **Why players love it:** the reason MK survived 30 years — winning isn't
+  enough, you get to STYLE on them. Finishers are the reward for dominance.
+- **Additive fit:** FINISHER prompt on final boss wave kills (input sequence
+  → cinematic KO). The owner's slow-mo law makes these the ultimate
+  big-moment. Style, never power.
+- **Effort:** M
+
+### Test Your Might (mash minigame) — *Mortal Kombat* (1992+)
+- **Why players love it:** button-mashing to break boards/bars — a pure
+  physical mini-game break between fights.
+- **Additive fit:** destructible "MIGHT" objects: mash to smash for bonus
+  cash. Between-wave breather.
+- **Effort:** S
+
+### Juggles + wall combos + Rage Art — *Tekken* (1994+)
+- **Why players love it:** launching someone and carrying them to the wall is
+  Tekken's whole language; Rage Art = comeback super at low HP.
+- **Additive fit:** launcher + juggles already approved; add WALL SPLAT
+  (knock into walls/props = bonus + crumple) and Rage Art converges with
+  TOP/Last Stand.
+- **Effort:** M
+
+### Combo breaker (read the combo) — *Killer Instinct* (2013)
+- **Why players love it:** break a combo by matching its strength — defense
+  becomes a read, not a guess, and counter-breakers punish the attempt.
+- **Additive fit:** advanced: enemies can break YOUR combo if you repeat
+  patterns (ties to anti-infinite). Teaches variety.
+- **Effort:** M
+
+### High damage + rage gauge + disarm — *Samurai Shodown* (1993+)
+- **Why players love it:** one clean hit does 40% — every neutral exchange is
+  terrifying, and the rage gauge rewards patience.
+- **Additive fit:** boss design lesson: some bosses hit like trucks but telegraph
+  hugely. High-stakes, fair fights. Design note for boss patterns.
+- **Effort:** S (design note)
+
+### Teching / DI / percentage knockback — *Super Smash Bros.* (1999+)
+- **Why players love it:** directional influence and teching mean you're never
+  truly helpless — survival is a skill, and every launch is interactive.
+- **Additive fit:** launched players can TECH (tap on ground contact) to
+  recover instantly with a small bounce. Never helpless.
+- **Effort:** S
+
+### Pattern-recognition bosses — *Punch-Out!!* (1987+)
+- **Why players love it:** every boxer is a puzzle — learn the tell, punish
+  the pattern. Beating Tyson is a memory palace, not a stat check.
+- **Additive fit:** boss design law: every boss = readable patterns with
+  unique tells (already have telegraphs — extend to full pattern kits).
+  Design note for the boss worker.
+- **Effort:** S (design note)
+
+### Two-button purity — *Divekick* (2013)
+- **Why players love it:** dive and kick. That's it. A parody that accidentally
+  proved fundamentals > move count.
+- **Additive fit:** philosophy guardrail: every new mechanic must survive the
+  Divekick test — does it add depth or just buttons? Review criterion.
+- **Effort:** — (principle)
+
+*Games covered: 36 (waves 1–2 complete)*
