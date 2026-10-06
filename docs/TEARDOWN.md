@@ -122,3 +122,21 @@ Sources: public press, Sensor Tower/AppMagic estimates via pocketgamer/mobilegam
 | Clash Royale | Emotes/BM, crew reciprocity, season ladder | Chest timers (Supercell retired them) |
 | Pokémon GO | 3-hour community events, collection log, free-entry monetize-intensity | Location-dependent mechanics |
 | Roblox | Identity cosmetics, UGC skin contests (S2+), retention-first doctrine | Building a UGC platform on day one |
+
+---
+
+## Vampire Survivors (poncle) — the compulsion-loop blueprint
+
+**Date:** 2026-10-06 · **Source note:** BAFTA winner; the modern reference for "one more run."
+
+Why it works (from design analyses):
+- **Numbers-go-up escalation** — watching damage/gem counts explode triggers the same passivity-reward loop as idle games; absurdity scales until you're "safe and snug inside a life-stealing death field." ([RPS review](https://www.rockpapershotgun.com/vampire-survivors-early-access-review))
+- **Variable-ratio rewards** — treasure chests with unpredictable contents act like slot machines; near-miss runs (dying at 29 minutes) feel like near-wins and drive replays. ([TechXplore/BAFTA analysis](https://techxplore.com/news/2023-04-vampire-survivors-gambling-psychology-bafta-winning.html), [Medium teardown](https://medium.com/@sooa24/the-art-of-simplicity-vampire-survivors-approach-to-addictive-gaming-b02bbed1f61d))
+- **Double progression** — in-run build (weapons/evolutions) AND between-run meta-progression (gold → permanent stat upgrades); every run ends with an unlock visible, so "one more run" chains. ([MMOCulture](https://backend.mmoculture.com/2026/09/vampire-survivors-review/))
+- **Zero friction start** — no loadouts, no inventory management at first; curiosity pulls you through the first runs in minutes.
+
+**What Concrete Dragon steals:**
+1. **Endless + daily seeded runs already match this loop** — steal the *end-of-run unlock reveal*: after every run, show exactly one thing unlocked (skin piece, skin pack progress, leaderboard climb) before the menu. Always end with forward motion.
+2. **Meta-progression shop already exists** (Power/Tough/Hustle) — steal VS's "gold → permanent stats" transparency: show next-upgrade cost and effect on the result screen so the next run's purpose is obvious.
+3. **Near-miss framing on KO**: when you die at wave 19 with boss at 20, say "BOSS INCOMING — WAVE 20" on the KO screen (we already telegraph; make the tease explicit post-death).
+4. **Avoid:** its pure luck dependence ("impossible to win without getting lucky"). Concrete Dragon keeps skill-based combat; luck stays in loot drops only.

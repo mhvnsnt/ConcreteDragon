@@ -13,6 +13,11 @@ All art, audio, and code in this slice. Rule: nothing ships that we can't relice
   not applicable to our 2D rig). No code taken. If ever used, check its repo license first.
 - BANNON_IMPACT — internal concept from our own research; reimplemented natively.
 
+## Fonts (`fonts/`)
+- **Bungee Regular** — David Jonathan Ross / The Bungee Project, via google/fonts.
+  **SIL Open Font License 1.1** (`fonts/OFL.txt`). Commercial embedding allowed.
+  Wired as default font in `ui/theme.tres`. Harvested 2026-10-06 (content Wave 2).
+
 ## Art (`assets/art/`)
 - All PNGs procedurally generated with PIL by our own tooling (`assets/tools/gen_art.py`,
   `gen_stage_ui.py`) — original work, no source images, no license encumbrance.
