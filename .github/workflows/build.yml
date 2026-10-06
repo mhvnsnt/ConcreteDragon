@@ -63,6 +63,20 @@ jobs:
         run: |
           (command -v python3 >/dev/null) || (apt-get update -qq && apt-get install -y -qq python3)
 
+      - name: Install export templates
+        run: |
+          TDIR="$HOME/.local/share/godot/export_templates/${GODOT_VERSION}.stable"
+          mkdir -p "$TDIR"
+          if [ ! -f "$TDIR/web_nothreads_release.zip" ]; then
+            echo "Downloading export templates for Godot ${GODOT_VERSION}..."
+            curl -sSL -o /tmp/templates.tpz \
+              "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_export_templates.tpz"
+            unzip -q -o /tmp/templates.tpz -d "$TDIR"
+            mv "$TDIR/templates/"* "$TDIR/" && rmdir "$TDIR/templates"
+            rm -f /tmp/templates.tpz
+          fi
+          ls "$TDIR" | head -20
+
       - name: Set version
         run: |
           VERSION_NAME="$(cat version.txt).${{ github.run_number }}"
