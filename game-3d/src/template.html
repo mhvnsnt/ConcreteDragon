@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Concrete Dragon</title>
+<style>
+html,body{margin:0;height:100%;overflow:hidden;background:#150f2a;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;font-family:Impact,"Arial Black","Helvetica Neue",Arial,sans-serif}
+#c{position:fixed;inset:0;width:100%;height:100%;display:block}
+#hud{position:fixed;inset:0;pointer-events:none;color:#fff;text-transform:uppercase;z-index:5}
+.bar{position:absolute;top:max(14px,env(safe-area-inset-top));height:16px;width:34%;background:#0008;border:2px solid #fff;border-radius:3px;overflow:hidden}
+.bar i{display:block;height:100%;transition:width .15s}
+#pbar{left:14px}#pbar i{background:linear-gradient(90deg,#3cf,#4fd1ff)}
+#ebar{right:14px}#ebar i{background:linear-gradient(90deg,#ff3d6b,#ffb03d);margin-left:auto}
+.lbl{position:absolute;top:calc(max(14px,env(safe-area-inset-top)) + 20px);font-size:13px;letter-spacing:1px;text-shadow:0 2px 0 #000}
+#pname{left:14px}#ename{right:14px;text-align:right}
+#wave{position:absolute;top:max(14px,env(safe-area-inset-top));left:50%;transform:translateX(-50%);font-size:18px;letter-spacing:2px;text-shadow:0 2px 0 #000;color:#ffe14d}
+#cash{position:absolute;top:calc(max(14px,env(safe-area-inset-top)) + 38px);left:14px;font-size:15px;color:#ffd166;text-shadow:0 2px 0 #000;letter-spacing:1px}
+#combo{position:absolute;left:50%;top:22%;transform:translateX(-50%) rotate(-4deg);font-size:28px;color:#ffe14d;text-shadow:0 3px 0 #b3001b,0 0 12px #f80;opacity:0;transition:opacity .15s}
+.pop{position:absolute;transform:translate(-50%,-50%);font-size:26px;color:#fff;text-shadow:0 3px 0 #000;animation:pop .9s ease-out forwards;white-space:nowrap}
+.pop.big{font-size:34px;color:#7af0ff}.pop.bad{color:#ff4d4d}.pop.gold{color:#ffd166}
+@keyframes pop{0%{transform:translate(-50%,-50%) scale(.4)}15%{transform:translate(-50%,-50%) scale(1.25)}100%{transform:translate(-50%,-160%) scale(1);opacity:0}}
+#warn{position:absolute;transform:translate(-50%,-100%);font-size:22px;color:#ff2a2a;background:#fff;border-radius:6px;padding:2px 8px;opacity:0;transition:opacity .08s;box-shadow:0 0 18px #f00}
+#hint{position:absolute;left:50%;bottom:calc(max(12px,env(safe-area-inset-bottom)) + 64px);white-space:nowrap;transform:translateX(-50%);text-align:center;opacity:0;transition:opacity .25s}
+#hint .ring{width:60px;height:60px;margin:0 auto 6px;border:5px solid #fff;border-radius:50%;animation:ring 1s infinite;box-shadow:0 0 16px #4fd1ff}
+#hint b{font-size:26px;text-shadow:0 3px 0 #000;letter-spacing:1px}
+#hint small{display:block;font-family:Arial,sans-serif;font-weight:700;font-size:13px;margin-top:4px;text-shadow:0 2px 0 #000;text-transform:none}
+@keyframes ring{0%{transform:scale(.7);opacity:1}100%{transform:scale(1.25);opacity:.2}}
+#ko{position:absolute;left:50%;top:40%;transform:translate(-50%,-50%) scale(0);font-size:96px;color:#ffe14d;text-shadow:0 6px 0 #b3001b,0 0 30px #f80;transition:transform .25s cubic-bezier(.2,2,.4,1)}
+#ko.show{transform:translate(-50%,-50%) scale(1)}
+#flash{position:fixed;inset:0;opacity:0;transition:opacity .12s;pointer-events:none;mix-blend-mode:screen;z-index:4}
+/* ------- overlays ------- */
+.screen{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;background:radial-gradient(circle at 50% 30%,#2b1460ee,#0a0618f5);color:#fff;text-align:center;text-transform:uppercase;z-index:10;overflow-y:auto;padding:max(18px,env(safe-area-inset-top)) 12px calc(max(18px,env(safe-area-inset-bottom)) + 10px);box-sizing:border-box}
+.screen.hidden{display:none}
+#logo{font-size:52px;line-height:.95;letter-spacing:2px;background:linear-gradient(#fff,#4fd1ff 60%,#ff4fd8);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 4px 0 #000);margin-top:6px}
+#logo small{display:block;font-size:16px;letter-spacing:8px;color:#ffe14d;-webkit-text-fill-color:#ffe14d;margin-top:4px}
+.subtitle{font-size:18px;letter-spacing:4px;margin:10px 0 12px;color:#fff;text-shadow:0 2px 0 #000}
+#cards{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;width:100%;max-width:560px}
+.card{background:#221a3acc;border:3px solid #4a4370;border-radius:14px;padding:12px 10px 14px;width:150px;cursor:pointer;pointer-events:auto;transition:transform .12s,border-color .12s}
+.card:active{transform:scale(.96)}
+.card.sel{border-color:#ffe14d;box-shadow:0 0 18px #ffe14d66}
+.card .dot{width:64px;height:64px;border-radius:50%;margin:2px auto 8px;border:3px solid #0006}
+.card .nm{font-size:22px;letter-spacing:1px}
+.card .ds{font-family:Arial,sans-serif;font-weight:700;font-size:11px;text-transform:none;opacity:.8;margin-top:6px;line-height:1.35;min-height:44px}
+.card .st{font-family:Arial,sans-serif;font-weight:700;font-size:11px;color:#7af0ff;margin-top:6px;text-transform:none}
+#skinsRow{display:flex;gap:10px;margin-top:12px;align-items:center;flex-wrap:wrap;justify-content:center}
+#skinsRow .cap{font-family:Arial,sans-serif;font-weight:700;font-size:12px;opacity:.75;width:100%;text-transform:none}
+.skinDot{width:34px;height:34px;border-radius:50%;border:3px solid #0008;cursor:pointer;pointer-events:auto}
+.skinDot.sel{border-color:#ffe14d;box-shadow:0 0 10px #ffe14d}
+#shopRow{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;justify-content:center}
+.shopItem{background:#1a1430;border:2px solid #4a4370;border-radius:10px;padding:8px 10px;min-width:104px;pointer-events:auto}
+.shopItem .un{font-size:15px;letter-spacing:1px;color:#ffe14d}
+.shopItem .ud{font-family:Arial,sans-serif;font-weight:700;font-size:10px;text-transform:none;opacity:.75;margin:2px 0 6px}
+.shopItem button{background:#ffcf2e;color:#2a0b00;border:0;border-radius:14px;padding:6px 10px;font:inherit;font-size:13px;box-shadow:0 3px 0 #b37a00;cursor:pointer;pointer-events:auto;text-transform:uppercase}
+.shopItem button:disabled{background:#555;color:#aaa;box-shadow:none;cursor:default}
+#metaLine{margin-top:14px;font-family:Arial,sans-serif;font-weight:700;font-size:13px;text-transform:none;opacity:.85}
+#metaLine b{color:#ffd166}
+.bigBtn{margin-top:16px;background:#ffcf2e;color:#2a0b00;border:0;border-radius:30px;padding:16px 52px;font:inherit;font-size:26px;box-shadow:0 6px 0 #b37a00;animation:pulse 1s infinite;cursor:pointer;pointer-events:auto;text-transform:uppercase}
+@keyframes pulse{50%{transform:scale(1.06)}}
+.stat{font-size:17px;letter-spacing:1px;margin:3px 0;text-shadow:0 2px 0 #000}
+.stat b{color:#ffd166}
+#cashLines{margin:8px 0 2px;font-family:Arial,sans-serif;font-weight:700;font-size:15px;text-transform:none}
+#cashLines div{margin:3px 0}#cashLines b{color:#80ed99}
+#loading{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:22px;background:#150f2a;z-index:20}
+</style>
+</head><body>
+<canvas id="c"></canvas>
+<div id="hud">
+  <div class="bar" id="pbar"><i id="php" style="width:100%"></i></div><div class="lbl" id="pname">You</div>
+  <div class="bar" id="ebar"><i id="ehp" style="width:100%"></i></div><div class="lbl" id="ename"></div>
+  <div id="wave"></div><div id="cash"></div>
+  <div id="combo"></div><div id="warn">! COUNTER NOW !</div>
+  <div id="hint"><div class="ring"></div><b>TAP TO PUNCH</b><small>Tap when you see <span style="color:#ff4d4d">!</span> to counter</small></div>
+  <div id="ko">K.O.</div>
+</div>
+<div id="flash"></div>
+<div id="select" class="screen hidden">
+  <div id="logo">CONCRETE DRAGON<small>STREET BRAWLER</small></div>
+  <div class="subtitle">Pick your fighter</div>
+  <div id="cards"></div>
+  <div id="skinsRow"><div class="cap">Skin (style only — no power)</div></div>
+  <div id="shopRow"></div>
+  <div id="metaLine"></div>
+  <button class="bigBtn" id="fightBtn">Fight</button>
+</div>
+<div id="results" class="screen hidden">
+  <div id="logo">CONCRETE DRAGON</div>
+  <div class="subtitle" id="resTitle">Knocked out</div>
+  <div id="resStats"></div>
+  <div id="cashLines"></div>
+  <div id="shopRow2" style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;justify-content:center"></div>
+  <div id="metaLine2" style="margin-top:12px;font-family:Arial,sans-serif;font-weight:700;font-size:13px;text-transform:none;opacity:.85"></div>
+  <button class="bigBtn" id="againBtn">Fight again</button>
+</div>
+<div id="loading">LOADING…</div>
+<!--CREDITS-->
+<script>window.__ASSETS=/*ASSETS*/;</script>
+<script>/*BUNDLE*/</script>
+</body></html>

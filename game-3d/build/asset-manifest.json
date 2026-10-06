@@ -1,0 +1,50 @@
+[
+  {
+    "file": "fighter.glb",
+    "source": "KayKit Character Animations 1.1 (CC0 1.0)"
+  },
+  {
+    "file": "anim_melee.glb",
+    "source": "KayKit Character Animations 1.1 (CC0 1.0)"
+  },
+  {
+    "file": "anim_general.glb",
+    "source": "KayKit Character Animations 1.1 (CC0 1.0)"
+  },
+  {
+    "file": "anim_move.glb",
+    "source": "KayKit Character Animations 1.1 (CC0 1.0)"
+  },
+  {
+    "file": "street.glb",
+    "source": "KayKit City Builder Bits 1.0 (CC0 1.0)"
+  },
+  {
+    "file": "hit1.mp3",
+    "source": "Kenney Impact Sounds (CC0 1.0)"
+  },
+  {
+    "file": "hit2.mp3",
+    "source": "Kenney Impact Sounds (CC0 1.0)"
+  },
+  {
+    "file": "hit3.mp3",
+    "source": "Kenney Impact Sounds (CC0 1.0)"
+  },
+  {
+    "file": "bell.mp3",
+    "source": "OpenGameArt Boxing ring (CC0)"
+  },
+  {
+    "file": "crowd.mp3",
+    "source": "OpenGameArt Boxing ring (CC0)"
+  },
+  {
+    "file": "music.mp3",
+    "source": "OpenGameArt Fast fight battle music by bonsaiheldin (CC0)"
+  },
+  {
+    "file": "click.mp3",
+    "source": "Kenney Interface Sounds (CC0 1.0)"
+  }
+]
