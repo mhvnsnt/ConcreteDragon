@@ -12,6 +12,17 @@ var wins: int = 0
 var losses: int = 0
 var streak: int = 0
 var selected: int = 0  # 0 = Rook, 1 = Vex
+var selected_skin := {}  # str(kind) -> art subdir (style only, never power)
+
+
+func get_skin(p_kind: int) -> String:
+	var def: Dictionary = Fighter.FIGHTER_DEFS.get(p_kind, Fighter.FIGHTER_DEFS[0])
+	return str(selected_skin.get(str(p_kind), def["art"]))
+
+
+func set_skin(p_kind: int, p_skin: String) -> void:
+	selected_skin[str(p_kind)] = p_skin
+	save_game()
 
 
 static func upgrade_cost(level: int) -> int:
@@ -42,6 +53,7 @@ func load_game() -> void:
 	losses = int(cfg.get_value("meta", "losses", 0))
 	streak = int(cfg.get_value("meta", "streak", 0))
 	selected = int(cfg.get_value("meta", "selected", 0))
+	selected_skin = cfg.get_value("meta", "selected_skin", {})
 
 
 func save_game() -> void:
@@ -54,4 +66,5 @@ func save_game() -> void:
 	cfg.set_value("meta", "losses", losses)
 	cfg.set_value("meta", "streak", streak)
 	cfg.set_value("meta", "selected", selected)
+	cfg.set_value("meta", "selected_skin", selected_skin)
 	cfg.save(PATH)

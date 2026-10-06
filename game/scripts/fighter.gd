@@ -9,6 +9,17 @@ signal died(f: Fighter)
 const KIND_ROOK := 0
 const KIND_VEX := 1
 
+## Data-driven roster. kind -> definition. New fighters = new entries here
+## (+ PNG set in assets/art/<art>/ + pivots.json entry). Skins are style-only.
+const FIGHTER_DEFS := {
+	0: {"name": "ROOK", "art": "rook", "skins": ["rook", "rook_noir"],
+		"toughness": 1.15, "speed": 1.0,
+		"desc": "Balanced boxer.\nBig gloves, big heart."},
+	1: {"name": "VEX", "art": "vex", "skins": ["vex", "vex_crimson"],
+		"toughness": 0.9, "speed": 1.0,
+		"desc": "Fast kickboxer.\nBlink and you're down."},
+}
+
 const MOVES := {
 	"jab":      {"startup": 0.07, "active": 0.10, "recover": 0.16, "range": 165.0, "dmg": 6.0,  "kb": 130.0, "launch": 0.0,   "hitstop": 0.06, "shake": 0.22, "sfx": "punch_thump",    "meter": 8.0,  "height": "mid"},
 	"heavy":    {"startup": 0.26, "active": 0.12, "recover": 0.34, "range": 185.0, "dmg": 13.0, "kb": 340.0, "launch": 0.0,   "hitstop": 0.10, "shake": 0.45, "sfx": "kick_whoosh",    "meter": 12.0, "telegraph": 0.45, "height": "low"},
@@ -32,6 +43,7 @@ var disp_name := "ROOK"
 var facing := 1
 var use_textures := false
 var textures := {}
+var skin_dir := ""  # art subdir actually loaded (base or selected skin)
 
 var max_hp := 100.0
 var hp := 100.0
@@ -71,10 +83,14 @@ var body_scale := 1.0  # per-fighter size (bosses bigger)
 var fight: Node = null  # set by FightScreen
 
 
-func setup(p_kind: int, p_is_ai: bool, p_name: String) -> void:
+func setup(p_kind: int, p_is_ai: bool, p_name: String, p_skin: String = "") -> void:
 	kind = p_kind
 	is_ai = p_is_ai
 	disp_name = p_name
+	var def: Dictionary = FIGHTER_DEFS.get(kind, FIGHTER_DEFS[KIND_ROOK])
+	skin_dir = p_skin if p_skin != "" else str(def["art"])
+	toughness = float(def.get("toughness", 1.0))
+	speed_mult = float(def.get("speed", 1.0))
 	tex_mode = _try_load_textures()
 	if tex_mode:
 		_build_tex_rig()
@@ -84,17 +100,16 @@ func setup(p_kind: int, p_is_ai: bool, p_name: String) -> void:
 
 
 func _try_load_textures() -> bool:
-	var sub := "rook" if kind == KIND_ROOK else "vex"
 	var pj_path := "res://assets/art/pivots.json"
 	if not ResourceLoader.exists(pj_path):
 		return false
 	var pj: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(pj_path))
-	if pj == null or not pj.has(sub):
+	if pj == null or not pj.has(skin_dir):
 		return false
-	var piv: Dictionary = pj[sub]
+	var piv: Dictionary = pj[skin_dir]
 	var names := ["head", "torso", "arm_u", "arm_f", "leg_t", "leg_s"]
 	for n in names:
-		var tp := "res://assets/art/%s/%s.png" % [sub, n]
+		var tp := "res://assets/art/%s/%s.png" % [skin_dir, n]
 		if not ResourceLoader.exists(tp):
 			return false
 		tex_parts[n] = load(tp)

@@ -102,8 +102,9 @@ func _build_stage() -> void:
 func _spawn_player() -> void:
 	player = Fighter.new()
 	var kind: int = save.selected
-	var nm := "ROOK" if kind == 0 else "VEX"
-	player.setup(kind, false, nm)
+	var def: Dictionary = Fighter.FIGHTER_DEFS.get(kind, Fighter.FIGHTER_DEFS[0])
+	var nm := str(def["name"])
+	player.setup(kind, false, nm, save.get_skin(kind))
 	player.fight = self
 	player.position = Vector2(430, GROUND_Y)
 	player._ground_y = GROUND_Y
@@ -111,7 +112,7 @@ func _spawn_player() -> void:
 	player.max_hp = 100.0 + save.tough_bonus()
 	player.hp = player.max_hp
 	player.dmg_mult = 1.0 + save.up_power * 0.12
-	player.toughness = (1.15 if kind == 0 else 0.9) + save.up_tough * 0.04
+	player.toughness = player.toughness + save.up_tough * 0.04
 	add_child(player)
 
 
@@ -444,8 +445,8 @@ func on_ko(victim: Fighter, attacker: Fighter) -> void:
 		_award_cash(base, victim.position)
 		if combo_bonus >= 5:
 			_award_cash(combo_bonus, victim.position + Vector2(0, -60), "COMBO")
-		if randf() < 0.12:
-			var lucky := randi_range(5, 15 + wave)
+		if LootRng.lucky_hit(0.12):
+			var lucky := LootRng.lucky_amount(wave)
 			_award_cash(lucky, victim.position + Vector2(0, -120), "LUCKY!")
 		# heal a little so runs keep rolling
 		player.heal(player.max_hp * 0.12)

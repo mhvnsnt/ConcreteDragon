@@ -25,10 +25,14 @@ func _ready() -> void:
 	sub.position = Vector2(640 - 220, 200)
 	add_child(sub)
 
-	var defs := [
-		{"kind": 0, "name": "ROOK", "desc": "Balanced boxer.\nBig gloves, big heart.", "x": 240.0},
-		{"kind": 1, "name": "VEX", "desc": "Fast kickboxer.\nBlink and you're down.", "x": 720.0},
-	]
+	var defs := []
+	var xs := [240.0, 720.0]
+	var ci := 0
+	for kind in Fighter.FIGHTER_DEFS.keys():
+		var dd: Dictionary = Fighter.FIGHTER_DEFS[kind]
+		defs.append({"kind": kind, "name": dd["name"], "desc": dd["desc"],
+			"x": xs[ci % xs.size()], "y": 280.0 + 380.0 * int(ci / xs.size())})
+		ci += 1
 	for d in defs:
 		_cards.append(_make_card(d))
 
@@ -51,8 +55,10 @@ func _label(text: String, size: int, color: Color) -> Label:
 
 
 func _make_card(d: Dictionary) -> Button:
+	var kind := int(d["kind"])
+	var def: Dictionary = Fighter.FIGHTER_DEFS[kind]
 	var b := Button.new()
-	b.position = Vector2(d["x"], 280)
+	b.position = Vector2(d["x"], d["y"])
 	b.custom_minimum_size = Vector2(320, 330)
 	var sb := StyleBoxFlat.new()
 	sb.bg_color = Color(0.16, 0.15, 0.22)
@@ -65,38 +71,57 @@ func _make_card(d: Dictionary) -> Button:
 	b.add_theme_stylebox_override("hover", sb2)
 	b.add_theme_stylebox_override("pressed", sb2)
 	# portrait: head art (PNG if present, else procedural Part)
-	var sub := "rook" if int(d["kind"]) == 0 else "vex"
-	var hp := "res://assets/art/%s/head.png" % sub
-	if ResourceLoader.exists(hp):
-		var tr := TextureRect.new()
-		tr.texture = load(hp)
-		tr.custom_minimum_size = Vector2(150, 150)
-		tr.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		tr.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		tr.position = Vector2(85, 15)
-		tr.scale = Vector2(1.0, 1.0)
-		b.add_child(tr)
-	else:
-		var f := Fighter.new()
-		f.setup(int(d["kind"]), false, "")
-		f.position = Vector2(160, 300)
-		for key in f.Parts:
-			if key != "head":
-				(f.Parts[key] as Node2D).visible = false
-		f.J["hips"].visible = false
-		var head := f.Parts["head"] as Node2D
-		head.position = Vector2(0, 0)
-		head.scale = Vector2(1.6, 1.6)
-		b.add_child(f)
+	var tr := TextureRect.new()
+	tr.name = "Portrait"
+	_refresh_portrait(tr, kind)
+	tr.custom_minimum_size = Vector2(150, 150)
+	tr.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	tr.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	tr.position = Vector2(85, 15)
+	b.add_child(tr)
 	var nm := _label(d["name"], 52, Color.WHITE)
 	nm.position = Vector2(20, 190)
 	b.add_child(nm)
 	var ds := _label(d["desc"], 26, Color(0.8, 0.8, 0.85))
 	ds.position = Vector2(20, 250)
 	b.add_child(ds)
-	b.pressed.connect(_on_pick.bind(int(d["kind"])))
+	# skin picker (style only, never power)
+	var skins: Array = def["skins"]
+	if skins.size() > 1:
+		var sk := Button.new()
+		sk.name = "SkinBtn"
+		sk.text = "SKIN: " + _skin_label(save.get_skin(kind))
+		sk.add_theme_font_size_override("font_size", 22)
+		sk.position = Vector2(20, 300)
+		sk.custom_minimum_size = Vector2(280, 40)
+		sk.pressed.connect(_on_skin_cycle.bind(kind, tr, sk))
+		b.add_child(sk)
+	b.pressed.connect(_on_pick.bind(kind))
 	add_child(b)
 	return b
+
+
+func _skin_label(sub: String) -> String:
+	return sub.replace("_", " ").to_upper()
+
+
+func _refresh_portrait(tr: TextureRect, kind: int) -> void:
+	var sub := save.get_skin(kind)
+	var hp := "res://assets/art/%s/head.png" % sub
+	if ResourceLoader.exists(hp):
+		tr.texture = load(hp)
+	else:
+		tr.texture = null
+
+
+func _on_skin_cycle(kind: int, tr: TextureRect, sk: Button) -> void:
+	var def: Dictionary = Fighter.FIGHTER_DEFS[kind]
+	var skins: Array = def["skins"]
+	var cur := save.get_skin(kind)
+	var nxt: String = skins[(skins.find(cur) + 1) % skins.size()]
+	save.set_skin(kind, nxt)
+	sk.text = "SKIN: " + _skin_label(nxt)
+	_refresh_portrait(tr, kind)
 
 
 func _on_pick(kind: int) -> void:
