@@ -140,3 +140,35 @@ Why it works (from design analyses):
 2. **Meta-progression shop already exists** (Power/Tough/Hustle) — steal VS's "gold → permanent stats" transparency: show next-upgrade cost and effect on the result screen so the next run's purpose is obvious.
 3. **Near-miss framing on KO**: when you die at wave 19 with boss at 20, say "BOSS INCOMING — WAVE 20" on the KO screen (we already telegraph; make the tease explicit post-death).
 4. **Avoid:** its pure luck dependence ("impossible to win without getting lucky"). Concrete Dragon keeps skill-based combat; luck stays in loot drops only.
+
+## Free Fire (Garena / 111 Dots) — the low-end-device empire
+
+**Date:** 2026-10-06 · **Why it matters:** 1.5B+ downloads; runs on 1–2GB RAM
+phones; the reference for reaching players who don't own flagships.
+([Medium overview](https://medium.com/@sampara.official01/garena-free-fire-the-ultimate-mobile-battle-royale-in-2025-71f4ea3bbb91),
+[MMOCulture 2026 review](https://backend.mmoculture.com/2026/09/free-fire-review/))
+
+Why it works:
+- **Accessibility IS the product** — lightweight client (~1.5GB), 10-minute
+  matches, smooth on budget hardware; a separate Free Fire MAX serves premium
+  devices with shared progression (Firelink) — nobody is punished for their phone.
+- **Session length fits real life** — 10–12 min matches; Clash Squad 4v4 rounds
+  are even faster. Students/workers can grind ranks in stolen minutes.
+- **Character abilities as depth** — heroes like Alok (heal aura) / Hayato (armor
+  pen) create playstyle identity without complicating controls.
+- **Ranked chase** — Bronze→Grandmaster ladder in both BR and Clash Squad gives
+  every session a number to move.
+- **Creator ecosystem** — massive YouTube/creator community in its core markets
+  (India, Brazil, SEA) does the marketing.
+
+**What Concrete Dragon steals:**
+1. **Our no-store distribution IS the Free Fire play** — sideload APK + web build
+   must run on weak hardware. Steal the tiering: a "lite" graphics toggle and a
+   hard install-size budget (single-file HTML stays the flagship; keep it lean).
+2. **Session-length discipline:** endless waves already fit; keep a full run
+   satisfiable in ~10 minutes (KINGPIN every 5th wave is the natural session
+   cap) and make the daily seeded run explicitly ~10 min.
+3. **Local leaderboards = our ranked chase** (already approved feature): show
+   rank movement on the result screen, VS-style "here's what you unlocked."
+4. **Avoid:** character-ability gacha pressure; our roster unlocks stay
+   gameplay-earned (beat boss → unlock as playable).
