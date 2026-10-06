@@ -6,7 +6,7 @@ config_version=5
 
 [application]
 
-config/name="Street Brawl"
+config/name="Concrete Dragon"
 config/description="Addictive mobile street brawler by Orion Enterprises LLC. Tap. Beat them down. Next enemy walks in."
 run/main_scene="res://main.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")

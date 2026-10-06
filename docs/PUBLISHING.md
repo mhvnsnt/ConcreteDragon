@@ -1,10 +1,10 @@
-# Publishing Street Brawl — owner's manual steps
+# Publishing Concrete Dragon — owner's manual steps
 
 Everything builds automatically. This doc covers the few things only you can do.
 
 ## What CI already does (nothing for you to do)
 
-Every push to `main` triggers the **Build Street Brawl** workflow:
+Every push to `main` triggers the **Build Concrete Dragon** workflow:
 
 - Builds **Web**, **Android APK**, and **Android AAB** (Godot 4.7.2)
 - Signs Android builds with the **release keystore** (`streetbrawl` alias, stored as repo secrets `ANDROID_KEYSTORE_BASE64` / `ANDROID_KEYSTORE_ALIAS` / `ANDROID_KEYSTORE_PASSWORD`; backup kept securely off-repo)
@@ -25,7 +25,7 @@ Only you can do this — Google requires your identity.
 ### 2. Create the app in Play Console (~10 min)
 
 1. Play Console → **Create app**
-2. App name: **Street Brawl** (final name TBD — the store listing name can change later; the package `com.orionenterprises.streetbrawl` is already set)
+2. App name: **Concrete Dragon** (owner pick 2026-10-06 — the store listing name can be edited anytime; the package `com.orionenterprises.streetbrawl` is already set and stays)
 3. Default language, **App or Game → Game**, **Free**
 4. Accept declarations, create
 
@@ -33,7 +33,7 @@ Only you can do this — Google requires your identity.
 
 Google requires the first upload to be manual. After that it can be automated.
 
-1. GitHub → **mhvnsnt/StreetBrawl** → **Actions** → latest green **Build Street Brawl** run
+1. GitHub → **mhvnsnt/StreetBrawl** → **Actions** → latest green **Build Concrete Dragon** run
 2. Download the **street-brawl-android** artifact, unzip → take `street-brawl.aab`
 3. Play Console → your app → **Testing → Internal testing** → **Create new release**
 4. Upload the AAB, add yourself as a tester (your Gmail), **Roll out**

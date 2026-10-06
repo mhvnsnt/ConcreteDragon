@@ -1,4 +1,4 @@
-# Street Brawl CI — every push to main rebuilds everything.
+# Concrete Dragon CI — every push to main rebuilds everything.
 #
 # Produces:
 #   - dist/web/            -> auto-deployed to GitHub Pages (playable latest build)
@@ -8,7 +8,7 @@
 # Version code auto-bumps from the GitHub run number (always increasing,
 # which is what Google Play requires). Version name = version.txt + run number.
 
-name: Build Street Brawl
+name: Build Concrete Dragon
 
 on:
   push:

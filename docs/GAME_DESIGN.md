@@ -1,4 +1,4 @@
-# STREET BRAWL — Game Design Document
+# CONCRETE DRAGON — Game Design Document
 
 **Status**: DESIGN. Owner approval required before build.
 **Base**: `tracks/playable-ads/kit/dist/street-brawl-demo.html` (1.74MB single-file HTML5 canvas brawler, 17/17 QA).

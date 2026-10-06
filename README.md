@@ -1,4 +1,4 @@
-# Street Brawl
+# Concrete Dragon
 
 ![Build](https://github.com/mhvnsnt/StreetBrawl/actions/workflows/build.yml/badge.svg)
 
