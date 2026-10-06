@@ -277,3 +277,27 @@ All third-party code/assets logged with license + source URL. No GPL/AGPL in the
   titles, weapons). Nothing of theirs was deleted; nothing of mine was lost.
   Their CI (Godot job + 3D job + Pages deploys 3D) is untouched — the Godot export
   still builds clean under 4.7.2.
+
+### 2026-10-06 — Shipped-build confirmation + live 3D playtest
+- **Direction resolved**: the shipped game is the Three.js 3D build
+  (`game-3d/dist/concrete-dragon.html`). The CI workflow
+  (`.github/workflows/build.yml`) states it verbatim — Pages deploys the 3D
+  single-HTML game; the 2D Godot web export is a parked build artifact only
+  (APK/AAB still built). The live site (https://mhvnsnt.github.io/ConcreteDragon/,
+  HTTP 200) serves the 3D build. The 2D M1 Godot game remains in `game/` as the
+  parked prototype its systems were ported from; no further 2D feature work
+  until the owner says otherwise.
+- **Live 3D playtest** (local byte-identical rebuild, headless Chromium,
+  real click/tap input, captures in `~/workspace/cd-playtest/`):
+  title → tap → fighter select (KID BLUE / GHOST / BRICK + locked
+  KINGPIN/SLEDGE/VIPER, skin picker, Power/Tough/Hustle upgrade shop,
+  supporter tint button) → MISSIONS (NEON ROW / FIRST BLOOD 8 thugs + KINGPIN
+  boss unlocking him as playable; THE YARDS / SCRAP YARD and LITTLE / NIGHT
+  locked behind clears; daily seed shown) → combat: drag-to-move, HIT/HVY/
+  DDG/SPC buttons, tap-to-counter on telegraph, health + SPECIAL meters, cash
+  counter, neon street with water towers/lamps. No JS page errors on the
+  happy path.
+- **Test-env note**: SwiftShader renderer died once under a rapid 8-clicks/
+  550ms attack spree; slower interaction completed fine. Treated as
+  test-environment flakiness, NOT a confirmed game defect — needs a real-device
+  check before any bug is filed.
