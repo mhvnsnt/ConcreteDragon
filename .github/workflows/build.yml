@@ -96,8 +96,10 @@ jobs:
           echo "Found JDK at $JH"
           echo "JAVA_HOME=$JH" >> $GITHUB_ENV
           mkdir -p ~/.config/godot
-          printf '[gd_resource type="EditorSettings" format=3]\n\n[resource]\nexport/android/java_sdk_path = "%s"\n' "$JH" > ~/.config/godot/editor_settings-4.tres
-          cat ~/.config/godot/editor_settings-4.tres
+          # Godot 4.7 reads editor_settings-<major>.<minor>.tres
+          SETTINGS_FILE=~/.config/godot/editor_settings-4.7.tres
+          printf '[gd_resource type="EditorSettings" format=3]\n\n[resource]\nexport/android/java_sdk_path = "%s"\n' "$JH" > "$SETTINGS_FILE"
+          cat "$SETTINGS_FILE"
 
       - name: Export Web
         run: |
