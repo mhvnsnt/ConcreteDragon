@@ -66,8 +66,15 @@ one raised eyebrow.
 | `counter_ding.wav` | 0.30s | bright alert ding |
 | `countdown_beep.wav` | 0.15s | 880 Hz beep |
 | `go.wav` | 0.40s | ascending two-tone (660→988 Hz) |
+| `glass_break.wav` | 0.35s | **runtime-synthesized** (no WAV file): noise crash + 6 high shard pings |
+| `bat_crack.wav` | 0.12s | **runtime-synthesized** (no WAV file): woody crack 240→70 Hz |
 
 ### jsfxr batch (`assets/sfx/jsfxr_*`) — baked 2026-10-06 with jsfxr (Unlicense / public domain)
+
+## Weapons (2026-10-06) — 100% procedural, no assets
+- Bat, chain, bottle drawn in code (`Fighter.WeaponDraw`, `_draw` primitives only).
+- Ground pickups (`FightScreen.WeaponPickup`) reuse the same procedural drawing.
+- No PNGs, no WAV files, no third-party material — nothing to license.
 Generator: `tools/gen_sfx_jsfxr.mjs` (preset roll-ups + one mutate pass, seeded PRNG
 seed=789514; full Params receipts in `.sfxr.json` next to each WAV).
 

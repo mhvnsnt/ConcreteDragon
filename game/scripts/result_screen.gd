@@ -19,7 +19,10 @@ func _ready() -> void:
 	# sfx lives on Main (added once); just use it
 	var bg := ColorRect.new()
 	bg.color = Color(0.08, 0.07, 0.12)
-	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	# NOTE: Controls under a Node2D don't get viewport-relative anchors,
+	# so the backdrop needs an explicit size (anchors alone = zero-size).
+	bg.position = Vector2.ZERO
+	bg.size = Vector2(1280, 720)
 	add_child(bg)
 
 	# apply results
@@ -30,10 +33,14 @@ func _ready() -> void:
 	save.save_game()
 
 	var title := _label("KNOCKED OUT!", 110, Color("e63946"))
-	title.position = Vector2(640 - 330, 50)
+	title.position = Vector2(0, 50)
+	title.size = Vector2(1280, 140)
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	add_child(title)
 	var sub := _label("You cleared WAVE " + str(stats["wave"]) + "  •  " + str(stats["kills"]) + " KOs  •  best combo " + str(stats["max_combo"]), 34, Color.WHITE)
-	sub.position = Vector2(640 - 380, 180)
+	sub.position = Vector2(0, 190)
+	sub.size = Vector2(1280, 50)
+	sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	add_child(sub)
 
 	# staggered reward lines (variable reward timing)

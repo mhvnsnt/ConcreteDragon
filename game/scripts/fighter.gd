@@ -37,6 +37,14 @@ const PALETTES := {
 		"accent": Color("2ec4b6"), "line": Color("26232b")},
 }
 
+## Street weapons (Yakuza-style): pick up, smash, they break. Pure depth
+## addition — unarmed combat is untouched.
+const WEAPONS := {
+	"bat":    {"dmg": 6.0,  "range": 60.0, "durability": 8,  "sfx": "bat_crack"},
+	"chain":  {"dmg": 3.0,  "range": 45.0, "durability": 12, "sfx": "kick_whoosh"},
+	"bottle": {"dmg": 10.0, "range": 25.0, "durability": 3,  "sfx": "glass_break"},
+}
+
 var kind := KIND_ROOK
 var is_ai := false
 var disp_name := "ROOK"
@@ -80,6 +88,12 @@ var hips_base_y := -195.0
 var flash := 0.0
 var squash := Vector2.ONE
 var body_scale := 1.0  # per-fighter size (bosses bigger)
+
+# weapon state ("" = unarmed)
+var weapon_type := ""
+var weapon_hits_left := 0
+var forearm_len := 66.0  # set by the rig builders; weapon grip point
+var _weapon_node: Node2D = null
 
 var fight: Node = null  # set by FightScreen
 
@@ -133,9 +147,15 @@ func _tex_sprite(part_name: String) -> Sprite2D:
 
 
 func _tex_hang(part_name: String) -> float:
-	# distance from pivot to far (bottom) end, in local px
+	# Content-aware hang: distance from the pivot to the lowest DRAWN pixel,
+	# in local px. (The old formula assumed art filled the PNG to its bottom
+	# edge; the real parts have transparent padding, which left 40-60px gaps
+	# at knees/elbows and floated the feet ~44px above the ground.)
+	var tex: Texture2D = tex_parts[part_name]
+	var used: Rect2i = tex.get_image().get_used_rect()
 	var pv: Array = tex_pivots[part_name]
-	return (1.0 - float(pv[1])) * 256.0 * tex_scale
+	var pivot_y: float = float(pv[1]) * 256.0
+	return maxf(8.0, (float(used.end.y) - pivot_y) * tex_scale)
 
 
 func _build_tex_rig() -> void:
@@ -145,6 +165,7 @@ func _build_tex_rig() -> void:
 	var armu_hang := _tex_hang("arm_u")
 	var armf_hang := _tex_hang("arm_f")
 	var torso_hang := _tex_hang("torso")
+	forearm_len = armf_hang
 	hips_base_y = -(thigh_hang + shin_hang)
 	var hips := Node2D.new()
 	hips.position = Vector2(0, hips_base_y)
@@ -497,6 +518,58 @@ func stop_block() -> void:
 	blocking = false
 
 
+# ------------------------------------------------------------- weapons ----
+
+func has_weapon() -> bool:
+	return weapon_type != ""
+
+
+func weapon_dmg_bonus() -> float:
+	return float(WEAPONS[weapon_type]["dmg"]) if has_weapon() else 0.0
+
+
+func weapon_range_bonus() -> float:
+	return float(WEAPONS[weapon_type]["range"]) if has_weapon() else 0.0
+
+
+func weapon_sfx() -> String:
+	return str(WEAPONS[weapon_type]["sfx"]) if has_weapon() else ""
+
+
+func equip_weapon(wtype: String) -> void:
+	if not WEAPONS.has(wtype):
+		return
+	unequip_weapon()
+	weapon_type = wtype
+	weapon_hits_left = int(WEAPONS[wtype]["durability"])
+	_weapon_node = WeaponDraw.new()
+	_weapon_node.weapon_type = wtype
+	# grip: just past the fist, angled across the forearm
+	_weapon_node.position = Vector2(8, forearm_len * 0.92)
+	_weapon_node.rotation = -0.85
+	(J["elbF"] as Node2D).add_child(_weapon_node)
+
+
+func unequip_weapon() -> void:
+	if _weapon_node and is_instance_valid(_weapon_node):
+		_weapon_node.queue_free()
+	_weapon_node = null
+	weapon_type = ""
+	weapon_hits_left = 0
+
+
+## Tick durability after a landed hit. Returns the broken weapon type, or "".
+func use_weapon_hit() -> String:
+	if not has_weapon():
+		return ""
+	weapon_hits_left -= 1
+	if weapon_hits_left <= 0:
+		var t := weapon_type
+		unequip_weapon()
+		return t
+	return ""
+
+
 func add_meter(amount: float) -> void:
 	if dead:
 		return
@@ -506,7 +579,7 @@ func add_meter(amount: float) -> void:
 func take_hit(mv: Dictionary, attacker: Fighter) -> void:
 	if dead:
 		return
-	var dmg: float = float(mv["dmg"]) * attacker.dmg_mult
+	var dmg: float = float(mv["dmg"]) * attacker.dmg_mult + attacker.weapon_dmg_bonus()
 	var was_counter := attacker.telegraphing == false and telegraphing
 	# blocking?
 	if blocking and state == "block" and not (state == "launched"):
@@ -829,6 +902,42 @@ func on_player_attack_start(dist: float) -> void:
 
 # ---------------------------------------------------------------- Part ----
 
+## Procedurally drawn street weapon, gripped in the front fist. Drawn along
+## local +x (the grip), so it swings naturally with the forearm.
+class WeaponDraw:
+	extends Node2D
+	var weapon_type := "bat"
+
+	func _draw() -> void:
+		var line := Color(0.15, 0.14, 0.17)
+		match weapon_type:
+			"bat":
+				# wooden bat: fat barrel, taped grip
+				draw_line(Vector2(0, 0), Vector2(95, 0), line, 36.0)
+				draw_line(Vector2(0, 0), Vector2(95, 0), Color("c98d5e"), 28.0)
+				draw_line(Vector2(-16, 0), Vector2(12, 0), line, 32.0)
+				draw_line(Vector2(-16, 0), Vector2(12, 0), Color("5b3a29"), 24.0)
+				draw_circle(Vector2(95, 0), 17.0, line)
+				draw_circle(Vector2(95, 0), 12.0, Color("c98d5e"))
+				draw_circle(Vector2(-18, 0), 8.0, line)
+			"chain":
+				# bike chain: heavy links with a sway
+				for i in 7:
+					var x := -12.0 + i * 17.0
+					var c := Vector2(x, sin(i * 1.7) * 7.0)
+					draw_circle(c, 12.0, line)
+					draw_circle(c, 7.5, Color("a8dadc"))
+					draw_circle(c + Vector2(-2, -2), 2.5, Color(1, 1, 1, 0.7))
+			"bottle":
+				# glass bottle: neck + body + glint
+				draw_line(Vector2(-10, 0), Vector2(28, 0), line, 28.0)
+				draw_line(Vector2(-10, 0), Vector2(28, 0), Color("2d6a4f"), 20.0)
+				draw_line(Vector2(28, 0), Vector2(88, 0), line, 46.0)
+				draw_line(Vector2(28, 0), Vector2(88, 0), Color("40916c"), 38.0)
+				draw_line(Vector2(58, -13), Vector2(58, 13), Color(1, 1, 1, 0.45), 9.0)
+				draw_circle(Vector2(-12, 0), 9.0, line)
+
+
 class Part:
 	extends Node2D
 	var part_kind := ""
@@ -897,8 +1006,8 @@ class Part:
 				_capsule(Vector2.ZERO, Vector2(0, 78), 28.0, skin, line)
 				# shoe
 				var sc := Vector2(10, 92)
-				draw_ellipse(sc, 30.0, 20.0, line)
-				draw_ellipse(sc, 24.0, 14.0, palette["shoe"])
+				_poly_ellipse(sc, 30.0, 20.0, line)
+				_poly_ellipse(sc, 24.0, 14.0, palette["shoe"])
 
 	func _capsule(a: Vector2, b: Vector2, w: float, fill: Color, line: Color) -> void:
 		draw_line(a, b, line, w + 9.0)
@@ -918,7 +1027,7 @@ class Part:
 		sb2.set_corner_radius_all(int(rad))
 		draw_style_box(sb2, rect)
 
-	func draw_ellipse(c: Vector2, rx: float, ry: float, col: Color) -> void:
+	func _poly_ellipse(c: Vector2, rx: float, ry: float, col: Color) -> void:
 		var pts := PackedVector2Array()
 		for i in 20:
 			var a := TAU * i / 20.0

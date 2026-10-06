@@ -21,7 +21,8 @@ func _ready() -> void:
 	var names := ["punch_thump", "punch2", "kick_whoosh", "whiff", "block_clack",
 		"launcher_whoosh", "hurt", "ko_bell", "cheer", "ui_click", "win_jingle",
 		"cash_blip", "counter_ding", "countdown_beep", "go",
-		"jsfxr_ui_blip", "jsfxr_hit", "jsfxr_ko", "jsfxr_coin"]
+		"jsfxr_ui_blip", "jsfxr_hit", "jsfxr_ko", "jsfxr_coin",
+		"glass_break", "bat_crack"]
 	for n in names:
 		var path: String = dir + n + ".wav"
 		if ResourceLoader.exists(path):
@@ -73,6 +74,10 @@ func _synth(kind: String) -> AudioStreamWAV:
 			return _arp([1318.0, 1760.0], 0.07)
 		"counter_ding":
 			return _bell(0.35, 1568.0)
+		"glass_break":
+			return _shatter()
+		"bat_crack":
+			return _burst(0.12, 240.0, 70.0, 1.0, 0.0)
 		"countdown_beep":
 			return _tone(0.15, 660.0, 0.6)
 		"go":
@@ -141,6 +146,32 @@ func _noise_sweep(dur: float, vol: float) -> AudioStreamWAV:
 		last = last * 0.7 + w * 0.3
 		var env := sin(PI * float(i) / n)
 		d[i] = last * env * vol
+	return _mk(d)
+
+
+func _shatter() -> AudioStreamWAV:
+	# glass break: bright noise crash + a few short high-pitched shard pings
+	var dur := 0.35
+	var n := int(_sr * dur)
+	var d := PackedFloat32Array()
+	d.resize(n)
+	var last := 0.0
+	for i in n:
+		var w := randf_range(-1.0, 1.0)
+		last = last * 0.55 + w * 0.45
+		var env := exp(-7.0 * float(i) / n)
+		d[i] = last * env * 0.8
+	for s in 6:
+		var f := randf_range(2400.0, 5200.0)
+		var start := int(randf_range(0.0, 0.12) * _sr)
+		var plen := int(0.05 * _sr)
+		for i in plen:
+			var idx := start + i
+			if idx >= n:
+				break
+			var t := float(i) / _sr
+			var env2 := exp(-9.0 * float(i) / plen)
+			d[idx] += sin(TAU * f * t) * env2 * 0.22
 	return _mk(d)
 
 

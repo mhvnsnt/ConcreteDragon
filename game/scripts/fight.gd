@@ -30,6 +30,9 @@ var game_over := false
 var ai_aggro := 0.8
 var ai_block_chance := 0.12
 
+# street weapon pickup on the ground (at most one)
+var _weapon_pickup: Node2D = null
+
 # touch tracking
 var _touches := {}
 var _special_used_this_touch := false
@@ -86,7 +89,10 @@ func _ready() -> void:
 
 
 func _build_stage() -> void:
-	# real stage art when present, procedural fallback otherwise
+	# real stage art when present, procedural fallback otherwise.
+	# Stage sits at z=-10: fighter parts use negative z_index for depth
+	# layering (legs/arms behind torso), so the backdrop must stay behind
+	# all of them or limbs render hidden inside the wall.
 	if ResourceLoader.exists("res://assets/art/stage.png"):
 		var sp := Sprite2D.new()
 		sp.texture = load("res://assets/art/stage.png")
@@ -94,9 +100,12 @@ func _build_stage() -> void:
 		sp.position = Vector2.ZERO
 		var sc := 1280.0 / sp.texture.get_width()
 		sp.scale = Vector2(sc, sc)
+		sp.z_index = -10
 		add_child(sp)
 	else:
-		add_child(StageDrawer.new())
+		var sd := StageDrawer.new()
+		sd.z_index = -10
+		add_child(sd)
 
 
 func _spawn_player() -> void:
@@ -151,6 +160,52 @@ func _next_wave() -> void:
 		sfx.play("counter_ding")
 	else:
 		sfx.play("countdown_beep", 0.8 + wave * 0.02)
+	_maybe_spawn_weapon()
+
+
+# ------------------------------------------------------------- weapons ----
+
+func _maybe_spawn_weapon() -> void:
+	# street weapons: 45% on non-boss waves, at most one lying around
+	if _weapon_pickup != null and is_instance_valid(_weapon_pickup):
+		return
+	_weapon_pickup = null
+	if wave % 5 == 0 or randf() > 0.45:
+		return
+	_spawn_weapon()
+
+
+func _spawn_weapon() -> void:
+	var types := ["bat", "bat", "chain", "bottle"]
+	var wp := WeaponPickup.new()
+	wp.wtype = types[randi() % types.size()]
+	wp.position = Vector2(randf_range(250.0, 1030.0), GROUND_Y - 24.0)
+	wp.z_index = -5  # on the ground behind the fighters, above the stage
+	add_child(wp)
+	_weapon_pickup = wp
+	Juice.popup(self, "WEAPON \u2014 TAP TO GRAB!", wp.position + Vector2(-110, -140), Color("ffd166"), 40)
+	sfx.play("counter_ding", 1.3, -6.0)
+
+
+## Tap near a dropped weapon to grab it (must be close enough to reach it).
+## Returns true when the tap was consumed by the pickup.
+func _try_pickup(tap_pos: Vector2) -> bool:
+	if _weapon_pickup == null or not is_instance_valid(_weapon_pickup):
+		return false
+	if player.dead or player.has_weapon() or phase != "fight":
+		return false
+	var wp: Node2D = _weapon_pickup
+	if tap_pos.distance_to(wp.position) > 140.0:
+		return false
+	if player.position.distance_to(wp.position) > 340.0:
+		Juice.popup(self, "TOO FAR!", player.position + Vector2(-40, -380), Color("ff8fa3"), 36)
+		return true  # consumed: don't whiff an attack instead
+	player.equip_weapon(wp.wtype)
+	Juice.popup(self, wp.wtype.to_upper() + "!", player.position + Vector2(-40, -400), Color("ffd166"), 54)
+	sfx.play("ui_click", 1.2)
+	wp.queue_free()
+	_weapon_pickup = null
+	return true
 
 
 func _spawn_enemy() -> void:
@@ -214,6 +269,12 @@ func _process(delta: float) -> void:
 
 	# autotest driver: mash buttons like an excited player
 	if autotest and phase == "fight" and not player.dead:
+		# grab any dropped weapon (exercises the pickup path)
+		if _weapon_pickup != null and is_instance_valid(_weapon_pickup) and not player.has_weapon():
+			var wp := _weapon_pickup as WeaponPickup
+			player.equip_weapon(wp.wtype)
+			wp.queue_free()
+			_weapon_pickup = null
 		_test_t -= delta
 		if _test_t <= 0.0:
 			_test_t = randf_range(0.25, 0.6)
@@ -295,6 +356,9 @@ func _input(event: InputEvent) -> void:
 func _release_touch(d: Dictionary, end_pos: Vector2) -> void:
 	if bool(d["held_block"]):
 		return
+	# weapons first: tapping a dropped weapon grabs it instead of attacking
+	if _try_pickup(end_pos):
+		return
 	var dt: float = Time.get_ticks_msec() / 1000.0 - float(d["time"])
 	var swipe: Vector2 = end_pos - d["start"]
 	if dt < 0.32 and swipe.length() < 42.0:
@@ -350,7 +414,7 @@ func try_hit(attacker: Fighter, mv: Dictionary) -> void:
 		_check_nearmiss(attacker, victim, mv)
 		return
 	var dist := absf(victim.position.x - attacker.position.x)
-	var reach: float = mv["range"] * (attacker.scale.x if attacker.scale.x > 0 else -attacker.scale.x)
+	var reach: float = (float(mv["range"]) + attacker.weapon_range_bonus()) * (attacker.scale.x if attacker.scale.x > 0 else -attacker.scale.x)
 	if dist <= reach:
 		victim.take_hit(mv, attacker)
 		if attacker == player:
@@ -379,6 +443,16 @@ func on_hit_landed(victim: Fighter, attacker: Fighter, mv: Dictionary, dmg: floa
 	if (sfx_name == "punch_thump" or sfx_name == "punch2") and randf() < 0.4:
 		sfx_name = "jsfxr_hit"
 	sfx.play(sfx_name, 1.0)
+	# weapon impact layer: its own crack/shatter on top of the hit sound
+	if attacker.has_weapon():
+		sfx.play(attacker.weapon_sfx(), 1.0, -2.0)
+		var broke: String = attacker.use_weapon_hit()
+		if broke != "":
+			Juice.popup(self, "BROKE!", attacker.position + Vector2(-40, -380), Color("ffb3c1"), 48)
+			sfx.play("glass_break" if broke == "bottle" else "bat_crack", 1.1)
+		elif attacker.weapon_hits_left <= 3:
+			# durability warning ticks when it's about to go
+			Juice.popup(self, str(attacker.weapon_hits_left), attacker.position + Vector2(60, -420), Color(1, 1, 1, 0.8), 30, 50.0, 0.5)
 	juice.hit_stop(float(mv["hitstop"]))
 	juice.add_shake(float(mv["shake"]))
 	# damage number
@@ -604,6 +678,40 @@ func _update_hud() -> void:
 
 
 # --------------------------------------------------------------- stage ----
+
+## A street weapon lying on the ground, waiting to be grabbed. Bobs with a
+## pulsing glow ring; fades out if ignored too long.
+class WeaponPickup:
+	extends Node2D
+
+	var wtype := "bat"
+	var life := 14.0
+	var _t := 0.0
+	var _base_y := 0.0
+
+	func _ready() -> void:
+		_base_y = position.y
+		var wd := Fighter.WeaponDraw.new()
+		wd.weapon_type = wtype
+		wd.rotation = -0.35
+		add_child(wd)
+
+	func _process(delta: float) -> void:
+		_t += delta
+		life -= delta
+		position.y = _base_y + sin(_t * 3.0) * 6.0
+		if life < 3.0:
+			modulate.a = maxf(0.0, life / 3.0)
+		if life <= 0.0:
+			queue_free()
+
+	func _draw() -> void:
+		var pulse := 0.5 + 0.5 * sin(_t * 5.0)
+		draw_arc(Vector2(0, 6), 46.0 + pulse * 8.0, 0.0, TAU, 28,
+			Color(1, 0.85, 0.4, 0.30 + pulse * 0.35), 5.0)
+		draw_arc(Vector2(0, 6), 30.0, 0.0, TAU, 24,
+			Color(1, 0.85, 0.4, 0.20 + pulse * 0.25), 3.0)
+
 
 class StageDrawer:
 	extends Node2D

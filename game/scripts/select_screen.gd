@@ -13,16 +13,23 @@ func setup(p_main: Node, p_save: SaveData) -> void:
 
 
 func _ready() -> void:
+	# NOTE: Controls under a Node2D don't get viewport-relative anchors,
+	# so the backdrop needs an explicit size (anchors alone = zero-size).
 	var bg := ColorRect.new()
 	bg.color = Color(0.08, 0.07, 0.12)
-	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	bg.position = Vector2.ZERO
+	bg.size = Vector2(1280, 720)
 	add_child(bg)
 
 	var title := _label("CONCRETE DRAGON", 120, Color("ffd166"))
-	title.position = Vector2(640 - 330, 60)
+	title.position = Vector2(0, 60)
+	title.size = Vector2(1280, 150)
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	add_child(title)
 	var sub := _label("PICK YOUR FIGHTER", 44, Color.WHITE)
-	sub.position = Vector2(640 - 220, 200)
+	sub.position = Vector2(0, 205)
+	sub.size = Vector2(1280, 60)
+	sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	add_child(sub)
 
 	var defs := []

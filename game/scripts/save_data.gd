@@ -2,7 +2,7 @@ class_name SaveData
 extends RefCounted
 ## Persistent M1 save: cash, upgrades, record. No accounts, no network.
 
-const PATH := "user://streetbrawl.cfg"
+const PATH := "user://concretedragon.cfg"
 
 var cash: int = 0
 var up_power: int = 0

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Procedural stage + UI icons for Street Brawl M1. 100% original PIL-drawn art."""
+"""Procedural stage + UI icons for Concrete Dragon M1. 100% original PIL-drawn art."""
 import os, math, random
 from PIL import Image, ImageDraw, ImageFont
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Procedural art generator for Street Brawl M1 (100% original artwork).
+"""Procedural art generator for Concrete Dragon M1 (100% original artwork).
 Draws cute chibi paper-doll fighter parts, stage, and UI icons with PIL.
 All shapes are drawn programmatically from primitive shapes - no external assets.
 """

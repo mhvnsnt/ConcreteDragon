@@ -1,6 +1,10 @@
 # CONCRETE DRAGON — Game Design Document
 
-**Status**: DESIGN. Owner approval required before build.
+**Status**: M1 LANDED (2026-10-06). The Godot M1 combat slice (select → fight → result,
+tap/swipe/hold/2-finger combat, active-ragdoll KOs, waves/bosses, cash/upgrades,
+persistent save) now lives in `game/`. CI builds the Godot web export (parked
+artifact), Android APK, and AAB on every push; the Pages site currently deploys
+the `game-3d/` Three.js build (CI change 2026-10-06). See Build Log §12.
 **Base**: `tracks/playable-ads/kit/dist/street-brawl-demo.html` (1.74MB single-file HTML5 canvas brawler, 17/17 QA).
 **Identity**: Original game, original art direction. NOTHING from AshLane. Street-level brawler for mobile.
 **Target**: iOS + Android, free-to-play, ages 13+.
@@ -226,3 +230,50 @@ All third-party code/assets logged with license + source URL. No GPL/AGPL in the
 ---
 
 *Design: 2026-10-06. M1 in build (Godot 4.4). Owner-approved direction.*
+
+---
+
+## 12. Build log
+
+### 2026-10-06 — M1 landed in repo + first playtest fixes
+- **Landed**: the M1 Godot project (previously only in the money-machine-hq track dir,
+  never pushed) moved into `game/`: `scripts/` (fight, fighter, juice, sfx, save,
+  select/result screens), `assets/` (procedural rook/vex/stage art, synthesized sfx),
+  `tools/` (art/sfx generators), `LICENSES.md`, `ASSET_MANIFEST.md`. Rebranded
+  Street Brawl → Concrete Dragon (title, stage graffiti, save path, package id
+  `com.orionenterprises.concretedragon`, icon). CI presets untouched
+  (`Web` / `Android APK` / `Android AAB`) — pipeline still green.
+- **Godot 4.7 compat fix**: `fighter.gd` defined `draw_ellipse()`, which collides with
+  the native `CanvasItem` method in 4.7 and fails the build as a parse error.
+  Renamed to `_poly_ellipse()`. Headless `--import` under 4.7.2 (the CI version) is clean.
+- **Playtest fixes** (from real browser playtest of the web export):
+  1. Fighter legs/arms rendered *behind* the stage backdrop (negative `z_index`
+     parts vs stage at z=0) — fighters looked like they were floating. Stage now
+     at `z_index = -10` in both the PNG and procedural paths.
+  2. Select/result screens showed a flat gray backdrop: `ColorRect` with
+     `PRESET_FULL_RECT` under a `Node2D` gets zero size (no viewport-relative
+     anchors outside a `Control` tree). Backdrops now use explicit 1280×720 size.
+  3. `CONCRETE DRAGON` title overflowed the right edge at font 120 (laid out for the
+     shorter `STREET BRAWL`). Titles now full-width centered.
+- **Verified**: headless autotest (built-in player driver) runs waves 1→5, KOs,
+  cash/combo accumulation, no script errors, no stalls; web export boots and plays
+  in Chromium (tap=jab, swipe=heavy/launcher, KO flow, cash popups all confirmed
+  on pixels).
+
+### 2026-10-06 — Weapons (Yakuza-style) + parallel-worker merge
+- **Street weapons**: bats, chains, and bottles spawn as ground pickups (45% on
+  non-boss waves, one at a time, pulsing glow ring, 14s lifetime). Tap one to grab
+  it — your fighter visibly grips it in the front fist and it swings with every
+  attack pose. Each weapon adds damage + reach (bat +6/+60, chain +3/+45, bottle
+  +10/+25); durability ticks per landed hit (bat 8, chain 12, bottle 3) with
+  countdown warnings at ≤3, then it breaks with a "BROKE!" popup. New synthesized
+  SFX: `glass_break` (noise crash + shard pings), `bat_crack`. Design doc §3
+  "weapons with durability" — implemented.
+- **Merge**: a parallel worker landed their own M1 extensions in the same window
+  (FIGHTER_DEFS roster, rook_noir/vex_crimson/bruno/jinx art, skin picker, jsfxr
+  SFX, QRNG loot seeds, game-3d 3D build + CI pivot). Reconciled by hand: their
+  files are the base, my fixes re-applied on top (4.7 `_poly_ellipse` fix,
+  content-aware `_tex_hang` rig fix, stage z-index, select/result backdrops +
+  titles, weapons). Nothing of theirs was deleted; nothing of mine was lost.
+  Their CI (Godot job + 3D job + Pages deploys 3D) is untouched — the Godot export
+  still builds clean under 4.7.2.

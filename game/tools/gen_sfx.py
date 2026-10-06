@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Procedural SFX generator for Street Brawl M1. 100% synthesized with numpy.
+"""Procedural SFX generator for Concrete Dragon M1. 100% synthesized with numpy.
 44100 Hz, 16-bit mono WAVs. No samples, no external audio."""
 import os, wave
 import numpy as np
