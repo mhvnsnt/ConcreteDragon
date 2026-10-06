@@ -59,6 +59,10 @@ jobs:
             echo "SB_PASS=android" >> $GITHUB_ENV
           fi
 
+      - name: Install python3
+        run: |
+          (command -v python3 >/dev/null) || (apt-get update -qq && apt-get install -y -qq python3)
+
       - name: Set version
         run: |
           VERSION_NAME="$(cat version.txt).${{ github.run_number }}"
