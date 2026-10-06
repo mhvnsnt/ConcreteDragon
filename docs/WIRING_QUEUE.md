@@ -27,6 +27,15 @@ Wire in this order; playtest after each tier. Owner plays and vetoes — wire, d
 14. **S1 layering** — layer rpg-audio impacts under existing synth hits (±5% pitch).
 15. **S15 mixing** — music/sfx buses; music ducks under big hits.
 
+## WIRED 2026-10-06 (beat-em-up worker)
+- U6 pause menu ✅ (resume/restart/quit + difficulty + move list)
+- U9 settings ✅ (mute + quality, persisted)
+- Y9 local leaderboards ✅ (Records screen)
+- U11 unlock ceremony ✅ (fanfare + pulsing banner)
+- F6 camera push-in on KO ✅
+- U13/U14/U15 fonts + 9-slice panels + icons ✅ (Bungee/Anton/Bebas, SVG 9-slice, game-icons.net CC BY 3.0)
+- A7 breakables ✅ evolved → full destructibles (HP + debris + pickups)
+
 ## TIER 4 — world (districts)
 16. **A5 district 2 (roads)** — `kenney_city-kit-roads.zip`: scrolling road/bridge/sidewalk
     segments, own palette per owner art rule.
