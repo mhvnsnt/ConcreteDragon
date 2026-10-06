@@ -6,7 +6,11 @@ All art, audio, and code in this slice. Rule: nothing ships that we can't relice
 - **Godot 4.4.1** — MIT license. https://godotengine.org/license
 
 ## Code
-- All GDScript in `scripts/` — written fresh for this project, original.
+- All GDScript in `scripts/` — written fresh for this project, original,
+  including `scripts/ai/bt.gd` (behavior-tree micro-framework) and
+  `scripts/ai/street_thug_bt.gd` (example enemy brain).
+- LimboAI (MIT, limbonaut/limboai) — evaluated, NOT vendored: upstream is
+  GDExtension-only (needs per-platform SCons builds). See docs/EVAL_LIMBOAI.md.
 - Ragdoll/reaction math: Hooke's-law spring-damper (public-domain mathematics) and
   second-order-dynamics concepts (public talk formulation); **no third-party code copied**.
 - CBerry22 "Active Ragdoll in Godot 4" — evaluated only (3D PhysicalBone approach;

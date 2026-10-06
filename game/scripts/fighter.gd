@@ -44,6 +44,7 @@ var facing := 1
 var use_textures := false
 var textures := {}
 var skin_dir := ""  # art subdir actually loaded (base or selected skin)
+var bt_brain = null  # optional behavior-tree brain (scripts/ai/); if set, _ai_update delegates to it
 
 var max_hp := 100.0
 var hp := 100.0
@@ -755,6 +756,9 @@ func _do_attack_pose(delta: float, pname: String) -> void:
 # ------------------------------------------------------------------ AI ----
 
 func _ai_update(delta: float) -> void:
+	if bt_brain != null:
+		bt_brain.think(delta)
+		return
 	if state in ["walkin", "hit", "launched", "down", "getup", "ko", "punch", "heavy", "launcher", "special"]:
 		return
 	var player: Fighter = fight.player
