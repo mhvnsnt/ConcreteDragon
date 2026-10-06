@@ -9,7 +9,8 @@ Tap. Beat them down. Next enemy walks in. Every KO different.
 - **Play the latest build:** https://mhvnsnt.github.io/ConcreteDragon/ (auto-updates every push)
 - **Design:** `docs/GAME_DESIGN.md`
 - **Teardowns:** `docs/TEARDOWN.md` (what the highest-grossing mobile games do, and what we steal)
-- **Publishing:** `docs/PUBLISHING.md` (no-store plan: itch.io, web portals, sideload APK)
+- **Publishing:** `docs/PUBLISHING.md` (no-store first: itch.io + Ko-fi + sideload APK; Play unlocks at $25 earnings)
+- **Monetization plan:** `docs/monetization/monetization-plan.md` (ranked $0-upfront money paths)
 - **Playable demo:** `docs/demo.html` (open in a browser)
 
 Built with Godot 4. Live service: seasons, battle pass, DLC fighters.
