@@ -35,3 +35,25 @@ Prior UI haul (separate worker): `ui/` — Kenney UI packs, 425 icons, 9 OFL fon
 - **Boss theme music (S13) / battle loops (S12):** no verified-CC0 loopable battle track pulled; current synth loops suffice for now. Candidates for next pass: OpenGameArt CC0 battle themes (verify per-track license at pull time).
 - **Crowd ambience (S9):** freesound CC0 crowd cheers need login — flagged for the account lane.
 - **Graffiti-wall texture:** 3dtextures.me has one but JS-gated; pxhere CC0 photos logged as alternates in ui/UI_PULL_INS.md.
+
+## parts/ wave 2 — species/outfit variation (owner 2026-10-06)
+| Pack | Source | License | Contents → use |
+|------|--------|---------|----------------|
+| kenney-cube-pets (24 GLB + colormap) | https://kenney.nl/assets/cube-pets (direct zip) | CC0 (bundled License.txt) | tiger/lion/polar/fox/dog/monkey + 18 more animated animals — heads as animal-head masks, bodies as beast enemies |
+| quaternius-animated-animals/wolf.glb | https://quaternius.com/packs/ultimateanimatedanimals.html via https://poly.pizza/m/P1gU3Qkr9r | CC0 (page badge + "Public Domain (CC0)" label) | rigged animated wolf — werewolf/beast head mask + body |
+| quaternius-monsters (9 GLB) | https://quaternius.com/packs/ultimatemonsters.html via poly.pizza model pages (see parts/quaternius-monsters/LICENSE.md) | CC0 (page badge + per-model "Public Domain (CC0)") | dino, dragon-evolved, yeti, zombie, demon, blue-demon, ghost, orc, ghost-skull — species roster + bosses |
+| quaternius-humanoids (4 GLB) | https://quaternius.com/packs/ultimatedanimatedcharacter.html via poly.pizza model pages (see parts/quaternius-humanoids/LICENSE.md) | CC0 (page badge + per-model "Public Domain (CC0)") | man/ninja/adventurer/king — street civilians, crowd NPCs, outfit variants |
+
+Per-pack LICENSE.md files in each parts/<pack>/ dir. All downloads verified
+(valid glTF magic, animated rigs intact on spot check).
+
+## Logged gaps — wave 2 (not faked)
+- **Quaternius Drive folders quota-blocked** (shared-egress IP rate limit):
+  pulled the same CC0 packs via Poly Pizza mirrors instead (identical Quaternius
+  CC0 content). Full 12-animal / 50-monster / 52-humanoid sets re-fetchable from
+  the Drive folders in each LICENSE.md when quota clears.
+- **Sports outfits:** no CC0 3D sports-character pack exists (all paid /
+  restrictive / print-licensed — rejected). Per spec §8: sports uniforms via
+  painted texture variants (owner's texture-customization directive).
+- **Animal-head masks:** no clean CC0 wearable-mask 3D pack (3D-print STL
+  market — rejected). Per spec §8: animal heads as `head`-bone attachments.

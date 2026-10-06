@@ -54,17 +54,31 @@ animation automatically.
 | kenney-blocky-characters | 150 (fbx) | CC0 — License.txt | ⚠ flat-shaded — texture pass needed | blocky body variants |
 | kenney-mini-characters | 139 (glb/obj) | CC0 — License.txt | ⚠ flat-shaded — texture pass needed | chibi/small species |
 | quaternius-rpg-characters | 60 (blend) | CC0 — License.txt | ⚠ .blend needs Blender→GLB export + texture check | fantasy classes, weapons |
+| **kenney-cube-pets** (wave 2) | 24 (glb) | CC0 — License.txt + LICENSE.md | ✓ painted colormap | tiger/lion/bear/fox/dog/monkey heads → animal-head masks; full bodies → beast enemies |
+| **quaternius-animated-animals** (wave 2) | 1 (glb) | CC0 — LICENSE.md | ✓ painted | wolf (rigged+animated) — werewolf/beast head mask + beast body |
+| **quaternius-monsters** (wave 2) | 9 (glb) | CC0 — LICENSE.md | ✓ painted | dino, dragon-evolved, yeti, zombie, demon, blue-demon, ghost, orc, ghost-skull — species roster + bosses |
+| **quaternius-humanoids** (wave 2) | 4 (glb) | CC0 — LICENSE.md | ✓ painted | man/ninja/adventurer/king — street civilians, crowd NPCs, outfit variants |
 
 ### Species / creature sources
 - **kaykit-skeletons** — full undead bodies (possessed/undead roster tier)
+- **quaternius-monsters** (wave 2, 3D ✓) — **dino** (dinosaur anthropomorph
+  fighter/boss), **dragon-evolved** (dragon tier — the namesake boss),
+  **yeti** (beast boss), **zombie** (undead variety), **demon / blue-demon**
+  (possessed/demon fighters), **ghost / ghost-skull** (spectral enemies),
+  **orc** (brute variant). All rigged + animated, painted, CC0.
+- **kenney-cube-pets** (wave 2, 3D ✓) — 24 animated animals; tiger/lion/polar/
+  fox/dog/monkey heads harvest as wearable animal-head masks (see §8);
+  full bodies as beast enemies.
+- **quaternius-animated-animals** (wave 2, 3D ✓) — rigged animated **wolf**
+  (werewolf/beast archetype).
 - **kenney-monster-builder-pack** (367 files) — 2D PNG ONLY, not 3D-attachable.
   Keep as concept reference for monster part design, do not wire as 3D.
 - **kenney-animal-pack** (124 files) — 2D PNG ONLY. Same: reference only.
-- **Dragon lead (verified, not yet pulled):** TactileDream's CC0 collection on
+- **Dragon lead (additional source, verified):** TactileDream's CC0 collection on
   OpenGameArt (https://opengameart.org/node/143343) contains **Mazo Dragon
   (.blend, CC0)**, **Anthro Dragon-like Char (.obj, CC0)**, **Daemon with
-  rig + animations (CC0)**. Pull these for the Concrete Dragon boss tier and
-  demon species. The game's namesake needs a real dragon — this is the source.
+  rig + animations (CC0)** — backup source for dragon/demon tier if more
+  variety is needed beyond dragon-evolved.
 
 ### Environments — 3D, textured, CC0 (all KayKit, single-atlas look matches game)
 | Pack | Files | Zone use |
@@ -130,3 +144,38 @@ escalation. Crowd only in designated arena missions per owner rule.
 4. kaykit-city-builder street dressing in Zone 1
 5. Species variants (skeleton → possessed → dragon pull)
 6. Zone 2–4 environment rollout with platforming pieces
+7. **(wave 2)** Animal-head masks on `head` bone (tiger/lion/wolf) — beast-fighter
+   unlocks; quaternius-monsters as species-variant bosses/enemies;
+   quaternius-humanoids as crowd/civilian variety
+8. **(wave 2)** Sports jersey texture variants (see §8) + beast/demon roster
+   expansion in later zones
+
+## 8. WAVE 2 NOTES — MASKS, SPORTS, IP (owner 2026-10-06)
+
+**Animal-head masks:** no clean CC0 "wearable mask" 3D pack exists (market is
+3D-print STLs with restrictive licenses — rejected). Approach: harvest HEADS
+from kenney-cube-pets (tiger, lion, polar, fox, dog, monkey) and
+quaternius-animated-animals (wolf) and parent the head mesh to the fighter's
+`head` bone, scaled to sit over the mannequin head like a mask/helmet. The
+painted colormap keeps the look law. Lizard/reptile: quaternius-monsters
+**dino** head serves the same role (dinosaur anthropomorph = full-body
+alternative).
+
+**Sports outfits:** no CC0 3D sports-character pack found (all paid/restrictive/
+print-licensed — rejected). Approach per owner's texture-customization
+directive: sports uniforms are PAINTED TEXTURE VARIANTS (football jersey,
+boxing robe, baseball uniform, basketball kit) authored in the patchwork style
+and equipped via the texture-variant system + tint. Sports props (balls,
+gloves, bats) to be pulled if a CC0 source surfaces; until then, texture does
+the work — boxing gloves can also be modeled as simple painted hand
+attachments on `hand.l/r`.
+
+**Vampires/werewolves:** vampire = quaternius-monsters **demon/blue-demon**
+with pale tint + kaykit-halloween accessories; werewolf = **wolf** head mask +
+beast body, full-moon zone modifier. Zombie variety: **zombie** + kaykit-
+skeletons + tint shifts.
+
+**IP RULE (binding):** inspired-by archetypes only. A Blanka-style green
+beast-person is FINE; Blanka himself (name, exact look, backstory) is NEVER
+used. Same for all franchise characters — archetypes in, names/likenesses
+out. Builder-invented names need owner approval per standing rule.
