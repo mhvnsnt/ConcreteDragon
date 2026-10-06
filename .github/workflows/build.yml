@@ -1,0 +1,118 @@
+# Street Brawl CI — every push to main rebuilds everything.
+#
+# Produces:
+#   - dist/web/            -> auto-deployed to GitHub Pages (playable latest build)
+#   - dist/street-brawl.apk -> sideload onto any Android phone
+#   - dist/street-brawl.aab -> upload to Google Play internal testing track
+#
+# Version code auto-bumps from the GitHub run number (always increasing,
+# which is what Google Play requires). Version name = version.txt + run number.
+
+name: Build Street Brawl
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "game/**"
+      - "tools/ci/**"
+      - ".github/workflows/build.yml"
+  workflow_dispatch:
+
+env:
+  GODOT_VERSION: 4.7.2
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: barichello/godot-ci:4.7.2
+    defaults:
+      run:
+        working-directory: game
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Import project
+        run: godot --headless --import --path . 2>&1 | tail -5
+
+      - name: Keystore setup
+        run: |
+          mkdir -p ~/.android
+          if [ -n "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" ]; then
+            echo "Using release keystore from secrets"
+            echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > ~/.android/release.keystore
+            echo "SB_KEYSTORE=$HOME/.android/release.keystore" >> $GITHUB_ENV
+            echo "SB_ALIAS=${{ secrets.ANDROID_KEYSTORE_ALIAS }}" >> $GITHUB_ENV
+            echo "SB_PASS=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" >> $GITHUB_ENV
+          else
+            echo "No release keystore secret — signing with debug key (fine for internal testing)"
+            if [ ! -f ~/.android/debug.keystore ]; then
+              keytool -genkeypair -keystore ~/.android/debug.keystore \
+                -alias androiddebugkey -storepass android -keypass android \
+                -keyalg RSA -keysize 2048 -validity 10950 \
+                -dname "CN=Android Debug,O=Orion Enterprises LLC,C=US"
+            fi
+            echo "SB_KEYSTORE=$HOME/.android/debug.keystore" >> $GITHUB_ENV
+            echo "SB_ALIAS=androiddebugkey" >> $GITHUB_ENV
+            echo "SB_PASS=android" >> $GITHUB_ENV
+          fi
+
+      - name: Set version
+        run: |
+          VERSION_NAME="$(cat version.txt).${{ github.run_number }}"
+          VERSION_CODE=$(( 1000 + ${{ github.run_number }} ))
+          python3 ../tools/ci/set_version.py \
+            --version-code "$VERSION_CODE" \
+            --version-name "$VERSION_NAME" \
+            --keystore "$SB_KEYSTORE" --alias "$SB_ALIAS" --password "$SB_PASS"
+          echo "VERSION_NAME=$VERSION_NAME" >> $GITHUB_ENV
+          echo "VERSION_CODE=$VERSION_CODE" >> $GITHUB_ENV
+
+      - name: Export Web
+        run: |
+          mkdir -p ../dist/web
+          godot --headless --path . --export-release "Web" ../dist/web/index.html
+
+      - name: Export Android APK
+        run: |
+          mkdir -p ../dist
+          godot --headless --path . --export-release "Android APK" ../dist/street-brawl.apk
+
+      - name: Export Android AAB
+        run: |
+          godot --headless --path . --export-release "Android AAB" ../dist/street-brawl.aab
+
+      - name: Upload web build
+        uses: actions/upload-artifact@v4
+        with:
+          name: street-brawl-web
+          path: dist/web
+
+      - name: Upload Android builds
+        uses: actions/upload-artifact@v4
+        with:
+          name: street-brawl-android
+          path: |
+            dist/street-brawl.apk
+            dist/street-brawl.aab
+
+  deploy-web:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download web build
+        uses: actions/download-artifact@v4
+        with:
+          name: street-brawl-web
+          path: web
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./web
+          # .nojekyll is created automatically (Jekyll stays off)
