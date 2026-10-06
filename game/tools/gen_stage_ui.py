@@ -77,7 +77,7 @@ for wx in (120, 1160):
 d.rounded_rectangle([240, 450, 400, GROUND_Y], radius=10, fill=(90, 60, 45), outline=DARK, width=8)
 d.ellipse([370, 520, 382, 532], fill=(255, 214, 64), outline=DARK, width=3)
 
-# graffiti "STREET BRAWL" - original lettering drawn as stroked text on a tilted layer
+# graffiti "CONCRETE DRAGON" - original lettering drawn as stroked text on a tilted layer
 fb1 = ImageFont.truetype(FONTB, 88)
 fb2 = ImageFont.truetype(FONTB, 88)
 def graffiti_layer(text, font, fill, angle):
@@ -89,8 +89,8 @@ def graffiti_layer(text, font, fill, angle):
             stroke_width=10, stroke_fill=DARK)
     return lay.rotate(angle, expand=True, resample=Image.BICUBIC)
 
-g1 = graffiti_layer("STREET", fb1, (255, 214, 64, 255), -4)
-g2 = graffiti_layer("BRAWL", fb2, (255, 105, 180, 255), 3)
+g1 = graffiti_layer("CONCRETE", fb1, (255, 214, 64, 255), -4)
+g2 = graffiti_layer("DRAGON", fb2, (255, 105, 180, 255), 3)
 img.paste(g1, ((W - g1.width) // 2, 352), g1)
 img.paste(g2, ((W - g2.width) // 2, 352 + g1.height - 24), g2)
 
