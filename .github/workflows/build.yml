@@ -1,9 +1,16 @@
 # Concrete Dragon CI — every push to main rebuilds everything.
 #
 # Produces:
-#   - dist/web/            -> auto-deployed to GitHub Pages (playable latest build)
-#   - dist/street-brawl.apk -> sideload onto any Android phone
-#   - dist/street-brawl.aab -> kept for any future store move (sideload uses the APK)
+#   - dist/concrete-dragon.html -> THE GAME. Deployed to GitHub Pages
+#     (Three.js single-HTML 3D build from game-3d/). The Pages site MUST
+#     serve this 3D game.
+#   - dist/godot-2d-web/        -> parked 2D Godot web export (kept as a
+#     build artifact only, NOT deployed). Owner rejected the 2D paper-doll
+#     direction as the shipped game (2026-10-06); its systems live on as the
+#     design spec ported into the 3D build.
+#   - dist/street-brawl.apk     -> sideload onto any Android phone
+#     (no-store strategy: no $25 Play fee, so APK sideload is the mobile path)
+#   - dist/street-brawl.aab     -> kept for any future store move
 #
 # Version code auto-bumps from the GitHub run number (always increasing,
 # which app stores require if we ever ship to one). Version name = version.txt + run number.
@@ -15,6 +22,7 @@ on:
     branches: [main]
     paths:
       - "game/**"
+      - "game-3d/**"
       - "tools/ci/**"
       - ".github/workflows/build.yml"
   workflow_dispatch:
@@ -113,10 +121,10 @@ jobs:
           fi
           ls android/build | head -8
 
-      - name: Export Web
+      - name: Export Web (2D Godot — parked, not deployed)
         run: |
-          mkdir -p ../dist/web
-          godot --headless --path . --export-release "Web" ../dist/web/index.html
+          mkdir -p ../dist/godot-2d-web
+          godot --headless --path . --export-release "Web" ../dist/godot-2d-web/index.html
 
       - name: Export Android APK
         run: |
@@ -127,11 +135,11 @@ jobs:
         run: |
           godot --headless --path . --export-release "Android AAB" ../dist/street-brawl.aab
 
-      - name: Upload web build
+      - name: Upload parked 2D web build
         uses: actions/upload-artifact@v4
         with:
-          name: street-brawl-web
-          path: dist/web
+          name: godot-2d-web-parked
+          path: dist/godot-2d-web
 
       - name: Upload Android builds
         uses: actions/upload-artifact@v4
@@ -141,17 +149,48 @@ jobs:
             dist/street-brawl.apk
             dist/street-brawl.aab
 
+  build-3d:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: game-3d/package-lock.json
+
+      - name: Build Concrete Dragon 3D (Three.js single HTML)
+        run: |
+          cd game-3d
+          npm ci
+          node build.mjs
+          ls -la dist/concrete-dragon.html
+
+      - name: Upload 3D web build
+        uses: actions/upload-artifact@v4
+        with:
+          name: concrete-dragon-3d
+          path: game-3d/dist/concrete-dragon.html
+
   deploy-web:
-    needs: build
+    needs: [build, build-3d]
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
-      - name: Download web build
+      - name: Download 3D web build
         uses: actions/download-artifact@v4
         with:
-          name: street-brawl-web
+          name: concrete-dragon-3d
           path: web
+
+      - name: Publish as index.html
+        run: |
+          mv web/concrete-dragon.html web/index.html
+          ls -la web/
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
