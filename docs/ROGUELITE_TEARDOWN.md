@@ -105,3 +105,49 @@ Kasavin (Inverse): "Our big focus from the start with Hades was how to take the 
 **Why it retains:** the run is a branching path of visible choices — you always know what you're walking toward.
 
 **Concrete Dragon adaptation:** mission select shows the circuit as a branching map: each node previews its reward type (blessing / gear / cash / boss). Between-mission corner store + mid-mission **BODEGA** stops (pay cash mid-run for a heal or one blessing). The Street Circuit card already exists — give it the door-preview treatment.
+
+---
+
+## PART 3 — CONCRETE DRAGON: THE ADAPTATION PLAN (all additive)
+
+Base combat (tap/dodge/jump, directional moves, counters) never changes. Everything below orbits it.
+
+### Priority 1 — the run loop (steal from Brotato 1.1 + 1.5)
+Missions become runs: fight the block → **corner store** (spend cash, pick 1-of-3 stat boosts, buy gear, reroll stock for a fee, recycle for partial refund) → next mission. Short missions (2–4 min) so death is cheap. LUCK stat improves store stock and pickup drops.
+
+### Priority 2 — gear with tags (steal from Brotato 1.2 + 1.3)
+4–6 gear slots per fighter (gloves/wraps/chains/boots/jacket/charm) with tags (BRAWLER, STREET, HEAVY, SWIFT, LOUD). Duplicates merge to higher tiers (white→blue→purple→orange). Store stock weights toward owned tags. Stat vocabulary: POWER, TOUGH(armor), REGEN, LIFESTEAL, CRIT, DODGE, SPEED, LUCK, HUSTLE. Fighter quirks per character (not just stats).
+
+### Priority 3 — blessings (steal from Hades 2.1)
+Mid-mission and store-offered **blessings** from street-mythology figures, rarities COMMON/RARE/EPIC/LEGENDARY, **DUO blessings** for holding two specific figures' blessings. Each fighter's blessings flavor their INDIVIDUAL move set (owner law: every fighter gets their own unique moves — no shared movelists; special attacks get ORIGINAL names only, e.g. "Blacktop Howl," never trademarked attack names).
+
+### Priority 4 — REP tiers + street conditions (steal from Brotato 1.6 + Hades 2.5)
+Clear the circuit → unlock REP 1–5. Each tier = stackable **street conditions** (RUSH HOUR, HEAVY HITTERS, BLACKOUT, NO PICKUPS, TITANS). Rewards re-earn per tier per fighter — climb one tier at a time. Gold fighter cards for top-tier clears.
+
+### Priority 5 — charms (steal from Hades 2.4)
+One pre-mission charm slot: Brass Knuckles, Lucky Dice, Second Wind, etc. Earned from bosses and fighter affinity. Loads the dice without removing RNG.
+
+### Priority 6 — the Gym (steal from Hades 2.3)
+Expand the upgrade board to ~12 permanent nodes (extra dodge charge, magnet radius, once-per-circuit revive...). Every mission pays in, win or lose. Respecable.
+
+### Priority 7 — death as content (steal from Hades 2.6)
+Rivals taunt you by name when you fall; the crew drags you up; The Narrator appears ONLY at defeat milestones (scarce by law). Defeat-streak dialogue per boss. Opt-in **COMEBACK** toggle: stacking damage reduction per loss, labeled as training aid, no leaderboard impact.
+
+### Priority 8 — branching circuit map (steal from Hades 2.7)
+Mission select as a branching map with reward previews (blessing / gear / cash / boss nodes). Mid-mission **BODEGA** stops: pay cash for a heal or one blessing.
+
+### What NOT to steal
+- Brotato's pure auto-attack (our combat is manual by design and the owner loves it).
+- Hades' scripted story beats (our narrative is street/emergent, not Greek tragedy — keep the *mechanism* of death-as-content, not the content).
+
+---
+
+## TOP SYSTEMS TO STEAL (ranked)
+1. **Between-mission corner store** (Brotato shop) — the single highest-leverage addition: turns missions into runs.
+2. **Gear tags + merge tiers** (Brotato weapons) — build identity, the "my run" feeling.
+3. **REP tiers + street conditions** (Danger levels + Heat) — the infinite endgame ladder.
+4. **Blessings with rarities + duos** (Hades boons) — per-run variance with jackpot stories.
+5. **Charms** (Hades keepsakes) — pre-mission agency over RNG.
+6. **Death-as-content** (Hades narrative) — makes losing part of the show.
+7. **The Gym expansion** (Mirror of Night) — no run ever wasted.
+8. **Branching circuit map** (Hades chambers) — visible choices, visible rewards.
