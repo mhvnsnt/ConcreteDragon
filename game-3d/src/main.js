@@ -33,7 +33,9 @@ const save = {
   best_wave: 0, selected: 'kidblue', skins: {},
   unlocked: ['kidblue', 'ghost', 'brick'], missionsDone: [],
   daily: { date: '', score: 0 }, boards: {}, seenHint: false,
+  muted: false, quality: 'auto', difficulty: 'normal',
 };
+const TIP_URL = 'https://paypal.me/MarquisWhitacre';
 function loadSave() {
   try {
     const s = JSON.parse(localStorage.getItem(SAVE_KEY));
@@ -52,13 +54,99 @@ const hustleMult = () => 1 + save.up_hustle * 0.15;
 
 // ---------- data: roster (data-driven; unlock via missions/bosses) ----------
 const FIGHTERS = [
-  { id: 'kidblue', name: 'KID BLUE', tag: 'Balanced brawler. Big heart, bigger hands.', hp: 100, dmg: 1.0, spd: 1.0, unlock: { type: 'start' } },
-  { id: 'ghost', name: 'GHOST', tag: 'Fast striker. Blink and you lose.', hp: 85, dmg: 0.9, spd: 1.25, unlock: { type: 'start' } },
-  { id: 'brick', name: 'BRICK', tag: 'Walking wall. Hits like rent day.', hp: 135, dmg: 1.25, spd: 0.85, unlock: { type: 'start' } },
-  { id: 'kingpin', name: 'KINGPIN', tag: 'Used to run this block. Now he runs with you.', hp: 150, dmg: 1.3, spd: 0.9, unlock: { type: 'boss', boss: 'kingpin' } },
-  { id: 'sledge', name: 'SLEDGE', tag: 'Yard enforcer. Swings first, talks never.', hp: 165, dmg: 1.45, spd: 0.8, unlock: { type: 'boss', boss: 'sledge' } },
-  { id: 'viper', name: 'VIPER', tag: 'Fast hands, faster mouth.', hp: 95, dmg: 1.05, spd: 1.35, unlock: { type: 'boss', boss: 'viper' } },
+  { id: 'kidblue', name: 'KID BLUE', tag: 'Balanced brawler. Big heart, bigger hands.', hp: 100, dmg: 1.0, spd: 1.0, unlock: { type: 'start' },
+    spc2: { name: 'DRAGON RUSH', cost: 50, desc: 'Shoulder-first dash through the whole pack.' },
+    moves: [
+      ['STREET JAB', 'HIT', 'Quick jab. Chains into cross and kick.'],
+      ['LUNGE STRIKE', '→ + HIT', 'Dash punch. Closes distance fast.'],
+      ['RETREAT BACKFIST', '← + HIT', 'Step back, spinning backfist with knockback.'],
+      ['LOW SWEEP', '↓ + HIT', 'Sweep the legs — launches for juggles.'],
+      ['HEAVY HOOK', 'HVY', 'Slow, crushing hook. Big damage.'],
+      ['JUMP KICK', 'JUMP, then HIT', 'Aerial dive kick. Hits on the way down.'],
+      ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
+      ['DRAGON RUSH', '↓ + SPC (50 meter)', 'Shoulder dash straight through the pack.'],
+    ] },
+  { id: 'ghost', name: 'GHOST', tag: 'Fast striker. Blink and you lose.', hp: 85, dmg: 0.9, spd: 1.25, unlock: { type: 'start' },
+    spc2: { name: 'BLINK FLURRY', cost: 50, desc: 'Blink between the 3 nearest enemies, striking each.' },
+    moves: [
+      ['STREET JAB', 'HIT', 'Fastest jab in the game. Chains into cross and kick.'],
+      ['LUNGE STRIKE', '→ + HIT', 'Blink-step punch. Closes distance instantly.'],
+      ['RETREAT BACKFIST', '← + HIT', 'Fade back, snapping backfist.'],
+      ['LOW SWEEP', '↓ + HIT', 'Ankle sweep — launches for juggles.'],
+      ['HEAVY HOOK', 'HVY', 'Charged hook. Big damage.'],
+      ['JUMP KICK', 'JUMP, then HIT', 'Aerial dive kick.'],
+      ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
+      ['BLINK FLURRY', '↓ + SPC (50 meter)', 'Blink between the 3 nearest enemies.'],
+    ] },
+  { id: 'brick', name: 'BRICK', tag: 'Walking wall. Hits like rent day.', hp: 135, dmg: 1.25, spd: 0.85, unlock: { type: 'start' },
+    spc2: { name: 'SEISMIC SLAM', cost: 50, desc: 'Ground pound: shockwave launches everyone near.' },
+    moves: [
+      ['STREET JAB', 'HIT', 'Heavy jab. Chains into cross and kick.'],
+      ['LUNGE STRIKE', '→ + HIT', 'Bulldozer dash punch.'],
+      ['RETREAT BACKFIST', '← + HIT', 'Step back, wrecking-ball backfist.'],
+      ['LOW SWEEP', '↓ + HIT', 'Tree-trunk sweep — launches for juggles.'],
+      ['HEAVY HOOK', 'HVY', 'The rent collector. Huge damage.'],
+      ['JUMP KICK', 'JUMP, then HIT', 'Aerial drop kick.'],
+      ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
+      ['SEISMIC SLAM', '↓ + SPC (50 meter)', 'Ground pound launches everyone nearby.'],
+    ] },
+  { id: 'kingpin', name: 'KINGPIN', tag: 'Used to run this block. Now he runs with you.', hp: 150, dmg: 1.3, spd: 0.9, unlock: { type: 'boss', boss: 'kingpin' },
+    spc2: { name: "KINGPIN'S WRATH", cost: 50, desc: 'Royal beatdown: massive AOE around him.' },
+    moves: [
+      ['STREET JAB', 'HIT', 'Boss-grade jab. Chains into cross and kick.'],
+      ['LUNGE STRIKE', '→ + HIT', 'Power dash punch.'],
+      ['RETREAT BACKFIST', '← + HIT', 'Step back, royal backhand.'],
+      ['LOW SWEEP', '↓ + HIT', 'Cane sweep — launches for juggles.'],
+      ['HEAVY HOOK', 'HVY', 'The gavel. Enormous damage.'],
+      ['JUMP KICK', 'JUMP, then HIT', 'Aerial stomp kick.'],
+      ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
+      ["KINGPIN'S WRATH", '↓ + SPC (50 meter)', 'Massive shockwave around him.'],
+    ] },
+  { id: 'sledge', name: 'SLEDGE', tag: 'Yard enforcer. Swings first, talks never.', hp: 165, dmg: 1.45, spd: 0.8, unlock: { type: 'boss', boss: 'sledge' },
+    spc2: { name: 'WRECKING SWING', cost: 50, desc: '360° swing that clears the whole circle.' },
+    moves: [
+      ['STREET JAB', 'HIT', 'Sledgehammer jab. Chains into cross and kick.'],
+      ['LUNGE STRIKE', '→ + HIT', 'Charging shoulder tackle.'],
+      ['RETREAT BACKFIST', '← + HIT', 'Step back, wrecking swing.'],
+      ['LOW SWEEP', '↓ + HIT', 'Demolition sweep — launches for juggles.'],
+      ['HEAVY HOOK', 'HVY', 'Full sledge. Devastating.'],
+      ['JUMP KICK', 'JUMP, then HIT', 'Aerial demolition kick.'],
+      ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
+      ['WRECKING SWING', '↓ + SPC (50 meter)', '360° swing clears the whole circle.'],
+    ] },
+  { id: 'viper', name: 'VIPER', tag: 'Fast hands, faster mouth.', hp: 95, dmg: 1.05, spd: 1.35, unlock: { type: 'boss', boss: 'viper' },
+    spc2: { name: 'VENOM DASH', cost: 50, desc: 'Serpent dash: strikes everything in a line.' },
+    moves: [
+      ['STREET JAB', 'HIT', 'Flicker jab. Chains into cross and kick.'],
+      ['LUNGE STRIKE', '→ + HIT', 'Serpent strike dash.'],
+      ['RETREAT BACKFIST', '← + HIT', 'Slither back, snapping strike.'],
+      ['LOW SWEEP', '↓ + HIT', 'Tail sweep — launches for juggles.'],
+      ['HEAVY HOOK', 'HVY', 'The fang. Big damage.'],
+      ['JUMP KICK', 'JUMP, then HIT', 'Aerial fang kick.'],
+      ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
+      ['VENOM DASH', '↓ + SPC (50 meter)', 'Dash in a line, striking everything.'],
+    ] },
+  { id: 'dust', name: 'DUST', tag: 'Quick hands. Gone before you blink.', hp: 80, dmg: 0.95, spd: 1.4, unlock: { type: 'boss', boss: 'rust' },
+    spc2: { name: 'DUST DEVIL', cost: 50, desc: 'Spin into the pack: AOE hits while moving.' },
+    moves: [
+      ['STREET JAB', 'HIT', 'Fastest hands on the block. Chains into cross and kick.'],
+      ['LUNGE STRIKE', '→ + HIT', 'Dust-step punch. Closes distance like smoke.'],
+      ['RETREAT BACKFIST', '← + HIT', 'Slip back, whipping backfist.'],
+      ['LOW SWEEP', '↓ + HIT', 'Dust-cloud sweep — launches for juggles.'],
+      ['HEAVY HOOK', 'HVY', 'The backhand of the storm. Big damage.'],
+      ['JUMP KICK', 'JUMP, then HIT', 'Aerial cyclone kick.'],
+      ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
+      ['DUST DEVIL', '↓ + SPC (50 meter)', 'Spinning AOE that travels through the pack.'],
+    ] },
 ];
+const DIFFS = [
+  { id: 'rookie', name: 'ROOKIE', hpMul: 0.55, dmgMul: 0.55, aggro: 0.55, desc: 'Learn the streets.' },
+  { id: 'street', name: 'STREET', hpMul: 0.8, dmgMul: 0.8, aggro: 0.8, desc: 'A fair fight.' },
+  { id: 'normal', name: 'NORMAL', hpMul: 1.0, dmgMul: 1.0, aggro: 1.0, desc: 'The real game.' },
+  { id: 'hard', name: 'HARD', hpMul: 1.45, dmgMul: 1.35, aggro: 1.3, desc: 'They hit back harder.' },
+  { id: 'brutal', name: 'BRUTAL', hpMul: 2.0, dmgMul: 1.8, aggro: 1.6, desc: 'No mercy out here.' },
+];
+const diffDef = () => DIFFS.find((d) => d.id === save.difficulty) || DIFFS[2];
 const SKINS = { // style only — zero power. New packs drop in here.
   kidblue: [{ id: 'street', name: 'Street Blue', tint: 0x4fd1ff }, { id: 'noir', name: 'Noir', tint: 0x2b2b38 }, { id: 'gold', name: 'Champion Gold', tint: 0xffd166 }],
   ghost: [{ id: 'street', name: 'Ghost Mint', tint: 0x4dff88 }, { id: 'noir', name: 'Noir', tint: 0x2b2b38 }, { id: 'volt', name: 'Volt', tint: 0x7af0ff }],
@@ -66,6 +154,7 @@ const SKINS = { // style only — zero power. New packs drop in here.
   kingpin: [{ id: 'street', name: 'Boss Gold', tint: 0xffb03d }, { id: 'noir', name: 'Noir', tint: 0x2b2b38 }],
   sledge: [{ id: 'street', name: 'Yard Rust', tint: 0xb3541e }, { id: 'noir', name: 'Noir', tint: 0x2b2b38 }],
   viper: [{ id: 'street', name: 'Viper Green', tint: 0x39d353 }, { id: 'noir', name: 'Noir', tint: 0x2b2b38 }],
+  dust: [{ id: 'street', name: 'Dust Grey', tint: 0xb8b0a0 }, { id: 'noir', name: 'Noir', tint: 0x2b2b38 }, { id: 'storm', name: 'Storm Dust', tint: 0x8a7f6a }],
 };
 // Supporter packs: cosmetic-only, purchasable on itch.io (PWYW). In-game: preview only.
 const SUPPORT_PACKS = [
@@ -83,6 +172,11 @@ const skinTint = (fid) => {
   return s.tint;
 };
 const isUnlocked = (f) => save.unlocked.includes(f.id);
+function moveListHTML(fid) {
+  const f = fighterDef(fid);
+  return (f.moves || []).map(([n, i, d]) =>
+    `<div class="mvrow"><span class="mn">${n}</span><span class="mi">${i}</span><span class="md">${d}</span></div>`).join('');
+}
 function unlockText(f) {
   if (f.unlock.type === 'start') return '';
   if (f.unlock.type === 'boss') { const b = BOSSES.find((x) => x.id === f.unlock.boss); return 'BEAT ' + (b ? b.name : 'THE BOSS') + ' TO UNLOCK'; }
@@ -112,6 +206,12 @@ const ENEMY_FAMS = [
       { at: 0 },
       { at: 4, name: 'HEAVY D PLUS', tint: 0xe06a1e, hpMul: 1.7, scaleMul: 1.1, move: 'charge' },
     ] },
+  { id: 'stray', name: 'STRAY', tint: 0x9a9a8a, hp: 55, dmg: 0.85, scale: 0.9, spd: 2.6,
+    variants: [
+      { at: 0 },
+      { at: 3, name: 'STRAY SWIFT', tint: 0x7a7a6a, spdMul: 1.5, move: 'flurry' },
+      { at: 5, name: 'STRAY SHIV', tint: 0xb8b89a, dmgMul: 1.5, move: 'knife' },
+    ] },
 ];
 // missionIdx picks the variant: latest variant whose `at` <= mission index
 function famVariant(fam, mi) {
@@ -135,6 +235,9 @@ const BOSSES = [
   { id: 'viper', name: 'VIPER', tint: 0x39d353, hp: 380, dmg: 1.15, scale: 1.05, spd: 2.4,
     patterns: ['flurry', 'charge', 'summon'], unlockFighter: 'viper',
     intro: 'FAST HANDS, FASTER MOUTH' },
+  { id: 'rust', name: 'RUST', tint: 0xc0c9d6, hp: 640, dmg: 1.55, scale: 1.5, spd: 1.25,
+    patterns: ['slam', 'charge', 'summon'], unlockFighter: 'dust',
+    intro: 'THE RUST GIANT' },
 ];
 
 // ---------- data: districts (per-district palettes — owner's art rule) ----------
@@ -145,6 +248,8 @@ const DISTRICTS = [
     moon: [0xffd9a0, 1.2], rim: [0xff6a00, 1.5], lampA: 0xff8c42, lampB: 0xffb03d, ground: 0x33241a, sw: ['#ff8c42', '#ffb03d'] },
   { id: 'havana', name: 'LITTLE HAVANA', sky: 0x0f1a2a, fog: [0x0f1a2a, 9, 26], hemi: [0x7af0ff, 0x0a1a2a, 1.2],
     moon: [0x9fd8ff, 1.3], rim: [0x2affd5, 1.4], lampA: 0xffd166, lampB: 0x2affd5, ground: 0x1a2a30, sw: ['#ffd166', '#2affd5'] },
+  { id: 'docks', name: 'DOCKSIDE', sky: 0x10141c, fog: [0x10141c, 8, 24], hemi: [0x9fb3c8, 0x0c1218, 1.1],
+    moon: [0xc8d8e8, 1.2], rim: [0x5a8aa8, 1.5], lampA: 0xffc46a, lampB: 0x5a8aa8, ground: 0x232a30, sw: ['#8a9a9e', '#5a8aa8'] },
 ];
 const districtDef = (id) => DISTRICTS.find((d) => d.id === id) || DISTRICTS[0];
 
@@ -160,6 +265,9 @@ const MISSIONS = [
   { id: 'm3', district: 'havana', name: 'NIGHT MARKET', len: 85, crowd: true,
     spawns: [{ at: 10, fam: 'jabber', n: 3 }, { at: 26, fam: 'thug', n: 3 }, { at: 42, fam: 'rico', n: 3 }, { at: 58, fam: 'heavyd', n: 3 }, { at: 70, fam: 'thug', n: 4 }],
     boss: 'viper', unlock: { type: 'mission', id: 'm2' }, reward: 'Unlocks VIPER as playable' },
+  { id: 'm4', district: 'docks', name: 'RUST BELT', len: 100, crowd: true,
+    spawns: [{ at: 12, fam: 'stray', n: 3 }, { at: 28, fam: 'heavyd', n: 2 }, { at: 44, fam: 'stray', n: 4 }, { at: 60, fam: 'rico', n: 3 }, { at: 78, fam: 'stray', n: 4 }, { at: 90, fam: 'heavyd', n: 2 }],
+    boss: 'rust', unlock: { type: 'mission', id: 'm3' }, reward: 'Unlocks DUST as playable' },
   { id: 'endless', district: 'neon', name: 'ENDLESS SCRAP', len: Infinity, crowd: false, endless: true,
     spawns: [], boss: null, unlock: { type: 'mission', id: 'm1' }, reward: 'Survival ladder — how far can you walk?' },
   { id: 'daily', district: 'neon', name: 'DAILY SCRAP', len: 70, crowd: false, daily: true,
@@ -178,7 +286,7 @@ async function unlockAudio() {
   if (actx) return;
   try {
     actx = new (window.AudioContext || window.webkitAudioContext)();
-    await Promise.all(['hit1', 'hit2', 'hit3', 'bell', 'crowd', 'music', 'click'].map(async (k) => { sbuf[k] = await actx.decodeAudioData(b64ToBuf(A[k + '.mp3'])); }));
+    await Promise.all(['hit1', 'hit2', 'hit3', 'bell', 'crowd', 'music', 'click', 'whoosh', 'step', 'crack', 'coin', 'uiclick'].map(async (k) => { sbuf[k] = await actx.decodeAudioData(b64ToBuf(A[k + '.mp3'])); }));
     sfx('music', 0.32, true); sfx('crowd', 0.25, true);
   } catch (e) { T.errors.push('audio:' + e); }
 }
@@ -187,8 +295,55 @@ function sfx(k, vol = 1, loop = false, rate = 1) {
   const s = actx.createBufferSource(); s.buffer = sbuf[k]; s.loop = loop; s.playbackRate.value = rate;
   const g = actx.createGain(); g.gain.value = vol; s.connect(g).connect(actx.destination); s.start(); return s;
 }
-let paused = false;
+let paused = false, pushT = 0;
+const pushPos = new THREE.Vector3();
 function setPaused(p) { if (actx) (p ? actx.suspend() : actx.resume()).catch(() => {}); paused = p; }
+// U6 pause menu + U9 settings
+function togglePause(force) {
+  if (state !== 'fight') return;
+  const on = force !== undefined ? force : !paused;
+  if (on) {
+    $('pauseMoves').innerHTML = moveListHTML(save.selected);
+    const dr = $('diffRow'); dr.innerHTML = '';
+    for (const d of DIFFS) {
+      const b = document.createElement('button');
+      b.className = 'diffBtn' + (d.id === save.difficulty ? ' sel' : '');
+      b.textContent = d.name;
+      b.title = d.desc;
+      b.addEventListener('click', (e) => { e.stopPropagation(); save.difficulty = d.id; writeSave(); sfx('uiclick', 0.7);
+        for (const x of dr.children) x.classList.toggle('sel', x === b); });
+      dr.appendChild(b);
+    }
+  }
+  setPaused(on);
+  $('pauseOv').classList.toggle('hidden', !on);
+  $('touch').classList.toggle('on', !on);
+  sfx('uiclick', 0.7);
+}
+// U9: quality setting — low forces lowFx, high disables auto-degrade, auto = current behavior
+function applyQuality() {
+  if (save.quality === 'low') { lowFx = true; renderer.shadowMap.enabled = false; renderer.setPixelRatio(1); }
+  else if (save.quality === 'high') { lowFx = false; }
+}
+function renderBoard() {
+  const L = $('boardList'); L.innerHTML = '';
+  const names = {};
+  for (const m of MISSIONS) names[m.id] = m.name;
+  let any = false;
+  for (const [id, best] of Object.entries(save.boards)) {
+    if (!names[id]) continue; any = true;
+    const r = document.createElement('div'); r.className = 'bline';
+    r.innerHTML = `<span>${names[id]}</span><b>${best}</b>`;
+    L.appendChild(r);
+  }
+  if (save.daily.date) {
+    const r = document.createElement('div'); r.className = 'bline';
+    r.innerHTML = `<span>Daily run</span><b>${save.daily.score}</b>`;
+    L.appendChild(r); any = true;
+  }
+  if (!any) L.innerHTML = '<div class="bline"><span>No records yet — go fight.</span><b>—</b></div>';
+}
+function tipJar() { sfx('uiclick', 0.7); window.open(TIP_URL, '_blank', 'noopener'); }
 document.addEventListener('visibilitychange', () => setPaused(document.hidden));
 
 // ---------- renderer / scene ----------
@@ -221,19 +376,17 @@ const parse = (name) => new Promise((res, rej) => loader.parse(b64ToBuf(A[name])
 // ---------- street builder (mission-length, district-styled) ----------
 const streetGroup = new THREE.Group(); scene.add(streetGroup);
 let streetParts = {};
-function clearStreet() { while (streetGroup.children.length) streetGroup.remove(streetGroup.children[0]); }
+function clearStreet() {
+  while (streetGroup.children.length) streetGroup.remove(streetGroup.children[0]);
+  colliders.length = 0; destructibles.length = 0; clearPickups();
+}
 function buildStreet(district, missionLen, seedFn) {
   clearStreet();
   const d = districtDef(district);
   applyDistrict(d);
   const R = seedFn || Math.random;
   const parts = streetParts;
-  const place = (name, x, z, ry = 0, sc = 1, tint = null) => {
-    const p = parts[name]; if (!p) return null;
-    const o = p.clone(); o.position.set(x, 0, z); o.rotation.y = ry; o.scale.multiplyScalar(sc);
-    o.traverse((m) => { if (m.isMesh) { m.receiveShadow = true; m.castShadow = true; if (tint !== null) { m.material = m.material.clone(); m.material.color = new THREE.Color(tint); } } });
-    streetGroup.add(o); return o;
-  };
+  const place = (name, x, z, ry = 0, sc = 1, tint = null) => placeProp(name, x, z, ry, sc, tint);
   const K = 2.2;
   const road = parts.road_straight; const rb = new THREE.Box3().setFromObject(road);
   const seg = (rb.max.z - rb.min.z) * K, rw = (rb.max.x - rb.min.x) * K;
@@ -265,22 +418,124 @@ function buildStreet(district, missionLen, seedFn) {
   return { curb, roadW: rw };
 }
 
-// ---------- breakables (SoR trash cans/crates: cash or food) ----------
-const breakables = [];
+// ---------- destructibles + collision (SoR/Fatal Fury style: smash cars/crates, spill pickups) ----------
+const DESTRUCT_DEFS = {
+  box_A: { hp: 20, name: 'CRATE', pickups: ['cash', 'cash'] },
+  trash_A: { hp: 15, name: 'TRASH CAN', pickups: ['cash'] },
+  trash_B: { hp: 15, name: 'TRASH CAN', pickups: ['health'] },
+  dumpster: { hp: 45, name: 'DUMPSTER', pickups: ['cash', 'health', 'special'] },
+  car_taxi: { hp: 70, name: 'TAXI', pickups: ['cash', 'cash', 'cash', 'special'] },
+  car_police: { hp: 70, name: 'SQUAD CAR', pickups: ['cash', 'cash', 'health', 'special'] },
+};
+const SOLID_PROPS = new Set(['streetlight', 'firehydrant']);
+const colliders = [];    // {x, z, r, dead} — block player movement (owner bug report 2026-10-06)
+const destructibles = []; // {mesh, px, pz, r, hp, maxHp, name, def, col}
+// placeProp: ground-aligns via bounding box (BUG FIX 2026-10-06: cars sank), registers collision + destructible HP
+function placeProp(name, x, z, ry = 0, sc = 2.2, tint = null) {
+  const part = streetParts[name]; if (!part) return null;
+  const o = part.clone(); o.position.set(x, 0, z); o.rotation.y = ry; o.scale.multiplyScalar(sc);
+  o.traverse((m) => { if (m.isMesh) { m.receiveShadow = true; m.castShadow = true;
+    if (tint !== null) { m.material = m.material.clone(); m.material.color = new THREE.Color(tint); } } });
+  const bb = new THREE.Box3().setFromObject(o);
+  o.position.y -= bb.min.y; // sit exactly on the ground — never sink
+  streetGroup.add(o);
+  const rad = Math.max((bb.max.x - bb.min.x) / 2, (bb.max.z - bb.min.z) / 2, 0.5);
+  const dd = DESTRUCT_DEFS[name];
+  if (dd || SOLID_PROPS.has(name)) {
+    const c = { x, z, r: rad * 0.75, dead: false };
+    colliders.push(c);
+    if (dd) destructibles.push({ mesh: o, px: x, pz: z, r: rad, hp: dd.hp, maxHp: dd.hp, name: dd.name, def: dd, col: c });
+  }
+  return o;
+}
+function damageDestructibles(range) {
+  if (!player) return;
+  for (const d of destructibles) {
+    if (d.hp <= 0) continue;
+    if (Math.abs(d.px - player.px) < range + d.r && Math.abs(d.pz - player.pz) < 1.2 + d.r) {
+      d.hp -= Math.round(14 * player.dmgMult);
+      const hp = d.mesh.position.clone().add(new THREE.Vector3(0, 0.8, 0));
+      burst(hp, 6, 0xcccccc, 3);
+      sfx('hit2', 0.5, false, 1.4);
+      if (d.hp <= 0) destroyDestructible(d);
+    }
+  }
+}
+function destroyDestructible(d) {
+  d.col.dead = true;
+  const pos = d.mesh.position.clone();
+  burst(pos.clone().add(new THREE.Vector3(0, 0.9, 0)), 26, 0xc0a080, 5);
+  burst(pos.clone().add(new THREE.Vector3(0, 0.5, 0)), 14, 0x555555, 4);
+  sfx('hit3', 0.9, false, 0.8); sfx('crack', 0.7, false, 0.9);
+  streetGroup.remove(d.mesh);
+  const sp = screenPos(pos.clone().add(new THREE.Vector3(0, 1.4, 0)));
+  popText(d.name + ' SMASHED!', 'gold', sp.x, sp.y);
+  for (const pt of d.def.pickups) spawnPickup(pt, d.px + rnd(-1, 1), clamp(d.pz + rnd(-1, 1), -1.4, 1.4));
+  ev('smash', { name: d.name });
+}
 function spawnBreakables(district, missionLen, R) {
-  for (const b of breakables) streetGroup.remove(b.mesh);
-  breakables.length = 0;
   const L = isFinite(missionLen) ? missionLen : 200;
   const names = ['trash_A', 'trash_B', 'box_A'];
   for (let px = 8; px < L; px += rnd(9, 16)) {
     const nm = names[Math.floor(R() * names.length)];
-    const p = streetParts[nm]; if (!p) continue;
-    const o = p.clone(); o.position.set(px + rnd(-2, 2), 0, rnd(-1.5, 1.5)); o.scale.multiplyScalar(2.2);
-    o.traverse((m) => { if (m.isMesh) { m.castShadow = true; } });
-    streetGroup.add(o);
-    breakables.push({ mesh: o, px: o.position.x, pz: o.position.z, kind: R() < 0.6 ? 'cash' : 'food', broken: false });
+    placeProp(nm, px + rnd(-2, 2), rnd(-1.5, 1.5), R() * 3);
   }
 }
+// ---------- pickups: health / cash / special (dropped by enemies + destructibles) ----------
+const pickups = []; // {type, mesh, px, pz, t}
+const PICKUP_DEFS = {
+  health: { color: 0xff4d6d, label: '+HP' },
+  cash: { color: 0x80ed99, label: '+$' },
+  special: { color: 0x7af0ff, label: '+SPC' },
+};
+function spawnPickup(type, x, z) {
+  const d = PICKUP_DEFS[type]; if (!d) return;
+  const g = new THREE.Group();
+  const mat = new THREE.MeshStandardMaterial({ color: d.color, emissive: d.color, emissiveIntensity: 0.55, roughness: 0.4 });
+  if (type === 'health') {
+    const a = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.2, 0.2), mat);
+    const b = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.55, 0.2), mat);
+    g.add(a, b);
+  } else if (type === 'cash') {
+    g.add(new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.32, 0.08), mat));
+  } else {
+    const o = new THREE.Mesh(new THREE.OctahedronGeometry(0.3), mat);
+    g.add(o);
+  }
+  g.position.set(x, 0.85, z);
+  g.traverse((m) => { if (m.isMesh) m.castShadow = true; });
+  streetGroup.add(g);
+  pickups.push({ type, mesh: g, px: x, pz: z, t: Math.random() * 6 });
+}
+function updatePickups(dt) {
+  if (!player || player.hp <= 0) return;
+  for (let i = pickups.length - 1; i >= 0; i--) {
+    const pk = pickups[i];
+    pk.t += dt;
+    pk.mesh.position.y = 0.85 + Math.sin(pk.t * 3.2) * 0.14;
+    pk.mesh.rotation.y += dt * 2.4;
+    const dx = player.px - pk.px, dz = player.pz - pk.pz;
+    const dist = Math.hypot(dx, dz);
+    if (dist < 2.6 && dist > 0.01) { // magnet
+      const pull = (2.6 - dist) * 4 * dt;
+      pk.px += dx / dist * pull; pk.pz += dz / dist * pull;
+      pk.mesh.position.x = pk.px; pk.mesh.position.z = pk.pz;
+    }
+    if (dist < 0.75) {
+      const d = PICKUP_DEFS[pk.type];
+      const sp = screenPos(pk.mesh.position.clone());
+      if (pk.type === 'health') { player.hp = Math.min(player.maxHp, player.hp + player.maxHp * 0.3); popText('+HP', 'gold', sp.x, sp.y); }
+      else if (pk.type === 'cash') { const c = Math.round(rnd(15, 40)); awardCash(c, pk.mesh.position.clone()); }
+      else { player.spc = clamp(player.spc + 35, 0, 100); popText('+SPC', 'big', sp.x, sp.y); }
+      sfx('coin', 0.6, false, pk.type === 'health' ? 0.8 : 1.2);
+      streetGroup.remove(pk.mesh);
+      pickups.splice(i, 1);
+      setHud();
+    }
+  }
+}
+function R_safe() { return typeof missionR === 'function' ? missionR() : Math.random(); }
+function clearPickups() { for (const pk of pickups) streetGroup.remove(pk.mesh); pickups.length = 0; }
 
 // ---------- crowd (CONDITIONAL: only on missions flagged crowd:true — owner directive) ----------
 const crowdGroup = new THREE.Group(); scene.add(crowdGroup);
@@ -371,15 +626,15 @@ function renderShop(into) {
   into.innerHTML = '';
   for (const u of UPS) {
     const lvl = save[u.key], cost = upCost(lvl);
-    const box = el('div', 'shopItem');
+    const box = el('div', 'shopItem panel9');
     box.appendChild(el('div', 'un', `${u.name} <span style="font-size:11px;opacity:.7">Lv${lvl}</span>`));
     box.appendChild(el('div', 'ud', u.desc));
     const b = el('button', '', `$${cost}`);
     b.disabled = save.cash < cost;
-    b.onclick = (e) => { e.stopPropagation(); if (save.cash < cost) return; save.cash -= cost; save[u.key]++; writeSave(); sfx('click', 0.8); renderShop(into); renderMeta(); refreshShowcase(); };
+    b.onclick = (e) => { e.stopPropagation(); if (save.cash < cost) return; save.cash -= cost; save[u.key]++; writeSave(); sfx('uiclick', 0.8); renderShop(into); renderMeta(); refreshShowcase(); };
     box.appendChild(b); into.appendChild(box);
   }
-  const sp = el('div', 'shopItem');
+  const sp = el('div', 'shopItem panel9');
   sp.appendChild(el('div', 'un', 'SUPPORTER'));
   sp.appendChild(el('div', 'ud', SUPPORT_PACKS[0].desc));
   const pb = el('button', '', SUPPORT_PACKS[0].price);
@@ -396,6 +651,7 @@ function refreshShowcase() {
   playAnim(showcase, 'Melee_Unarmed_Idle', { loop: true });
   $('showName').textContent = fd.name;
   $('showTag').textContent = fd.tag;
+  $('moveList').innerHTML = moveListHTML(fd.id);
   const bars = $('statBars'); bars.innerHTML = '';
   const defs = [['POWER', fd.dmg / 1.5, '#ff4d4d'], ['SPEED', fd.spd / 1.4, '#7af0ff'], ['TOUGH', fd.hp / 170, '#80ed99']];
   for (const [n, v, c] of defs) {
@@ -418,7 +674,7 @@ function showSelect() {
   const cards = $('cards'); cards.innerHTML = '';
   for (const f of FIGHTERS) {
     const locked = !isUnlocked(f);
-    const c = el('div', 'card' + (f.id === save.selected && !locked ? ' sel' : '') + (locked ? ' locked' : ''));
+    const c = el('div', 'card ' + (f.id === save.selected && !locked ? 'panel9g' : 'panel9') + (locked ? ' locked' : ''));
     c.appendChild(el('div', 'nm', locked ? '???' : f.name));
     c.appendChild(el('div', 'lk', locked ? unlockText(f) : f.tag));
     if (!locked) c.onclick = () => { save.selected = f.id; writeSave(); sfx('click', 0.7); refreshShowcase(); showSelectCards(); };
@@ -438,7 +694,7 @@ function showSelectCards() { // re-render cards row only (after pick)
   const cards = $('cards'); cards.innerHTML = '';
   for (const f of FIGHTERS) {
     const locked = !isUnlocked(f);
-    const c = el('div', 'card' + (f.id === save.selected && !locked ? ' sel' : '') + (locked ? ' locked' : ''));
+    const c = el('div', 'card ' + (f.id === save.selected && !locked ? 'panel9g' : 'panel9') + (locked ? ' locked' : ''));
     c.appendChild(el('div', 'nm', locked ? '???' : f.name));
     c.appendChild(el('div', 'lk', locked ? unlockText(f) : f.tag));
     if (!locked) c.onclick = () => { save.selected = f.id; writeSave(); sfx('click', 0.7); refreshShowcase(); showSelectCards(); };
@@ -451,7 +707,7 @@ function showMission() {
   for (const m of MISSIONS) {
     const d = districtDef(m.district);
     const locked = !missionUnlocked(m);
-    const card = el('div', 'mcard' + (locked ? ' locked' : ''));
+    const card = el('div', 'mcard panel9' + (locked ? ' locked' : ''));
     card.appendChild(el('div', 'dn', d.name));
     card.appendChild(el('div', 'mn', m.name));
     const sw = el('div', 'sw'); sw.style.background = `linear-gradient(90deg, ${d.sw[0]}, ${d.sw[1]})`;
@@ -466,7 +722,7 @@ function showMission() {
     card.appendChild(el('div', 'rw', locked ? '🔒 ' + (m.unlock.id ? 'Clear ' + missionDef(m.unlock.id).name : '') : '★ ' + m.reward));
     if (!locked) {
       const go = el('button', 'go', m.daily && save.daily.date === todayStr() ? 'RETRY' : 'GO');
-      go.onclick = (e) => { e.stopPropagation(); unlockAudio(); sfx('click', 0.8); startMission(m.id); };
+      go.onclick = (e) => { e.stopPropagation(); unlockAudio(); sfx('uiclick', 0.8); startMission(m.id); };
       card.appendChild(go);
     }
     list.appendChild(card);
@@ -483,18 +739,37 @@ function showResults(win, mission, stats) {
   if (win) {
     if (!save.missionsDone.includes(mission.id)) save.missionsDone.push(mission.id);
     save.wins++;
-    // boss -> unlock as playable (owner directive)
+    // boss -> unlock as playable (owner directive) + unlock ceremony (U11)
     if (mission.boss) {
       const b = BOSSES.find((x) => x.id === mission.boss);
       if (b && b.unlockFighter && !save.unlocked.includes(b.unlockFighter)) {
         save.unlocked.push(b.unlockFighter);
         ub.textContent = '★ ' + b.name + ' UNLOCKED AS PLAYABLE ★';
+        ub.classList.add('show');
+        // ceremony fanfare: bell + coin + whoosh, flash the banner
+        sfx('bell', 0.9, true); flash('#ffe14d');
+        setTimeout(() => sfx('coin', 0.8, false, 1.2), 180);
+        setTimeout(() => sfx('whoosh', 0.6, false, 0.9), 380);
         ev('unlock', { fighter: b.unlockFighter });
-      }
-    }
+      } else { ub.classList.remove('show'); }
+    } else { ub.classList.remove('show'); }
   } else { save.losses++; }
   save.cash += stats.cash; writeSave();
-  $('resTitle').textContent = win ? 'MISSION CLEAR' : 'KNOCKED OUT';
+  const resEl = $('results');
+  if (win) {
+    resEl.classList.add('win'); resEl.classList.remove('lose');
+    $('resTitle').textContent = 'MISSION COMPLETE';
+    // next-mission flow: button starts the next mission in order (or back to list)
+    const idx = MISSIONS.findIndex((m) => m.id === mission.id);
+    const nxt = idx >= 0 ? MISSIONS[idx + 1] : null;
+    const nb = $('nextBtn');
+    if (nxt) { nb.style.display = ''; nb.textContent = 'NEXT: ' + nxt.name + ' →'; nb.onclick = (e) => { e.stopPropagation(); unlockAudio(); sfx('uiclick', 0.8); startMission(nxt.id); }; }
+    else { nb.style.display = 'none'; }
+  } else {
+    resEl.classList.remove('win'); resEl.classList.add('lose');
+    $('resTitle').textContent = 'KNOCKED OUT';
+    $('nextBtn').style.display = 'none';
+  }
   $('resStats').innerHTML =
     `<div class="stat">${win ? 'CLEARED' : 'REACHED'} <b>${mission.name}</b></div>` +
     `<div class="stat"><b>${stats.kills}</b> K.O.s &nbsp;·&nbsp; BEST COMBO <b>${stats.maxCombo}</b></div>` +
@@ -520,7 +795,7 @@ function awardCash(base, pos, tag) {
   const txt = tag ? tag + ' +$' + amount : '+$' + amount;
   const sp = pos ? screenPos(pos) : { x: innerWidth / 2, y: innerHeight * 0.45 };
   popText(txt, 'gold', sp.x + (Math.random() * 60 - 30), sp.y);
-  sfx('click', 0.7, false, 1.3);
+  sfx('coin', 0.7, false, 1.15);
 }
 function genDailySpawns(R) {
   const sp = []; const fams = ['thug', 'rico', 'jabber', 'heavyd'];
@@ -563,7 +838,7 @@ function startMission(id) {
   if (!save.seenHint) hint(true);
   setHud();
 }
-function syncPos(f) { f.root.position.x = f.px; f.root.position.z = f.pz; }
+function syncPos(f) { f.root.position.x = f.px; f.root.position.z = f.pz; f.root.position.y = f.py || 0; }
 function nearestEnemy(range) {
   let best = null, bd = range;
   for (const e of enemies) {
@@ -577,10 +852,11 @@ function spawnEnemy(famId, mi, bx, bz) {
   const fam = ENEMY_FAMS.find((f) => f.id === famId) || ENEMY_FAMS[0];
   const v = famVariant(fam, mi);
   const e = makeFighterRaw(v.tint, bx, -Math.PI / 2, v.scale);
-  e.isPlayer = false; e.name = v.name; e.maxHp = e.hp = v.hp;
-  e.dmgMult = v.dmg; e.spd = v.spd; e.move = v.move;
+  const df = diffDef();
+  e.isPlayer = false; e.name = v.name; e.maxHp = e.hp = Math.round(v.hp * df.hpMul);
+  e.dmgMult = v.dmg * df.dmgMul; e.spd = v.spd; e.move = v.move;
   e.px = bx; e.pz = clamp(bz, -1.3, 1.3);
-  e.ai = 'walk'; e.aiT = rnd(0.4, 1.2); e.windup = 0; e.vy = 0; e.airborne = false;
+  e.ai = 'walk'; e.aiT = rnd(0.4, 1.2) / df.aggro; e.windup = 0; e.vy = 0; e.airborne = false; e.aggro = df.aggro;
   syncPos(e);
   playAnim(e, 'Running_A', { loop: true });
   enemies.push(e);
@@ -589,8 +865,9 @@ function spawnEnemy(famId, mi, bx, bz) {
 function spawnBoss(bossId, bx) {
   const b = BOSSES.find((x) => x.id === bossId);
   const e = makeFighterRaw(b.tint, bx, -Math.PI / 2, b.scale);
+  const dfb = diffDef();
   e.isPlayer = false; e.boss = b; e.name = b.name;
-  e.maxHp = e.hp = b.hp; e.dmgMult = b.dmg; e.spd = b.spd;
+  e.maxHp = e.hp = Math.round(b.hp * dfb.hpMul); e.dmgMult = b.dmg * dfb.dmgMul; e.spd = b.spd; e.aggro = dfb.aggro;
   e.px = bx; e.pz = 0; e.ai = 'walk'; e.patIdx = 0; e.patT = 2.2; e.vy = 0; e.airborne = false;
   syncPos(e);
   playAnim(e, 'Running_A', { loop: true });
@@ -621,34 +898,71 @@ const ATK = [ // [clip, timeScale, impact delay, dmg, label, hitstop, shake]
   ['Melee_Unarmed_Attack_Punch_A', 2.1, 0.15, 10, 'CROSS', 0.04, 0.15],
   ['Melee_Unarmed_Attack_Kick', 1.7, 0.2, 15, 'KICK', 0.08, 0.25],
 ];
-function breakBreakable(b) {
-  b.broken = true;
-  burst(b.mesh.position.clone().add(new THREE.Vector3(0, 0.5, 0)), 14, 0xc0a080, 3);
-  sfx('hit3', 0.7, false, 1.2);
-  streetGroup.remove(b.mesh);
-  if (b.kind === 'cash') awardCash(rnd(5, 15), b.mesh.position.clone());
-  else { player.hp = Math.min(player.maxHp, player.hp + 18); popText('+HP', 'gold', innerWidth / 2, innerHeight * 0.4); }
-  setHud();
-}
 function doPunch() {
   if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.busy > 0) return;
   unlockAudio(); T.taps++; hint(false); save.seenHint = true;
+  // aerial: dive kick
+  if (player.airT > 0) { doJumpAttack(); return; }
   let ce = null;
   for (const e of enemies) { if (e.hp > 0 && e.windup > 0 && Math.abs(e.px - player.px) < 2.4 && Math.abs(e.pz - player.pz) < 1.3) { ce = e; break; } }
-  const [clip, ts, delay, dmg, label, hs, sh] = ATK[atkIdx % ATK.length]; atkIdx++;
-  const launcher = !ce && (atkIdx % 3 === 0);
+  // directional moves (SF/SoR style): stick direction + HIT
+  const dx = stick.dx, dy = stick.dy;
+  let clip, ts, delay, dmg, label, hs, sh, range = 1.9, launcher = false, dash = 0, retreat = 0;
+  if (dx > 0.5) { // -> + HIT: LUNGE STRIKE
+    [clip, ts, delay, dmg, label, hs, sh] = ['Melee_Unarmed_Attack_Punch_A', 2.2, 0.14, 14, 'LUNGE', 0.05, 0.2];
+    range = 2.3; dash = 1.3 * player.face;
+  } else if (dx < -0.5) { // <- + HIT: RETREAT BACKFIST
+    [clip, ts, delay, dmg, label, hs, sh] = ['Melee_Unarmed_Attack_Punch_A', 2.0, 0.16, 12, 'BACKFIST', 0.06, 0.3];
+    range = 2.0; retreat = 0.9 * player.face;
+  } else if (dy > 0.5) { // v + HIT: LOW SWEEP (launcher)
+    [clip, ts, delay, dmg, label, hs, sh] = ['Melee_Unarmed_Attack_Kick', 1.9, 0.18, 10, 'SWEEP', 0.06, 0.2];
+    range = 2.0; launcher = true;
+  } else { // neutral: jab/cross/kick cycle
+    [clip, ts, delay, dmg, label, hs, sh] = ATK[atkIdx % ATK.length]; atkIdx++;
+    launcher = !ce && (atkIdx % 3 === 0);
+  }
+  if (dash) player.px = clamp(player.px + dash, 0.5, mission.len === Infinity ? 1e6 : mission.len - 1.5);
+  if (retreat) player.px = clamp(player.px - retreat, 0.5, mission.len === Infinity ? 1e6 : mission.len - 1.5);
   player.busy = delay + 0.12;
   playAnim(player, clip, { ts: ts * (player.spd || 1), fade: 0.05 });
+  sfx('whoosh', 0.45, false, 1.1 + Math.random() * 0.2);
   setTimeout(() => {
     if (state !== 'fight' || missionOver || ended) return;
     if (ce && ce.hp > 0) { ce.windup = 0; hideWarn(ce); landHit(ce, Math.round(dmg * player.dmgMult * 2), 'COUNTER', 0.12, 0.35, false, true); return; }
-    const t = nearestEnemy(1.9);
+    const t = nearestEnemy(range);
     if (t) {
       if (t.airborne) { t.vy = Math.max(t.vy, 2.2); landHit(t, Math.round(dmg * player.dmgMult * 0.6), 'JUGGLE', 0.03, 0.12, false, false); }
       else landHit(t, Math.round(dmg * player.dmgMult), label, hs, sh, launcher, false);
     }
-    for (const b of breakables) { if (!b.broken && Math.abs(b.px - player.px) < 1.7 && Math.abs(b.pz - player.pz) < 1.2) breakBreakable(b); }
+    damageDestructibles(1.7);
+    damageDestructibles(range);
   }, delay * 1000);
+}
+function doJump() {
+  if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.busy > 0) return;
+  if (player.airT > 0) return;
+  unlockAudio();
+  player.vy = 7.2; player.airT = 0.001; player.py = 0.001;
+  playAnim(player, 'Melee_Unarmed_Attack_Kick', { ts: 0.6, fade: 0.08 });
+  sfx('whoosh', 0.4, false, 1.3);
+  ev('jump', {});
+}
+function doJumpAttack() {
+  // dive kick: strike on the way down, small AOE
+  player.busy = 0.35;
+  playAnim(player, 'Melee_Unarmed_Attack_Kick', { ts: 2.4, fade: 0.03 });
+  player.vy = Math.min(player.vy, -2); // fast fall into the kick
+  sfx('whoosh', 0.55, false, 0.9);
+  const hitR = 2.3;
+  let hitAny = false;
+  for (const e of enemies.slice()) {
+    if (e.hp > 0 && Math.abs(e.px - player.px) < hitR && Math.abs(e.pz - player.pz) < 1.6) {
+      landHit(e, Math.round(18 * player.dmgMult), 'DIVE KICK', 0.07, 0.3, false, false);
+      hitAny = true;
+    }
+  }
+  damageDestructibles(hitR);
+  if (hitAny) { shake = Math.max(shake, 0.3); }
 }
 function doHeavy() {
   if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.busy > 0) return;
@@ -659,13 +973,16 @@ function doHeavy() {
     if (state !== 'fight' || missionOver || ended) return;
     const t = nearestEnemy(2.2);
     if (t) landHit(t, Math.round(24 * player.dmgMult), 'HEAVY', 0.09, 0.4, false, false);
-    for (const b of breakables) { if (!b.broken && Math.abs(b.px - player.px) < 1.9 && Math.abs(b.pz - player.pz) < 1.3) breakBreakable(b); }
+    damageDestructibles(1.9);
   }, 230);
 }
 function doSpecial() {
   if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0) return;
-  if (player.spc < 100) { popText('CHARGE THE METER', '', innerWidth / 2, innerHeight * 0.4); return; }
   unlockAudio();
+  const fd = fighterDef();
+  // v + SPC: second special at 50 meter
+  if (stick.dy > 0.5 && player.spc >= (fd.spc2 ? fd.spc2.cost : 50)) { doSpecial2(fd); return; }
+  if (player.spc < 100) { popText('CHARGE THE METER', '', innerWidth / 2, innerHeight * 0.4); return; }
   player.spc = 0;
   slowmo = 0.35; slowmoT = 0.8; shake = 0.6; flash('#ff4fd8');
   banner('DRAGON FURY!', 'spc');
@@ -676,6 +993,39 @@ function doSpecial() {
       landHit(e, Math.round(42 * player.dmgMult), 'SPECIAL', 0.1, 0.4, false, false);
     }
   }
+  setHud();
+}
+function doSpecial2(fd) {
+  const sp = fd.spc2 || { name: 'RUSH', cost: 50 };
+  player.spc = Math.max(0, player.spc - sp.cost);
+  slowmo = 0.4; slowmoT = 0.7; shake = 0.55; flash('#ff4fd8');
+  banner(sp.name + '!', 'spc');
+  sfx('hit3', 1, false, 0.7); sfx('whoosh', 0.8, false, 0.8);
+  const kind = { kidblue: 'dash', viper: 'dash', ghost: 'blink', brick: 'slam', kingpin: 'slam', sledge: 'slam' }[fd.id] || 'slam';
+  if (kind === 'dash') {
+    const dir = player.face || 1, dist = 4.2;
+    player.px = clamp(player.px + dir * dist, 0.5, mission.len === Infinity ? 1e6 : mission.len - 1.5);
+    burst(player.root.position.clone().add(new THREE.Vector3(0, 1, 0)), 30, 0xff4fd8, 6);
+    for (const e of enemies.slice()) {
+      if (e.hp > 0 && Math.abs(e.px - (player.px - dir * dist / 2)) < dist / 2 + 0.8 && Math.abs(e.pz - player.pz) < 1.6)
+        landHit(e, Math.round(30 * player.dmgMult), sp.name, 0.08, 0.35, false, false);
+    }
+  } else if (kind === 'blink') {
+    const near = enemies.filter((e) => e.hp > 0).sort((a, b) =>
+      (Math.abs(a.px - player.px) - Math.abs(b.px - player.px))).slice(0, 3);
+    for (const e of near) {
+      burst(e.root.position.clone().add(new THREE.Vector3(0, 1.2, 0)), 18, 0x7af0ff, 5);
+      landHit(e, Math.round(26 * player.dmgMult), sp.name, 0.06, 0.25, false, false);
+    }
+    if (!near.length) popText('NO TARGET', '', innerWidth / 2, innerHeight * 0.4);
+  } else { // slam: radial shockwave + launch
+    burst(player.root.position.clone().add(new THREE.Vector3(0, 0.3, 0)), 45, 0xffb03d, 8);
+    for (const e of enemies.slice()) {
+      if (e.hp > 0 && Math.abs(e.px - player.px) < 3.4 && Math.abs(e.pz - player.pz) < 2.2)
+        landHit(e, Math.round(34 * player.dmgMult), sp.name, 0.09, 0.4, true, false);
+    }
+  }
+  damageDestructibles(3.4);
   setHud();
 }
 function doDodge() {
@@ -721,11 +1071,17 @@ function killEnemy(e) {
     slowmo = 0.35; slowmoT = 0.7; shake = 0.45; hitstop = 0.09;
   }
   sfx('bell', 0.8); flash('#ffffff');
+  pushT = 0.85; pushPos.copy(e.root.position);
   $('ko').classList.add('show'); setTimeout(() => $('ko').classList.remove('show'), 900);
   const base = e.boss ? 60 : 8 + Math.round(distWalked * 0.2);
   awardCash(base, e.root.position.clone());
   if (combo >= 5) awardCash(Math.min(combo, 20), e.root.position.clone().add(new THREE.Vector3(0, 0.4, 0)), 'COMBO');
   if (mission.crowd) crowdCheer();
+  if (R_safe() < 0.32) {
+    const roll = R_safe();
+    spawnPickup(roll < 0.4 ? 'health' : roll < 0.8 ? 'cash' : 'special',
+      clamp(e.root.position.x + rnd(-0.8, 0.8), 0.5, 1e6), clamp(e.root.position.z + rnd(-0.8, 0.8), -1.4, 1.4));
+  }
   if (player && player.hp > 0) {
     player.hp = Math.min(player.maxHp, player.hp + player.maxHp * 0.06);
     player.spc = clamp(player.spc + 15, 0, 100);
@@ -784,7 +1140,7 @@ function stickEnd(e) {
 }
 function setupInput() {
   const bind = (id, fn) => $(id).addEventListener('pointerdown', (e) => { e.stopPropagation(); e.preventDefault(); fn(); }, { passive: false });
-  bind('btnAtk', doPunch); bind('btnHvy', doHeavy); bind('btnDdg', doDodge); bind('btnSpc', doSpecial);
+  bind('btnAtk', doPunch); bind('btnHvy', doHeavy); bind('btnDdg', doDodge); bind('btnSpc', doSpecial); bind('btnJmp', doJump);
   document.addEventListener('pointerdown', (e) => {
     if (e.target.closest('.abtn,button,.card,.skinDot,.shopItem,.mcard,.skinDot')) return;
     unlockAudio();
@@ -802,9 +1158,42 @@ function setupInput() {
   const up = (e) => { showcaseDragX = null; stickEnd(e); };
   document.addEventListener('pointerup', up);
   document.addEventListener('pointercancel', () => { showcaseDragX = null; stickEnd(); });
-  $('fightBtn').addEventListener('click', (e) => { e.stopPropagation(); unlockAudio(); sfx('click', 0.8); showMission(); });
-  $('againBtn').addEventListener('click', (e) => { e.stopPropagation(); unlockAudio(); sfx('click', 0.8); showMission(); });
-  $('backBtn').addEventListener('click', (e) => { e.stopPropagation(); sfx('click', 0.8); showSelect(); });
+  $('fightBtn').addEventListener('click', (e) => { e.stopPropagation(); unlockAudio(); sfx('uiclick', 0.8); showMission(); });
+  $('againBtn').addEventListener('click', (e) => { e.stopPropagation(); unlockAudio(); sfx('uiclick', 0.8); showMission(); });
+  $('backBtn').addEventListener('click', (e) => { e.stopPropagation(); sfx('uiclick', 0.8); showSelect(); });
+  $('pauseBtn').addEventListener('click', (e) => { e.stopPropagation(); togglePause(); });
+  $('resumeBtn').addEventListener('click', (e) => { e.stopPropagation(); togglePause(false); });
+  $('restartBtn').addEventListener('click', (e) => { e.stopPropagation(); togglePause(false); startMission(mission.id); });
+  $('quitBtn').addEventListener('click', (e) => { e.stopPropagation(); setPaused(false); $('pauseOv').classList.add('hidden'); showMission(); });
+  $('muteBtn').addEventListener('click', (e) => { e.stopPropagation(); save.muted = !save.muted; e.target.textContent = save.muted ? 'OFF' : 'ON'; writeSave(); sfx('uiclick', 0.7); });
+  $('qualityBtn').addEventListener('click', (e) => { e.stopPropagation(); save.quality = save.quality === 'auto' ? 'low' : save.quality === 'low' ? 'high' : 'auto'; e.target.textContent = save.quality.toUpperCase(); writeSave(); sfx('uiclick', 0.7); applyQuality(); });
+  $('muteBtn').textContent = save.muted ? 'OFF' : 'ON';
+  $('qualityBtn').textContent = save.quality.toUpperCase();
+  $('boardBtn').addEventListener('click', (e) => { e.stopPropagation(); sfx('uiclick', 0.8); renderBoard(); $('boardOv').classList.remove('hidden'); });
+  $('boardClose').addEventListener('click', (e) => { e.stopPropagation(); sfx('uiclick', 0.7); $('boardOv').classList.add('hidden'); });
+  $('tipBtnTitle').addEventListener('click', (e) => { e.stopPropagation(); tipJar(); });
+  $('tipBtnResults').addEventListener('click', (e) => { e.stopPropagation(); tipJar(); });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' || e.key === 'p') { togglePause(); return; }
+    if (state !== 'fight') return;
+    const k = e.key.toLowerCase();
+    if (k === 'arrowleft' || k === 'a') stick.dx = -1;
+    if (k === 'arrowright' || k === 'd') stick.dx = 1;
+    if (k === 'arrowup' || k === 'w') stick.dy = -1;
+    if (k === 'arrowdown' || k === 's') stick.dy = 1;
+    if (k === 'j') doPunch();
+    if (k === 'k') doHeavy();
+    if (k === 'l') doDodge();
+    if (k === 'u') doSpecial();
+    if (k === ' ') { e.preventDefault(); doJump(); }
+  });
+  document.addEventListener('keyup', (e) => {
+    const k = e.key.toLowerCase();
+    if ((k === 'arrowleft' || k === 'a') && stick.dx < 0) stick.dx = 0;
+    if ((k === 'arrowright' || k === 'd') && stick.dx > 0) stick.dx = 0;
+    if ((k === 'arrowup' || k === 'w') && stick.dy < 0) stick.dy = 0;
+    if ((k === 'arrowdown' || k === 's') && stick.dy > 0) stick.dy = 0;
+  });
   addEventListener('resize', resize);
 }
 
@@ -845,7 +1234,7 @@ function enemyAI(e, dt) {
     }
   } else if (e.ai === 'windup') {
     e.windup -= dt;
-    if (e.windup <= 0) { hideWarn(e); enemyStrike(e); e.ai = 'recover'; e.aiT = rnd(0.8, 1.7); }
+    if (e.windup <= 0) { hideWarn(e); enemyStrike(e); e.ai = 'recover'; e.aiT = rnd(0.8, 1.7) / (e.aggro || 1); }
   } else if (e.ai === 'recover') {
     e.aiT -= dt; if (e.aiT <= 0) { e.ai = 'walk'; playAnim(e, 'Running_A', { loop: true }); }
   }
@@ -994,6 +1383,19 @@ function playerUpdate(dt) {
   const maxX = mission.len === Infinity ? 1e6 : mission.len - 1.5;
   p.px = clamp(p.px + mx * dt, 0.5, maxX);
   p.pz = clamp(p.pz + mz * dt, -1.4, 1.4);
+  for (const c of colliders) { // solid props block movement (owner bug report 2026-10-06)
+    if (c.dead) continue;
+    const cx = p.px - c.x, cz = p.pz - c.z, rr = c.r + 0.45;
+    const d2 = cx * cx + cz * cz;
+    if (d2 < rr * rr && d2 > 0.0001) { const d = Math.sqrt(d2); p.px = c.x + cx / d * rr; p.pz = c.z + cz / d * rr; }
+  }
+  if (p.airT > 0) { // jump physics
+    p.airT += dt; p.vy -= 22 * dt; p.py = Math.max(0, (p.py || 0) + p.vy * dt);
+    if (p.py <= 0) { p.py = 0; p.airT = 0; p.vy = 0;
+      burst(p.root.position.clone().add(new THREE.Vector3(0, 0.1, 0)), 8, 0x999999, 2);
+      if (p.busy <= 0) playAnim(p, 'Melee_Unarmed_Idle', { loop: true });
+    }
+  }
   const tgt = nearestEnemy(99);
   if (tgt) p.root.rotation.y = tgt.px >= p.px ? Math.PI / 2 : -Math.PI / 2;
   else if (Math.abs(mx) > 0.4) p.root.rotation.y = mx > 0 ? Math.PI / 2 : -Math.PI / 2;
@@ -1056,8 +1458,8 @@ function loop() {
       showcase.root.rotation.y = showcaseRot;
       showcase.root.position.set(0, 0, 0);
     }
-    camera.position.set(0, 1.5, 3.4);
-    camera.lookAt(0, 0.8, 0);
+    camera.position.set(0, 1.0, 5.2);
+    camera.lookAt(0, 0.1, 0);
   } else if (state === 'mission') {
     camera.position.set(6, 2.8, 8.5);
     camera.lookAt(6, 1.2, 0);
@@ -1068,9 +1470,17 @@ function loop() {
     for (const e of enemies) positionWarn(e);
     if (comboT > 0 && (comboT -= dt) <= 0) { combo = 0; setHud(); }
     if (gameTime > 2 && !save.seenHint) hint(false);
+    updatePickups(dt);
     camX += ((player.px + 0.8) - camX) * Math.min(1, dt * 5);
-    camera.position.set(camX + (Math.random() - 0.5) * shake, 2.6 + (Math.random() - 0.5) * shake, 7.6);
-    camera.lookAt(camX + 0.2, 1.25, 0);
+    if (pushT > 0) { // KO camera push-in (F6): lean toward the fallen enemy during slow-mo
+      pushT -= dt;
+      const tx = pushPos.x - 0.6;
+      camera.position.set(tx + (Math.random() - 0.5) * shake, 2.2 + (Math.random() - 0.5) * shake, 6.4);
+      camera.lookAt(tx + 0.2, 1.1, pushPos.z);
+    } else {
+      camera.position.set(camX + (Math.random() - 0.5) * shake, 2.6 + (Math.random() - 0.5) * shake, 7.6);
+      camera.lookAt(camX + 0.2, 1.25, 0);
+    }
     shake *= Math.pow(0.002, dt);
     lampL.position.x = camX - 2; lampR.position.x = camX + 4;
   }
@@ -1102,6 +1512,7 @@ async function boot() {
   const s = 1.8 / fighterHeight; fighterTemplate.scale.setScalar(s); fighterHeight = 1.8;
   streetParts = {}; st.scene.children.slice().forEach((c) => { streetParts[c.name] = c; });
   resize(); $('loading').style.display = 'none';
+  applyQuality();
   T.state = 'ready'; ev('loaded');
   setupInput();
   showTitle();
@@ -1115,6 +1526,14 @@ window.__cdtest = {
   tp: (x) => { if (player) player.px = x; },
   spawnBoss: (id) => { if (player) return spawnBoss(id || 'kingpin', player.px + 6); },
   hurt: (n) => { if (player) hurtPlayer(n); },
+  doJump, doPunch, doHeavy, doSpecial,
+  setStick: (dx, dy) => { stick.dx = dx; stick.dy = dy; },
+  playerPos: () => player ? { px: +player.px.toFixed(2), pz: +player.pz.toFixed(2), py: +(player.py || 0).toFixed(2), airT: +(player.airT || 0).toFixed(2) } : null,
+  props: () => destructibles.map((d) => ({ name: d.name, px: +d.px.toFixed(1), pz: +d.pz.toFixed(1), hp: d.hp, minY: +(d.mesh.position.y).toFixed(3) })),
+  colliders: () => colliders.map((c) => ({ x: +c.x.toFixed(1), z: +c.z.toFixed(1), r: +c.r.toFixed(2), dead: c.dead })),
+  pickups: () => pickups.map((p) => p.type),
+  smash: (i) => { const d = destructibles[i]; if (d) destroyDestructible(d); },
+  setDiff: (id) => { save.difficulty = id; writeSave(); },
   info: () => ({ px: player ? +player.px.toFixed(1) : 0, hp: player ? Math.round(player.hp) : 0, foes: enemies.length, boss: bossRef ? Math.round(bossRef.hp) : 0, cash: cashRun, kills }),
   foes: () => enemies.map((e) => ({ px: +e.px.toFixed(2), ai: e.ai, hp: Math.round(e.hp), name: e.name, wu: +((e.windup || 0).toFixed(2)) })),
 };
