@@ -96,6 +96,11 @@ Every file carries a `.LICENSE.txt` receipt (or the pack's own License.txt).
 - `props/kenney-city-kit-commercial/` — Kenney **City Kit: Commercial v2.1** (219 files:
   FBX/GLB/OBJ storefronts, buildings, street props + PNG textures;
   https://kenney.nl/assets/city-kit-commercial, CC0-1.0)
+- `staging/art/kenney_city-kit-industrial.zip` — Kenney **City Kit: Industrial**
+  (https://kenney.nl/assets/city-kit-industrial, CC0-1.0); merged to
+  `game-3d/build/assets/industrial.glb` (20 named parts: factory blocks, chimneys, tanks,
+  shipping containers, solar arrays, water tower, windmill) via
+  `game-3d/tools-ci-merge-industrial.mjs`; registered in `game-3d/build/asset-manifest.json`.
 
 ## Seeds (`assets/seeds/qrng_seeds.json`) — build-time quantum randomness
 Stamped by `tools/build_seeds.py` via the shared kit `qrng_seeds.py` (ANU QRNG

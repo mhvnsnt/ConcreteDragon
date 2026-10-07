@@ -4262,6 +4262,7 @@ window.__cdtest = {
   tp: (x) => { if (player) player.px = x; },
   tp2: (x, z) => { if (player) { player.px = x; player.pz = z; } },
   projCount: () => projs.length,
+  pickupDbg: () => pickups.map((p) => ({ type: p.type, px: +p.px.toFixed(2), pz: +p.pz.toFixed(2) })),
   projDbg: () => projs.map((p) => ({ x: +p.x.toFixed(2), y: +p.y.toFixed(2), vx: +p.vx.toFixed(2), kind: p.kind, life: +p.life.toFixed(2) })),
   simDbg: () => ({ hs: +hitstop.toFixed(3), sm: slowmo, smT: +slowmoT.toFixed(3), st: state }),
   unpause: () => setPaused(false),

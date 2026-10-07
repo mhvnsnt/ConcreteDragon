@@ -41,9 +41,16 @@ Wire in this order; playtest after each tier. Owner plays and vetoes — wire, d
     district (mission m5 OVERPASS RUN, z1): road deck, pillars, guardrails, lamps, construction props,
     hwy signs; own palette per owner art rule. BuildStreet routes overpass → buildRoads;
     barrier/cone/dumpster breakables; 149 colliders; $750 purse bonus. Playtest-verified.
-17. **A5 district 3 (industrial)** — `kenney_city-kit-industrial.zip`: warehouse district.
+17. **A5 district 3 (industrial)** ✅ WIRED 2026-10-07 — `kenney_city-kit-industrial.zip`: THE IRONWORKS
+    district (mission m6 FACTORY FLOOR, z1): 8 factory blocks, chimneys, fuel tanks, shipping containers,
+    solar arrays, water-tower landmark, windmill; own palette per owner art rule. BuildStreet routes
+    industrial → buildIndustrial; container/tank/solar/crate breakables drop cash/health (smash SFX = crack,
+    Kenney RPG Audio); 40+ colliders; THE FOREMAN boss; $750 purse bonus. Playtest-verified (6 screenshots,
+    zero console/page errors).
 18. **A7 breakables** — crates/barrels with cash/health pickups (SoR apple/chicken model);
-    break SFX from rpg-audio.
+    break SFX from rpg-audio. *(partial 2026-10-07: industrial breakables wired — SHIPPING CONTAINER /
+    FUEL TANK / SOLAR PANEL / CRATE with cash+health drops; smash SFX confirmed as crack from Kenney
+    RPG Audio; barrel prop not in either Kenney kit — containers serve as the heavy destructible)*
 
 ## TIER 5 — systems
 19. **U6 pause menu** — resume/restart/settings/quit (uses 9-slice panels + fonts from ui/).
