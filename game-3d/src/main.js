@@ -297,6 +297,11 @@ const ENEMY_FAMS = [
       { at: 3, name: 'STRAY SWIFT', tint: 0x7a7a6a, spdMul: 1.5, move: 'flurry' },
       { at: 5, name: 'STRAY SHIV', tint: 0xb8b89a, dmgMul: 1.5, move: 'knife' },
     ] },
+  { id: 'pumpkin', name: 'JACK', tint: 0xe07b1f, hp: 75, dmg: 1.0, scale: 1.0, spd: 1.7, head: 'pumpkin',
+    variants: [
+      { at: 0 },
+      { at: 3, name: 'JACK BRUISER', tint: 0xc45f10, hpMul: 1.6, scaleMul: 1.12, move: 'uppercut' },
+    ] },
 ];
 // missionIdx picks the variant: latest variant whose `at` <= mission index
 function famVariant(fam, mi) {
@@ -719,6 +724,36 @@ function crowdCheer() { for (const f of crowdMembers) { f.cheerT = 1.2; } sfx('c
 const clips = {};
 const fighters = [];
 let fighterTemplate = null, fighterHeight = 1.8;
+// ---------- species part attachments: CC0 part-pack meshes parented to bones ----------
+// (PART_ATTACH_SPEC.md: animal-head masks, pumpkin heads, etc. bolt onto the rig)
+const partTemplates = {};
+const PART_HEADS = {
+  pumpkin: { file: 'parts/pumpkin-head.glb', bone: 'head', scale: 0.30, y: 0.10 },
+};
+async function loadPartTemplates() {
+  for (const [id, p] of Object.entries(PART_HEADS)) {
+    try {
+      const g = await parse(p.file);
+      const grp = new THREE.Group();
+      const inner = new THREE.Group();
+      while (g.scene.children.length) inner.add(g.scene.children[0]);
+      const box = new THREE.Box3().setFromObject(inner);
+      const c = box.getCenter(new THREE.Vector3());
+      inner.position.sub(c); // recenter part on group origin
+      inner.traverse((o) => { if (o.isMesh) o.castShadow = true; });
+      grp.add(inner);
+      grp.scale.setScalar(p.scale);
+      partTemplates[id] = grp;
+    } catch (e) { T.errors.push('part:' + id + ':' + String(e && e.message || e).slice(0, 80)); }
+  }
+}
+function attachHead(f, partId) {
+  const t = partTemplates[partId]; if (!t) return;
+  const bone = f.root.getObjectByName(PART_HEADS[partId].bone); if (!bone) return;
+  const inst = t.clone();
+  inst.position.set(0, PART_HEADS[partId].y || 0, 0);
+  bone.add(inst);
+}
 function makeFighterRaw(tint, x, face, scale = 1, tex = null) {
   const root = skClone(fighterTemplate);
   root.scale.multiplyScalar(scale);
@@ -1092,6 +1127,7 @@ function spawnEnemy(famId, mi, bx, bz) {
   const fam = ENEMY_FAMS.find((f) => f.id === famId) || ENEMY_FAMS[0];
   const v = famVariant(fam, mi);
   const e = makeFighterRaw(v.tint, bx, -Math.PI / 2, v.scale, texObjs.patchwork);
+  if (fam.head) attachHead(e, fam.head); // species head attachment (pumpkin, masks...)
   if (hasMod('titans') && missionR() < 0.18 && !v.boss) { e.sc = (e.sc || 1) * 1.35; e.root.scale.multiplyScalar(1.35); e.maxHp = e.hp = Math.round(e.hp * 2.2); e.name = 'TITAN ' + e.name; }
   else if (hasMod('frenzy') && missionR() < 0.25) { e.spd *= 1.5; e.dmgMult *= 1.25; e.name = 'FRENZIED ' + e.name; }
   const df = diffDef();
@@ -2164,6 +2200,7 @@ async function boot() {
   await loadTexVariants();
   const box = new THREE.Box3().setFromObject(fighterTemplate); fighterHeight = box.max.y - box.min.y;
   const s = 1.8 / fighterHeight; fighterTemplate.scale.setScalar(s); fighterHeight = 1.8;
+  await loadPartTemplates(); // species head attachments (pumpkin, masks...)
   streetParts = {}; st.scene.children.slice().forEach((c) => { streetParts[c.name] = c; });
   resize(); $('loading').style.display = 'none';
   applyQuality();
@@ -2185,6 +2222,7 @@ window.__cdtest = {
   unpause: () => setPaused(false),
   freeze: (on) => { window.__cdfreeze = !!on; },
   spawnBoss: (id) => { if (player) return spawnBoss(id || 'kingpin', player.px + 6); },
+  spawnFam: (famId) => { if (player) return spawnEnemy(famId, 0, player.px + 3, 0); },
   hurt: (n) => { if (player) hurtPlayer(n); },
   doJump, doPunch, doHeavy, doSpecial, doTaunt, doDesperation,
   step: (dt) => { playerUpdate(dt || 1 / 60); }, // drive the real physics deterministically
