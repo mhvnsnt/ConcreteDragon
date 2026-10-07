@@ -398,6 +398,15 @@ const ENEMY_FAMS = [
       { at: 0 },
       { at: 4, name: 'NIGHTWING SWARM', tint: 0x1a1a26, hpMul: 1.5, dmgMul: 1.2, move: 'flurry' },
     ] },
+  { id: 'hghost', name: 'HAPPY HAUNT', tint: 0xf0f0ff, hp: 40, dmg: 0.7, scale: 1.0, spd: 2.2, creature: 'ghosthappy',
+    sig: { id: 'spook', name: 'SPOOK', chance: 0.24 },
+    variants: [ { at: 0 }, { at: 4, name: 'HAUNT MOB', tint: 0xd0d0f0, hpMul: 1.6, dmgMul: 1.2, move: 'flurry' } ] },
+  { id: 'sghost', name: 'SAD HAUNT', tint: 0xa0a0d0, hp: 55, dmg: 0.9, scale: 1.0, spd: 1.8, creature: 'ghostsad',
+    sig: { id: 'wail', name: 'WAIL', chance: 0.24 },
+    variants: [ { at: 0 }, { at: 4, name: 'WAILING MOB', tint: 0x8080b0, hpMul: 1.6, dmgMul: 1.3, move: 'flurry' } ] },
+  { id: 'skull', name: 'SKULL HEAD', tint: 0xe8e0d0, hp: 35, dmg: 0.8, scale: 1.0, spd: 2.6, creature: 'skull',
+    sig: { id: 'headbutt', name: 'HEADBUTT', chance: 0.26 },
+    variants: [ { at: 0 }, { at: 4, name: 'SKULL PILE', tint: 0xc8bca8, hpMul: 1.7, dmgMul: 1.2, move: 'flurry' } ] },
 ];
 // missionIdx picks the variant: latest variant whose `at` <= mission index
 function famVariant(fam, mi) {
@@ -437,6 +446,10 @@ const BOSSES = [
     unlockSkin: { fighter: 'brick', id: 'harvest', name: 'Harvest', tint: 0xe07b1f },
     sig: { id: 'pumpkingslam', name: 'ROYAL HARVEST' },
     intro: 'HE WEARS THE HARVEST' },
+  { id: 'carmilla', name: 'CARMILLA', tint: 0x8a1a2a, hp: 620, dmg: 1.5, scale: 1.1, spd: 1.8, creature: 'carmilla',
+    patterns: ['slam', 'flurry', 'summon'],
+    sig: { id: 'bloodmoon', name: 'BLOOD MOON' },
+    intro: 'THE VAMPIRE QUEEN' },
 ];
 
 // ---------- data: districts (per-district palettes — owner's art rule) ----------
@@ -527,10 +540,10 @@ const MISSIONS = [
     spawns: [{ at: 10, fam: 'zombie', n: 2 }, { at: 24, fam: 'pumpkin', n: 2 }, { at: 38, fam: 'witch', n: 2 }, { at: 50, fam: 'spider', n: 2 }],
     card: 'They rose with the fog.', boss: null, unlock: { type: 'mission', id: 'm2' }, reward: 'The dead walk' },
   { id: 'h2', zone: 'z2', district: 'graveyard', name: 'HARVEST MOON', len: 75, crowd: false,
-    spawns: [{ at: 10, fam: 'pumpkin', n: 3 }, { at: 26, fam: 'demon', n: 2 }, { at: 42, fam: 'vbat', n: 3 }, { at: 58, fam: 'zombie', n: 3 }],
+    spawns: [{ at: 10, fam: 'pumpkin', n: 3 }, { at: 26, fam: 'demon', n: 2 }, { at: 42, fam: 'vbat', n: 3 }, { at: 58, fam: 'hghost', n: 3 }],
     card: 'The moon is full and so are the graves.', boss: null, unlock: { type: 'mission', id: 'h1' }, reward: 'Something stirs' },
   { id: 'h3', zone: 'z2', district: 'graveyard', name: 'ALL HALLOWS', len: 90, crowd: false,
-    spawns: [{ at: 10, fam: 'demon', n: 2 }, { at: 26, fam: 'pumpkin', n: 3 }, { at: 44, fam: 'zombie', n: 4 }, { at: 62, fam: 'spider', n: 3 }, { at: 78, fam: 'demon', n: 2 }],
+    spawns: [{ at: 10, fam: 'demon', n: 2 }, { at: 26, fam: 'pumpkin', n: 3 }, { at: 44, fam: 'sghost', n: 3 }, { at: 62, fam: 'skull', n: 3 }, { at: 78, fam: 'demon', n: 2 }],
     card: 'He wears the harvest.', boss: 'pumpkinking', unlock: { type: 'mission', id: 'h2' }, reward: 'Unlocks JACK as playable' },
   { id: 'mz1', zone: 'z3', district: 'docks', name: 'RAT RUN', len: 85, crowd: false, layout: 'maze',
     spawns: [{ at: 12, fam: 'stray', n: 3 }, { at: 28, fam: 'thug', n: 3 }, { at: 46, fam: 'jabber', n: 3 }, { at: 64, fam: 'stray', n: 4 }],
@@ -540,7 +553,7 @@ const MISSIONS = [
     card: 'Every dead end has teeth.', boss: 'rust', unlock: { type: 'mission', id: 'z1' }, reward: 'The maze deepens' },
   { id: 'mz3', zone: 'z3', district: 'graveyard', name: 'CRYPT WALK', len: 100, crowd: false, layout: 'maze',
     spawns: [{ at: 12, fam: 'zombie', n: 3 }, { at: 30, fam: 'spider', n: 3 }, { at: 52, fam: 'demon', n: 2 }, { at: 74, fam: 'pumpkin', n: 3 }],
-    card: 'The crypts rearrange when you blink.', boss: null, unlock: { type: 'mission', id: 'mz2' }, reward: 'Maze master' },
+    card: 'The crypts rearrange when you blink.', boss: 'carmilla', unlock: { type: 'mission', id: 'mz2' }, reward: 'The Vampire Queen falls' },
   { id: 'p1', zone: 'z4', district: 'neon', name: 'ROOFTOP RUN', len: 85, crowd: false, layout: 'platform',
     spawns: [{ at: 12, fam: 'jabber', n: 3 }, { at: 30, fam: 'thug', n: 3 }, { at: 50, fam: 'stray', n: 3 }, { at: 68, fam: 'jabber', n: 4 }],
     card: 'The street is below you now.', boss: null, unlock: { type: 'mission', id: 'mz1' }, reward: 'Platform layouts unlocked' },
@@ -918,10 +931,6 @@ function updateRain(dt) {
 }
 function clearStreet() {
   while (streetGroup.children.length) streetGroup.remove(streetGroup.children[0]);
-  colliders.length = 0; destructibles.length = 0; clearPickups();
-}
-function clearStreet() {
-  while (streetGroup.children.length) streetGroup.remove(streetGroup.children[0]);
   colliders.length = 0; destructibles.length = 0; platforms.length = 0; clearPickups();
 }
 // buildLayout: zone parts 3/4 — maze-like pockets and platformer pieces (owner 2026-10-06)
@@ -1210,6 +1219,10 @@ const CREATURE_DEFS = {
     clips: { idle: 'CharacterArmature|Idle', walk: 'CharacterArmature|Run', attack: 'CharacterArmature|Punch_Left', hit: 'CharacterArmature|HitRecieve', dead: 'CharacterArmature|Death' } },
   vampirebat: { file: 'parts/vampire-bat.glb', height: 0.6,
     clips: { idle: 'Bat_Flying', walk: 'Bat_Flying', attack: 'Bat_Attack', hit: 'Bat_Flying', dead: 'Bat_Die' } },
+  carmilla: { file: 'parts/carmilla.glb', height: 1.7, clips: {} }, // static posed model (JellyLion, CC-BY)
+  ghosthappy: { file: 'parts/ghost-happy.glb', height: 0.9, clips: {} }, // static floaters (JellyLion, CC-BY)
+  ghostsad: { file: 'parts/ghost-sad.glb', height: 0.9, clips: {} },
+  skull: { file: 'parts/skull.glb', height: 0.5, clips: {} },
 };
 const CREATURE_ANIMROLE = {
   'Melee_Unarmed_Idle': 'idle', 'Running_A': 'walk',
@@ -1883,7 +1896,7 @@ function spawnEnemy(famId, mi, bx, bz) {
   }
   const df = effDiff();
   e.isPlayer = false; e.name = v.name; e.maxHp = e.hp = Math.round(v.hp * df.hpMul);
-  e.dmgMult = v.dmg * df.dmgMul; e.spd = v.spd; e.move = v.move; e.sig = fam.sig || null; e.sigUse = false;
+  e.dmgMult = v.dmg * df.dmgMul; e.spd = v.spd; e.move = v.move; e.sig = fam.sig || null; e.sigUse = false; e.famId = famId;
   e.px = bx; e.pz = clamp(bz, -1.3, 1.3);
   e.ai = 'walk'; e.aiT = rnd(0.4, 1.2) / df.aggro; e.windup = 0; e.vy = 0; e.airborne = false; e.aggro = df.aggro;
   syncPos(e);
@@ -2352,8 +2365,16 @@ function setupInput() {
   $('quitBtn').addEventListener('click', (e) => { e.stopPropagation(); setPaused(false); $('pauseOv').classList.add('hidden'); showMission(); });
   $('muteBtn').addEventListener('click', (e) => { e.stopPropagation(); save.muted = !save.muted; e.target.textContent = save.muted ? 'OFF' : 'ON'; writeSave(); sfx('uiclick', 0.7); });
   $('qualityBtn').addEventListener('click', (e) => { e.stopPropagation(); save.quality = save.quality === 'auto' ? 'low' : save.quality === 'low' ? 'high' : 'auto'; e.target.textContent = save.quality.toUpperCase(); writeSave(); sfx('uiclick', 0.7); applyQuality(); });
-  $('muteBtn').textContent = save.muted ? 'OFF' : 'ON';
-  $('qualityBtn').textContent = save.quality.toUpperCase();
+  // CREDITS (CC-BY attributions — owner 2026-10-06)
+  const CREDITS = [
+    ['Carmilla the vampire, happy/sad ghosts, cute skull — JellyLion (OpenGameArt)', 'CC-BY 4.0 — https://opengameart.org'],
+    ['Witch — Quaternius', 'CC-BY 4.0'],
+    ['Vampire bat — rubberduck (OpenGameArt)', 'CC0 1.0'],
+    ['All other models, code, music — Orion Enterprises LLC', 'Original / CC0'],
+  ];
+  $('creditsBody').innerHTML = CREDITS.map((c) => '<div>• ' + c[0] + '<br><span style="opacity:.7">' + c[1] + '</span></div>').join('');
+  $('creditsBtn').addEventListener('click', (e) => { e.stopPropagation(); $('creditsOv').classList.remove('hidden'); sfx('uiclick', 0.7); });
+  $('creditsClose').addEventListener('click', (e) => { e.stopPropagation(); $('creditsOv').classList.add('hidden'); sfx('uiclick', 0.7); });
   // ASSIST (SF6 Modern-controls-inspired, Soul Law 7: accessibility is respect)
   $('assistBtn').textContent = save.assist ? 'ON' : 'OFF';
   $('assistBtn').title = 'ASSIST: SPC button fires your best special automatically';
@@ -2526,6 +2547,20 @@ function execEnemySig(e) {
     playAnim(e, 'Melee_Unarmed_Attack_Punch_A', { ts: 2.2 });
     e.chargeT = 0.6; e.chargeDx = dir; e.chargeHit = false; e.chargeDmg = Math.round(base * 1.4);
     sfx('hit2', 1, false, 1.3);
+  } else if (id === 'spook') { // HAPPY HAUNT: jumpscare burst, brief stun
+    playAnim(e, 'Melee_Unarmed_Attack_Punch_A', { ts: 2.0 });
+    banner('SPOOK!');
+    sigHitPlayer(e, 1.8, 0.9, Math.round(base * 0.8), 'SPOOKED', 300, { burst: 0xffffff });
+    sfx('bell', 0.9, false, 1.5);
+  } else if (id === 'wail') { // SAD HAUNT: slowing wail AOE
+    playAnim(e, 'Melee_Unarmed_Attack_Punch_A', { ts: 1.2 });
+    sfx('hit3', 0.8, false, 0.6);
+    sigHitPlayer(e, 2.2, 1.2, Math.round(base * 0.9), 'WAIL', 350, { burst: 0x8080d0 });
+    if (player) player.slowT = Math.max(player.slowT || 0, 2.0);
+  } else if (id === 'headbutt') { // SKULL HEAD: flying headbutt charge
+    playAnim(e, 'Melee_Unarmed_Attack_Punch_A', { ts: 2.4 });
+    e.chargeT = 0.5; e.chargeDx = dir; e.chargeHit = false; e.chargeDmg = Math.round(base * 1.2);
+    sfx('hit2', 0.9, false, 1.1);
   }
 }
 // ---------- boss AI: telegraphed patterns ----------
@@ -2633,6 +2668,11 @@ function execBossSig(e) {
     playAnim(e, 'Melee_Unarmed_Attack_Kick', { ts: 1.0 });
     burst(bp.clone().add(new THREE.Vector3(0, 0.6, 0)), 34, 0xff7a1a, 7); shake = 0.6; sfx('hit3', 1, false, 0.6);
     sigHitPlayer(e, 3.4, 2.0, Math.round(base * 1.4), 'ROYAL HARVEST', 400, { burst: 0xff7a1a });
+  } else if (id === 'bloodmoon') { // CARMILLA: blood moon — 3 bat projectiles + heal on hit
+    banner('BLOOD MOON');
+    playAnim(e, 'Melee_Unarmed_Attack_Punch_A', { ts: 1.4 });
+    sfx('hit3', 1, false, 0.7);
+    for (let i = -1; i <= 1; i++) fireProj({ x: e.px + dir * 1.0, z: e.pz + i * 0.5, y: 1.4, vx: dir * 7.5, kind: 'orb', dmg: Math.round(base * 0.8), color: 0x8a1a2a, fromPlayer: false, life: 1.5, label: 'BLOOD MOON' });
   }
   e.ai = 'recover'; e.aiT = 1.4 / (e.aggro || 1);
 }
@@ -3249,6 +3289,9 @@ window.__cdtest = {
   dbgBoss: (id) => { const b = bossDef(id); return b ? { name: b.name, hp: b.hp, proc: !!b.proc, sig: b.sig ? b.sig.name : null } : null; },
   seasonFams: () => { const s = activeSeason(); return s ? s.fams : []; },
   dbgBless: (ids) => { save.blessings = ids; writeSave(); return { fx: blessFx(), duo: blessDuo() ? blessDuo().name : null }; },
+  dbgGear: (inv, tier, eq) => { save.gearInv = inv; save.gearTier = tier; save.gearEq = eq; writeSave(); return gearFx(); },
+  showSelect: () => showSelect(),
+  forceFoeSigBy: (famId) => { const e = enemies.find(x => x.hp > 0 && x.famId === famId); if (e) { e.ai = 'windup'; e.windup = 0.01; e.sigUse = !!e.sig; } return !!e; },
   dbgRep: (r) => { save.rep = r; writeSave(); const d = effDiff(); return { hpMul: +d.hpMul.toFixed(2), dmgMul: +d.dmgMul.toFixed(2), cash: +repMult().cash.toFixed(2) }; },
   spawnCreature: (cid) => { if (player) { const e = makeCreatureRaw(cid, 0xffffff, player.px + 3, -Math.PI / 2, 1); if (e) { e.maxHp = e.hp = 200; e.dmgMult = 1; e.spd = 1.5; e.px = player.px + 3; e.pz = 0; e.ai = 'walk'; e.aiT = 1; syncPos(e); playAnim(e, 'Running_A', { loop: true }); enemies.push(e); } return e; } },
   hurt: (n) => { if (player) hurtPlayer(n); },

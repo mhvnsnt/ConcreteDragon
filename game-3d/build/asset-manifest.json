@@ -98,5 +98,21 @@
   {
     "file": "parts/vampire-bat.glb",
     "source": "rubberduck via OpenGameArt (CC0 1.0)"
+  },
+  {
+    "file": "parts/carmilla.glb",
+    "source": "JellyLion via OpenGameArt (CC-BY 4.0) \u2014 attribution: JellyLion"
+  },
+  {
+    "file": "parts/ghost-happy.glb",
+    "source": "JellyLion via OpenGameArt (CC-BY 4.0) \u2014 attribution: JellyLion"
+  },
+  {
+    "file": "parts/ghost-sad.glb",
+    "source": "JellyLion via OpenGameArt (CC-BY 4.0) \u2014 attribution: JellyLion"
+  },
+  {
+    "file": "parts/skull.glb",
+    "source": "JellyLion via OpenGameArt (CC-BY 4.0) \u2014 attribution: JellyLion"
   }
 ]
