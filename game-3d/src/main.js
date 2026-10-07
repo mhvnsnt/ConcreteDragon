@@ -444,6 +444,8 @@ const districtDef = (id) => DISTRICTS.find((d) => d.id === id) || DISTRICTS[0];
 const ZONES = [
   { id: 'z1', name: 'ZONE 1 — CONCRETE ORIGINS', card: 'Where it all started. Four blocks, four lessons.', unlock: { type: 'start' } },
   { id: 'z2', name: 'ZONE 2 — DEAD OF NIGHT', card: 'The graveyard shift. Things walk that should not.', unlock: { type: 'mission', id: 'm2' } },
+  { id: 'z3', name: 'ZONE 3 — THE MAZE', card: 'Dead ends, ambush pockets. The block fights back.', unlock: { type: 'mission', id: 'h3' } },
+  { id: 'z4', name: 'ZONE 4 — HIGH RISE', card: 'Up is the only way through. Jump.', unlock: { type: 'mission', id: 'z1' } },
   { id: 'zx', name: 'SIDE HUSTLES', card: 'Endless scraps, daily grinds, infinite road.', unlock: { type: 'start' } },
 ];
 const zoneDef = (id) => ZONES.find((z) => z.id === id) || ZONES[0];
@@ -514,6 +516,24 @@ const MISSIONS = [
   { id: 'h3', zone: 'z2', district: 'graveyard', name: 'ALL HALLOWS', len: 90, crowd: false,
     spawns: [{ at: 10, fam: 'demon', n: 2 }, { at: 26, fam: 'pumpkin', n: 3 }, { at: 44, fam: 'zombie', n: 4 }, { at: 62, fam: 'spider', n: 3 }, { at: 78, fam: 'demon', n: 2 }],
     card: 'He wears the harvest.', boss: 'pumpkinking', unlock: { type: 'mission', id: 'h2' }, reward: 'Unlocks JACK as playable' },
+  { id: 'mz1', zone: 'z3', district: 'docks', name: 'RAT RUN', len: 85, crowd: false, layout: 'maze',
+    spawns: [{ at: 12, fam: 'stray', n: 3 }, { at: 28, fam: 'thug', n: 3 }, { at: 46, fam: 'jabber', n: 3 }, { at: 64, fam: 'stray', n: 4 }],
+    card: 'The alleys loop. So do the rats.', boss: null, unlock: { type: 'mission', id: 'h3' }, reward: 'Maze layouts unlocked' },
+  { id: 'mz2', zone: 'z3', district: 'yards', name: 'SCRAP LABYRINTH', len: 95, crowd: false, layout: 'maze',
+    spawns: [{ at: 12, fam: 'heavyd', n: 2 }, { at: 30, fam: 'rico', n: 3 }, { at: 50, fam: 'heavyd', n: 3 }, { at: 70, fam: 'zombie', n: 3 }],
+    card: 'Every dead end has teeth.', boss: 'rust', unlock: { type: 'mission', id: 'z1' }, reward: 'The maze deepens' },
+  { id: 'mz3', zone: 'z3', district: 'graveyard', name: 'CRYPT WALK', len: 100, crowd: false, layout: 'maze',
+    spawns: [{ at: 12, fam: 'zombie', n: 3 }, { at: 30, fam: 'spider', n: 3 }, { at: 52, fam: 'demon', n: 2 }, { at: 74, fam: 'pumpkin', n: 3 }],
+    card: 'The crypts rearrange when you blink.', boss: null, unlock: { type: 'mission', id: 'mz2' }, reward: 'Maze master' },
+  { id: 'p1', zone: 'z4', district: 'neon', name: 'ROOFTOP RUN', len: 85, crowd: false, layout: 'platform',
+    spawns: [{ at: 12, fam: 'jabber', n: 3 }, { at: 30, fam: 'thug', n: 3 }, { at: 50, fam: 'stray', n: 3 }, { at: 68, fam: 'jabber', n: 4 }],
+    card: 'The street is below you now.', boss: null, unlock: { type: 'mission', id: 'mz1' }, reward: 'Platform layouts unlocked' },
+  { id: 'p2', zone: 'z4', district: 'havana', name: 'FIRE ESCAPE', len: 95, crowd: false, layout: 'platform',
+    spawns: [{ at: 12, fam: 'rico', n: 3 }, { at: 32, fam: 'heavyd', n: 2 }, { at: 54, fam: 'demon', n: 2 }, { at: 76, fam: 'rico', n: 4 }],
+    card: 'Climb or get climbed.', boss: 'viper', unlock: { type: 'mission', id: 'p1' }, reward: 'Skyline fighter' },
+  { id: 'p3', zone: 'z4', district: 'docks', name: 'CRANE YARD', len: 105, crowd: true, layout: 'platform',
+    spawns: [{ at: 12, fam: 'heavyd', n: 3 }, { at: 32, fam: 'spider', n: 3 }, { at: 56, fam: 'demon', n: 3 }, { at: 80, fam: 'zombie', n: 4 }],
+    card: 'The highest fight in the city.', boss: 'sledge', unlock: { type: 'mission', id: 'p2' }, reward: 'King of the high rise' },
   { id: 'endless', zone: 'zx', district: 'neon', name: 'ENDLESS SCRAP', len: Infinity, crowd: false, endless: true, card: 'How long can you hold the block?',
     spawns: [], boss: null, unlock: { type: 'mission', id: 'm1' }, reward: 'Survival ladder — how far can you walk?' },
   { id: 'daily', zone: 'zx', district: 'neon', name: 'DAILY SCRAP', len: 70, crowd: false, daily: true, card: 'One shot. One leaderboard.',
@@ -884,6 +904,42 @@ function clearStreet() {
   while (streetGroup.children.length) streetGroup.remove(streetGroup.children[0]);
   colliders.length = 0; destructibles.length = 0; clearPickups();
 }
+function clearStreet() {
+  while (streetGroup.children.length) streetGroup.remove(streetGroup.children[0]);
+  colliders.length = 0; destructibles.length = 0; platforms.length = 0; clearPickups();
+}
+// buildLayout: zone parts 3/4 — maze-like pockets and platformer pieces (owner 2026-10-06)
+function buildLayout(kind, L, R, place, curb, K) {
+  if (kind === 'maze') {
+    // winding fence pockets: dead-ends with bonus pickups + ambush spawns
+    for (let px = 14; px < L - 8; px += rnd(16, 24)) {
+      const side = R() < 0.5 ? -1 : 1;
+      const pz = side * (curb + 1.5);
+      // U-shaped pocket: 3 dumpster walls (solid, block movement)
+      place('dumpster', px - 2.5, pz, 0, K); place('dumpster', px + 2.5, pz, 0, K);
+      place('dumpster', px, pz + side * 2.2, Math.PI / 2, K);
+      // loot in the pocket
+      if (R() < 0.7) spawnPickup('cash', px, clamp(pz - side * 0.8, -1.4, 1.4));
+      if (R() < 0.4) spawnPickup('health', px + 1, clamp(pz - side * 0.8, -1.4, 1.4));
+    }
+  } else if (kind === 'platform') {
+    // raised platforms: jump up for vantage + bonus pickups (platformer beat-em-up)
+    for (let px = 12; px < L - 10; px += rnd(14, 20)) {
+      const pz = rnd(-1, 1), w = rnd(3, 5), d = rnd(1.6, 2.4), top = rnd(1.1, 1.9);
+      const geo = new THREE.BoxGeometry(w, top, d);
+      const mat = new THREE.MeshStandardMaterial({ color: 0x3a3348, roughness: 0.9 });
+      const m = new THREE.Mesh(geo, mat);
+      m.position.set(px, top / 2 - 0.02, pz); m.castShadow = true; m.receiveShadow = true;
+      streetGroup.add(m);
+      platforms.push({ x: px, z: pz, w, d, top });
+      if (R() < 0.6) spawnPickup(R() < 0.5 ? 'cash' : 'special', px, pz);
+      // visual edge stripe
+      const edge = new THREE.Mesh(new THREE.BoxGeometry(w + 0.1, 0.08, d + 0.1),
+        new THREE.MeshBasicMaterial({ color: 0xffcf2e }));
+      edge.position.set(px, top + 0.02, pz); streetGroup.add(edge);
+    }
+  }
+}
 function buildStreet(district, missionLen, seedFn) {
   clearStreet();
   const d = districtDef(district);
@@ -919,6 +975,7 @@ function buildStreet(district, missionLen, seedFn) {
   lampL.position.set(2, 3.4, curb + 0.8); lampR.position.set(10, 3.2, curb + 0.8);
   const g = new THREE.Mesh(new THREE.PlaneGeometry(L + 60, 80), new THREE.MeshStandardMaterial({ color: d.ground, roughness: 1 }));
   g.rotation.x = -Math.PI / 2; g.position.set(L / 2 - 10, -0.06, 0); g.receiveShadow = true; streetGroup.add(g);
+  if (mission && mission.layout) buildLayout(mission.layout, L, R, place, curb, K); // zone parts 3/4
   return { curb, roadW: rw };
 }
 
@@ -934,6 +991,7 @@ const DESTRUCT_DEFS = {
 const SOLID_PROPS = new Set(['streetlight', 'firehydrant']);
 const colliders = [];    // {x, z, r, dead} — block player movement (owner bug report 2026-10-06)
 const destructibles = []; // {mesh, px, pz, r, hp, maxHp, name, def, col}
+const platforms = [];     // {x, z, w, d, top} — jumpable platforms (zone 4, platformer layouts)
 // placeProp: ground-aligns via bounding box (BUG FIX 2026-10-06: cars sank), registers collision + destructible HP
 function placeProp(name, x, z, ry = 0, sc = 2.2, tint = null) {
   const part = streetParts[name]; if (!part) return null;
@@ -2568,12 +2626,20 @@ function playerUpdate(dt) {
     const d2 = cx * cx + cz * cz;
     if (d2 < rr * rr && d2 > 0.0001) { const d = Math.sqrt(d2); p.px = c.x + cx / d * rr; p.pz = c.z + cz / d * rr; }
   }
-  if (p.airT > 0) { // jump physics
-    p.airT += dt; p.vy -= 22 * dt; p.py = Math.max(0, (p.py || 0) + p.vy * dt);
-    if (p.py <= 0) { p.py = 0; p.airT = 0; p.vy = 0;
+  if (p.airT > 0) { // jump physics (platform-aware)
+    p.airT += dt; p.vy -= 22 * dt; p.py = (p.py || 0) + p.vy * dt;
+    let ground = 0;
+    if (p.vy <= 0) for (const pl of platforms) { // land on platform tops
+      if (Math.abs(p.px - pl.x) < pl.w / 2 && Math.abs(p.pz - pl.z) < pl.d / 2 && p.py <= pl.top && p.py >= pl.top - 1.4) { ground = pl.top; break; }
+    }
+    if (p.py <= ground) { p.py = ground; p.airT = 0; p.vy = 0;
       burst(p.root.position.clone().add(new THREE.Vector3(0, 0.1, 0)), 8, 0x999999, 2);
       if (p.busy <= 0) playAnim(p, 'Melee_Unarmed_Idle', { loop: true });
     }
+  } else if ((p.py || 0) > 0) { // walked off a platform -> fall
+    let over = false;
+    for (const pl of platforms) if (Math.abs(p.px - pl.x) < pl.w / 2 && Math.abs(p.pz - pl.z) < pl.d / 2) { over = true; break; }
+    if (!over) { p.airT = 0.01; p.vy = 0; }
   }
   if (p.spinT > 0) { // IRON CYCLONE: spinning travel, multi-hit
     const maxX = mission.len === Infinity ? 1e6 : mission.len - 1.5;
