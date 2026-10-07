@@ -2779,8 +2779,18 @@ function nearestEnemy(range) {
   }
   return best;
 }
-function nearestEnemyFront(range) {
-  let best = null, bd = range;
+// OWNER 2026-10-07: attacks snap to face the nearest enemy at press time,
+// so strikes aim correctly now that walking no longer magnet-faces enemies.
+function faceNearestEnemy() {
+  if (!player) return;
+  const t = nearestEnemy(99);
+  if (t) {
+    player.face = t.px >= player.px ? 1 : -1;
+    player.root.rotation.y = player.face > 0 ? Math.PI / 2 : -Math.PI / 2;
+  }
+  player.animMove = false; // run anim yields to the attack; state machine restarts it after
+}
+function nearestEnemyFront(range) {  let best = null, bd = range;
   for (const e of enemies) {
     if (e.hp <= 0) continue;
     const dx = (e.px - player.px) * player.face;
@@ -2904,6 +2914,7 @@ function doParry(e) {
 }
 function doPunch() {
   if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.busy > 0) return;
+  faceNearestEnemy();
   unlockAudio();
   T.taps++; hint(false); save.seenHint = true;
   // fighting-game motion input + HIT (additive: plain tap combat unchanged)
@@ -2970,6 +2981,7 @@ function doPunch() {
 }
 function doBlitz() {
   if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.busy > 0) return;
+  faceNearestEnemy();
   const fd = fighterDef(player.fid);
   const face = player.face || 1;
   player.blitzCD = 1.4; player.busy = 0.34;
@@ -3028,6 +3040,7 @@ function doGrapple() {
   // WRESTLING FINISHERS (No More Heroes): staggered enemy + GRAPPLE = suplex/piledriver/powerbomb.
   // Stun an enemy (parry/counter), then style on them. Wrestling flavor for the wrestling-rooted roster.
   if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.busy > 0 || player.airT > 0) return;
+  faceNearestEnemy();
   unlockAudio(); T.taps++; hint(false);
   const t = nearestEnemy(2.4);
   if (!t || !(t.stagger > 0) || t.boss) {
@@ -3184,6 +3197,7 @@ function doStanceFin(fd) {
 }
 function doHeavy() {
   if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.busy > 0) return;
+  faceNearestEnemy();
   unlockAudio(); T.taps++; hint(false);
   // DUST LAUNCHER (Guilty Gear): ↓+HVY = universal overhead launcher, same for every fighter.
   // The combo system has a common language: down+heavy always pops them up.
@@ -3235,6 +3249,7 @@ function doHeavy() {
 }
 function doSpecial() {
   if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0) return;
+  faceNearestEnemy();
   unlockAudio();
   const fd = fighterDef();
   // DOJO MOVES (River City Ransom): directional SPC fires purchased dojo techniques
@@ -4173,14 +4188,33 @@ function playerUpdate(dt) {
       }
     }
     if (Math.random() < 0.65) sparkFX(p.px, 0.9, p.pz, p.spinColor || 0x80ed99, 3);
-  } else {
+  } else if (p.busy <= 0 && p.dodgeT <= 0) {
+    // OWNER 2026-10-07: face MOVEMENT direction while walking/running.
+    // No more magnet-facing enemies — attacks snap to the enemy at press time
+    // (faceNearestEnemy in doPunch/doHeavy/doBlitz/doGrapple/doSpecial).
+    // Idle keeps current facing: never auto-snap.
+    const spdNow2 = Math.hypot(mx, mz);
+    if (spdNow2 > 0.6 && Math.abs(mx) > 0.25) {
+      p.face = mx > 0 ? 1 : -1;
+      p.root.rotation.y = p.face > 0 ? Math.PI / 2 : -Math.PI / 2;
+    }
+  } else if (p.busy > 0) {
+    // mid-action: track nearest enemy so strikes aim correctly
     const tgt = nearestEnemy(99);
     if (tgt) { p.face = tgt.px >= p.px ? 1 : -1; p.root.rotation.y = p.face > 0 ? Math.PI / 2 : -Math.PI / 2; }
-    else if (Math.abs(mx) > 0.4) { p.face = mx > 0 ? 1 : -1; p.root.rotation.y = p.face > 0 ? Math.PI / 2 : -Math.PI / 2; }
   }
-  const moving = Math.abs(mx) + Math.abs(mz) > 0.5;
-  if (moving && !p.animMove && p.dodgeT <= 0 && p.busy <= 0) { p.animMove = true; playAnim(p, 'Running_A', { loop: true }); }
-  if (!moving && p.animMove && p.dodgeT <= 0) { p.animMove = false; playAnim(p, 'Melee_Unarmed_Idle', { loop: true }); }
+  const spdNow = Math.hypot(mx, mz);
+  const wantRun = spdNow > 0.6 && p.dodgeT <= 0 && p.busy <= 0 && p.airT <= 0 && (p.knockT || 0) <= 0;
+  if (wantRun) {
+    // OWNER 2026-10-07: run anim starts IMMEDIATELY on movement and its speed
+    // tracks velocity every frame — no sliding, no foot-skate.
+    const ts = Math.min(1.9, Math.max(0.75, spdNow / 4.4));
+    if (!p.animMove) { p.animMove = true; playAnim(p, 'Running_A', { loop: true, ts }); }
+    else if (p.cur) p.cur.timeScale = ts;
+  } else if (p.animMove && p.dodgeT <= 0 && p.busy <= 0) {
+    p.animMove = false;
+    playAnim(p, 'Melee_Unarmed_Idle', { loop: true });
+  }
   syncPos(p);
   // charging enemies (boss charge / heavy-d-plus charge)
   for (const e of enemies) {
