@@ -223,6 +223,10 @@ for (const f of FIGHTERS) {
     ['↓→ + HIT', f.qcf.name, f.qcf.desc + ' — ' + f.qcf.tag],
     ['←→ + HIT', f.bfname, 'Dash-through strike — 25 energy'],
     ['↓↑ + HIT', f.duname, 'Rising launcher — 25 energy'],
+    ['JUMP + SPC', 'AIR ' + f.qcf.name, 'Your signature, from above — 25 energy'],
+    ['PARRY', '→ toward attacker on !', 'Negate + stagger them, gain energy. No damage.'],
+    ['DASH STRIKE', 'DDG into enemy', 'Your dodge is a weapon — 18 dmg on contact'],
+    ['WALL SPLAT', 'Launch near props', 'Slam them into scenery for bonus damage'],
     ['↑↑↓←→ + SPC', f.mega.name, 'MEGA SUPER — needs FULL energy. Cinematic.'],
     ['4TH HIT', f.finname, f.findesc],
   );
@@ -1913,6 +1917,17 @@ function doFinisher(t) {
   popText(fd.finname, 'spc', sp.x, sp.y - 70);
   sfx(392, 0.12, 'square', 0.5);
 }
+// PARRY (Fight'N Rage-inspired): tap TOWARD the attacker on the '!' — negate, stagger, free energy
+function doParry(e) {
+  e.windup = 0; hideWarn(e); e.stagger = 1.2;
+  playAnim(e, 'Hit_A', { ts: 1.4 });
+  player.energy = clamp(player.energy + 20 * (1 + (blessFx().energyGain || 0)), 0, energyMax());
+  sparkFX(player.px + player.face * 0.8, 1.2, player.pz, 0x7af0ff, 16);
+  const sp = screenPos(player.root.position.clone().add(new THREE.Vector3(0, 2.0, 0)));
+  popText('PARRY!', 'spc', sp.x, sp.y);
+  sfx('hit3', 0.7, false, 1.4); addHitstop(0.06);
+  player.busy = 0.25; setHud(); ev('parry', {});
+}
 function doPunch() {
   if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.busy > 0) return;
   unlockAudio(); T.taps++; hint(false); save.seenHint = true;
@@ -1947,6 +1962,9 @@ function doPunch() {
   setTimeout(() => {
     if (state !== 'fight' || missionOver || ended) return;
     if (ce && ce.hp > 0) {
+      // PARRY vs COUNTER: stick toward the attacker = parry (stagger + free energy); else counter
+      const toward = Math.sign(ce.px - player.px) || 1;
+      if (dx * toward > 0.5) { doParry(ce); return; }
       ce.windup = 0; hideWarn(ce);
       const bfx = blessFx();
       landHit(ce, Math.round(dmg * player.dmgMult * 2 * (1 + (bfx.counterDmg || 0) + (save.up_counter || 0) * 0.1)), 'COUNTER', 0.12, 0.35, false, true);
@@ -2034,6 +2052,13 @@ function doSpecial() {
     sfx(140, 0.2, 'square', 0.3);
     return;
   }
+  // AIR SPECIAL: SPC in air = your signature, from above (25 energy) — per-fighter aerial identity
+  if (player.airT > 0) {
+    if (player.energy < 25) { popText('NOT ENOUGH ENERGY', 'bad', innerWidth / 2, innerHeight * 0.4); return; }
+    player.energy = Math.max(0, player.energy - 25); setHud();
+    doMotionSpecial('qcf', true);
+    return;
+  }
   // v + SPC: second special at 35 energy
   if (stick.dy > 0.5 && player.energy >= (fd.spc2 ? fd.spc2.cost : 35)) { doSpecial2(fd); return; }
   if (player.energy < 60) { popText('NOT ENOUGH ENERGY', 'bad', innerWidth / 2, innerHeight * 0.4); return; }
@@ -2108,7 +2133,7 @@ function doDodge() {
   if (now - lastDodgeTap < 320 && player.dodgeCD <= 0) { lastDodgeTap = 0; doDesperation(); return; }
   lastDodgeTap = now;
   if (player.dodgeCD > 0) return;
-  player.dodgeCD = 0.9 * dodgeRechargeMult(); player.dodgeT = 0.35;
+  player.dodgeCD = 0.9 * dodgeRechargeMult(); player.dodgeT = 0.35; player.dashStruck = false;
   const m = Math.hypot(stick.dx, stick.dy);
   if (m > 0.25) { player.dodgeDx = stick.dx / m; player.dodgeDz = stick.dy / m; }
   else { const t = nearestEnemy(99); player.dodgeDx = t && t.px < player.px ? 1 : -1; player.dodgeDz = 0; }
@@ -2135,6 +2160,15 @@ function landHit(e, dmg, label, hs, sh, launcher, counter) {
     e.airborne = true; e.vy = 5.2; e.ai = 'launched';
     playAnim(e, 'Hit_B', { ts: 1.2 });
     popText('LAUNCH!', 'spc', sp.x, sp.y - 60);
+    // WALL SPLAT (TMNT-inspired): launched into a prop/wall = bonus damage + crumple
+    for (const c of colliders) {
+      if (!c.dead && Math.hypot(e.px - c.x, e.pz - c.z) < c.r + 1.2) {
+        e.hp -= Math.round(12 * player.dmgMult);
+        popText('WALL SPLAT!', 'spc', sp.x, sp.y - 90);
+        burst(head, 20, 0xffcf2e, 5); shake = Math.max(shake, 0.5);
+        break;
+      }
+    }
   } else if (!e.airborne) {
     playAnim(e, Math.random() < 0.5 ? 'Hit_A' : 'Hit_B', { ts: 1.4, fade: 0.04 });
   }
@@ -2308,6 +2342,7 @@ function enemyAI(e, dt) {
     return;
   }
   if (e.chargeT > 0) return; // handled in playerUpdate (bosses)
+  if (e.stagger > 0) { e.stagger -= dt; syncPos(e); return; } // parried: staggered, can't act
   const dx = player.px - e.px, dz = player.pz - e.pz;
   const adx = Math.abs(dx), adz = Math.abs(dz);
   if (e.boss) { bossAI(e, dt, dx, dz, adx, adz); return; }
@@ -2612,6 +2647,16 @@ function playerUpdate(dt) {
   const p = player;
   if (p.dodgeT > 0) p.dodgeT -= dt;
   if (p.dodgeCD > 0) p.dodgeCD -= dt;
+  // DASH STRIKE (Ruiner-inspired): the dodge IS a weapon — plow through an enemy once per dodge
+  if (p.dodgeT > 0 && !p.dashStruck) {
+    for (const e of enemies) {
+      if (!e.dead && e.hp > 0 && Math.abs(e.px - p.px) < 1.3 && Math.abs(e.pz - p.pz) < 1.1) {
+        p.dashStruck = true;
+        landHit(e, Math.round(18 * p.dmgMult), 'DASH STRIKE', 0.05, 0.25, false, false);
+        break;
+      }
+    }
+  }
   if (p.spinT > 0) p.spinT -= dt;
   if (p.slowT > 0) p.slowT -= dt; // WEB SNARE slow
   const spd = 4.4 * (p.spd || 1) * (p.slowT > 0 ? 0.45 : 1) * (1 + (blessFx().moveSpd || 0));
@@ -2778,11 +2823,13 @@ function updateProjs(dt) {
   }
 }
 // ---------- motion specials (25 energy each) ----------
-function doMotionSpecial(kind) {
+function doMotionSpecial(kind, free) {
   const fd = fighterDef();
   inputHist.length = 0;
-  if (player.energy < 25) { const sp = screenPos(player.root.position); popText('NOT ENOUGH ENERGY', 'bad', sp.x, sp.y - 60); sfx(140, 0.15, 'square', 0.3); return; }
-  player.energy = Math.max(0, player.energy - 25); setHud();
+  if (!free) {
+    if (player.energy < 25) { const sp = screenPos(player.root.position); popText('NOT ENOUGH ENERGY', 'bad', sp.x, sp.y - 60); sfx(140, 0.15, 'square', 0.3); return; }
+    player.energy = Math.max(0, player.energy - 25); setHud();
+  }
   if (kind === 'qcf') {
     // SIGNATURE ATTACKS (owner 2026-10-06): only Kid Blue throws a fireball.
     // Every fighter's ↓→ + HIT is their own personal special, SF-style.
