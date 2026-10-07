@@ -578,7 +578,7 @@ function activeSeason() {
 }
 // WHAT'S NEW (soul law: community as co-designer) — patch notes live in-game
 const PATCH_NOTES = [
-  ['2026-10-07', 'Wave 6: STANCE FINISHERS (8 — STANCE + HVY), MIXTAPE stance system, Zone 6 THE WORKS + Zone 7 STEEL CELL, skyline/ring/plaza layouts, THE FOREMAN (OVERTIME) + THE WARDEN (LOCKDOWN)'],
+  ['2026-10-07', 'Wave 6: ARENA DRESSING (8 Kenney CC0 props — smashable tables/chairs/cones/tires), STANCE FINISHERS (8), MIXTAPE stances, Zones 6-7, FOREMAN + WARDEN'],
   ['2026-10-06', 'Wave 4: BLITZ lunging strikes, WITCH TIME last-instant dodge, FOCUS absorb, BURST combo breaker, RADICAL MODE, RECRUIT crew system'],
   ['2026-10-05', 'Wave 3: 15 bosses with signatures, 5 districts, style meter, mission grades'],
 ];
@@ -1063,6 +1063,10 @@ function buildLayout(kind, L, R, place, curb, K) {
       // U-shaped pocket: 3 dumpster walls (solid, block movement)
       place('dumpster', px - 2.5, pz, 0, K); place('dumpster', px + 2.5, pz, 0, K);
       place('dumpster', px, pz + side * 2.2, Math.PI / 2, K);
+      // wave-6: construction dressing — cones, barriers, fence segments
+      placeProp('k_cone', px - 4.5, -side * 1.2, R() * 3, 1.4);
+      placeProp('k_cone', px + 4.5, side * 1.2, R() * 3, 1.4);
+      if (R() < 0.5) placeProp('k_barrier', px, -side * (curb + 0.5), 0, 1.5);
       // loot in the pocket
       if (R() < 0.7) spawnPickup('cash', px, clamp(pz - side * 0.8, -1.4, 1.4));
       if (R() < 0.4) spawnPickup('health', px + 1, clamp(pz - side * 0.8, -1.4, 1.4));
@@ -1124,6 +1128,12 @@ function buildLayout(kind, L, R, place, curb, K) {
       place(nm, cx0 + Math.cos(a) * rr, Math.sin(a) * rr * 0.7, R() * 3, K);
     }
     place('dumpster', cx0, 0, R() * 3, K);
+    // wave-6: street cafe wreckage — tables and chairs, all smashable
+    for (let i = 0; i < 3; i++) {
+      const a = R() * Math.PI * 2, rr = rnd(4.5, 6.5);
+      placeProp('k_table', cx0 + Math.cos(a) * rr, Math.sin(a) * rr * 0.7, R() * 3, 1.6);
+      placeProp('k_chair', cx0 + Math.cos(a) * (rr + 1.2), Math.sin(a) * (rr + 1.2) * 0.7, R() * 3, 1.6);
+    }
     for (const sx of [-1, 1]) for (const sz of [-1, 1]) {
       place('streetlight', cx0 + sx * 9, sz * 5, 0, K);
       if (R() < 0.6) place('trash_A', cx0 + sx * rnd(4, 7), sz * rnd(3, 5), R() * 3, K);
@@ -1180,7 +1190,15 @@ const DESTRUCT_DEFS = {
   car_taxi: { hp: 70, name: 'TAXI', pickups: ['cash', 'cash', 'cash', 'special'] },
   car_police: { hp: 70, name: 'SQUAD CAR', pickups: ['cash', 'cash', 'health', 'special'] },
 };
-const SOLID_PROPS = new Set(['streetlight', 'firehydrant']);
+const SOLID_PROPS = new Set(['streetlight', 'firehydrant', 'k_barrier', 'k_fence', 'k_lamppost']);
+// wave-6 arena dressing: Kenney CC0 smashables
+Object.assign(DESTRUCT_DEFS, {
+  k_cone: { hp: 8, name: 'TRAFFIC CONE', pickups: ['cash'] },
+  k_trafficone: { hp: 8, name: 'TRAFFIC CONE', pickups: ['cash'] },
+  k_chair: { hp: 12, name: 'CHAIR', pickups: ['cash'] },
+  k_table: { hp: 18, name: 'TABLE', pickups: ['cash', 'health'] },
+  k_tire: { hp: 14, name: 'TIRE', pickups: ['cash'] },
+});
 const colliders = [];    // {x, z, r, dead} — block player movement (owner bug report 2026-10-06)
 const destructibles = []; // {mesh, px, pz, r, hp, maxHp, name, def, col}
 const platforms = [];     // {x, z, w, d, top} — jumpable platforms (zone 4, platformer layouts)
@@ -3751,6 +3769,24 @@ function loop() {
   T.state = state; T.frameMs = +(clock.elapsedTime * 0).toFixed(1); T.drawCalls = renderer.info.render.calls; T.tris = renderer.info.render.triangles;
 }
 // ---------- boot ----------
+// ---------- arena dressing (wave 6): Kenney CC0 props merged into streetParts ----------
+const ARENA_PROPS = [
+  ['props/k_cone.glb', 'k_cone'], ['props/k_barrier.glb', 'k_barrier'],
+  ['props/k_fence.glb', 'k_fence'], ['props/k_lamppost.glb', 'k_lamppost'],
+  ['props/k_chair.glb', 'k_chair'], ['props/k_table.glb', 'k_table'],
+  ['props/k_trafficone.glb', 'k_trafficone'], ['props/k_tire.glb', 'k_tire'],
+];
+async function loadArenaProps() {
+  for (const [file, key] of ARENA_PROPS) {
+    try {
+      const g = await parse(file);
+      const grp = new THREE.Group();
+      while (g.scene.children.length) grp.add(g.scene.children[0]);
+      grp.name = key;
+      streetParts[key] = grp;
+    } catch (e) { T.errors.push('prop:' + key + ':' + String(e && e.message || e).slice(0, 80)); }
+  }
+}
 async function boot() {
   loadSave();
   const [fg, am, ag, amv, st] = await Promise.all(['fighter.glb', 'anim_melee.glb', 'anim_general.glb', 'anim_move.glb', 'street.glb'].map(parse));
@@ -3766,6 +3802,7 @@ async function boot() {
   await loadPartTemplates(); // species head attachments (pumpkin, masks...)
   await loadCreatureTemplates(); // whole-body species (zombie, demon, spider, dragon)
   streetParts = {}; st.scene.children.slice().forEach((c) => { streetParts[c.name] = c; });
+  await loadArenaProps(); // Kenney CC0 arena dressing
   resize(); $('loading').style.display = 'none';
   applyQuality();
   T.state = 'ready'; ev('loaded');
@@ -3826,6 +3863,7 @@ window.__cdtest = {
   spawnCreature: (cid) => { if (player) { const e = makeCreatureRaw(cid, 0xffffff, player.px + 3, -Math.PI / 2, 1); if (e) { e.maxHp = e.hp = 200; e.dmgMult = 1; e.spd = 1.5; e.px = player.px + 3; e.pz = 0; e.ai = 'walk'; e.aiT = 1; syncPos(e); playAnim(e, 'Running_A', { loop: true }); enemies.push(e); } return e; } },
   hurt: (n) => { if (player) hurtPlayer(n); },
   doJump, doPunch, doHeavy, doSpecial, doTaunt, doDesperation, doStance,
+  propKeys: () => Object.keys(streetParts).filter(k => k.startsWith('k_')),
   sfin: () => (window.__playable && window.__playable.sfin) || {},
   stanceInfo: () => player ? { stance: player.stance || 0, name: (player.stance && fighterDef().stance) ? fighterDef().stance.name : 'BALANCED', dmg: +player.dmgMult.toFixed(2), spd: +player.spd.toFixed(2) } : null,
   step: (dt) => { playerUpdate(dt || 1 / 60); }, // drive the real physics deterministically

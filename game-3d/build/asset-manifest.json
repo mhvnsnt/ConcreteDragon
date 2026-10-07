@@ -126,5 +126,37 @@
  {
   "file": "parts/baseball-skeleton.glb",
   "source": "VanHyfte_Clement via Sketchfab (CC-BY 4.0)"
+ },
+ {
+  "file": "props/k_cone.glb",
+  "source": "Kenney City Kit Roads (CC0 1.0) \u2014 kenney.nl"
+ },
+ {
+  "file": "props/k_barrier.glb",
+  "source": "Kenney City Kit Roads (CC0 1.0) \u2014 kenney.nl"
+ },
+ {
+  "file": "props/k_fence.glb",
+  "source": "Kenney City Kit Roads (CC0 1.0) \u2014 kenney.nl"
+ },
+ {
+  "file": "props/k_lamppost.glb",
+  "source": "Kenney City Kit Roads (CC0 1.0) \u2014 kenney.nl"
+ },
+ {
+  "file": "props/k_chair.glb",
+  "source": "Kenney Furniture Kit (CC0 1.0) \u2014 kenney.nl"
+ },
+ {
+  "file": "props/k_table.glb",
+  "source": "Kenney Furniture Kit (CC0 1.0) \u2014 kenney.nl"
+ },
+ {
+  "file": "props/k_trafficone.glb",
+  "source": "Kenney Car Kit (CC0 1.0) \u2014 kenney.nl"
+ },
+ {
+  "file": "props/k_tire.glb",
+  "source": "Kenney Car Kit (CC0 1.0) \u2014 kenney.nl"
  }
 ]
