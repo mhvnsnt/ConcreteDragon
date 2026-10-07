@@ -12,12 +12,28 @@ Wire in this order; playtest after each tier. Owner plays and vetoes — wire, d
 3. **M11 gesture conflicts** — disable pull-to-refresh / tap-highlight on canvas.
 
 ## TIER 2 — combat depth (owner-approved 2026-10-06)
-4. **C2 heavy attack** — dedicated button; knockback.
-5. **C5 dodge** — Urban Reign style (i-frames), NOT block. Needs S3 dodge SFX (below).
-6. **C3 special move** — costs health or meter; invincible defensive variant (SoR4).
-7. **C7 launcher + juggle** — pop enemy airborne, hit mid-air; **F8** edge-bounce follows.
-8. **C12 near-miss bonus** — last-instant dodge = style cash.
-9. **C5→U5 special meter** — HUD meter from `staging/ui/kenney-scifi` segmented bars.
+4. **C2 heavy attack** ✅ WIRED 2026-10-07 (verified in code — audit wave 8): dedicated HVY button
+   (btnHvy + keyboard `k`), per-fighter HVY attacks with knockback (hitstop/shake), DUST LAUNCHER ↓+HVY,
+   HEAT contextual finishers + FOCUS hold-HVY. No work needed.
+5. **C5 dodge** ✅ WIRED 2026-10-07 (tranche wave 8): Urban Reign i-frames (dodgeT=0.35) already in;
+   **S3 dodge SFX added** — dedicated dodge whoosh (reuses CC0 Kenney RPG Audio `whoosh.mp3` at
+   1.6x pitch / 0.4 vol, distinct from attack whooshes) + grey dust-kick burst so the dodge reads
+   audibly AND visually. `T.dodgeSfx` test hook + `__cdtest.dodgeTest()`. Playtest-verified
+   (qa/playtest-dodgesfx.mjs, shots-dodgesfx/, 8/8 checks, zero errors).
+6. **C3 special move** ✅ WIRED 2026-10-07 (verified in code — audit wave 8): motion specials costing
+   energy (qcf), BURST combo-breaker (50 energy), DESPERATION (trades 10% max HP for AOE),
+   DOJO shop buyable moves (spin/tackle/uppercut), per-fighter spc2 dash/blink/slam. No work needed.
+7. **C7 launcher + juggle** ✅ PARTIAL 2026-10-07 (verified in code — audit wave 8): DUST LAUNCHER
+   universal ↓+HVY pops enemies airborne (`LAUNCH!`), mid-air hits score `JUGGLE`, ANTI-INFINITE
+   fairness (3x same move = auto-drop + READ!). **F8 edge-bounce NOT wired** — airborne enemies
+   hitting arena bounds just clamp; no bounce-back into juggle range. **NEXT TRANCHE CANDIDATE.**
+8. **C12 near-miss bonus** ✅ WIRED 2026-10-07 (verified in code — audit wave 8): `nearMiss()` fires
+   on any enemy attack landing during i-frames — cash bonus + `NEAR MISS +$` popup + click SFX.
+   Re-verified by wave-8 playtest.
+9. **C5→U5 special meter** ✅ WIRED 2026-10-07 (verified in code — audit wave 8): energy meter in
+   HUD (`spc` bar), SPC button gets `ready` glow at 60+ energy, assists/purchases gate on it.
+   Segmented-bar styling from `staging/ui/kenney-scifi` not yet applied — cosmetic polish only,
+   not a mechanic gap.
 
 ## TIER 3 — audio gaps (all CC0, staged)
 10. **S2 whooshes** — `kenney_rpg-audio.zip` swing/whoosh OGGs on missed attacks.
