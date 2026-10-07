@@ -179,6 +179,25 @@ const FIGHTERS = [
       ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
       ['DUST DEVIL', '↓ + SPC (50 meter)', 'Spinning AOE that travels through the pack.'],
     ] },
+  { id: 'jack', name: 'JACK', tag: 'He wears the harvest. The harvest wears you.', hp: 95, dmg: 1.05, spd: 1.05,
+    unlock: { type: 'boss', boss: 'pumpkinking' }, head: 'pumpkin', tint: 0xe07b1f,
+    spc2: { name: 'CANDLE RUSH', cost: 35, desc: 'Burning dash: leaves a fire trail through the pack.' },
+    qcf: { name: 'PUMPKIN BOMB', sigkind: 'fireball', kind: 'fire', dmg: 34, speed: 8, color: 0xff7a1a, arc: 1, desc: 'Lobbed flaming pumpkin', tag: 'Lobbed pumpkin bomb — 25 energy' },
+    bfname: 'PATCH SPRINT', duname: 'SCARECROW RISE',
+    mega: { name: 'GREAT PUMPKIN' },
+    fin: 'launch', finname: 'PORCH STOMP', findesc: 'Curb stomp with a burning grin',
+    moves: [
+      ['PATCH JAB', 'HIT', 'Quick vine jab. Chains into cross and kick.'],
+      ['VINE LUNGE', '→ + HIT', 'Vine-whip lunge punch. Closes distance fast.'],
+      ['HAYMAKER', '← + HIT', 'Step back, haymaker backfist with knockback.'],
+      ['ROOT SWEEP', '↓ + HIT', 'Root sweep — launches for juggles.'],
+      ['GOURD CRUSHER', 'HVY', 'Overhead gourd crusher. Big damage.'],
+      ['HARVEST DROP', 'JUMP, then HIT', 'Aerial harvest drop kick.'],
+      ['DESPERATION', 'DDG ×2', '360° panic spin. Costs 10% HP.'],
+      ['TAUNT', 'TAUNT btn / T', 'Talk trash, gain special meter.'],
+      ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
+      ['CANDLE RUSH', '↓ + SPC (50 meter)', 'Burning dash through the pack.'],
+    ] },
 ];
 // ---------- fighting-game move sets: motion inputs + energy costs per fighter ----------
 for (const f of FIGHTERS) {
@@ -264,7 +283,7 @@ function moveListHTML(fid) {
 }
 function unlockText(f) {
   if (f.unlock.type === 'start') return '';
-  if (f.unlock.type === 'boss') { const b = BOSSES.find((x) => x.id === f.unlock.boss); return 'BEAT ' + (b ? b.name : 'THE BOSS') + ' TO UNLOCK'; }
+  if (f.unlock.type === 'boss') { const b = bossDef(f.unlock.boss); return 'BEAT ' + (b ? b.name : 'THE BOSS') + ' TO UNLOCK'; }
   return 'CLEAR MISSIONS TO UNLOCK';
 }
 
@@ -360,6 +379,11 @@ const BOSSES = [
     patterns: ['slam', 'charge', 'summon'], unlockSkin: { fighter: 'kidblue', id: 'dragonfire', name: 'Dragon Fire', tint: 0xff4d00 },
     sig: { id: 'dragonsmaw', name: "DRAGON'S MAW" },
     intro: 'THE NAMESAKE' },
+  { id: 'pumpkinking', name: 'THE PUMPKIN KING', tint: 0xe07b1f, hp: 520, dmg: 1.4, scale: 1.4, spd: 1.4, head: 'pumpkin',
+    patterns: ['slam', 'flurry', 'summon'], unlockFighter: 'jack',
+    unlockSkin: { fighter: 'brick', id: 'harvest', name: 'Harvest', tint: 0xe07b1f },
+    sig: { id: 'pumpkingslam', name: 'ROYAL HARVEST' },
+    intro: 'HE WEARS THE HARVEST' },
 ];
 
 // ---------- data: districts (per-district palettes — owner's art rule) ----------
@@ -372,27 +396,90 @@ const DISTRICTS = [
     moon: [0x9fd8ff, 1.3], rim: [0x2affd5, 1.4], lampA: 0xffd166, lampB: 0x2affd5, ground: 0x1a2a30, sw: ['#ffd166', '#2affd5'] },
   { id: 'docks', name: 'DOCKSIDE', sky: 0x10141c, fog: [0x10141c, 8, 24], hemi: [0x9fb3c8, 0x0c1218, 1.1],
     moon: [0xc8d8e8, 1.2], rim: [0x5a8aa8, 1.5], lampA: 0xffc46a, lampB: 0x5a8aa8, ground: 0x232a30, sw: ['#8a9a9e', '#5a8aa8'] },
+  { id: 'graveyard', name: "DEAD MAN'S ROW", sky: 0x0a0a16, fog: [0x0a0a16, 7, 22], hemi: [0x7a6ab0, 0x0a0a16, 1.0],
+    moon: [0xc8b8ff, 1.1], rim: [0x9a4dff, 1.4], lampA: 0xff8c2a, lampB: 0x9a4dff, ground: 0x1a1a26, sw: ['#9a4dff', '#ff8c2a'] },
 ];
 const districtDef = (id) => DISTRICTS.find((d) => d.id === id) || DISTRICTS[0];
 
+// ---------- data: zones (mission arcs — owner 2026-10-06) ----------
+// A zone = several missions ending with a boss. Missions keep flat defs;
+// `zone` groups them under a zone header in the select screen.
+const ZONES = [
+  { id: 'z1', name: 'ZONE 1 — CONCRETE ORIGINS', card: 'Where it all started. Four blocks, four lessons.', unlock: { type: 'start' } },
+  { id: 'z2', name: 'ZONE 2 — DEAD OF NIGHT', card: 'The graveyard shift. Things walk that should not.', unlock: { type: 'mission', id: 'm2' } },
+  { id: 'zx', name: 'SIDE HUSTLES', card: 'Endless scraps, daily grinds, infinite road.', unlock: { type: 'start' } },
+];
+const zoneDef = (id) => ZONES.find((z) => z.id === id) || ZONES[0];
+const zoneUnlocked = (z) => {
+  if (z.unlock.type === 'start') return true;
+  return save.missionsDone.includes(z.unlock.id);
+};
+// ---------- SEASONAL EVENTS (owner 2026-10-06): Halloween first ----------
+// Themed missions + unlockables; seasonal fighters bleed into the base game.
+// Future seasons (Christmas etc.) drop in as new SEASONS entries.
+const SEASONS = [
+  { id: 'halloween', name: 'HALLOWEEN', months: [9], // October
+    tag: '🎃 HALLOWEEN EVENT', fams: ['zombie', 'pumpkin', 'spider', 'demon'],
+    card: 'The dead walk the block. Hunt them for exclusive unlocks.' },
+];
+function activeSeason() {
+  if (window.__cdSeason) return SEASONS.find((s) => s.id === window.__cdSeason) || null; // test hook
+  const mo = new Date().getMonth();
+  return SEASONS.find((s) => s.months.includes(mo)) || null;
+}
+// ---------- INFINITE BOSSES (owner 2026-10-06): data-driven boss generation ----------
+// procBoss(n) scales a base boss template into an endless challenger.
+// mission.boss can be 'pb12' etc.; bossDef() resolves both static and generated.
+const PB_TITLES = ['NIGHTMARE', 'IRON', 'BLOOD', 'RUSTED', 'HOWLING', 'VENOM', 'ASHEN', 'BRASS', 'HOLLOW', 'SAVAGE', 'CRIMSON', 'OBSIDIAN'];
+function procBoss(n) {
+  const R = seedPRNG(n * 104729 + 7);
+  const bases = ['kingpin', 'sledge', 'viper', 'rust', 'dragon', 'pumpkinking'];
+  const b0 = BOSSES.find((x) => x.id === bases[Math.floor(R() * bases.length)]);
+  const title = PB_TITLES[Math.floor(R() * PB_TITLES.length)];
+  return Object.assign({}, b0, {
+    id: 'pb' + n, name: title + ' ' + b0.name,
+    hp: Math.round(b0.hp * (1 + n * 0.25)), dmg: b0.dmg + n * 0.05,
+    scale: b0.scale * (1 + Math.min(0.3, n * 0.015)),
+    proc: true, intro: 'ENDLESS CHALLENGER #' + (n + 1),
+  });
+}
+const procBossCache = {};
+function bossDef(id) {
+  let b = BOSSES.find((x) => x.id === id);
+  if (!b && id && typeof id === 'string' && id.startsWith('pb')) {
+    const n = parseInt(id.slice(2), 10) || 0;
+    if (!procBossCache[id]) procBossCache[id] = procBoss(n);
+    b = procBossCache[id];
+  }
+  return b;
+}
 // ---------- data: missions (district = mission set; walk -> waves -> boss arena) ----------
 // spawns: {at: worldX, fam: familyId, n: count}
 const MISSIONS = [
-  { id: 'm1', district: 'neon', name: 'FIRST BLOOD', len: 55, crowd: false,
+  { id: 'm1', zone: 'z1', district: 'neon', name: 'FIRST BLOOD', len: 55, crowd: false,
     spawns: [{ at: 10, fam: 'thug', n: 2 }, { at: 22, fam: 'thug', n: 2 }, { at: 34, fam: 'rico', n: 2 }, { at: 44, fam: 'jabber', n: 2 }],
     card: 'The block talks. Make it listen.', boss: 'kingpin', unlock: { type: 'start' }, reward: 'Unlocks KINGPIN as playable' },
-  { id: 'm2', district: 'yards', name: 'SCRAP YARD', len: 70, crowd: true,
+  { id: 'm2', zone: 'z1', district: 'yards', name: 'SCRAP YARD', len: 70, crowd: true,
     spawns: [{ at: 10, fam: 'thug', n: 2 }, { at: 24, fam: 'heavyd', n: 2 }, { at: 38, fam: 'rico', n: 3 }, { at: 52, fam: 'jabber', n: 3 }],
     card: 'Rust, rails, and bad intentions.', boss: 'sledge', unlock: { type: 'mission', id: 'm1' }, reward: 'Unlocks SLEDGE as playable' },
-  { id: 'm3', district: 'havana', name: 'NIGHT MARKET', len: 85, crowd: true,
+  { id: 'm3', zone: 'z1', district: 'havana', name: 'NIGHT MARKET', len: 85, crowd: true,
     spawns: [{ at: 10, fam: 'jabber', n: 3 }, { at: 26, fam: 'thug', n: 3 }, { at: 42, fam: 'rico', n: 3 }, { at: 58, fam: 'heavyd', n: 3 }, { at: 70, fam: 'thug', n: 4 }],
     card: 'The heat never left this street.', boss: 'viper', unlock: { type: 'mission', id: 'm2' }, reward: 'Unlocks VIPER as playable' },
-  { id: 'm4', district: 'docks', name: 'RUST BELT', len: 100, crowd: true,
+  { id: 'm4', zone: 'z1', district: 'docks', name: 'RUST BELT', len: 100, crowd: true,
     spawns: [{ at: 12, fam: 'stray', n: 3 }, { at: 28, fam: 'heavyd', n: 2 }, { at: 44, fam: 'stray', n: 4 }, { at: 60, fam: 'rico', n: 3 }, { at: 78, fam: 'stray', n: 4 }, { at: 90, fam: 'heavyd', n: 2 }],
     card: 'Everything here is for sale. Even kings.', boss: 'rust', unlock: { type: 'mission', id: 'm3' }, reward: 'Unlocks DUST as playable' },
-  { id: 'endless', district: 'neon', name: 'ENDLESS SCRAP', len: Infinity, crowd: false, endless: true, card: 'How long can you hold the block?',
+  { id: 'h1', zone: 'z2', district: 'graveyard', name: 'GRAVEYARD SHIFT', len: 60, crowd: false,
+    spawns: [{ at: 10, fam: 'zombie', n: 2 }, { at: 24, fam: 'pumpkin', n: 2 }, { at: 38, fam: 'zombie', n: 3 }, { at: 50, fam: 'spider', n: 2 }],
+    card: 'They rose with the fog.', boss: null, unlock: { type: 'mission', id: 'm2' }, reward: 'The dead walk' },
+  { id: 'h2', zone: 'z2', district: 'graveyard', name: 'HARVEST MOON', len: 75, crowd: false,
+    spawns: [{ at: 10, fam: 'pumpkin', n: 3 }, { at: 26, fam: 'demon', n: 2 }, { at: 42, fam: 'spider', n: 3 }, { at: 58, fam: 'zombie', n: 3 }],
+    card: 'The moon is full and so are the graves.', boss: null, unlock: { type: 'mission', id: 'h1' }, reward: 'Something stirs' },
+  { id: 'h3', zone: 'z2', district: 'graveyard', name: 'ALL HALLOWS', len: 90, crowd: false,
+    spawns: [{ at: 10, fam: 'demon', n: 2 }, { at: 26, fam: 'pumpkin', n: 3 }, { at: 44, fam: 'zombie', n: 4 }, { at: 62, fam: 'spider', n: 3 }, { at: 78, fam: 'demon', n: 2 }],
+    card: 'He wears the harvest.', boss: 'pumpkinking', unlock: { type: 'mission', id: 'h2' }, reward: 'Unlocks JACK as playable' },
+  { id: 'endless', zone: 'zx', district: 'neon', name: 'ENDLESS SCRAP', len: Infinity, crowd: false, endless: true, card: 'How long can you hold the block?',
     spawns: [], boss: null, unlock: { type: 'mission', id: 'm1' }, reward: 'Survival ladder — how far can you walk?' },
-  { id: 'daily', district: 'neon', name: 'DAILY SCRAP', len: 70, crowd: false, daily: true, card: 'One shot. One leaderboard.',
+  { id: 'daily', zone: 'zx', district: 'neon', name: 'DAILY SCRAP', len: 70, crowd: false, daily: true, card: 'One shot. One leaderboard.',
     spawns: [], boss: 'kingpin', unlock: { type: 'mission', id: 'm1' }, reward: 'Same seed for everyone today. One scored run.' },
 ];
 const missionDef = (id) => MISSIONS.find((m) => m.id === id);
@@ -433,13 +520,16 @@ function procMission(n) {
   const name = PM_A[Math.floor(R() * PM_A.length)] + ' ' + PM_B[Math.floor(R() * PM_B.length)];
   const len = 60 + n * 6;
   const fams = ['thug', 'rico', 'jabber', 'heavyd', 'stray'];
+  const season = activeSeason(); // seasonal fighters bleed into the base game
+  if (season) for (const sf of season.fams) if (!fams.includes(sf)) fams.push(sf);
   const spawns = [];
   const waves = 4 + Math.min(6, Math.floor(n / 2));
   for (let w = 0; w < waves; w++) {
     spawns.push({ at: 10 + w * ((len - 20) / waves), fam: fams[Math.floor(R() * fams.length)], n: 2 + Math.min(3, Math.floor(n / 3)) });
   }
   const bossCycle = ['kingpin', 'sledge', 'viper', 'rust'];
-  const boss = n % 3 === 2 ? bossCycle[Math.floor(n / 3) % bossCycle.length] : null;
+  // INFINITE BOSSES: deep circuit runs face generated endless challengers
+  const boss = n % 3 === 2 ? (n >= 9 ? 'pb' + n : bossCycle[Math.floor(n / 3) % bossCycle.length]) : null;
   return {
     id: 'circuit', circuitN: n, district, name: name + ' #' + (n + 1), len,
     crowd: R() < 0.5, spawns, boss, proc: true,
@@ -1009,7 +1099,22 @@ function showSelectCards() { // re-render cards row only (after pick)
 function showMission() {
   state = 'mission'; clearFighters(); clearCrowd();
   const list = $('mList'); list.innerHTML = '';
-  for (const m of MISSIONS) {
+  const season = activeSeason();
+  if (season) { // seasonal event banner
+    const sb = el('div', 'seasonBanner');
+    sb.appendChild(el('div', 'sn', season.tag));
+    sb.appendChild(el('div', 'sc', season.card));
+    list.appendChild(sb);
+  }
+  // ZONES (owner 2026-10-06): missions grouped under zone headers
+  for (const z of ZONES) {
+    const zUnlocked = zoneUnlocked(z);
+    const zh = el('div', 'zoneHead' + (zUnlocked ? '' : ' locked'));
+    zh.appendChild(el('div', 'zn', (zUnlocked ? '' : '🔒 ') + z.name));
+    zh.appendChild(el('div', 'zc', z.card));
+    list.appendChild(zh);
+    if (!zUnlocked) continue;
+    for (const m of MISSIONS.filter((x) => (x.zone || 'z1') === z.id)) {
     const d = districtDef(m.district);
     const locked = !missionUnlocked(m);
     const card = el('div', 'mcard panel9' + (locked ? ' locked' : ''));
@@ -1031,7 +1136,8 @@ function showMission() {
       card.appendChild(go);
     }
     list.appendChild(card);
-  }
+    } // end mission loop
+  } // end zone loop
   // STREET CIRCUIT: infinite procedural missions — one card, endless series (owner vision 2026-10-06)
   {
     const n = save.circuitN || 0;
@@ -1056,7 +1162,7 @@ function showMission() {
   $('dailyTag').textContent = 'DAILY SEED: ' + todayStr() + (save.daily.date === todayStr() ? ` · YOUR BEST: ${save.daily.score}` : '');
   renderMeta(); showOnly('mission');
 }
-function missionBossName(m) { const b = BOSSES.find((x) => x.id === m.boss); return b ? b.name : ''; }
+function missionBossName(m) { const b = bossDef(m.boss); return b ? b.name : ''; }
 function showResults(win, mission, stats) {
   state = 'results';
   clearFighters(); clearCrowd();
@@ -1068,8 +1174,17 @@ function showResults(win, mission, stats) {
     save.wins++;
     // boss -> unlock as playable (owner directive) + unlock ceremony (U11)
     if (mission.boss) {
-      const b = BOSSES.find((x) => x.id === mission.boss);
-      if (b && b.unlockFighter && !save.unlocked.includes(b.unlockFighter)) {
+      const b = bossDef(mission.boss);
+      if (b && b.proc) { // INFINITE BOSS: escalating cash bounty, challenger counter
+        const bounty = 150 + (parseInt(mission.boss.slice(2), 10) || 0) * 40;
+        save.cash += bounty;
+        save.pbKills = (save.pbKills || 0) + 1;
+        ub.textContent = '★ ENDLESS CHALLENGER DOWN — BOUNTY $' + bounty + ' ★';
+        ub.classList.add('show');
+        sfx('bell', 0.9, true); flash('#ffe14d');
+        setTimeout(() => sfx('coin', 0.8, false, 1.2), 180);
+        ev('unlock', { pboss: mission.boss, bounty });
+      } else if (b && b.unlockFighter && !save.unlocked.includes(b.unlockFighter)) {
         save.unlocked.push(b.unlockFighter);
         ub.textContent = '★ ' + b.name + ' UNLOCKED AS PLAYABLE ★';
         ub.classList.add('show');
@@ -1167,6 +1282,7 @@ function startMission(id) {
   setRain(hasMod('rain'));
   const fd = fighterDef();
   player = makeFighterRaw(skinTint(fd.id), 0, Math.PI / 2, 1, texObj(fd.id));
+  if (fd.head) attachHead(player, fd.head); // species head for playable fighters (JACK...)
   player.isPlayer = true;
   player.maxHp = Math.round(fd.hp + toughBonus());
   player.hp = player.maxHp;
@@ -1190,7 +1306,7 @@ function startMission(id) {
   playCine({
     mode: 'card', dur: 2.3,
     caps: [{ t: 0.15, html: '<div class="cc2">' + mission.name + '</div><div class="cc3">' + (mission.card || 'CLEAR THE BLOCK') + '</div>' }],
-    onDone: () => { const b = mission.boss && BOSSES.find((x) => x.id === mission.boss); banner(mission.name + ' — ' + (b ? 'BOSS: ' + b.name : 'CLEAR THE BLOCK'), 'gold'); sfx(196, 0.5, 'sawtooth', 0.4); },
+    onDone: () => { const b = mission.boss && bossDef(mission.boss); banner(mission.name + ' — ' + (b ? 'BOSS: ' + b.name : 'CLEAR THE BLOCK'), 'gold'); sfx(196, 0.5, 'sawtooth', 0.4); },
   });
   setHud();
 }
@@ -1235,9 +1351,11 @@ function spawnEnemy(famId, mi, bx, bz) {
   return e;
 }
 function spawnBoss(bossId, bx) {
-  const b = BOSSES.find((x) => x.id === bossId);
+  const b = bossDef(bossId);
   const e = b.creature ? makeCreatureRaw(b.creature, b.tint, bx, -Math.PI / 2, b.scale)
                        : makeFighterRaw(b.tint, bx, -Math.PI / 2, b.scale, texObjs.patchwork);
+  if (!e) return null;
+  if (b.head) attachHead(e, b.head); // species head attachment (pumpkin king...)
   const dfb = diffDef();
   e.isPlayer = false; e.boss = b; e.name = b.name;
   e.maxHp = e.hp = Math.round(b.hp * dfb.hpMul); e.dmgMult = b.dmg * dfb.dmgMul; e.spd = b.spd; e.aggro = dfb.aggro;
@@ -1885,6 +2003,11 @@ function execBossSig(e) {
     banner("DRAGON'S MAW");
     playAnim(e, 'Melee_Unarmed_Attack_Punch_A', { ts: 1.3 });
     for (let i = -1; i <= 1; i++) fireProj({ x: e.px + dir * 1.2, z: e.pz, y: 1.6, vx: dir * 8, vz: i * 1.6, kind: 'fire', dmg: Math.round(base * 0.8), color: 0xff4d00, fromPlayer: false, life: 1.6, label: "DRAGON'S MAW" });
+  } else if (id === 'pumpkingslam') { // PUMPKIN KING: royal harvest — giant pumpkin shockwave
+    banner('ROYAL HARVEST');
+    playAnim(e, 'Melee_Unarmed_Attack_Kick', { ts: 1.0 });
+    burst(bp.clone().add(new THREE.Vector3(0, 0.6, 0)), 34, 0xff7a1a, 7); shake = 0.6; sfx('hit3', 1, false, 0.6);
+    sigHitPlayer(e, 3.4, 2.0, Math.round(base * 1.4), 'ROYAL HARVEST', 400, { burst: 0xff7a1a });
   }
   e.ai = 'recover'; e.aiT = 1.4 / (e.aggro || 1);
 }
@@ -2130,7 +2253,7 @@ function doMotionSpecial(kind) {
     if (pr.sigkind === 'fireball' || pr.sigkind === 'orb') {
       playAnim(player, 'Melee_Unarmed_Attack_Punch_A', { once: true, dur: 0.35 });
       player.busy = Math.max(player.busy, 0.3);
-      fireProj({ x: player.px + player.face * 0.8, z: player.pz, y: 1.15, vx: player.face * pr.speed, kind: pr.kind, label: pr.name, dmg: pr.dmg * dmgM, color: pr.color, fromPlayer: true, life: pr.sigkind === 'orb' ? 2.4 : 1.5, radius: 0.55 });
+      fireProj({ x: player.px + player.face * 0.8, z: player.pz, y: 1.15, vx: player.face * pr.speed, vy: pr.arc ? 4.5 : 0, kind: pr.kind, label: pr.name, dmg: pr.dmg * dmgM, color: pr.color, fromPlayer: true, life: pr.sigkind === 'orb' ? 2.4 : 1.5, radius: 0.55, arc: pr.arc || 0 });
       present();
     } else if (pr.sigkind === 'groundwave') {
       playAnim(player, 'Melee_Unarmed_Attack_Kick_A', { once: true, dur: 0.35 });
@@ -2443,6 +2566,9 @@ window.__cdtest = {
   clearFoes: () => { for (const e of enemies.slice()) { removeFighter(e); const i = enemies.indexOf(e); if (i >= 0) enemies.splice(i, 1); } bossRef = null; },
   healPlayer: () => { if (player) { player.hp = player.maxHp || 100; setHud(); } },
   esigLog: () => T.esig || {}, bsigLog: () => T.bsig || {},
+  showMission: () => showMission(),
+  dbgBoss: (id) => { const b = bossDef(id); return b ? { name: b.name, hp: b.hp, proc: !!b.proc, sig: b.sig ? b.sig.name : null } : null; },
+  seasonFams: () => { const s = activeSeason(); return s ? s.fams : []; },
   spawnCreature: (cid) => { if (player) { const e = makeCreatureRaw(cid, 0xffffff, player.px + 3, -Math.PI / 2, 1); if (e) { e.maxHp = e.hp = 200; e.dmgMult = 1; e.spd = 1.5; e.px = player.px + 3; e.pz = 0; e.ai = 'walk'; e.aiT = 1; syncPos(e); playAnim(e, 'Running_A', { loop: true }); enemies.push(e); } return e; } },
   hurt: (n) => { if (player) hurtPlayer(n); },
   doJump, doPunch, doHeavy, doSpecial, doTaunt, doDesperation,
