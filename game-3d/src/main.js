@@ -752,6 +752,7 @@ const MODIFIERS = [
   { id: 'party', name: 'PICKUP PARTY', desc: 'Extra breakables, extra loot', minWild: 1 },
   { id: 'frenzy', name: 'FRENZY', desc: 'Frenzied variants: faster, meaner', minWild: 4 },
   { id: 'titans', name: 'TITANS', desc: 'Titan variants walk the block', minWild: 6 },
+  { id: 'onehit', name: 'ONE-HIT', desc: 'Everyone dies in one hit. Slow-mo planning at wave start.', minWild: 5 }, // KATANA ZERO: hardcore mission mutator
 ];
 function rollModifiers(seedNum, wild) {
   const R = seedPRNG(seedNum);
@@ -2750,6 +2751,12 @@ function startMission(id, node) {
   cashRun = 0; kills = 0; distWalked = 0; endlessT = 3; endlessTier = 0; endlessMuts = [];
   camX = 2;
   state = 'fight'; ev('mission_start', { id: mission.id });
+  // ONE-HIT (Katana Zero): brief planning slow-mo at mission start — survey the room, then move
+  if (hasMod('onehit')) {
+    addSlowmo(0.25, 2.0);
+    banner('ONE-HIT — PLAN YOUR MOVES', 'bad');
+    sfx('bell', 1, false, 0.7);
+  }
   showOnly(null);
   $('touch').classList.add('on');
   $('bossWrap').style.display = 'none';
@@ -3373,6 +3380,8 @@ function doDodge() {
 function landHit(e, dmg, label, hs, sh, launcher, counter) {
   if (mission && mission.endless && (endlessMuts || []).includes('GLASS JAW')) dmg = Math.round(dmg * 1.5);
   if (!e || e.hp <= 0 || state !== 'fight') return;
+  // ONE-HIT (Katana Zero): everyone dies in one hit — bosses take heavy damage instead
+  if (mission && hasMod('onehit')) { if (e.boss) dmg = Math.max(dmg, 150); else dmg = 99999; }
   T.hits++; if (counter) T.counters++;
   // CRIT (gear/gym) + LAST STAND (Garou TOP-inspired): below 30% HP you hit 25% harder
   let dealt = dmg, critOn = false, lsOn = false;
@@ -3467,6 +3476,8 @@ function hurtPlayer(dmg) {
   if (mission && mission.endless && (endlessMuts || []).includes('GLASS JAW')) dmg = Math.round(dmg * 1.5);
   if (!player || player.hp <= 0 || missionOver || ended) return;
   if (player.techInvulnT > 0) return; // TECH recovery: brief invuln after a successful tech
+  // ONE-HIT (Katana Zero): you die in one hit too — revives still trigger below (hardcore with kindness)
+  if (mission && hasMod('onehit')) dmg = 99999;
   // getting hit cancels an in-progress spray (Jet Set Radio vulnerability)
   if (player.sprayT > 0) {
     player.sprayT = 0; player.spraySpot = null; player.busy = 0;
@@ -4743,6 +4754,17 @@ window.__cdtest = {
     const before = T.dojomove || 0;
     const ok = doDojoMove(id);
     return { ok, fired: (T.dojomove || 0) > before };
+  },
+  onehitTest: () => {
+    mission.mods = ['onehit'];
+    const e = enemies.find(x => x.hp > 0 && !x.boss);
+    if (!e) return { ok: 0, why: 'no-enemy' };
+    const ehp = e.hp;
+    try { landHit(e, 5, 'TESTJAB', 0.01, 0.1, false, false); } catch (err) { return { ok: 0, why: 'threw' }; }
+    const php = player.hp;
+    try { hurtPlayer(5); } catch (err) { return { ok: 0, why: 'hurt-threw' }; }
+    mission.mods = mission.mods.filter(m => m !== 'onehit');
+    return { ok: 1, enemyKilled: e.hp <= 0, wasHp: ehp, playerHit: player.hp < php };
   },
   grappleTest: () => {
     const e = enemies.find(x => x.hp > 0 && !x.boss);
