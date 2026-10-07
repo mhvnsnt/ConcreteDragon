@@ -2022,7 +2022,7 @@ function renderShop(into) {
     box.appendChild(el('div', 'ud', u.desc));
     const b = el('button', '', `$${cost}`);
     b.disabled = save.cash < cost;
-    b.onclick = (e) => { e.stopPropagation(); if (save.cash < cost) return; save.cash -= cost; save[u.key]++; writeSave(); sfx('uiclick', 0.8); renderShop(into); renderMeta(); refreshShowcase(); };
+    b.onclick = (e) => { e.stopPropagation(); if (save.cash < cost) return; save.cash -= cost; save[u.key]++; writeSave(); sfx('uiclick', 0.8); renderShop(into); renderMeta(); refreshShowcase(); renderScoutRow(); };
     box.appendChild(b); into.appendChild(box);
   }
   const sp = el('div', 'shopItem panel9');
