@@ -578,7 +578,7 @@ function activeSeason() {
 }
 // WHAT'S NEW (soul law: community as co-designer) — patch notes live in-game
 const PATCH_NOTES = [
-  ['2026-10-07', 'Wave 6: ENDLESS MUTATORS (SWARM/BRUTES/FEVER/SECOND WIND/GLASS JAW), deeper proc-bosses, ARENA DRESSING, STANCE FINISHERS, Zones 6-7'],
+  ['2026-10-07', 'Wave 6: SOUL LAWS (COMEBACK CASH, RUN-IT-BACK rematch, STREAK SHIELD), ENDLESS MUTATORS, deeper proc-bosses, ARENA DRESSING, STANCE FINISHERS, Zones 6-7'],
   ['2026-10-06', 'Wave 4: BLITZ lunging strikes, WITCH TIME last-instant dodge, FOCUS absorb, BURST combo breaker, RADICAL MODE, RECRUIT crew system'],
   ['2026-10-05', 'Wave 3: 15 bosses with signatures, 5 districts, style meter, mission grades'],
 ];
@@ -1890,7 +1890,15 @@ function showResults(win, mission, stats) {
       setTimeout(() => { banner('★ GOLD CARD: ' + fighterDef().name + ' ★'); sfx('bell', 1, true); }, 2200);
       ev('goldcard', { fighter: save.selected });
     }
-  } else { save.losses++; }
+  } else {
+    // SOUL LAWS (wave 6): COMEBACK CASH — the block takes care of its own.
+    // First loss of the day: full run cash refunded. After that: keep 25%.
+    const today = todayStr();
+    const full = save.comebackDay !== today;
+    if (full) save.comebackDay = today; else save.losses++;
+    const kept = full ? cashRun : Math.round(cashRun * 0.25);
+    if (kept > 0) { save.cash += kept; setTimeout(() => popText((full ? 'BLOCK COVERS YOU +$' : 'COMEBACK CASH +$') + kept, 'gold', innerWidth/2, innerHeight*0.35), 900); ev('comeback', { full, kept }); }
+  }
   save.cash += Math.round(stats.cash * repMult().cash); writeSave();
   // BLESSINGS: pick 1 of 3 after a win; lost on defeat (roguelite run-building)
   const br = $('blessRow'); br.innerHTML = '';
@@ -2817,6 +2825,7 @@ function setupInput() {
   document.addEventListener('pointercancel', () => { showcaseDragX = null; stickEnd(); });
   $('fightBtn').addEventListener('click', (e) => { e.stopPropagation(); unlockAudio(); sfx('uiclick', 0.8); showMission(); });
   $('againBtn').addEventListener('click', (e) => { e.stopPropagation(); unlockAudio(); sfx('uiclick', 0.8); showMission(); });
+  $('rematchBtn').addEventListener('click', (e) => { e.stopPropagation(); unlockAudio(); sfx('uiclick', 0.8); if (mission) startMission(mission.id); }); // soul law: one-tap rematch
   $('backBtn').addEventListener('click', (e) => { e.stopPropagation(); sfx('uiclick', 0.8); showSelect(); });
   $('pauseBtn').addEventListener('click', (e) => { e.stopPropagation(); togglePause(); });
   $('tauntBtn').addEventListener('click', (e) => {
