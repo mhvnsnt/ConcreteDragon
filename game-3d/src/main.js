@@ -537,6 +537,18 @@ function activeSeason() {
   const mo = new Date().getMonth();
   return SEASONS.find((s) => s.months.includes(mo)) || null;
 }
+// WHAT'S NEW (soul law: community as co-designer) — patch notes live in-game
+const PATCH_NOTES = [
+  ['2026-10-07', 'Wave 5: HEAT finishers, RAGE meter, DESPERATION blasts, Zone 5 THE UNDERGROUND, infinite challenger variants, sports fighters (HOOP DREAM, STREET BALLER, DEAD BALLER)'],
+  ['2026-10-06', 'Wave 4: BLITZ lunging strikes, WITCH TIME last-instant dodge, FOCUS absorb, BURST combo breaker, RADICAL MODE, RECRUIT crew system'],
+  ['2026-10-05', 'Wave 3: 15 bosses with signatures, 5 districts, style meter, mission grades'],
+];
+function renderPatchNotes() {
+  const pn = $('patchNotes');
+  if (!pn) return;
+  pn.innerHTML = '<div class="subtitle" style="margin-top:12px">WHAT\'S NEW</div>' +
+    PATCH_NOTES.map(([d, t]) => `<div style="font-size:12px;line-height:1.5;margin:4px 0"><b style="color:#ffd166">${d}</b> — ${t}</div>`).join('');
+}
 // ---------- INFINITE BOSSES (owner 2026-10-06): data-driven boss generation ----------
 // procBoss(n) scales a base boss template into an endless challenger.
 // mission.boss can be 'pb12' etc.; bossDef() resolves both static and generated.
@@ -1529,7 +1541,20 @@ function showTitle() {
   applyDistrict(districtDef('neon'));
   buildStreet('neon', 40, Math.random);
   renderMeta(); showOnly('title');
-  $('dailyTag').textContent = '';
+  $('loginBonus').textContent = '';
+  renderPatchNotes();
+  // DAILY LOGIN BONUS (soul law: generosity) — free cash, escalating streak
+  const today = new Date().toISOString().slice(0, 10);
+  if (save.lastLogin !== today) {
+    const yest = new Date(Date.now() - 864e5).toISOString().slice(0, 10);
+    save.loginStreak = (save.lastLogin === yest) ? (save.loginStreak || 0) + 1 : 1;
+    save.lastLogin = today;
+    const bonus = 100 + Math.min(500, save.loginStreak * 50);
+    save.cash += bonus; writeSave();
+    $('loginBonus').textContent = '★ DAY ' + save.loginStreak + ' — WELCOME BACK BONUS $' + bonus + ' ★';
+    setTimeout(() => { sfx('coin', 0.8, false, 1.2); }, 600);
+    ev('loginbonus', { streak: save.loginStreak, bonus });
+  }
 }
 function showSelect() {
   state = 'select'; clearFighters(); clearCrowd();
