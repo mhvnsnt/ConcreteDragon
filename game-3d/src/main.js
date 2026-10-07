@@ -3436,6 +3436,11 @@ function landHit(e, dmg, label, hs, sh, launcher, counter) {
   if (counter) flash('#7af0ff');
   if (launcher && !e.boss) {
     e.airborne = true; e.vy = 5.2; e.ai = 'launched';
+    // F8 EDGE-BOUNCE (owner 2026-10-07, wave 9): launched enemies carry horizontal knock
+    // velocity — arena walls bounce them back into juggle range (Urban Reign style)
+    // instead of clamping them dead at the bounds.
+    const ldir = (player && (player.face || 0)) || ((e.px >= (player ? player.px : 0)) ? 1 : -1) || 1;
+    e.kvx = ldir * 7.5; e.kvz = ((e.pz || 0) >= 0 ? 1 : -1) * rnd(1.5, 3);
     playAnim(e, 'Hit_B', { ts: 1.2 });
     popText('LAUNCH!', 'spc', sp.x, sp.y - 60);
     // WALL SPLAT (TMNT-inspired): launched into a prop/wall = bonus damage + crumple
@@ -3706,6 +3711,33 @@ function enemyAI(e, dt) {
   if (window.__cdfreeze) return; // test hook: freeze enemy AI for deterministic verification
   if (e.airborne) { // launched / juggled
     e.vy -= 18 * dt; e.root.position.y += e.vy * dt;
+    // F8 EDGE-BOUNCE (owner 2026-10-07, wave 9): horizontal knock velocity integrates with
+    // air drag; hitting an arena bound BOUNCES the enemy back into juggle range (Urban Reign
+    // style) instead of clamping them dead. NOTE: set x/z directly — syncPos() would zero
+    // the airborne y.
+    if (e.kvx || e.kvz) {
+      const mLen = (typeof mission !== 'undefined' && mission) ? mission.len : Infinity;
+      const maxX = mLen === Infinity ? 1e6 : mLen - 1.5;
+      e.px += (e.kvx || 0) * dt; e.pz += (e.kvz || 0) * dt;
+      const drag = Math.max(0, 1 - 1.8 * dt);
+      e.kvx = (e.kvx || 0) * drag; e.kvz = (e.kvz || 0) * drag;
+      if (Math.abs(e.kvx) < 0.3) e.kvx = 0; if (Math.abs(e.kvz) < 0.3) e.kvz = 0;
+      let bounced = false;
+      if (e.px < 0.5) { e.px = 0.5; e.kvx = Math.abs(e.kvx) * 0.75; bounced = true; }
+      else if (e.px > maxX) { e.px = maxX; e.kvx = -Math.abs(e.kvx) * 0.75; bounced = true; }
+      if (e.pz < -1.4) { e.pz = -1.4; e.kvz = Math.abs(e.kvz) * 0.75; bounced = true; }
+      else if (e.pz > 1.4) { e.pz = 1.4; e.kvz = -Math.abs(e.kvz) * 0.75; bounced = true; }
+      if (bounced) {
+        if (e.root.position.y < 1.2) e.vy = Math.max(e.vy, 1.8); // keep the juggle alive off the wall
+        sfx('crack', 0.55, false, 0.6); // CC0 Kenney crack pitched down = wall thud
+        burst(e.root.position.clone(), 10, 0xcfcfcf, 4);
+        const bsp = screenPos(e.root.position.clone().add(new THREE.Vector3(0, 1.6, 0)));
+        popText('EDGE BOUNCE!', 'spc', bsp.x, bsp.y);
+        T.bounces = (T.bounces || 0) + 1; ev('edgebounce', {});
+        shake = Math.max(shake, 0.25);
+      }
+      e.root.position.x = e.px; e.root.position.z = e.pz;
+    }
     if (e.root.position.y <= 0) {
       e.root.position.y = 0; e.airborne = false; e.vy = 0;
       playAnim(e, 'Melee_Unarmed_Idle', { loop: true });
@@ -4776,6 +4808,40 @@ window.__cdtest = {
     const before = T.antiinf || 0;
     for (let i = 0; i < 3; i++) { try { landHit(e, 5, 'TESTJAB', 0.01, 0.1, false, false); } catch (err) { return { ok: 0, why: 'landHit-threw' }; } }
     return { ok: 1, fired: (T.antiinf || 0) > before, airborne: e.airborne };
+  },
+  edgeBounceTest: () => { // F8 edge-bounce tranche (owner 2026-10-07, wave 9): launch a foe at
+    // the left wall and step airborne physics until it bounces — velocity must reflect (+x)
+    // and the enemy must stay clamped in-bounds, still airborne.
+    const e = enemies.find(x => x.hp > 0 && !x.boss);
+    if (!e) return { ok: 0, why: 'no-enemy' };
+    e.hp = Math.max(e.hp, 500);
+    const b0 = T.bounces || 0;
+    try {
+      e.px = 1.2; e.pz = 0; e.root.position.set(1.2, 0, 0);
+      e.airborne = true; e.vy = 5.2; e.ai = 'launched';
+      e.kvx = -30; e.kvz = 0; // straight at the left wall
+      let bounced = false, frames = 0;
+      while (!bounced && frames < 600 && e.airborne) {
+        enemyAI(e, 1 / 60); frames++;
+        if ((T.bounces || 0) > b0) bounced = true;
+        if (e.root.position.y <= 0 && !e.airborne) break; // landed before bounce (fail path)
+      }
+      return { ok: 1, bounced, frames, bouncesDelta: (T.bounces || 0) - b0,
+        stillAirborne: e.airborne, px: +e.px.toFixed(2), kvx: +(e.kvx || 0).toFixed(2) };
+    } catch (err) { return { ok: 0, why: 'threw: ' + err.message.slice(0, 80) }; }
+  },
+  launchFoeAt: (px, pz, kvx, kvz) => { // wave 9: live visual drill setup (launch a foe toward a wall)
+    const e = enemies.find(x => x.hp > 0 && !x.boss);
+    if (!e) return { ok: 0, why: 'no-enemy' };
+    e.hp = Math.max(e.hp, 500);
+    e.px = px; e.pz = pz; e.root.position.set(px, 0, pz);
+    e.airborne = true; e.vy = 5.2; e.ai = 'launched'; e.kvx = kvx; e.kvz = kvz;
+    return { ok: 1 };
+  },
+  foeAir: () => { // wave 9: live foe airborne/knock-velocity state
+    const e = enemies.find(x => x.hp > 0 && !x.boss);
+    return e ? { air: e.airborne, kvx: +(e.kvx || 0).toFixed(2), kvz: +(e.kvz || 0).toFixed(2),
+      px: +e.px.toFixed(2), y: +e.root.position.y.toFixed(2), hp: Math.round(e.hp) } : null;
   },
   tagTest: () => {
     if (!tagSpots.length) return { ok: 0, why: 'no-spots' };

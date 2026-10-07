@@ -23,10 +23,16 @@ Wire in this order; playtest after each tier. Owner plays and vetoes — wire, d
 6. **C3 special move** ✅ WIRED 2026-10-07 (verified in code — audit wave 8): motion specials costing
    energy (qcf), BURST combo-breaker (50 energy), DESPERATION (trades 10% max HP for AOE),
    DOJO shop buyable moves (spin/tackle/uppercut), per-fighter spc2 dash/blink/slam. No work needed.
-7. **C7 launcher + juggle** ✅ PARTIAL 2026-10-07 (verified in code — audit wave 8): DUST LAUNCHER
+7. **C7 launcher + juggle** ✅ WIRED 2026-10-07 (verified in code — audit wave 8): DUST LAUNCHER
    universal ↓+HVY pops enemies airborne (`LAUNCH!`), mid-air hits score `JUGGLE`, ANTI-INFINITE
-   fairness (3x same move = auto-drop + READ!). **F8 edge-bounce NOT wired** — airborne enemies
-   hitting arena bounds just clamp; no bounce-back into juggle range. **NEXT TRANCHE CANDIDATE.**
+   fairness (3x same move = auto-drop + READ!). **F8 edge-bounce WIRED 2026-10-07 (tranche wave 9)** —
+   launched enemies carry horizontal knock velocity (`e.kvx`/`e.kvz`, set in `landHit()`'s launcher
+   branch: `player.face` × 7.5 u/s + small z drift); while airborne, `enemyAI()` integrates it with
+   air drag and bounces enemies off arena bounds (x ∈ [0.5, maxX], z ∈ [−1.4, 1.4]) — velocity
+   reflected × 0.75, wall-thud SFX (CC0 `crack.mp3` @ 0.6 pitch) + grey burst + `EDGE BOUNCE!` popup
+   + vy refresh so the juggle stays alive (Urban Reign style). Playtest `qa/playtest-edgebounce.mjs`
+   13/13 PASS, zero errors, shots in `game-3d/shots-edgebounce/` (eyes-on verified). No new assets;
+   bosses excluded from launcher as before.
 8. **C12 near-miss bonus** ✅ WIRED 2026-10-07 (verified in code — audit wave 8): `nearMiss()` fires
    on any enemy attack landing during i-frames — cash bonus + `NEAR MISS +$` popup + click SFX.
    Re-verified by wave-8 playtest.
