@@ -89,6 +89,8 @@ const FIGHTERS = [
       ['DRAGON DROP', 'JUMP, then HIT', 'Aerial dive kick. Hits on the way down.'],
       ['DESPERATION', 'DDG ×2', '360° panic spin. Costs 10% HP.'],
       ['TAUNT', 'TAUNT btn / T', 'Talk trash, gain special meter.'],
+      ['TECH', 'HIT while knocked down', 'Instant recovery + bounce + brief invuln. Never helpless.'],
+      ['DUST LAUNCHER', '↓ + HVY', 'Universal overhead launcher. Pops them up for juggles.'],
       ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
       ['DRAGON RUSH', '↓ + SPC (50 meter)', 'Shoulder dash straight through the pack.'],
     ] },
@@ -111,6 +113,8 @@ const FIGHTERS = [
       ['GHOST DROP', 'JUMP, then HIT', 'Aerial dive kick.'],
       ['DESPERATION', 'DDG ×2', '360° panic spin. Costs 10% HP.'],
       ['TAUNT', 'TAUNT btn / T', 'Talk trash, gain special meter.'],
+      ['TECH', 'HIT while knocked down', 'Instant recovery + bounce + brief invuln. Never helpless.'],
+      ['DUST LAUNCHER', '↓ + HVY', 'Universal overhead launcher. Pops them up for juggles.'],
       ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
       ['BLINK FLURRY', '↓ + SPC (50 meter)', 'Blink between the 3 nearest enemies.'],
     ] },
@@ -133,6 +137,8 @@ const FIGHTERS = [
       ['CURB DROP', 'JUMP, then HIT', 'Aerial drop kick.'],
       ['DESPERATION', 'DDG ×2', '360° panic spin. Costs 10% HP.'],
       ['TAUNT', 'TAUNT btn / T', 'Talk trash, gain special meter.'],
+      ['TECH', 'HIT while knocked down', 'Instant recovery + bounce + brief invuln. Never helpless.'],
+      ['DUST LAUNCHER', '↓ + HVY', 'Universal overhead launcher. Pops them up for juggles.'],
       ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
       ['SEISMIC SLAM', '↓ + SPC (50 meter)', 'Ground pound launches everyone nearby.'],
     ] },
@@ -155,6 +161,8 @@ const FIGHTERS = [
       ['THRONE STOMP', 'JUMP, then HIT', 'Aerial stomp kick.'],
       ['DESPERATION', 'DDG ×2', '360° panic spin. Costs 10% HP.'],
       ['TAUNT', 'TAUNT btn / T', 'Talk trash, gain special meter.'],
+      ['TECH', 'HIT while knocked down', 'Instant recovery + bounce + brief invuln. Never helpless.'],
+      ['DUST LAUNCHER', '↓ + HVY', 'Universal overhead launcher. Pops them up for juggles.'],
       ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
       ["KINGPIN'S WRATH", '↓ + SPC (50 meter)', 'Massive shockwave around him.'],
     ] },
@@ -177,6 +185,8 @@ const FIGHTERS = [
       ['WRECKING DROP', 'JUMP, then HIT', 'Aerial demolition kick.'],
       ['DESPERATION', 'DDG ×2', '360° panic spin. Costs 10% HP.'],
       ['TAUNT', 'TAUNT btn / T', 'Talk trash, gain special meter.'],
+      ['TECH', 'HIT while knocked down', 'Instant recovery + bounce + brief invuln. Never helpless.'],
+      ['DUST LAUNCHER', '↓ + HVY', 'Universal overhead launcher. Pops them up for juggles.'],
       ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
       ['WRECKING SWING', '↓ + SPC (50 meter)', '360° swing clears the whole circle.'],
     ] },
@@ -199,6 +209,8 @@ const FIGHTERS = [
       ['VIPER DROP', 'JUMP, then HIT', 'Aerial fang kick.'],
       ['DESPERATION', 'DDG ×2', '360° panic spin. Costs 10% HP.'],
       ['TAUNT', 'TAUNT btn / T', 'Talk trash, gain special meter.'],
+      ['TECH', 'HIT while knocked down', 'Instant recovery + bounce + brief invuln. Never helpless.'],
+      ['DUST LAUNCHER', '↓ + HVY', 'Universal overhead launcher. Pops them up for juggles.'],
       ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
       ['VENOM DASH', '↓ + SPC (50 meter)', 'Dash in a line, striking everything.'],
     ] },
@@ -242,6 +254,8 @@ const FIGHTERS = [
       ['HARVEST DROP', 'JUMP, then HIT', 'Aerial harvest drop kick.'],
       ['DESPERATION', 'DDG ×2', '360° panic spin. Costs 10% HP.'],
       ['TAUNT', 'TAUNT btn / T', 'Talk trash, gain special meter.'],
+      ['TECH', 'HIT while knocked down', 'Instant recovery + bounce + brief invuln. Never helpless.'],
+      ['DUST LAUNCHER', '↓ + HVY', 'Universal overhead launcher. Pops them up for juggles.'],
       ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
       ['CANDLE RUSH', '↓ + SPC (50 meter)', 'Burning dash through the pack.'],
     ] },
@@ -2728,6 +2742,19 @@ function releaseFocus() {
   }, 200);
   ev('focusrelease', {});
 }
+function doTech() {
+  // TECH (Smash-inspired): tap HIT while knocked down = instant recovery, small bounce, 0.6s invuln.
+  if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0) return false;
+  if (!(player.knockT > 0)) return false;
+  player.knockT = 0; player.busy = 0; player.techInvulnT = 0.6;
+  player.vy = 4.5; player.airT = 0.001; player.py = 0.001; // small bounce back to your feet
+  playAnim(player, 'Melee_Unarmed_Idle', { ts: 1.6, fade: 0.05 });
+  const sp = screenPos(player.root.position.clone().add(new THREE.Vector3(0, 2.2, 0)));
+  popText('TECH!', 'spc', sp.x, sp.y);
+  sfx('uiclick', 0.9, false, 1.3); sparkFX(player.px, 1.0, player.pz, 0x7af0ff, 10);
+  T.techs = (T.techs || 0) + 1; ev('tech', {}); setHud();
+  return true;
+}
 function doTaunt() {
   // TMNT taunt: talk trash, build special meter. Pure addition — costs a beat of vulnerability.
   if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.busy > 0 || player.airT > 0) return;
@@ -2858,6 +2885,27 @@ function doStanceFin(fd) {
 function doHeavy() {
   if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.busy > 0) return;
   unlockAudio(); T.taps++; hint(false);
+  // DUST LAUNCHER (Guilty Gear): ↓+HVY = universal overhead launcher, same for every fighter.
+  // The combo system has a common language: down+heavy always pops them up.
+  if (typeof stick !== 'undefined' && stick.dy > 0) {
+    player.busy = 0.55;
+    playAnim(player, 'Melee_Unarmed_Attack_Kick', { ts: 1.5, fade: 0.05 });
+    sfx('whoosh', 0.7, false, 0.8);
+    setTimeout(() => {
+      if (state !== 'fight' || missionOver || ended) return;
+      const t = nearestEnemy(2.4);
+      if (t && !t.boss) {
+        landHit(t, Math.round(20 * player.dmgMult), 'DUST LAUNCHER', 0.09, 0.5, true, false);
+        const sp = screenPos(t.root.position.clone().add(new THREE.Vector3(0, 2.4, 0)));
+        popText('DUST LAUNCHER!', 'spc', sp.x, sp.y);
+      } else if (t) {
+        landHit(t, Math.round(20 * player.dmgMult), 'DUST LAUNCHER', 0.09, 0.5, false, false);
+      }
+      damageDestructibles(2.0);
+    }, 200);
+    T.dustlaunch = (T.dustlaunch || 0) + 1; ev('dustlauncher', {});
+    return;
+  }
   // HEAT ACTION (Yakuza): staggered enemy in range + HVY = contextual finisher
   const heatT = nearestEnemy(2.4);
   if (heatT && heatT.stagger > 0 && !heatT.boss) {
@@ -3034,6 +3082,20 @@ function landHit(e, dmg, label, hs, sh, launcher, counter) {
   if (Math.random() < critCh()) { dealt = Math.round(dealt * 1.6); critOn = true; }
   if (player && player.hp > 0 && player.hp < player.maxHp * 0.3) { dealt = Math.round(dealt * 1.25); lsOn = true; lastStandFx(); }
   e.hp -= dealt; combo++; comboT = 2.5; maxCombo = Math.max(maxCombo, combo); // SoR4 combo keep-alive: 2.5s rhythm
+  // ANTI-INFINITE (Skullgirls Undizzy): same move 3x in one juggle = auto-drop with a "READ!" popup. Fairness by design.
+  if (e.airborne) {
+    e.jugSeq = e.jugSeq || [];
+    e.jugSeq.push(label);
+    if (e.jugSeq.length > 3) e.jugSeq.shift();
+    if (e.jugSeq.length === 3 && e.jugSeq[0] === e.jugSeq[1] && e.jugSeq[1] === e.jugSeq[2]) {
+      e.airborne = false; e.vy = 0; e.root.position.y = 0; e.ai = 'recover'; e.aiT = 0.9; e.jugSeq = [];
+      playAnim(e, 'Melee_Unarmed_Idle', { loop: true });
+      const rsp = screenPos(e.root.position.clone().add(new THREE.Vector3(0, 2.2, 0)));
+      popText('READ!', 'bad', rsp.x, rsp.y);
+      sfx('uiclick', 0.8, false, 0.6); ev('antiinfinite', { label });
+      T.antiinf = (T.antiinf || 0) + 1; // test hook
+    }
+  } else { e.jugSeq = []; }
   styleHit(label); // DMC-style variety grading
   if (player) player.energy = clamp(player.energy + 8 * (1 + (blessFx().energyGain || 0)), 0, energyMax());
   const head = e.root.position.clone().add(new THREE.Vector3(0, fighterHeight * 0.78 * e.sc, 0.15));
@@ -3107,6 +3169,7 @@ function killEnemy(e) {
 function hurtPlayer(dmg) {
   if (mission && mission.endless && (endlessMuts || []).includes('GLASS JAW')) dmg = Math.round(dmg * 1.5);
   if (!player || player.hp <= 0 || missionOver || ended) return;
+  if (player.techInvulnT > 0) return; // TECH recovery: brief invuln after a successful tech
   // FOCUS (SFIV): absorb one hit while in focus stance — no damage, +15 energy
   if (player.focusT > 0 && !player.focusHit) {
     player.focusHit = true; player.focusT = 0; hvyFocusing = false;
@@ -3144,6 +3207,15 @@ function hurtPlayer(dmg) {
   }
   player.energy = clamp(player.energy + 12 * (1 + (blessFx().energyGain || 0)), 0, energyMax());
   playAnim(player, 'Hit_A', { ts: 1.4 });
+  // TECH (Smash-inspired): heavy hits knock you down — tap HIT while down to tech (instant recovery + bounce + brief invuln).
+  // Never helpless: knockdown is a decision, not a cutscene.
+  if (dmg >= 18 && player.hp > 0 && !(player.knockT > 0)) {
+    player.knockT = 0.9; player.busy = 0.9;
+    playAnim(player, 'Hit_B', { ts: 0.9 });
+    const ksp = screenPos(player.root.position.clone().add(new THREE.Vector3(0, 2.0, 0)));
+    popText('KNOCKDOWN — tap HIT!', 'bad', ksp.x, ksp.y);
+    ev('knockdown', {});
+  }
   const sp = screenPos(player.root.position.clone().add(new THREE.Vector3(0, fighterHeight * 0.8, 0)));
   popText('-' + dmg, 'bad', sp.x, sp.y - 20);
   setHud();
@@ -3196,7 +3268,7 @@ function stickEnd(e) {
 }
 function setupInput() {
   const bind = (id, fn) => $(id).addEventListener('pointerdown', (e) => { e.stopPropagation(); e.preventDefault(); fn(); }, { passive: false });
-  bind('btnAtk', doPunch); bind('btnDdg', doDodge); bind('btnSpc', doSpecial); bind('btnJmp', doJump);
+  bind('btnAtk', () => { if (player && player.knockT > 0) doTech(); else doPunch(); }); bind('btnDdg', doDodge); bind('btnSpc', doSpecial); bind('btnJmp', doJump);
   // FOCUS (SFIV): HOLD HVY 0.45s = focus stance (absorb one hit), release = crumple strike; tap = normal heavy
   { const el = $('btnHvy');
     el.addEventListener('pointerdown', (e) => { e.stopPropagation(); e.preventDefault(); hvyPressT = performance.now(); hvyFocusing = false; }, { passive: false });
@@ -3269,7 +3341,7 @@ function setupInput() {
     if (k === 'arrowright' || k === 'd') stick.dx = 1;
     if (k === 'arrowup' || k === 'w') stick.dy = -1;
     if (k === 'arrowdown' || k === 's') stick.dy = 1;
-    if (k === 'j') doPunch();
+    if (k === 'j') { if (player && player.knockT > 0) { doTech(); } else doPunch(); }
     if (k === 'k') doHeavy();
     if (k === 'l') doDodge();
     if (k === 'u') doSpecial();
@@ -3705,6 +3777,13 @@ function playerUpdate(dt) {
   } else if ((p.rage || 0) > 0) { p.rage = Math.max(0, p.rage - dt * 6); } // rage bleeds off
   // BURST juggle tracking (Guilty Gear): hits taken within a 2.5s window
   if (p.jugT > 0) { p.jugT -= dt; if (p.jugT <= 0) p.jugN = 0; }
+  // TECH knockdown (Smash-inspired): tick down; teching is handled in the input layer
+  if (p.knockT > 0) {
+    p.knockT -= dt;
+    if (p.knockT <= 0) { p.knockT = 0; playAnim(p, 'Melee_Unarmed_Idle', { loop: true }); }
+  }
+  // Tech invuln window
+  if (p.techInvulnT > 0) p.techInvulnT -= dt;
   // FOCUS charge decay (SFIV)
   if (p.focusT > 0 && !hvyFocusing) p.focusT = 0;
   // RECRUIT crew: every 7s a crew member hurls a bottle at the nearest enemy
@@ -4319,7 +4398,15 @@ window.__cdtest = {
   dbgRep: (r) => { save.rep = r; writeSave(); const d = effDiff(); return { hpMul: +d.hpMul.toFixed(2), dmgMul: +d.dmgMul.toFixed(2), cash: +repMult().cash.toFixed(2) }; },
   spawnCreature: (cid) => { if (player) { const e = makeCreatureRaw(cid, 0xffffff, player.px + 3, -Math.PI / 2, 1); if (e) { e.maxHp = e.hp = 200; e.dmgMult = 1; e.spd = 1.5; e.px = player.px + 3; e.pz = 0; e.ai = 'walk'; e.aiT = 1; syncPos(e); playAnim(e, 'Running_A', { loop: true }); enemies.push(e); } return e; } },
   hurt: (n) => { if (player) hurtPlayer(n); },
-  doJump, doPunch, doHeavy, doSpecial, doTaunt, doDesperation, doStance,
+  doJump, doPunch, doHeavy, doSpecial, doTaunt, doDesperation, doStance, doTech,
+  antiInfTest: () => {
+    const e = enemies.find(x => x.hp > 0 && !x.boss);
+    if (!e) return { ok: 0, why: 'no-enemy' };
+    e.airborne = true; e.vy = 5; e.hp = Math.max(e.hp, 500);
+    const before = T.antiinf || 0;
+    for (let i = 0; i < 3; i++) { try { landHit(e, 5, 'TESTJAB', 0.01, 0.1, false, false); } catch (err) { return { ok: 0, why: 'landHit-threw' }; } }
+    return { ok: 1, fired: (T.antiinf || 0) > before, airborne: e.airborne };
+  },
   walkTo: (x) => { if (player) { player.px = x; } return true; },
   procBossInfo: () => { try { const a = procBoss(3); return { ok: 1, name: a && a.name, pats: a && a.patterns, typeof_pb: typeof procBoss }; } catch (e) { return { ok: 0, err: String(e && e.message || e).slice(0, 120) }; } },
   muts: () => ({ tier: endlessTier || 0, muts: (endlessMuts || []).slice() }),
