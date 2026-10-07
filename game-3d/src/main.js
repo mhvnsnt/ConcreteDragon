@@ -302,6 +302,21 @@ const ENEMY_FAMS = [
       { at: 0 },
       { at: 3, name: 'JACK BRUISER', tint: 0xc45f10, hpMul: 1.6, scaleMul: 1.12, move: 'uppercut' },
     ] },
+  { id: 'zombie', name: 'ROTTEN', tint: 0x7a9a5a, hp: 85, dmg: 1.0, scale: 1.0, spd: 1.3, creature: 'zombie',
+    variants: [
+      { at: 0 },
+      { at: 3, name: 'ROTTEN HORDE', tint: 0x5a7a42, hpMul: 1.5, dmgMul: 1.2, move: 'flurry' },
+    ] },
+  { id: 'demon', name: 'HELLION', tint: 0xc12a2a, hp: 110, dmg: 1.25, scale: 1.0, spd: 1.6, creature: 'demon',
+    variants: [
+      { at: 0 },
+      { at: 4, name: 'HELLION BRUTE', tint: 0x8a1a1a, hpMul: 1.7, scaleMul: 1.12, move: 'slam' },
+    ] },
+  { id: 'spider', name: 'WEAVER', tint: 0x3a3a4a, hp: 65, dmg: 0.9, scale: 1.25, spd: 2.8, creature: 'spider',
+    variants: [
+      { at: 0 },
+      { at: 4, name: 'WEAVER BROODMOTHER', tint: 0x1a1a26, hpMul: 2.2, scaleMul: 1.35, dmgMul: 1.3, move: 'flurry' },
+    ] },
 ];
 // missionIdx picks the variant: latest variant whose `at` <= mission index
 function famVariant(fam, mi) {
@@ -328,6 +343,9 @@ const BOSSES = [
   { id: 'rust', name: 'RUST', tint: 0xc0c9d6, hp: 640, dmg: 1.55, scale: 1.5, spd: 1.25,
     patterns: ['slam', 'charge', 'summon'], unlockFighter: 'dust',
     intro: 'THE RUST GIANT' },
+  { id: 'dragon', name: 'THE CONCRETE DRAGON', tint: 0xff4d00, hp: 950, dmg: 1.7, scale: 1.0, spd: 1.4, creature: 'dragon',
+    patterns: ['slam', 'charge', 'summon'], unlockSkin: { fighter: 'kidblue', id: 'dragonfire', name: 'Dragon Fire', tint: 0xff4d00 },
+    intro: 'THE NAMESAKE' },
 ];
 
 // ---------- data: districts (per-district palettes — owner's art rule) ----------
@@ -754,6 +772,50 @@ function attachHead(f, partId) {
   inst.position.set(0, PART_HEADS[partId].y || 0, 0);
   bone.add(inst);
 }
+// ---------- species creatures: whole-body CC0 models as enemies/bosses ----------
+// Quaternius rigged+animated models. Enemy AI speaks mannequin clip names;
+// CREATURE_ANIMROLE translates them to each creature's own baked clips.
+const CREATURE_DEFS = {
+  zombie: { file: 'parts/zombie.glb', height: 1.7,
+    clips: { idle: 'Idle', walk: 'Run', attack: 'Punch', hit: 'HitReact', dead: 'Death' } },
+  demon: { file: 'parts/demon.glb', height: 1.9,
+    clips: { idle: 'CharacterArmature|Idle', walk: 'CharacterArmature|Run', attack: 'CharacterArmature|Punch', hit: 'CharacterArmature|HitReact', dead: 'CharacterArmature|Death' } },
+  spider: { file: 'parts/spider.glb', height: 1.0,
+    clips: { idle: 'SpiderArmature|Spider_Idle', walk: 'SpiderArmature|Spider_Walk', attack: 'SpiderArmature|Spider_Attack', hit: 'SpiderArmature|Spider_Idle', dead: 'SpiderArmature|Spider_Death' } },
+  dragon: { file: 'parts/dragon-evolved.glb', height: 2.6,
+    clips: { idle: 'CharacterArmature|Flying_Idle', walk: 'CharacterArmature|Fast_Flying', attack: 'CharacterArmature|Headbutt', hit: 'CharacterArmature|HitReact', dead: 'CharacterArmature|Death' } },
+};
+const CREATURE_ANIMROLE = {
+  'Melee_Unarmed_Idle': 'idle', 'Running_A': 'walk',
+  'Melee_Unarmed_Attack_Punch_A': 'attack', 'Melee_Unarmed_Attack_Kick': 'attack',
+  'Hit_A': 'hit', 'Hit_B': 'hit', 'Death_A': 'dead',
+};
+const creatureTemplates = {};
+async function loadCreatureTemplates() {
+  for (const [id, cd] of Object.entries(CREATURE_DEFS)) {
+    try {
+      const g = await parse(cd.file);
+      const scene = g.scene;
+      const box = new THREE.Box3().setFromObject(scene);
+      const h = Math.max(0.01, box.max.y - box.min.y);
+      const byName = {};
+      for (const c of g.animations) byName[c.name] = c;
+      creatureTemplates[id] = { scene, byName, norm: cd.height / h };
+    } catch (e) { T.errors.push('creature:' + id + ':' + String(e && e.message || e).slice(0, 80)); }
+  }
+}
+function makeCreatureRaw(cid, tint, x, face, scale = 1) {
+  const t = creatureTemplates[cid]; if (!t) return null;
+  const cd = CREATURE_DEFS[cid];
+  const root = skClone(t.scene);
+  root.scale.setScalar(t.norm * scale);
+  root.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.material = o.material.clone(); o.material.color = new THREE.Color(tint); } });
+  root.position.set(x, 0, 0); root.rotation.y = face; scene.add(root);
+  const mixer = new THREE.AnimationMixer(root);
+  const f = { root, mixer, cur: null, hp: 100, maxHp: 100, busy: 0, tint, sc: scale, dmgMult: 1, vy: 0, airborne: false, creature: cid, creatureClips: t.byName, creatureDef: cd };
+  mixer.addEventListener('finished', (e) => { if (e.action === f.cur && f.onDone) { const d = f.onDone; f.onDone = null; d(); } });
+  fighters.push(f); return f;
+}
 function makeFighterRaw(tint, x, face, scale = 1, tex = null) {
   const root = skClone(fighterTemplate);
   root.scale.multiplyScalar(scale);
@@ -765,7 +827,13 @@ function makeFighterRaw(tint, x, face, scale = 1, tex = null) {
   fighters.push(f); return f;
 }
 function playAnim(f, name, { loop = false, fade = 0.08, ts = 1, done = null, clamp = false } = {}) {
-  const clip = clips[name]; if (!clip) return;
+  let clip = null;
+  if (f.creature) { // translate mannequin clip names to the creature's baked clips
+    const role = CREATURE_ANIMROLE[name];
+    const cname = role && f.creatureDef.clips[role];
+    clip = (cname && f.creatureClips[cname]) || f.creatureClips[f.creatureDef.clips.idle] || null;
+  } else clip = clips[name];
+  if (!clip) return;
   const a = f.mixer.clipAction(clip);
   a.reset(); a.setLoop(loop ? THREE.LoopRepeat : THREE.LoopOnce, Infinity); a.clampWhenFinished = clamp || !loop; a.timeScale = ts;
   if (f.cur && f.cur !== a) a.crossFadeFrom(f.cur, fade, false);
@@ -996,6 +1064,16 @@ function showResults(win, mission, stats) {
         setTimeout(() => sfx('coin', 0.8, false, 1.2), 180);
         setTimeout(() => sfx('whoosh', 0.6, false, 0.9), 380);
         ev('unlock', { fighter: b.unlockFighter });
+      } else if (b && b.unlockSkin) {
+        const sk = SKINS[b.unlockSkin.fighter] || (SKINS[b.unlockSkin.fighter] = []);
+        if (!sk.some((s) => s.id === b.unlockSkin.id)) {
+          sk.push({ id: b.unlockSkin.id, name: b.unlockSkin.name, tint: b.unlockSkin.tint });
+          ub.textContent = '★ ' + b.unlockSkin.name.toUpperCase() + ' SKIN UNLOCKED ★';
+          ub.classList.add('show');
+          sfx('bell', 0.9, true); flash('#ffe14d');
+          setTimeout(() => sfx('coin', 0.8, false, 1.2), 180);
+          ev('unlock', { skin: b.unlockSkin.id });
+        } else { ub.classList.remove('show'); }
       } else { ub.classList.remove('show'); }
     } else { ub.classList.remove('show'); }
   } else { save.losses++; }
@@ -1126,7 +1204,9 @@ function nearestEnemyFront(range) {
 function spawnEnemy(famId, mi, bx, bz) {
   const fam = ENEMY_FAMS.find((f) => f.id === famId) || ENEMY_FAMS[0];
   const v = famVariant(fam, mi);
-  const e = makeFighterRaw(v.tint, bx, -Math.PI / 2, v.scale, texObjs.patchwork);
+  const e = fam.creature ? makeCreatureRaw(fam.creature, v.tint, bx, -Math.PI / 2, v.scale)
+                         : makeFighterRaw(v.tint, bx, -Math.PI / 2, v.scale, texObjs.patchwork);
+  if (!e) return null;
   if (fam.head) attachHead(e, fam.head); // species head attachment (pumpkin, masks...)
   if (hasMod('titans') && missionR() < 0.18 && !v.boss) { e.sc = (e.sc || 1) * 1.35; e.root.scale.multiplyScalar(1.35); e.maxHp = e.hp = Math.round(e.hp * 2.2); e.name = 'TITAN ' + e.name; }
   else if (hasMod('frenzy') && missionR() < 0.25) { e.spd *= 1.5; e.dmgMult *= 1.25; e.name = 'FRENZIED ' + e.name; }
@@ -1142,7 +1222,8 @@ function spawnEnemy(famId, mi, bx, bz) {
 }
 function spawnBoss(bossId, bx) {
   const b = BOSSES.find((x) => x.id === bossId);
-  const e = makeFighterRaw(b.tint, bx, -Math.PI / 2, b.scale, texObjs.patchwork);
+  const e = b.creature ? makeCreatureRaw(b.creature, b.tint, bx, -Math.PI / 2, b.scale)
+                       : makeFighterRaw(b.tint, bx, -Math.PI / 2, b.scale, texObjs.patchwork);
   const dfb = diffDef();
   e.isPlayer = false; e.boss = b; e.name = b.name;
   e.maxHp = e.hp = Math.round(b.hp * dfb.hpMul); e.dmgMult = b.dmg * dfb.dmgMul; e.spd = b.spd; e.aggro = dfb.aggro;
@@ -2201,6 +2282,7 @@ async function boot() {
   const box = new THREE.Box3().setFromObject(fighterTemplate); fighterHeight = box.max.y - box.min.y;
   const s = 1.8 / fighterHeight; fighterTemplate.scale.setScalar(s); fighterHeight = 1.8;
   await loadPartTemplates(); // species head attachments (pumpkin, masks...)
+  await loadCreatureTemplates(); // whole-body species (zombie, demon, spider, dragon)
   streetParts = {}; st.scene.children.slice().forEach((c) => { streetParts[c.name] = c; });
   resize(); $('loading').style.display = 'none';
   applyQuality();
@@ -2223,6 +2305,7 @@ window.__cdtest = {
   freeze: (on) => { window.__cdfreeze = !!on; },
   spawnBoss: (id) => { if (player) return spawnBoss(id || 'kingpin', player.px + 6); },
   spawnFam: (famId) => { if (player) return spawnEnemy(famId, 0, player.px + 3, 0); },
+  spawnCreature: (cid) => { if (player) { const e = makeCreatureRaw(cid, 0xffffff, player.px + 3, -Math.PI / 2, 1); if (e) { e.maxHp = e.hp = 200; e.dmgMult = 1; e.spd = 1.5; e.px = player.px + 3; e.pz = 0; e.ai = 'walk'; e.aiT = 1; syncPos(e); playAnim(e, 'Running_A', { loop: true }); enemies.push(e); } return e; } },
   hurt: (n) => { if (player) hurtPlayer(n); },
   doJump, doPunch, doHeavy, doSpecial, doTaunt, doDesperation,
   step: (dt) => { playerUpdate(dt || 1 / 60); }, // drive the real physics deterministically
