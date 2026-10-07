@@ -70,3 +70,29 @@ Per-pack LICENSE.md files in each parts/<pack>/ dir. All downloads verified
 - **Mummies (3D):** none free. Searched OGA (mummy/mummies/pharaoh/sarcophagus, paginated), Poly Pizza, Quaternius full catalog (80+ packs), Kenney. All hits 2D sprites or CC-BY-SA (excluded). Fallback: bandage painted texture on humanoid body (spec §9).
 - **Sports players (3D):** none downloadable free. OGA = 2D only (basketball pixel art, CC0 equipment sprite packs, SVG). Poly Pizza = balls/equipment only (verified AmericanFootball thumbnail = just a ball). Kenney Sports Pack = 2D tiles. Quaternius = no sports pack. itch.io = games not assets. Buildbox = signup + proprietary license (rejected). ArtStation = $49 (rejected). **Actionable:** Sketchfab has CC-BY 3D basketball players ("v0 Team Player Basketball Stylized Character", "male_character_Basketball_Player" by Tulio Portela) + "Dead Baseball Player" — but Sketchfab downloads need an authenticated login; grab with owner/build login. No free American-football player found anywhere. Fallback: jersey painted textures + CC0 equipment props (spec §9).
 - **Sketchfab auth wall:** search API works anonymously; the /download endpoint returns "Authentication credentials were not provided."
+
+## Wave 5 — arenas/weapons/humans/environments + animation hunt (2026-10-07)
+
+| Pack | Source | License | Contents → use |
+|------|--------|---------|----------------|
+| kenney-car-kit (50 GLB) | https://kenney.nl/assets/car-kit (direct zip) | CC0 (bundled License.txt) | cars, cones, barriers, car debris — street props + thrown/breakable weapons |
+| kenney-city-kit-commercial (41 GLB) | https://kenney.nl/assets/city-kit-commercial (direct zip) | CC0 (bundled License.txt) | commercial buildings, storefronts — city district backdrops |
+| kenney-city-kit-roads (95 GLB) | https://kenney.nl/assets/city-kit-roads (direct zip) | CC0 (bundled License.txt) | roads, lamps, hydrants, fences, barriers — street ground plane + environmental weapons |
+| kenney-furniture-kit (140 GLB) | https://kenney.nl/assets/furniture-kit (direct zip) | CC0 (bundled License.txt) | tables/chairs/sofas/shelves — THROWABLE/SMASHABLE weapons, interior arenas |
+| pp-arenas-weapons (4 GLB) | Poly Pizza model pages (see parts/pp-arenas-weapons/LICENSE.md) | CC-BY ×3 (Clifford, MacGillivray, Zsky) + CC0 ×1 (CreativeTrio) | wrestling ring, boxing ring, 2 baseball bats |
+| pp-quaternius-brawlers/for-ashlane (4 GLB) | Poly Pizza (see parts/pp-quaternius-brawlers/LICENSE.md) | CC0 (page badges) | Farmer/Worker/Adventurer/Casual — 62-joint rig, 24 clips (Punch_L/R, Kick_L/R, HitRecieve, Death). **FOR ASHLANE repo.** |
+
+Per-pack LICENSE.md files in each parts/<pack>/ dir. All GLBs verified (valid glTF magic; Quaternius clip sets read from JSON).
+
+### Browser-pull list (Sketchfab account exists — needs browser session)
+- MMA Octagon by wesamtufail — CC-BY — https://sketchfab.com/3d-models/mma-octagon-a7aef586a9c34fe789c9b2c4acb45588
+- Sledgehammer by MelonMan — license TBD — https://sketchfab.com/3d-models/sledgehammer-fe17e37490ac412a8911c3a4bac5ce7e
+- Sledgehammer game asset by Oliver Wobst — CC-BY — https://sketchfab.com/3d-models/sledgehammer-game-asset-cdfabbef2573450190120ae3c2e82042
+- High Poly Trashcan by caz — CC-BY — https://sketchfab.com/3d-models/high-poly-trashcan-85a88d20029b4cb18f925d06ea43ab5d
+- KayKit Character Animations (itch.io free tier) — https://kaylousberg.itch.io/kaykit-character-animations
+
+### Logged gaps — wave 5 (honest)
+- **Steel cage / cell structure:** no free CC0/CC-BY 3D cage found (all paid, print-licensed, or trademarked "Hell in a Cell"). Build from Kenney fence/barrier parts or browser-pull a CC cage.
+- **Kenney rate limit:** 5 more packs (city-kit-industrial, graveyard, modular-dungeon, fantasy-town, factory) truncated by kenney.nl on shared egress IP — retry later.
+- **Quaternius Drive:** quota-blocked; used Poly Pizza CC0 mirrors for the 4 brawlers.
+- **KayKit itch.io:** free download needs browser session (download key flow).

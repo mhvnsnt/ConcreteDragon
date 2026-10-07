@@ -231,3 +231,69 @@ Searched: OGA (football/basketball/baseball player, sports character, jersey, ch
 Fallback stays the wave-3 recipe: sports via painted jersey textures on humanoid bodies + equipment props (balls, bats from CC0 packs).
 
 **2D-only, logged not staged:** mummy-enemies, Boss-Mummy.zip sprites, mummy-1.2.zip sprites, basketball-player pixel art, football-pack/baseball-pack equipment sprites, robot-football-player SVG.
+
+## §11 — Sketchfab sports pull RESOLVED (2026-10-07)
+
+The wave-4 actionable lead is closed: owner created a Sketchfab account (signed in with Epic Games) and the three models were downloaded via browser task.
+
+**Staged packs:**
+
+| pack | models | license | use |
+|---|---|---|---|
+| sketchfab-basketball-tulio | 1 GLB (28MB→19MB, 1 mesh, painted texture, static) | **CC-BY 4.0** (Tulio Portela; attribution required) | HOOP DREAM enemy family (DUNK SHOT sig). Wired in main.js. |
+| sketchfab-basketball-rj | 1 GLB (14MB, 5 meshes, 13 textures, static; glTF→GLB via Blender 4.5.3) | **CC-BY 4.0** (Raj_Kumar_Jadhav/mynameisRJ; attribution required, credit line in LICENSE.md) | STREET BALLER enemy family (CROSSOVER sig). Wired in main.js. |
+| sketchfab-baseball-skeleton | 1 GLB (7 meshes, albedo texture manually assigned in Blender — DAE shipped no texture bindings; static) | **CC-BY 4.0** (VanHyfte_Clement; attribution required) | DEAD BALLER enemy family (CURVEBALL sig). Skeleton in baseball uniform — doubles as Halloween seasonal content. Wired in main.js. |
+
+All three authors credited on the in-game credits screen. All static (no rigs/anims) — they use the game's procedural enemy animation + baked poses, same as Carmilla/ghosts.
+No free American-football player exists anywhere — that gap stands.
+
+## §12 — Wave 5: weapons research + arenas/humans/environments (2026-10-07)
+
+### Weapons research (RESEARCH ONLY — in-game items use ORIGINAL names, never franchise names)
+
+**WWE 2K24 weapon set** (14, from public game guides): Baseball Bat,
+Chair, Chancla, Guitar, Hockey Stick, Kendo Stick, Ladder, Microphone,
+Shovel, Sledgehammer, Slim Jim, Stop Sign, Table, Trashcan (+ detachable
+turnbuckle). Weapons have durability; tables/ladders break after use.
+
+**Urban Reign** (Capcom, PS2 — key AshLane reference): 30+ street weapons —
+baseball bats, lead pipes, knives, bottles, shovels, swords, golf clubs,
+tables, axes, spiky clubs, broken bottles, blades. Durability meters;
+most are throwable. Environmental kills (walls, rails, cars).
+
+**Tekken:** mostly weaponless (Kunimitsu kunai/knives, Yoshimitsu katana);
+"item moves" are joke/cosmetic and tournament-banned. No weapon system
+to harvest.
+
+**Sleeping Dogs:** Crowbar, Kitchen Knife, Tyre Iron, Cleaver, Baton,
+Machete, Cooking Wok, Umbrella, Purse, Grocery Bag, Fish, Hand-Grinder +
+environmental kills (phone booths, dumpsters, AC units).
+
+**Generic equivalents staged this wave** (no trademarked 1:1 copies):
+baseball bats (×2), chairs/tables/ladders (Kenney furniture kit),
+trash cans (Kenney city roads), pipes/chains/bricks via primitives.
+Sledgehammers + MMA octagon + extra trashcans on the Sketchfab
+browser-pull list (CC-BY, account exists).
+
+**IP law:** "Hell in a Cell" is a WWE trademark — researched, never used
+in-game. In-game name: "steel cell". Same for all WWE-named items.
+
+### Wave 5 staged packs (334 models total)
+
+| pack | models | license | use |
+|---|---|---|---|
+| kenney-car-kit | 50 GLB | CC0 | cars, cones, barriers, car debris (thrown/breakable weapons) |
+| kenney-city-kit-commercial | 41 GLB | CC0 | commercial buildings, storefronts, rooftops |
+| kenney-city-kit-roads | 95 GLB | CC0 | roads, lamps, hydrants, fences, barriers (environmental weapons) |
+| kenney-furniture-kit | 140 GLB | CC0 | tables, chairs, sofas, shelves — THROWABLE/SMASHABLE (WWE-style) |
+| pp-arenas-weapons | 4 GLB | CC-BY (×3) + CC0 (×1) | wrestling ring, boxing ring, 2 baseball bats |
+| pp-quaternius-brawlers (for-ashlane/) | 4 GLB | CC0 | Farmer/Worker/Adventurer/Casual — 62-joint rig, 24 clips incl. Punch_L/R, Kick_L/R, HitRecieve, Death. **AshLane repo, not Concrete Dragon.** |
+
+**Per-category counts:** environments 281 (cars 50 + buildings 41 + roads/props 95 + furniture 140, minus overlap) · arenas 2 · weapons 6+ (2 bats + furniture as weapons) · humans 4 (AshLane).
+
+**Gaps logged:** MMA octagon (free CC only on Sketchfab — browser pull);
+steel cage/cell structure (build from Kenney fence/barrier parts or
+browser-pull); 5 more Kenney packs rate-limited (retry later);
+Quaternius Drive quota-blocked (used Poly Pizza mirrors);
+KayKit character animations need browser session (itch.io free tier);
+Sketchfab sledgehammers/trashcans need browser session.

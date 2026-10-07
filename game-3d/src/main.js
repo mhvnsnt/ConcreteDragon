@@ -415,6 +415,15 @@ const ENEMY_FAMS = [
   { id: 'skull', name: 'SKULL HEAD', tint: 0xe8e0d0, hp: 35, dmg: 0.8, scale: 1.0, spd: 2.6, creature: 'skull',
     sig: { id: 'headbutt', name: 'HEADBUTT', chance: 0.26 },
     variants: [ { at: 0 }, { at: 4, name: 'SKULL PILE', tint: 0xc8bca8, hpMul: 1.7, dmgMul: 1.2, move: 'flurry' } ] },
+  { id: 'baller1', name: 'HOOP DREAM', tint: 0xd06018, hp: 75, dmg: 1.0, scale: 1.0, spd: 1.9, creature: 'bball1',
+    sig: { id: 'dunkshot', name: 'DUNK SHOT', chance: 0.26 },
+    variants: [ { at: 0 }, { at: 4, name: 'HOOP SQUAD', tint: 0xa04810, hpMul: 1.6, dmgMul: 1.2, move: 'flurry' } ] },
+  { id: 'baller2', name: 'STREET BALLER', tint: 0x2060c0, hp: 70, dmg: 1.0, scale: 1.0, spd: 2.1, creature: 'bball2',
+    sig: { id: 'crossover', name: 'CROSSOVER', chance: 0.26 },
+    variants: [ { at: 0 }, { at: 4, name: 'BLACKTOP CREW', tint: 0x184880, hpMul: 1.6, dmgMul: 1.2, move: 'flurry' } ] },
+  { id: 'bbones', name: 'DEAD BALLER', tint: 0xc8b898, hp: 60, dmg: 1.1, scale: 1.0, spd: 1.7, creature: 'bbones',
+    sig: { id: 'curveball', name: 'CURVEBALL', chance: 0.26 },
+    variants: [ { at: 0 }, { at: 4, name: 'BONE LEAGUE', tint: 0xa89878, hpMul: 1.6, dmgMul: 1.3, move: 'flurry' } ] },
 ];
 // missionIdx picks the variant: latest variant whose `at` <= mission index
 function famVariant(fam, mi) {
@@ -539,7 +548,7 @@ const MISSIONS = [
     spawns: [{ at: 10, fam: 'thug', n: 2 }, { at: 24, fam: 'heavyd', n: 2 }, { at: 38, fam: 'rico', n: 3 }, { at: 52, fam: 'jabber', n: 3 }],
     card: 'Rust, rails, and bad intentions.', boss: 'sledge', unlock: { type: 'mission', id: 'm1' }, reward: 'Unlocks SLEDGE as playable' },
   { id: 'm3', zone: 'z1', district: 'havana', name: 'NIGHT MARKET', len: 85, crowd: true,
-    spawns: [{ at: 10, fam: 'jabber', n: 3 }, { at: 26, fam: 'thug', n: 3 }, { at: 42, fam: 'rico', n: 3 }, { at: 58, fam: 'heavyd', n: 3 }, { at: 70, fam: 'thug', n: 4 }],
+    spawns: [{ at: 10, fam: 'jabber', n: 3 }, { at: 26, fam: 'thug', n: 3 }, { at: 42, fam: 'rico', n: 3 }, { at: 58, fam: 'heavyd', n: 3 }, { at: 64, fam: 'baller2', n: 2 }, { at: 70, fam: 'thug', n: 4 }],
     card: 'The heat never left this street.', boss: 'viper', unlock: { type: 'mission', id: 'm2' }, reward: 'Unlocks VIPER as playable' },
   { id: 'm4', zone: 'z1', district: 'docks', name: 'RUST BELT', len: 100, crowd: true,
     spawns: [{ at: 12, fam: 'stray', n: 3 }, { at: 28, fam: 'heavyd', n: 2 }, { at: 44, fam: 'stray', n: 4 }, { at: 60, fam: 'rico', n: 3 }, { at: 78, fam: 'stray', n: 4 }, { at: 90, fam: 'heavyd', n: 2 }],
@@ -563,10 +572,10 @@ const MISSIONS = [
     spawns: [{ at: 12, fam: 'zombie', n: 3 }, { at: 30, fam: 'spider', n: 3 }, { at: 52, fam: 'demon', n: 2 }, { at: 74, fam: 'pumpkin', n: 3 }],
     card: 'The crypts rearrange when you blink.', boss: 'carmilla', unlock: { type: 'mission', id: 'mz2' }, reward: 'The Vampire Queen falls' },
   { id: 'p1', zone: 'z4', district: 'neon', name: 'ROOFTOP RUN', len: 85, crowd: false, layout: 'platform',
-    spawns: [{ at: 12, fam: 'jabber', n: 3 }, { at: 30, fam: 'thug', n: 3 }, { at: 50, fam: 'stray', n: 3 }, { at: 68, fam: 'jabber', n: 4 }],
+    spawns: [{ at: 12, fam: 'jabber', n: 3 }, { at: 30, fam: 'thug', n: 3 }, { at: 50, fam: 'stray', n: 3 }, { at: 60, fam: 'baller1', n: 2 }, { at: 68, fam: 'jabber', n: 4 }],
     card: 'The street is below you now.', boss: null, unlock: { type: 'mission', id: 'mz1' }, reward: 'Platform layouts unlocked' },
   { id: 'p2', zone: 'z4', district: 'havana', name: 'FIRE ESCAPE', len: 95, crowd: false, layout: 'platform',
-    spawns: [{ at: 12, fam: 'rico', n: 3 }, { at: 32, fam: 'heavyd', n: 2 }, { at: 54, fam: 'demon', n: 2 }, { at: 76, fam: 'rico', n: 4 }],
+    spawns: [{ at: 12, fam: 'rico', n: 3 }, { at: 32, fam: 'heavyd', n: 2 }, { at: 54, fam: 'demon', n: 2 }, { at: 66, fam: 'bbones', n: 2 }, { at: 76, fam: 'rico', n: 4 }],
     card: 'Climb or get climbed.', boss: 'viper', unlock: { type: 'mission', id: 'p1' }, reward: 'Skyline fighter' },
   { id: 'p3', zone: 'z4', district: 'docks', name: 'CRANE YARD', len: 105, crowd: true, layout: 'platform',
     spawns: [{ at: 12, fam: 'heavyd', n: 3 }, { at: 32, fam: 'spider', n: 3 }, { at: 56, fam: 'demon', n: 3 }, { at: 80, fam: 'zombie', n: 4 }],
@@ -1231,6 +1240,9 @@ const CREATURE_DEFS = {
   ghosthappy: { file: 'parts/ghost-happy.glb', height: 0.9, clips: {} }, // static floaters (JellyLion, CC-BY)
   ghostsad: { file: 'parts/ghost-sad.glb', height: 0.9, clips: {} },
   skull: { file: 'parts/skull.glb', height: 0.5, clips: {} },
+  bball1: { file: 'parts/basketball-tulio.glb', height: 1.9, clips: {} }, // static (Tulio Portela, CC-BY)
+  bball2: { file: 'parts/basketball-rj.glb', height: 1.9, clips: {} }, // static (Raj_Kumar_Jadhav, CC-BY)
+  bbones: { file: 'parts/baseball-skeleton.glb', height: 1.8, clips: {} }, // static (VanHyfte_Clement, CC-BY)
 };
 const CREATURE_ANIMROLE = {
   'Melee_Unarmed_Idle': 'idle', 'Running_A': 'walk',
@@ -1842,7 +1854,9 @@ function startMission(id, node) {
   player.maxHp = Math.round(fd.hp + toughBonus() + (blessFx().hp || 0));
   player.hp = player.maxHp;
   player.dmgMult = fd.dmg * powerMult() * (1 + (blessFx().dmg || 0));
+  player.baseDmgMult = player.dmgMult; // RADICAL MODE scales off base
   player.spd = fd.spd * (1 + (blessFx().spd || 0) + (blessFx().moveSpd || 0) + (save.up_speed || 0) * 0.04);
+  player.baseSpd = player.spd;
   player.px = 2; player.pz = 0; player.face = 1;
   player.energy = 50; player.dodgeT = 0; player.dodgeCD = 0; player.busy = 0; player.spinT = 0;
   player.animMove = false;
@@ -2089,10 +2103,35 @@ function doBlitz() {
     damageDestructibles(2.4);
   }, 140);
 }
+function releaseFocus() {
+  // FOCUS (SFIV) release: charged strike that crumples (long vulnerable stun) non-boss enemies
+  if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0) return;
+  player.focusT = 0; player.busy = 0.5;
+  playAnim(player, 'Melee_Unarmed_Attack_Kick', { ts: 1.6, fade: 0.05 });
+  sfx('whoosh', 0.8, false, 0.8);
+  setTimeout(() => {
+    if (state !== 'fight' || missionOver || ended) return;
+    const t = nearestEnemy(2.4);
+    if (t) {
+      landHit(t, Math.round(34 * player.dmgMult), 'FOCUS', 0.1, 0.4, false, false);
+      if (!t.boss && t.hp > 0) { t.ai = 'recover'; t.aiT = 2.4; playAnim(t, 'Hit_A', {}); } // crumple
+    }
+    damageDestructibles(2);
+  }, 200);
+  ev('focusrelease', {});
+}
 function doTaunt() {
   // TMNT taunt: talk trash, build special meter. Pure addition — costs a beat of vulnerability.
   if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.busy > 0 || player.airT > 0) return;
   unlockAudio();
+  // RADICAL MODE (TMNT: Shredder's Revenge): FULL meter + taunt = 12s powered state
+  if (player.energy >= energyMax() - 0.5 && !(player.radicalT > 0)) {
+    player.radicalT = 12; player.energy = 0; player.busy = 0.8;
+    playAnim(player, 'Melee_Unarmed_Idle', { ts: 1.4, fade: 0.1 });
+    banner('RADICAL MODE!', 'spc'); sfx('bell', 1, false, 0.6); flash('#ffd166');
+    sparkFX(player.px, 1.2, player.pz, 0xffd166, 24);
+    setHud(); ev('radical', {}); return;
+  }
   player.busy = 0.8;
   playAnim(player, 'Melee_Unarmed_Idle', { ts: 0.7, fade: 0.1 });
   player.energy = clamp(player.energy + 25 * (1 + (blessFx().energyGain || 0)), 0, energyMax());
@@ -2149,6 +2188,22 @@ function doSpecial() {
     if (player.energy >= 25) { doMotionSpecial('qcf'); return; }
     popText('CHARGING…', 'gold', innerWidth / 2, innerHeight * 0.4);
     return;
+  }
+  // BURST (Guilty Gear): juggled (3+ hits in 2.5s) + ↑ + SPC = combo breaker, 50 energy
+  if (stick.dy < -0.5 && (player.jugN || 0) >= 3) {
+    inputHist.length = 0;
+    if (player.energy < 50) { popText('NEED 50 ENERGY', 'bad', innerWidth / 2, innerHeight * 0.4); return; }
+    player.energy -= 50; player.jugN = 0; player.jugT = 0; player.busy = 0.4;
+    banner('BURST!', 'spc'); sfx('hit3', 1, false, 0.7); flash('#7CFC00');
+    addSlowmo(0.4, 0.5); shake = 0.5;
+    burst(player.root.position.clone().add(new THREE.Vector3(0, 1, 0)), 36, 0x7CFC00, 6);
+    for (const e of enemies.slice()) {
+      if (e.hp > 0 && Math.abs(e.px - player.px) < 3.4 && Math.abs(e.pz - player.pz) < 1.8) {
+        landHit(e, Math.round(22 * player.dmgMult), 'BURST', 0.09, 0.6, true, false);
+        e.px = clamp(e.px + (e.px >= player.px ? 2.2 : -2.2), 0.5, 1e6); syncPos(e);
+      }
+    }
+    setHud(); ev('burst', {}); return;
   }
   // MEGA SUPER: ↑↑↓←→ + SPC — cinematic super attack, needs FULL energy
   if (seqMatch(['U', 'U', 'D', 'L', 'R'], 1.8)) {
@@ -2304,6 +2359,15 @@ function killEnemy(e) {
     spawnPickup(roll < 0.4 ? 'health' : roll < 0.8 ? 'cash' : 'special',
       clamp(e.root.position.x + rnd(-0.8, 0.8), 0.5, 1e6), clamp(e.root.position.z + rnd(-0.8, 0.8), -1.4, 1.4));
   }
+  // RECRUIT (River City Girls): KO'd grunts sometimes join your crew for the mission
+  if (!e.boss && player && player.hp > 0 && R_safe() < 0.08) {
+    player.crew = (player.crew || 0) + 1; player.crewT = Math.min(player.crewT || 99, 1.2);
+    banner('RECRUITED!', 'spc'); sfx('bell', 1, false, 1.3);
+    sparkFX(e.root.position.x, 1.4, e.root.position.z, 0x7CFC00, 14);
+    const fam = e.famId || 'street';
+    save.scouts = save.scouts || {}; save.scouts[fam] = (save.scouts[fam] || 0) + 1; writeSave();
+    ev('recruit', { name: e.name, fam });
+  }
   if (player && player.hp > 0) {
     player.hp = Math.min(player.maxHp, player.hp + player.maxHp * 0.06 + (blessFx().lifesteal || 0)); // OLD BLOOD
     player.energy = clamp(player.energy + 15 * (1 + (blessFx().energyGain || 0)), 0, energyMax());
@@ -2317,6 +2381,16 @@ function killEnemy(e) {
 }
 function hurtPlayer(dmg) {
   if (!player || player.hp <= 0 || missionOver || ended) return;
+  // FOCUS (SFIV): absorb one hit while in focus stance — no damage, +15 energy
+  if (player.focusT > 0 && !player.focusHit) {
+    player.focusHit = true; player.focusT = 0; hvyFocusing = false;
+    player.energy = clamp(player.energy + 15, 0, energyMax());
+    hitstop = 0.06; sfx('hit2', 0.7, false, 1.2);
+    sparkFX(player.px, 1.2, player.pz, 0xffffff, 12);
+    const sp = screenPos(player.root.position.clone().add(new THREE.Vector3(0, 2.2, 0)));
+    popText('ABSORBED', 'gold', sp.x, sp.y);
+    setHud(); ev('focusabsorb', {}); return;
+  }
   // WITCH TIME (Bayonetta): dodge at the last instant — the world slows for you (a big moment, not every hit)
   if (player.dodgeT > 0) {
     if (player.dodgeT > 0.16 && (player.witchCD || 0) <= 0) {
@@ -2331,6 +2405,7 @@ function hurtPlayer(dmg) {
   }
   dmg = Math.max(1, Math.round(dmg * (1 - (blessFx().armor || 0)))); // IRON SKIN
   dmgTaken += dmg; player.hp -= dmg; combo = 0; shake = 0.3; hitstop = 0.05; flash('#ff2a2a'); sfx('hit2', 0.8, false, 0.7);
+  player.jugN = (player.jugN || 0) + 1; player.jugT = 2.5; // BURST (Guilty Gear): juggle tracking
   player.energy = clamp(player.energy + 12 * (1 + (blessFx().energyGain || 0)), 0, energyMax());
   playAnim(player, 'Hit_A', { ts: 1.4 });
   const sp = screenPos(player.root.position.clone().add(new THREE.Vector3(0, fighterHeight * 0.8, 0)));
@@ -2384,7 +2459,14 @@ function stickEnd(e) {
 }
 function setupInput() {
   const bind = (id, fn) => $(id).addEventListener('pointerdown', (e) => { e.stopPropagation(); e.preventDefault(); fn(); }, { passive: false });
-  bind('btnAtk', doPunch); bind('btnHvy', doHeavy); bind('btnDdg', doDodge); bind('btnSpc', doSpecial); bind('btnJmp', doJump);
+  bind('btnAtk', doPunch); bind('btnDdg', doDodge); bind('btnSpc', doSpecial); bind('btnJmp', doJump);
+  // FOCUS (SFIV): HOLD HVY 0.45s = focus stance (absorb one hit), release = crumple strike; tap = normal heavy
+  { const el = $('btnHvy');
+    el.addEventListener('pointerdown', (e) => { e.stopPropagation(); e.preventDefault(); hvyPressT = performance.now(); hvyFocusing = false; }, { passive: false });
+    const hvyUp = (e) => { e.stopPropagation(); if (hvyFocusing) releaseFocus(); else doHeavy(); hvyFocusing = false; hvyPressT = 0; };
+    el.addEventListener('pointerup', hvyUp, { passive: false });
+    el.addEventListener('pointercancel', hvyUp, { passive: false });
+  }
   document.addEventListener('pointerdown', (e) => {
     if (cine && (cine.mode !== 'mega' || cine.t > 1.5)) { endCine(); return; } // tap to skip cinematics
     if (e.target.closest('.abtn,button,.card,.skinDot,.shopItem,.mcard,.skinDot')) return;
@@ -2418,6 +2500,9 @@ function setupInput() {
     ['Carmilla the vampire, happy/sad ghosts, cute skull — JellyLion (OpenGameArt)', 'CC-BY 4.0 — https://opengameart.org'],
     ['Witch — Quaternius', 'CC-BY 4.0'],
     ['Vampire bat — rubberduck (OpenGameArt)', 'CC0 1.0'],
+    ['Basketball player — Tulio Portela (Sketchfab)', 'CC-BY 4.0'],
+    ['Basketball player — Raj_Kumar_Jadhav (Sketchfab)', 'CC-BY 4.0'],
+    ['Dead baseball player — VanHyfte_Clement (Sketchfab)', 'CC-BY 4.0'],
     ['All other models, code, music — Orion Enterprises LLC', 'Original / CC0'],
   ];
   $('creditsBody').innerHTML = CREDITS.map((c) => '<div>• ' + c[0] + '<br><span style="opacity:.7">' + c[1] + '</span></div>').join('');
@@ -2609,6 +2694,19 @@ function execEnemySig(e) {
     playAnim(e, 'Melee_Unarmed_Attack_Punch_A', { ts: 2.4 });
     e.chargeT = 0.5; e.chargeDx = dir; e.chargeHit = false; e.chargeDmg = Math.round(base * 1.2);
     sfx('hit2', 0.9, false, 1.1);
+  } else if (id === 'dunkshot') { // HOOP DREAM: leaping slam dunk, shockwave ring
+    banner('DUNK SHOT');
+    playAnim(e, 'Melee_Unarmed_Attack_Kick', { ts: 1.6 });
+    sfx('hit3', 0.9, false, 0.8);
+    sigHitPlayer(e, 2.2, 1.4, Math.round(base * 1.5), 'DUNK SHOT', 380, { burst: 0xff8c1a });
+  } else if (id === 'crossover') { // STREET BALLER: ankle-breaker dash-through
+    playAnim(e, 'Melee_Unarmed_Attack_Punch_A', { ts: 2.4 });
+    e.chargeT = 0.45; e.chargeDx = dir; e.chargeHit = false; e.chargeDmg = Math.round(base * 1.2);
+    sfx('whoosh', 0.9, false, 1.2);
+  } else if (id === 'curveball') { // DEAD BALLER: spinning bone-ball projectile
+    playAnim(e, 'Melee_Unarmed_Attack_Punch_A', { ts: 1.5 });
+    sfx('whoosh', 0.8, false, 1.0);
+    fireProj({ x: e.px + dir * 0.8, z: e.pz, y: 1.15, vx: dir * 9, kind: 'orb', dmg: Math.round(base * 1.1), color: 0xe8d8a8, fromPlayer: false, life: 1.2, label: 'CURVEBALL' });
   }
 }
 // ---------- boss AI: telegraphed patterns ----------
@@ -2808,6 +2906,32 @@ function playerUpdate(dt) {
   if (p.dodgeCD > 0) p.dodgeCD -= dt;
   if (p.blitzCD > 0) p.blitzCD -= dt;
   if (p.witchCD > 0) p.witchCD -= dt;
+  // RADICAL MODE (TMNT): +30% dmg, +15% speed while active
+  if (p.radicalT > 0) {
+    p.radicalT -= dt;
+    p.dmgMult = p.baseDmgMult * 1.3; p.spd = p.baseSpd * 1.15;
+    if (Math.random() < dt * 8) sparkFX(p.px + rnd(-0.5, 0.5), 1.2 + rnd(0, 0.8), p.pz + rnd(-0.3, 0.3), 0xffd166, 2);
+    if (p.radicalT <= 0) { p.dmgMult = p.baseDmgMult; p.spd = p.baseSpd; popText('RADICAL OVER', 'gold', innerWidth / 2, innerHeight * 0.35); }
+  }
+  // BURST juggle tracking (Guilty Gear): hits taken within a 2.5s window
+  if (p.jugT > 0) { p.jugT -= dt; if (p.jugT <= 0) p.jugN = 0; }
+  // FOCUS charge decay (SFIV)
+  if (p.focusT > 0 && !hvyFocusing) p.focusT = 0;
+  // RECRUIT crew: every 7s a crew member hurls a bottle at the nearest enemy
+  if (p.crew > 0) {
+    p.crewT = (p.crewT || 0) - dt;
+    if (p.crewT <= 0) {
+      p.crewT = 7; const t = nearestEnemy(99);
+      if (t) { fireProj({ x: p.px - (p.face || 1) * 2, y: 1.5, z: p.pz, vx: (t.px >= p.px ? 1 : -1) * 9, kind: 'bottle', dmg: Math.round(16 * p.dmgMult), fromPlayer: true, color: 0x7CFC00, label: 'CREW' }); sfx('whoosh', 0.5, false, 1.2); }
+    }
+  }
+  // FOCUS hold detection (SFIV): hold HVY 0.45s to enter focus stance
+  if (window.__focusDbg && hvyPressT) window.__focusDbg.push([Math.round(performance.now()-hvyPressT), state, player.busy, hvyFocusing]);
+  if (hvyPressT && !hvyFocusing && performance.now() - hvyPressT > 450 && state === 'fight' && !missionOver && !ended && player.hp > 0 && player.busy <= 0) {
+    hvyFocusing = true; player.focusT = 99; player.focusHit = false;
+    playAnim(player, 'Melee_Unarmed_Idle', { ts: 0.5, fade: 0.1 });
+    banner('FOCUS', 'spc'); sfx('uiclick', 0.7, false, 0.6);
+  }
   // DASH STRIKE (Ruiner-inspired): the dodge IS a weapon — plow through an enemy once per dodge
   if (p.dodgeT > 0 && !p.dashStruck) {
     for (const e of enemies) {
@@ -2885,6 +3009,7 @@ function playerUpdate(dt) {
 //   ↑↑↓←→ + SPC = MEGA SUPER (cinematic). Base tap combat is untouched.
 const inputHist = []; // {d:'U'|'D'|'L'|'R'|'UR'|'DR'|'DL'|'UL', t}
 let lastQDir = '';
+let hvyPressT = 0, hvyFocusing = false; // FOCUS (SFIV) hold-to-charge state
 const sstep = (t) => t * t * (3 - 2 * t);
 function quantDir(dx, dy) {
   if (Math.hypot(dx, dy) < 0.32) return '';
@@ -3347,11 +3472,24 @@ window.__cdtest = {
   dbgGear: (inv, tier, eq) => { save.gearInv = inv; save.gearTier = tier; save.gearEq = eq; writeSave(); return gearFx(); },
   showSelect: () => showSelect(),
   forceFoeSigBy: (famId) => { const e = enemies.find(x => x.hp > 0 && x.famId === famId); if (e) { e.ai = 'windup'; e.windup = 0.01; e.sigUse = !!e.sig; } return !!e; },
+  // wave-5 batch 2 debug hooks (harvest mechanics)
+  dbgRecruit: () => { if (player) { player.crew = (player.crew || 0) + 1; player.crewT = 0.1; } return player ? player.crew : 0; },
+  dbgRadical: () => { if (player) { player.energy = energyMax(); player.busy = 0; doTaunt(); } return player ? { rad: +(player.radicalT || 0).toFixed(1), dmg: +player.dmgMult.toFixed(2), base: +player.baseDmgMult.toFixed(2) } : null; },
+  dbgFocusHold: () => { hvyPressT = performance.now() - 500; return true; },
+  dbgFocusWhy: () => ({ pressT: Math.round(hvyPressT), now: Math.round(performance.now()),
+    state, missionOver, ended, busy: player ? player.busy : 'noplayer', hp: player ? player.hp : 0,
+    focusing: hvyFocusing, focusT: player ? +(player.focusT || 0).toFixed(1) : 0 }),
+  dbgFocusState: () => ({ focusing: hvyFocusing, focusT: player ? +(player.focusT || 0).toFixed(1) : 0 }),
+  dbgReleaseFocus: () => { if (hvyFocusing) releaseFocus(); return true; },
+  dbgBurst: () => { if (player) { player.jugN = 3; player.jugT = 2.5; player.energy = 100; player.busy = 0; stick.dy = -1; } return true; },
+  dbgStickUp: (v) => { stick.dy = v ? -1 : 0; },
+  dbgCrew: () => player ? { crew: player.crew || 0, scouts: save.scouts || {} } : null,
   dbgRep: (r) => { save.rep = r; writeSave(); const d = effDiff(); return { hpMul: +d.hpMul.toFixed(2), dmgMul: +d.dmgMul.toFixed(2), cash: +repMult().cash.toFixed(2) }; },
   spawnCreature: (cid) => { if (player) { const e = makeCreatureRaw(cid, 0xffffff, player.px + 3, -Math.PI / 2, 1); if (e) { e.maxHp = e.hp = 200; e.dmgMult = 1; e.spd = 1.5; e.px = player.px + 3; e.pz = 0; e.ai = 'walk'; e.aiT = 1; syncPos(e); playAnim(e, 'Running_A', { loop: true }); enemies.push(e); } return e; } },
   hurt: (n) => { if (player) hurtPlayer(n); },
   doJump, doPunch, doHeavy, doSpecial, doTaunt, doDesperation,
   step: (dt) => { playerUpdate(dt || 1 / 60); }, // drive the real physics deterministically
+  estep: (dt) => { for (const e of enemies.slice()) enemyAI(e, dt || 1 / 60); }, // drive enemy AI deterministically (test only)
   dbg: () => player ? { st: state, mo: missionOver, en: ended, hp: player.hp, busy: player.busy, airT: player.airT, py: player.py, vy: player.vy, frames: dbgFrames } : null,
   setStick: (dx, dy) => { stick.dx = dx; stick.dy = dy; },
   playerPos: () => player ? { px: +player.px.toFixed(2), pz: +player.pz.toFixed(2), py: +(player.py || 0).toFixed(2), airT: +(player.airT || 0).toFixed(2) } : null,
