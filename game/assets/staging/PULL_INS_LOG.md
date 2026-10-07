@@ -57,3 +57,16 @@ Per-pack LICENSE.md files in each parts/<pack>/ dir. All downloads verified
   painted texture variants (owner's texture-customization directive).
 - **Animal-head masks:** no clean CC0 wearable-mask 3D pack (3D-print STL
   market — rejected). Per spec §8: animal heads as `head`-bone attachments.
+
+## Wave 4 — deep hunt (2026-10-07, owner pushed back on "no free vampires/sports")
+
+| Pack | Source | License | Contents → use |
+|------|--------|---------|----------------|
+| oga-carmilla-vampire (blend + texture) | https://opengameart.org/content/carmilla-vampire | CC-BY 4.0 (badge verified; attribution: JellyLion) | real 3D vampire character — vampire boss/unlockable; NEEDS Blender→GLB |
+| oga-jellylion-halloween (3 blends + textures) | https://opengameart.org/content/cute-skull-character + /content/emotional-ghosts | CC0 (badges verified) | skull-with-coat character; happy + sad ghosts; NEEDS Blender→GLB |
+| quaternius-witch (1 animated GLB, 24 anims) | https://poly.pizza/m/QBEOV9ZUT8 (Quaternius) | CC-BY (page badge; attribution: Quaternius) | real 3D witch — witch enemy/boss |
+
+### Logged gaps — wave 4 (honest deep search)
+- **Mummies (3D):** none free. Searched OGA (mummy/mummies/pharaoh/sarcophagus, paginated), Poly Pizza, Quaternius full catalog (80+ packs), Kenney. All hits 2D sprites or CC-BY-SA (excluded). Fallback: bandage painted texture on humanoid body (spec §9).
+- **Sports players (3D):** none downloadable free. OGA = 2D only (basketball pixel art, CC0 equipment sprite packs, SVG). Poly Pizza = balls/equipment only (verified AmericanFootball thumbnail = just a ball). Kenney Sports Pack = 2D tiles. Quaternius = no sports pack. itch.io = games not assets. Buildbox = signup + proprietary license (rejected). ArtStation = $49 (rejected). **Actionable:** Sketchfab has CC-BY 3D basketball players ("v0 Team Player Basketball Stylized Character", "male_character_Basketball_Player" by Tulio Portela) + "Dead Baseball Player" — but Sketchfab downloads need an authenticated login; grab with owner/build login. No free American-football player found anywhere. Fallback: jersey painted textures + CC0 equipment props (spec §9).
+- **Sketchfab auth wall:** search API works anonymously; the /download endpoint returns "Authentication credentials were not provided."

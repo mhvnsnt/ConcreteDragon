@@ -58,6 +58,9 @@ animation automatically.
 | **quaternius-animated-animals** (wave 2) | 1 (glb) | CC0 — LICENSE.md | ✓ painted | wolf (rigged+animated) — werewolf/beast head mask + beast body |
 | **quaternius-monsters** (wave 2) | 9 (glb) | CC0 — LICENSE.md | ✓ painted | dino, dragon-evolved, yeti, zombie, demon, blue-demon, ghost, orc, ghost-skull — species roster + bosses |
 | **quaternius-humanoids** (wave 2) | 4 (glb) | CC0 — LICENSE.md | ✓ painted | man/ninja/adventurer/king — street civilians, crowd NPCs, outfit variants |
+| **oga-carmilla-vampire** (wave 4) | 1 (blend + texture) | **CC-BY 4.0** — LICENSE.md (attribution: JellyLion) | ✓ painted texture (verify after GLB export) | **real 3D vampire character** — vampire boss/unlockable; ⚠ needs Blender→GLB export |
+| **oga-jellylion-halloween** (wave 4) | 3 (blend + textures) | CC0 — LICENSE.md | verify after GLB export | skull-with-coat character; happy + sad ghosts — ghost enemies, skull NPC; ⚠ needs Blender→GLB export |
+| **quaternius-witch** (wave 4) | 1 animated GLB (24 anims) | CC-BY — LICENSE.md (attribution: Quaternius) | ✓ vertex colors | **real 3D witch** — witch enemy/boss |
 
 ### Species / creature sources
 - **kaykit-skeletons** — full undead bodies (possessed/undead roster tier)
@@ -95,6 +98,10 @@ animation automatically.
 kenney-platformer-characters, kenney-robot-pack, kenney-shape-characters,
 kenney-toon-characters — PNG sprite sheets. Useful as silhouette/concept
 reference for new part designs, never as in-game 3D.
+Wave-4 2D finds (logged, not staged): mummy-enemies (CC0 sprites),
+Boss-Mummy.zip (CC0 sprites), mummy-1.2.zip (CC-BY sprites), basketball-player
+(2D pixel art), football-pack / baseball-pack (CC0 2D equipment sprites — gloves,
+balls; usable as 2D props only), robot-football-player (SVG).
 
 ## 4. ACCESSORY-UNLOCK PROGRESSION
 
@@ -202,3 +209,25 @@ out. Builder-invented names need owner approval per standing rule.
 - **Scarecrow:** jack-o-lantern head + straw-textured body (painted) — optional stretch.
 
 **Env:** halloween-bits props → haunted-house/graveyard zone dressing; fog = shader/atmosphere (build-side). Seasonal event system (Halloween missions + unlocks) is build-worker scope.
+
+## 10. WAVE 4 NOTES — DEEP HUNT: VAMPIRES / MUMMIES / SPORTS (owner 2026-10-06)
+
+Owner pushed back on wave-3's "no free vampires/sports exist" claim — this wave dug deeper. **He was half right: a real 3D vampire WAS found.**
+
+**Staged packs:**
+
+| pack | models | license | use |
+|---|---|---|---|
+| oga-carmilla-vampire | 1 (.blend + painted texture — NEEDS Blender→GLB conversion) | **CC-BY 4.0** (JellyLion, OGA node carmilla-vampire; attribution required) | **real 3D vampire character** — the owner's lead. Original character named "Carmilla" (public-domain 1872 Le Fanu novella name; author states NOT modeled on any franchise character). Vampire boss/unlockable. |
+| oga-jellylion-halloween | 3 (.blend — NEEDS Blender→GLB conversion) | CC0 (JellyLion) | cute skull-with-coat character (`cute_skull.blend`); happy + sad ghosts (`Ghosts2.blend`, `Ghosts4 sad ghost only.blend` + textures). Ghost enemies, skull NPC. |
+| quaternius-witch | 1 animated GLB (24 anims: idle/walk/run/punch/kick/sword/death) | CC-BY (Quaternius via Poly Pizza; attribution required) | **real 3D witch** — staged by prior wave-4 attempt. Witch enemy/boss. |
+
+**Mummies — honest gap (deep search, nothing CC0/CC-BY 3D found):**
+Searched: OGA keywords (mummy, mummies, pharaoh, sarcophagus — paginated), Poly Pizza, Quaternius full catalog (80+ packs), Kenney full catalog. Results: `mummy-enemies` (CC0, 2D sprites), `Boss-Mummy.zip` (CC0, 2D PNG), `mummy-1.2.zip` (CC-BY, 2D PNG sprites), `little-mummy` (CC-BY-SA 4.0 — **excluded**, SA not allowed). No free 3D mummy exists. Fallback stays the wave-3 recipe: quaternius `man` + bandage painted texture.
+
+**Sports characters — honest gap with one actionable lead:**
+Searched: OGA (football/basketball/baseball player, sports character, jersey, cheerleader, referee), Poly Pizza, Kenney (Sports Pack = 2D top-down tiles only), Quaternius full catalog (no sports pack), itch.io (games only, no asset packs), Buildbox (signup + proprietary license — rejected), ArtStation ($49 — rejected). OGA hits were all 2D: `basketball-player` (2D pixel art, real-person likeness), `football-pack`/`baseball-pack` (CC0 2D equipment sprites — gloves/balls, useful as props), `robot-football-player` (SVG). Poly Pizza "AmericanFootball" verified as just a ball (thumbnail inspected).
+**Actionable lead:** Sketchfab HAS downloadable CC-BY 3D players — "v0 Team Player Basketball Stylized Character" + "male_character_Basketball_Player" (by Tulio Portela), "Dead Baseball Player" — but Sketchfab downloads require an authenticated login, which the asset-hunt worker cannot do. **Build worker / owner: download these with a Sketchfab login and stage them.** No free American-football player found anywhere (only balls/fields).
+Fallback stays the wave-3 recipe: sports via painted jersey textures on humanoid bodies + equipment props (balls, bats from CC0 packs).
+
+**2D-only, logged not staged:** mummy-enemies, Boss-Mummy.zip sprites, mummy-1.2.zip sprites, basketball-player pixel art, football-pack/baseball-pack equipment sprites, robot-football-player SVG.
