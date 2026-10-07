@@ -90,5 +90,13 @@
   {
     "file": "tex-patchwork.png",
     "source": "Orion Enterprises LLC painted patchwork (CC0 1.0)"
+  },
+  {
+    "file": "parts/witch.glb",
+    "source": "Quaternius (CC-BY 4.0) \u2014 attribution: Quaternius"
+  },
+  {
+    "file": "parts/vampire-bat.glb",
+    "source": "rubberduck via OpenGameArt (CC0 1.0)"
   }
 ]

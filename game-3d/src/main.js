@@ -386,6 +386,18 @@ const ENEMY_FAMS = [
       { at: 0 },
       { at: 4, name: 'WEAVER BROODMOTHER', tint: 0x1a1a26, hpMul: 2.2, scaleMul: 1.35, dmgMul: 1.3, move: 'flurry' },
     ] },
+  { id: 'witch', name: 'HEX', tint: 0x6a3aa0, hp: 70, dmg: 1.0, scale: 1.0, spd: 1.8, creature: 'witch',
+    sig: { id: 'hexbolt', name: 'HEX BOLT', chance: 0.26 },
+    variants: [
+      { at: 0 },
+      { at: 4, name: 'HEX COVEN', tint: 0x4a2a80, hpMul: 1.6, dmgMul: 1.3, move: 'flurry' },
+    ] },
+  { id: 'vbat', name: 'NIGHTWING', tint: 0x2a2a3a, hp: 45, dmg: 0.8, scale: 1.0, spd: 3.2, creature: 'vampirebat',
+    sig: { id: 'blooddive', name: 'BLOOD DIVE', chance: 0.28 },
+    variants: [
+      { at: 0 },
+      { at: 4, name: 'NIGHTWING SWARM', tint: 0x1a1a26, hpMul: 1.5, dmgMul: 1.2, move: 'flurry' },
+    ] },
 ];
 // missionIdx picks the variant: latest variant whose `at` <= mission index
 function famVariant(fam, mi) {
@@ -512,10 +524,10 @@ const MISSIONS = [
     spawns: [{ at: 12, fam: 'stray', n: 3 }, { at: 28, fam: 'heavyd', n: 2 }, { at: 44, fam: 'stray', n: 4 }, { at: 60, fam: 'rico', n: 3 }, { at: 78, fam: 'stray', n: 4 }, { at: 90, fam: 'heavyd', n: 2 }],
     card: 'Everything here is for sale. Even kings.', boss: 'rust', unlock: { type: 'mission', id: 'm3' }, reward: 'Unlocks DUST as playable' },
   { id: 'h1', zone: 'z2', district: 'graveyard', name: 'GRAVEYARD SHIFT', len: 60, crowd: false,
-    spawns: [{ at: 10, fam: 'zombie', n: 2 }, { at: 24, fam: 'pumpkin', n: 2 }, { at: 38, fam: 'zombie', n: 3 }, { at: 50, fam: 'spider', n: 2 }],
+    spawns: [{ at: 10, fam: 'zombie', n: 2 }, { at: 24, fam: 'pumpkin', n: 2 }, { at: 38, fam: 'witch', n: 2 }, { at: 50, fam: 'spider', n: 2 }],
     card: 'They rose with the fog.', boss: null, unlock: { type: 'mission', id: 'm2' }, reward: 'The dead walk' },
   { id: 'h2', zone: 'z2', district: 'graveyard', name: 'HARVEST MOON', len: 75, crowd: false,
-    spawns: [{ at: 10, fam: 'pumpkin', n: 3 }, { at: 26, fam: 'demon', n: 2 }, { at: 42, fam: 'spider', n: 3 }, { at: 58, fam: 'zombie', n: 3 }],
+    spawns: [{ at: 10, fam: 'pumpkin', n: 3 }, { at: 26, fam: 'demon', n: 2 }, { at: 42, fam: 'vbat', n: 3 }, { at: 58, fam: 'zombie', n: 3 }],
     card: 'The moon is full and so are the graves.', boss: null, unlock: { type: 'mission', id: 'h1' }, reward: 'Something stirs' },
   { id: 'h3', zone: 'z2', district: 'graveyard', name: 'ALL HALLOWS', len: 90, crowd: false,
     spawns: [{ at: 10, fam: 'demon', n: 2 }, { at: 26, fam: 'pumpkin', n: 3 }, { at: 44, fam: 'zombie', n: 4 }, { at: 62, fam: 'spider', n: 3 }, { at: 78, fam: 'demon', n: 2 }],
@@ -986,6 +998,7 @@ function buildStreet(district, missionLen, seedFn) {
 // ---------- destructibles + collision (SoR/Fatal Fury style: smash cars/crates, spill pickups) ----------
 const DESTRUCT_DEFS = {
   box_A: { hp: 20, name: 'CRATE', pickups: ['cash', 'cash'] },
+  tnt_crate: { hp: 15, name: 'TNT CRATE', pickups: [], tnt: true },
   trash_A: { hp: 15, name: 'TRASH CAN', pickups: ['cash'] },
   trash_B: { hp: 15, name: 'TRASH CAN', pickups: ['health'] },
   dumpster: { hp: 45, name: 'DUMPSTER', pickups: ['cash', 'health', 'special'] },
@@ -998,7 +1011,9 @@ const destructibles = []; // {mesh, px, pz, r, hp, maxHp, name, def, col}
 const platforms = [];     // {x, z, w, d, top} — jumpable platforms (zone 4, platformer layouts)
 // placeProp: ground-aligns via bounding box (BUG FIX 2026-10-06: cars sank), registers collision + destructible HP
 function placeProp(name, x, z, ry = 0, sc = 2.2, tint = null) {
-  const part = streetParts[name]; if (!part) return null;
+  const part = streetParts[name] || (name === 'tnt_crate' ? streetParts['box_A'] : null);
+  if (!part) return null;
+  if (name === 'tnt_crate' && tint === null) tint = 0xff3a1a; // TNT painted red
   const o = part.clone(); o.position.set(x, 0, z); o.rotation.y = ry; o.scale.multiplyScalar(sc);
   o.traverse((m) => { if (m.isMesh) { m.receiveShadow = true; m.castShadow = true;
     if (tint !== null) { m.material = m.material.clone(); m.material.color = new THREE.Color(tint); } } });
@@ -1030,6 +1045,29 @@ function damageDestructibles(range) {
 function destroyDestructible(d) {
   d.col.dead = true;
   const pos = d.mesh.position.clone();
+  // TNT CRATE (Crash taxonomy): chain explosion — hurts enemies AND you. Risk assessment.
+  if (d.def.tnt) {
+    burst(pos.clone().add(new THREE.Vector3(0, 0.9, 0)), 40, 0xff7a1a, 8);
+    burst(pos.clone().add(new THREE.Vector3(0, 0.5, 0)), 24, 0xffd166, 6);
+    sfx('hit3', 1, false, 0.5); shake = Math.max(shake, 0.7); flash('#ff7a1a');
+    streetGroup.remove(d.mesh);
+    const sp = screenPos(pos.clone().add(new THREE.Vector3(0, 1.4, 0)));
+    popText('TNT!', 'bad', sp.x, sp.y);
+    for (const e of enemies.slice()) {
+      if (!e.dead && e.hp > 0 && Math.hypot(e.px - d.px, e.pz - d.pz) < 4) {
+        landHit(e, Math.round(40 * (player ? player.dmgMult : 1)), 'TNT', 0.1, 0.6, true, false);
+      }
+    }
+    if (player && Math.hypot(player.px - d.px, player.pz - d.pz) < 2.5) hurtPlayer(20);
+    // chain: other TNT nearby
+    for (const o of destructibles) {
+      if (o !== d && !o.col.dead && o.def.tnt && Math.hypot(o.px - d.px, o.pz - d.pz) < 4) {
+        setTimeout(() => { if (!o.col.dead) { o.hp = 0; destroyDestructible(o); } }, 250);
+      }
+    }
+    ev('smash', { name: 'TNT' });
+    return;
+  }
   burst(pos.clone().add(new THREE.Vector3(0, 0.9, 0)), 26, 0xc0a080, 5);
   burst(pos.clone().add(new THREE.Vector3(0, 0.5, 0)), 14, 0x555555, 4);
   sfx('hit3', 0.9, false, 0.8); sfx('crack', 0.7, false, 0.9);
@@ -1041,7 +1079,7 @@ function destroyDestructible(d) {
 }
 function spawnBreakables(district, missionLen, R) {
   const L = isFinite(missionLen) ? missionLen : 200;
-  const names = ['trash_A', 'trash_B', 'box_A'];
+  const names = ['trash_A', 'trash_B', 'box_A', 'tnt_crate'];
   const step = (typeof hasMod === 'function' && mission && hasMod('party')) ? 5 : 9;
   for (let px = 8; px < L; px += rnd(step, step + 7)) {
     const nm = names[Math.floor(R() * names.length)];
@@ -1168,6 +1206,10 @@ const CREATURE_DEFS = {
     clips: { idle: 'SpiderArmature|Spider_Idle', walk: 'SpiderArmature|Spider_Walk', attack: 'SpiderArmature|Spider_Attack', hit: 'SpiderArmature|Spider_Idle', dead: 'SpiderArmature|Spider_Death' } },
   dragon: { file: 'parts/dragon-evolved.glb', height: 2.6,
     clips: { idle: 'CharacterArmature|Flying_Idle', walk: 'CharacterArmature|Fast_Flying', attack: 'CharacterArmature|Headbutt', hit: 'CharacterArmature|HitReact', dead: 'CharacterArmature|Death' } },
+  witch: { file: 'parts/witch.glb', height: 1.7,
+    clips: { idle: 'CharacterArmature|Idle', walk: 'CharacterArmature|Run', attack: 'CharacterArmature|Punch_Left', hit: 'CharacterArmature|HitRecieve', dead: 'CharacterArmature|Death' } },
+  vampirebat: { file: 'parts/vampire-bat.glb', height: 0.6,
+    clips: { idle: 'Bat_Flying', walk: 'Bat_Flying', attack: 'Bat_Attack', hit: 'Bat_Flying', dead: 'Bat_Die' } },
 };
 const CREATURE_ANIMROLE = {
   'Melee_Unarmed_Idle': 'idle', 'Running_A': 'walk',
@@ -1832,6 +1874,13 @@ function spawnEnemy(famId, mi, bx, bz) {
   if (fam.head) attachHead(e, fam.head); // species head attachment (pumpkin, masks...)
   if (hasMod('titans') && missionR() < 0.18 && !v.boss) { e.sc = (e.sc || 1) * 1.35; e.root.scale.multiplyScalar(1.35); e.maxHp = e.hp = Math.round(e.hp * 2.2); e.name = 'TITAN ' + e.name; }
   else if (hasMod('frenzy') && missionR() < 0.25) { e.spd *= 1.5; e.dmgMult *= 1.25; e.name = 'FRENZIED ' + e.name; }
+  // GOLDEN (surprise density, Soul Law B): rare shiny variant — 2x HP, 5x cash. A story you retell.
+  else if (missionR() < 0.03 && !v.boss) {
+    e.golden = true; e.maxHp = e.hp = Math.round(e.hp * 2);
+    e.root.traverse((o) => { if (o.isMesh) { o.material = o.material.clone(); o.material.color = new THREE.Color(0xffd166); o.material.emissive = new THREE.Color(0x8a6b1a); } });
+    e.name = 'GOLDEN ' + v.name;
+    banner('✦ GOLDEN ' + v.name.toUpperCase() + ' ✦', 'gold'); sfx('bell', 1, true);
+  }
   const df = effDiff();
   e.isPlayer = false; e.name = v.name; e.maxHp = e.hp = Math.round(v.hp * df.hpMul);
   e.dmgMult = v.dmg * df.dmgMul; e.spd = v.spd; e.move = v.move; e.sig = fam.sig || null; e.sigUse = false;
@@ -2044,6 +2093,13 @@ function doSpecial() {
   if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0) return;
   unlockAudio();
   const fd = fighterDef();
+  // ASSIST (accessibility): one-button specials — SPC fires your signature when affordable
+  if (save.assist) {
+    inputHist.length = 0;
+    if (player.energy >= 25) { doMotionSpecial('qcf'); return; }
+    popText('CHARGING…', 'gold', innerWidth / 2, innerHeight * 0.4);
+    return;
+  }
   // MEGA SUPER: ↑↑↓←→ + SPC — cinematic super attack, needs FULL energy
   if (seqMatch(['U', 'U', 'D', 'L', 'R'], 1.8)) {
     inputHist.length = 0;
@@ -2189,7 +2245,7 @@ function killEnemy(e) {
   sfx('bell', 0.8); flash('#ffffff');
   pushT = 0.85; pushPos.copy(e.root.position);
   $('ko').classList.add('show'); setTimeout(() => $('ko').classList.remove('show'), 900);
-  const base = e.boss ? 60 : 8 + Math.round(distWalked * 0.2);
+  const base = e.boss ? 60 : (8 + Math.round(distWalked * 0.2)) * (e.golden ? 5 : 1);
   awardCash(base, e.root.position.clone());
   if (combo >= 5) awardCash(Math.min(combo, 20), e.root.position.clone().add(new THREE.Vector3(0, 0.4, 0)), 'COMBO');
   if (mission.crowd) crowdCheer();
@@ -2298,6 +2354,10 @@ function setupInput() {
   $('qualityBtn').addEventListener('click', (e) => { e.stopPropagation(); save.quality = save.quality === 'auto' ? 'low' : save.quality === 'low' ? 'high' : 'auto'; e.target.textContent = save.quality.toUpperCase(); writeSave(); sfx('uiclick', 0.7); applyQuality(); });
   $('muteBtn').textContent = save.muted ? 'OFF' : 'ON';
   $('qualityBtn').textContent = save.quality.toUpperCase();
+  // ASSIST (SF6 Modern-controls-inspired, Soul Law 7: accessibility is respect)
+  $('assistBtn').textContent = save.assist ? 'ON' : 'OFF';
+  $('assistBtn').title = 'ASSIST: SPC button fires your best special automatically';
+  $('assistBtn').addEventListener('click', (e) => { e.stopPropagation(); save.assist = !save.assist; e.target.textContent = save.assist ? 'ON' : 'OFF'; writeSave(); sfx('uiclick', 0.7); });
   $('boardBtn').addEventListener('click', (e) => { e.stopPropagation(); sfx('uiclick', 0.8); renderBoard(); $('boardOv').classList.remove('hidden'); });
   $('boardClose').addEventListener('click', (e) => { e.stopPropagation(); sfx('uiclick', 0.7); $('boardOv').classList.add('hidden'); });
   $('tipBtnTitle').addEventListener('click', (e) => { e.stopPropagation(); tipJar(); });
@@ -2455,6 +2515,17 @@ function execEnemySig(e) {
     playAnim(e, 'Melee_Unarmed_Attack_Punch_A', { ts: 1.4 });
     fireProj({ x: e.px + dir * 0.8, z: e.pz, y: 1.0, vx: dir * 6.5, kind: 'orb', dmg: Math.round(base * 0.9), color: 0xd8d8e8, fromPlayer: false, life: 1.6, label: 'WEB SNARE' });
     // web applies slow on hit — hooked in the projectile update via label
+  } else if (id === 'hexbolt') { // HEX (witch): triple purple bolt spread
+    playAnim(e, 'Melee_Unarmed_Attack_Punch_A', { ts: 1.5 });
+    sfx('hit3', 0.8, false, 1.1);
+    for (const dz of [-0.35, 0, 0.35]) {
+      fireProj({ x: e.px + dir * 0.8, z: e.pz + dz, y: 1.15, vx: dir * 8, kind: 'orb', dmg: Math.round(base * 0.7), color: 0xc77dff, fromPlayer: false, life: 1.3, label: 'HEX BOLT' });
+    }
+  } else if (id === 'blooddive') { // NIGHTWING: screaming dive at the player
+    banner('BLOOD DIVE');
+    playAnim(e, 'Melee_Unarmed_Attack_Punch_A', { ts: 2.2 });
+    e.chargeT = 0.6; e.chargeDx = dir; e.chargeHit = false; e.chargeDmg = Math.round(base * 1.4);
+    sfx('hit2', 1, false, 1.3);
   }
 }
 // ---------- boss AI: telegraphed patterns ----------
