@@ -70,7 +70,7 @@ const hustleMult = () => 1 + save.up_hustle * 0.15;
 
 // ---------- data: roster (data-driven; unlock via missions/bosses) ----------
 const FIGHTERS = [
-  { id: 'kidblue', name: 'KID BLUE', tag: 'Balanced brawler. Big heart, bigger hands.', hp: 100, dmg: 1.0, spd: 1.0, unlock: { type: 'start' },
+  { id: 'kidblue', wrestle: 'DRAGON SUPLEX', name: 'KID BLUE', tag: 'Balanced brawler. Big heart, bigger hands.', hp: 100, dmg: 1.0, spd: 1.0, unlock: { type: 'start' },
     spc2: { name: 'DRAGON RUSH', cost: 35, desc: 'Shoulder-first dash through the whole pack.' },
     qcf: { name: "DRAGON'S BREATH", sigkind: 'fireball', kind: 'fire', dmg: 30, speed: 9.5, color: 0xff7a2a, desc: 'Fireball', tag: 'Fireball projectile — 25 energy' },
     bfname: 'STREET DASH', blitzname: 'DRAGON BLITZ', duname: 'SKY UPPER',
@@ -92,10 +92,11 @@ const FIGHTERS = [
       ['TECH', 'HIT while knocked down', 'Instant recovery + bounce + brief invuln. Never helpless.'],
       ['DUST LAUNCHER', '↓ + HVY', 'Universal overhead launcher. Pops them up for juggles.'],
       ['TAG SPOT', 'TAUNT near a glowing wall', 'Spray the wall (3s, vulnerable). Big cash + 15 REP.'],
+      ['GRAPPLE', 'GRP btn / G on staggered foe', 'Wrestling finisher: suplex/piledriver/powerbomb. Big moment.'],
       ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
       ['DRAGON RUSH', '↓ + SPC (50 meter)', 'Shoulder dash straight through the pack.'],
     ] },
-  { id: 'ghost', name: 'GHOST', tag: 'Fast striker. Blink and you lose.', hp: 85, dmg: 0.9, spd: 1.25, unlock: { type: 'start' },
+  { id: 'ghost', wrestle: 'PHANTOM DRIVER', name: 'GHOST', tag: 'Fast striker. Blink and you lose.', hp: 85, dmg: 0.9, spd: 1.25, unlock: { type: 'start' },
     spc2: { name: 'BLINK FLURRY', cost: 35, desc: 'Blink between the 3 nearest enemies, striking each.' },
     qcf: { name: 'PHANTOM STEP', sigkind: 'teleport', dmg: 36, color: 0x9a7bff, desc: 'Blink behind the nearest enemy and strike', tag: 'Teleport strike — 25 energy' },
     bfname: 'PHASE STEP', blitzname: 'PHANTOM BLITZ', duname: 'WRAITH RISE',
@@ -117,10 +118,11 @@ const FIGHTERS = [
       ['TECH', 'HIT while knocked down', 'Instant recovery + bounce + brief invuln. Never helpless.'],
       ['DUST LAUNCHER', '↓ + HVY', 'Universal overhead launcher. Pops them up for juggles.'],
       ['TAG SPOT', 'TAUNT near a glowing wall', 'Spray the wall (3s, vulnerable). Big cash + 15 REP.'],
+      ['GRAPPLE', 'GRP btn / G on staggered foe', 'Wrestling finisher: suplex/piledriver/powerbomb. Big moment.'],
       ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
       ['BLINK FLURRY', '↓ + SPC (50 meter)', 'Blink between the 3 nearest enemies.'],
     ] },
-  { id: 'brick', name: 'BRICK', tag: 'Walking wall. Hits like rent day.', hp: 135, dmg: 1.25, spd: 0.85, unlock: { type: 'start' },
+  { id: 'brick', wrestle: 'RENT-A-POWERBOMB', name: 'BRICK', tag: 'Walking wall. Hits like rent day.', hp: 135, dmg: 1.25, spd: 0.85, unlock: { type: 'start' },
     spc2: { name: 'SEISMIC SLAM', cost: 35, desc: 'Ground pound: shockwave launches everyone near.' },
     qcf: { name: 'RENT COLLECTION', sigkind: 'grab', dmg: 46, color: 0xffb02e, desc: 'Command grab — yank and slam', tag: 'Command grab — 25 energy' },
     bfname: 'PAVEMENT RUSH', blitzname: 'BATTERING RAM', duname: 'HIGH-RISE',
@@ -142,10 +144,11 @@ const FIGHTERS = [
       ['TECH', 'HIT while knocked down', 'Instant recovery + bounce + brief invuln. Never helpless.'],
       ['DUST LAUNCHER', '↓ + HVY', 'Universal overhead launcher. Pops them up for juggles.'],
       ['TAG SPOT', 'TAUNT near a glowing wall', 'Spray the wall (3s, vulnerable). Big cash + 15 REP.'],
+      ['GRAPPLE', 'GRP btn / G on staggered foe', 'Wrestling finisher: suplex/piledriver/powerbomb. Big moment.'],
       ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
       ['SEISMIC SLAM', '↓ + SPC (50 meter)', 'Ground pound launches everyone nearby.'],
     ] },
-  { id: 'kingpin', name: 'KINGPIN', tag: 'Used to run this block. Now he runs with you.', hp: 150, dmg: 1.3, spd: 0.9, unlock: { type: 'boss', boss: 'kingpin' },
+  { id: 'kingpin', wrestle: 'HOSTILE SUPLEX', name: 'KINGPIN', tag: 'Used to run this block. Now he runs with you.', hp: 150, dmg: 1.3, spd: 0.9, unlock: { type: 'boss', boss: 'kingpin' },
     spc2: { name: "KINGPIN'S WRATH", cost: 35, desc: 'Royal beatdown: massive AOE around him.' },
     qcf: { name: 'ROYAL DECREE', sigkind: 'orb', kind: 'orb', dmg: 40, speed: 5, color: 0xffd166, desc: 'Slow explosive orb', tag: 'Explosive orb — 25 energy' },
     bfname: 'HOSTILE MARCH', blitzname: 'ROYAL CHARGE', duname: 'THRONE RISE',
@@ -167,10 +170,11 @@ const FIGHTERS = [
       ['TECH', 'HIT while knocked down', 'Instant recovery + bounce + brief invuln. Never helpless.'],
       ['DUST LAUNCHER', '↓ + HVY', 'Universal overhead launcher. Pops them up for juggles.'],
       ['TAG SPOT', 'TAUNT near a glowing wall', 'Spray the wall (3s, vulnerable). Big cash + 15 REP.'],
+      ['GRAPPLE', 'GRP btn / G on staggered foe', 'Wrestling finisher: suplex/piledriver/powerbomb. Big moment.'],
       ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
       ["KINGPIN'S WRATH", '↓ + SPC (50 meter)', 'Massive shockwave around him.'],
     ] },
-  { id: 'sledge', name: 'SLEDGE', tag: 'Yard enforcer. Swings first, talks never.', hp: 165, dmg: 1.45, spd: 0.8, unlock: { type: 'boss', boss: 'sledge' },
+  { id: 'sledge', wrestle: 'DEMOLITION DRIVER', name: 'SLEDGE', tag: 'Yard enforcer. Swings first, talks never.', hp: 165, dmg: 1.45, spd: 0.8, unlock: { type: 'boss', boss: 'sledge' },
     spc2: { name: 'WRECKING SWING', cost: 35, desc: '360° swing that clears the whole circle.' },
     qcf: { name: 'IRON CYCLONE', sigkind: 'spin', dmg: 16, color: 0x80ed99, desc: 'Traveling spin — multi-hit', tag: 'Traveling spin — 25 energy' },
     bfname: 'WRECKING RUSH', blitzname: 'SLEDGEHAMMER RUN', duname: 'CRANE UPPER',
@@ -192,10 +196,11 @@ const FIGHTERS = [
       ['TECH', 'HIT while knocked down', 'Instant recovery + bounce + brief invuln. Never helpless.'],
       ['DUST LAUNCHER', '↓ + HVY', 'Universal overhead launcher. Pops them up for juggles.'],
       ['TAG SPOT', 'TAUNT near a glowing wall', 'Spray the wall (3s, vulnerable). Big cash + 15 REP.'],
+      ['GRAPPLE', 'GRP btn / G on staggered foe', 'Wrestling finisher: suplex/piledriver/powerbomb. Big moment.'],
       ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
       ['WRECKING SWING', '↓ + SPC (50 meter)', '360° swing clears the whole circle.'],
     ] },
-  { id: 'viper', name: 'VIPER', tag: 'Fast hands, faster mouth.', hp: 95, dmg: 1.05, spd: 1.35, unlock: { type: 'boss', boss: 'viper' },
+  { id: 'viper', wrestle: 'VENOM POWERBOMB', name: 'VIPER', tag: 'Fast hands, faster mouth.', hp: 95, dmg: 1.05, spd: 1.35, unlock: { type: 'boss', boss: 'viper' },
     spc2: { name: 'VENOM DASH', cost: 35, desc: 'Serpent dash: strikes everything in a line.' },
     qcf: { name: "SERPENT'S WAKE", sigkind: 'groundwave', kind: 'fangwave', dmg: 26, speed: 9, color: 0x7cff6b, desc: 'Ground fang wave', tag: 'Ground fang wave — 25 energy' },
     bfname: 'SERPENT DASH', blitzname: 'VIPER STRIKE', duname: 'COIL SPRING',
@@ -217,10 +222,11 @@ const FIGHTERS = [
       ['TECH', 'HIT while knocked down', 'Instant recovery + bounce + brief invuln. Never helpless.'],
       ['DUST LAUNCHER', '↓ + HVY', 'Universal overhead launcher. Pops them up for juggles.'],
       ['TAG SPOT', 'TAUNT near a glowing wall', 'Spray the wall (3s, vulnerable). Big cash + 15 REP.'],
+      ['GRAPPLE', 'GRP btn / G on staggered foe', 'Wrestling finisher: suplex/piledriver/powerbomb. Big moment.'],
       ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
       ['VENOM DASH', '↓ + SPC (50 meter)', 'Dash in a line, striking everything.'],
     ] },
-  { id: 'dust', name: 'DUST', tag: 'Quick hands. Gone before you blink.', hp: 80, dmg: 0.95, spd: 1.4, unlock: { type: 'boss', boss: 'rust' },
+  { id: 'dust', wrestle: 'DUST DEVIL DRIVER', name: 'DUST', tag: 'Quick hands. Gone before you blink.', hp: 80, dmg: 0.95, spd: 1.4, unlock: { type: 'boss', boss: 'rust' },
     spc2: { name: 'DUST DEVIL', cost: 35, desc: 'Spin into the pack: AOE hits while moving.' },
     qcf: { name: 'DESERT SPIKES', sigkind: 'erupt', dmg: 30, color: 0xd8b56b, desc: 'Spikes erupt under nearby enemies', tag: 'Ground eruption — 25 energy' },
     bfname: 'DUST RUSH', blitzname: 'DUST DEVIL', duname: 'HABOOB RISE',
@@ -240,7 +246,7 @@ const FIGHTERS = [
       ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
       ['DUST DEVIL', '↓ + SPC (50 meter)', 'Spinning AOE that travels through the pack.'],
     ] },
-  { id: 'jack', name: 'JACK', tag: 'He wears the harvest. The harvest wears you.', hp: 95, dmg: 1.05, spd: 1.05,
+  { id: 'jack', wrestle: 'HARVEST SUPLEX', name: 'JACK', tag: 'He wears the harvest. The harvest wears you.', hp: 95, dmg: 1.05, spd: 1.05,
     unlock: { type: 'boss', boss: 'pumpkinking' }, head: 'pumpkin', tint: 0xe07b1f,
     spc2: { name: 'CANDLE RUSH', cost: 35, desc: 'Burning dash: leaves a fire trail through the pack.' },
     qcf: { name: 'PUMPKIN BOMB', sigkind: 'fireball', kind: 'fire', dmg: 34, speed: 8, color: 0xff7a1a, arc: 1, desc: 'Lobbed flaming pumpkin', tag: 'Lobbed pumpkin bomb — 25 energy' },
@@ -263,8 +269,10 @@ const FIGHTERS = [
       ['TECH', 'HIT while knocked down', 'Instant recovery + bounce + brief invuln. Never helpless.'],
       ['DUST LAUNCHER', '↓ + HVY', 'Universal overhead launcher. Pops them up for juggles.'],
       ['TAG SPOT', 'TAUNT near a glowing wall', 'Spray the wall (3s, vulnerable). Big cash + 15 REP.'],
+      ['GRAPPLE', 'GRP btn / G on staggered foe', 'Wrestling finisher: suplex/piledriver/powerbomb. Big moment.'],
       ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
       ['CANDLE RUSH', '↓ + SPC (50 meter)', 'Burning dash through the pack.'],
+      ['GRAPPLE', 'GRP btn / G on staggered foe', 'Wrestling finisher: suplex/piledriver/powerbomb. Big moment.'],
     ] },
 ];
 // ---------- fighting-game move sets: motion inputs + energy costs per fighter ----------
@@ -2847,6 +2855,34 @@ function doTech() {
   T.techs = (T.techs || 0) + 1; ev('tech', {}); setHud();
   return true;
 }
+function doGrapple() {
+  // WRESTLING FINISHERS (No More Heroes): staggered enemy + GRAPPLE = suplex/piledriver/powerbomb.
+  // Stun an enemy (parry/counter), then style on them. Wrestling flavor for the wrestling-rooted roster.
+  if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.busy > 0 || player.airT > 0) return;
+  unlockAudio(); T.taps++; hint(false);
+  const t = nearestEnemy(2.4);
+  if (!t || !(t.stagger > 0) || t.boss) {
+    // whiff: small stumble, no penalty beyond the beat
+    player.busy = 0.3;
+    playAnim(player, 'Melee_Unarmed_Idle', { ts: 0.8, fade: 0.1 });
+    return;
+  }
+  const fd = fighterDef();
+  const wname = fd.wrestle || 'STREET SUPLEX';
+  player.busy = 1.0;
+  playAnim(player, 'Melee_Unarmed_Attack_Punch_B', { ts: 1.2, fade: 0.05 });
+  banner(wname + '!', 'spc'); sfx('hit3', 1, false, 0.55); flash('#ffd166');
+  addSlowmo(0.5, 0.5); shake = 0.7; // big moment: slow-mo allowed
+  const sp = screenPos(t.root.position.clone().add(new THREE.Vector3(0, 2.4, 0)));
+  popText(wname + '!', 'big', sp.x, sp.y);
+  sparkFX(t.px, 1.2, t.pz, 0xffd166, 24);
+  setTimeout(() => {
+    if (state !== 'fight' || missionOver || ended) return;
+    landHit(t, Math.round(48 * player.dmgMult), wname, 0.12, 0.8, true, false);
+    damageDestructibles(2.4);
+  }, 300);
+  T.grapples = (T.grapples || 0) + 1; ev('grapple', { name: wname }); setHud();
+}
 function doTaunt() {
   // TMNT taunt: talk trash, build special meter. Pure addition — costs a beat of vulnerability.
   if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.busy > 0 || player.airT > 0) return;
@@ -3371,6 +3407,7 @@ function stickEnd(e) {
 function setupInput() {
   const bind = (id, fn) => $(id).addEventListener('pointerdown', (e) => { e.stopPropagation(); e.preventDefault(); fn(); }, { passive: false });
   bind('btnAtk', () => { if (player && player.knockT > 0) doTech(); else doPunch(); }); bind('btnDdg', doDodge); bind('btnSpc', doSpecial); bind('btnJmp', doJump);
+  bind('btnGrp', doGrapple); // WRESTLING FINISHERS (No More Heroes): GRAPPLE on staggered foes
   // FOCUS (SFIV): HOLD HVY 0.45s = focus stance (absorb one hit), release = crumple strike; tap = normal heavy
   { const el = $('btnHvy');
     el.addEventListener('pointerdown', (e) => { e.stopPropagation(); e.preventDefault(); hvyPressT = performance.now(); hvyFocusing = false; }, { passive: false });
@@ -3444,6 +3481,7 @@ function setupInput() {
     if (k === 'arrowup' || k === 'w') stick.dy = -1;
     if (k === 'arrowdown' || k === 's') stick.dy = 1;
     if (k === 'j') { if (player && player.knockT > 0) { doTech(); } else doPunch(); }
+    if (k === 'g') doGrapple(); // WRESTLING FINISHERS: GRAPPLE on staggered foes
     if (k === 'k') doHeavy();
     if (k === 'l') doDodge();
     if (k === 'u') doSpecial();
@@ -4501,7 +4539,7 @@ window.__cdtest = {
   dbgRep: (r) => { save.rep = r; writeSave(); const d = effDiff(); return { hpMul: +d.hpMul.toFixed(2), dmgMul: +d.dmgMul.toFixed(2), cash: +repMult().cash.toFixed(2) }; },
   spawnCreature: (cid) => { if (player) { const e = makeCreatureRaw(cid, 0xffffff, player.px + 3, -Math.PI / 2, 1); if (e) { e.maxHp = e.hp = 200; e.dmgMult = 1; e.spd = 1.5; e.px = player.px + 3; e.pz = 0; e.ai = 'walk'; e.aiT = 1; syncPos(e); playAnim(e, 'Running_A', { loop: true }); enemies.push(e); } return e; } },
   hurt: (n) => { if (player) hurtPlayer(n); },
-  doJump, doPunch, doHeavy, doSpecial, doTaunt, doDesperation, doStance, doTech,
+  doJump, doPunch, doHeavy, doSpecial, doTaunt, doDesperation, doStance, doTech, doGrapple,
   antiInfTest: () => {
     const e = enemies.find(x => x.hp > 0 && !x.boss);
     if (!e) return { ok: 0, why: 'no-enemy' };
@@ -4525,6 +4563,15 @@ window.__cdtest = {
     state: typeof state !== 'undefined' ? state : '?'
   }),
   tagFastFwd: () => { if (player && player.sprayT > 0) { player.sprayT = 0.05; return { ok: 1 }; } return { ok: 0 }; },
+  grappleTest: () => {
+    const e = enemies.find(x => x.hp > 0 && !x.boss);
+    if (!e) return { ok: 0, why: 'no-enemy' };
+    e.stagger = 1.2; e.hp = Math.max(e.hp, 500);
+    player.px = e.px - 1; player.pz = e.pz; syncPos(player); player.busy = 0;
+    const before = T.grapples || 0;
+    doGrapple();
+    return { ok: 1, fired: (T.grapples || 0) > before };
+  },
   walkTo: (x) => { if (player) { player.px = x; } return true; },
   procBossInfo: () => { try { const a = procBoss(3); return { ok: 1, name: a && a.name, pats: a && a.patterns, typeof_pb: typeof procBoss }; } catch (e) { return { ok: 0, err: String(e && e.message || e).slice(0, 120) }; } },
   muts: () => ({ tier: endlessTier || 0, muts: (endlessMuts || []).slice() }),
