@@ -233,6 +233,11 @@ for (const f of FIGHTERS) {
     ['↓↑ + HIT', f.duname, 'Rising launcher — 25 energy'],
     ['JUMP + SPC', 'AIR ' + f.qcf.name, 'Your signature, from above — 25 energy'],
     ['PARRY', '→ toward attacker on !', 'Negate + stagger them, gain energy. No damage.'],
+    ['HEAT', 'HVY on staggered foe', 'Contextual finisher — big damage, slow-mo'],
+    ['FOCUS', 'HOLD HVY 0.45s', 'Absorb one hit, release = crumple strike'],
+    ['BURST', '↑ + SPC while juggled', 'Combo breaker — 50 energy'],
+    ['DESPERATION', '↓ + SPC under 50% HP', 'Trade 10% HP for a huge blast'],
+    ['RAGE', 'Take damage', 'Full rage bar = 8s +40% damage'],
     ['DASH STRIKE', 'DDG into enemy', 'Your dodge is a weapon — 18 dmg on contact'],
     ['WALL SPLAT', 'Launch near props', 'Slam them into scenery for bonus damage'],
     ['↑↑↓←→ + SPC', f.mega.name, 'MEGA SUPER — needs FULL energy. Cinematic.'],
@@ -481,6 +486,8 @@ const DISTRICTS = [
     moon: [0xc8d8e8, 1.2], rim: [0x5a8aa8, 1.5], lampA: 0xffc46a, lampB: 0x5a8aa8, ground: 0x232a30, sw: ['#8a9a9e', '#5a8aa8'] },
   { id: 'graveyard', name: "DEAD MAN'S ROW", sky: 0x0a0a16, fog: [0x0a0a16, 7, 22], hemi: [0x7a6ab0, 0x0a0a16, 1.0],
     moon: [0xc8b8ff, 1.1], rim: [0x9a4dff, 1.4], lampA: 0xff8c2a, lampB: 0x9a4dff, ground: 0x1a1a26, sw: ['#9a4dff', '#ff8c2a'] },
+  { id: 'tunnels', name: 'THE UNDERGROUND', sky: 0x080a10, fog: [0x080a10, 6, 20], hemi: [0x6a8ab0, 0x080a10, 0.9],
+    moon: [0x8ab8d8, 1.0], rim: [0x3a6a8a, 1.3], lampA: 0xffd166, lampB: 0x3a6a8a, ground: 0x16181e, sw: ['#ffd166', '#3a6a8a'] },
 ];
 const districtDef = (id) => DISTRICTS.find((d) => d.id === id) || DISTRICTS[0];
 
@@ -492,6 +499,7 @@ const ZONES = [
   { id: 'z2', name: 'ZONE 2 — DEAD OF NIGHT', card: 'The graveyard shift. Things walk that should not.', unlock: { type: 'mission', id: 'm2' } },
   { id: 'z3', name: 'ZONE 3 — THE MAZE', card: 'Dead ends, ambush pockets. The block fights back.', unlock: { type: 'mission', id: 'h3' } },
   { id: 'z4', name: 'ZONE 4 — HIGH RISE', card: 'Up is the only way through. Jump.', unlock: { type: 'mission', id: 'z1' } },
+  { id: 'z5', name: 'ZONE 5 — THE UNDERGROUND', card: 'Below the streets, the tunnels remember everything.', unlock: { type: 'mission', id: 'p3' } },
   { id: 'zx', name: 'SIDE HUSTLES', card: 'Endless scraps, daily grinds, infinite road.', unlock: { type: 'start' } },
 ];
 const zoneDef = (id) => ZONES.find((z) => z.id === id) || ZONES[0];
@@ -580,6 +588,15 @@ const MISSIONS = [
   { id: 'p3', zone: 'z4', district: 'docks', name: 'CRANE YARD', len: 105, crowd: true, layout: 'platform',
     spawns: [{ at: 12, fam: 'heavyd', n: 3 }, { at: 32, fam: 'spider', n: 3 }, { at: 56, fam: 'demon', n: 3 }, { at: 80, fam: 'zombie', n: 4 }],
     card: 'The highest fight in the city.', boss: 'sledge', unlock: { type: 'mission', id: 'p2' }, reward: 'King of the high rise' },
+  { id: 'u1', zone: 'z5', district: 'tunnels', name: 'TUNNEL RATS', len: 90, crowd: false, layout: 'maze',
+    spawns: [{ at: 12, fam: 'stray', n: 3 }, { at: 30, fam: 'thug', n: 3 }, { at: 50, fam: 'stray', n: 4 }, { at: 70, fam: 'jabber', n: 3 }],
+    card: 'The subway never closed. It just changed owners.', boss: null, unlock: { type: 'mission', id: 'p3' }, reward: 'Maze layouts unlocked' },
+  { id: 'u2', zone: 'z5', district: 'tunnels', name: 'GHOST PLATFORM', len: 100, crowd: false, layout: 'maze',
+    spawns: [{ at: 12, fam: 'ghost', n: 2 }, { at: 32, fam: 'zombie', n: 3 }, { at: 54, fam: 'skull', n: 3 }, { at: 76, fam: 'demon', n: 2 }],
+    card: 'Trains that never arrive. Passengers that never left.', boss: 'rust', unlock: { type: 'mission', id: 'u1' }, reward: 'The deep dark' },
+  { id: 'u3', zone: 'z5', district: 'tunnels', name: 'TERMINUS', len: 110, crowd: false, layout: 'maze',
+    spawns: [{ at: 12, fam: 'demon', n: 3 }, { at: 34, fam: 'spider', n: 3 }, { at: 58, fam: 'zombie', n: 4 }, { at: 82, fam: 'pumpkin', n: 3 }],
+    card: 'End of the line. Something waits on the tracks.', boss: 'dragon', unlock: { type: 'mission', id: 'u2' }, reward: 'The Concrete Dragon stirs below' },
   { id: 'endless', zone: 'zx', district: 'neon', name: 'ENDLESS SCRAP', len: Infinity, crowd: false, endless: true, card: 'How long can you hold the block?',
     spawns: [], boss: null, unlock: { type: 'mission', id: 'm1' }, reward: 'Survival ladder — how far can you walk?' },
   { id: 'daily', zone: 'zx', district: 'neon', name: 'DAILY SCRAP', len: 70, crowd: false, daily: true, card: 'One shot. One leaderboard.',
@@ -2169,6 +2186,21 @@ function doJumpAttack() {
 function doHeavy() {
   if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.busy > 0) return;
   unlockAudio(); T.taps++; hint(false);
+  // HEAT ACTION (Yakuza): staggered enemy in range + HVY = contextual finisher
+  const heatT = nearestEnemy(2.4);
+  if (heatT && heatT.stagger > 0 && !heatT.boss) {
+    player.busy = 0.9;
+    playAnim(player, 'Melee_Unarmed_Attack_Kick', { ts: 1.8, fade: 0.05 });
+    banner('HEAT!', 'spc'); sfx('hit3', 1, false, 0.6); flash('#ff6a00');
+    addSlowmo(0.5, 0.35); shake = 0.7;
+    setTimeout(() => {
+      if (state !== 'fight' || missionOver || ended) return;
+      landHit(heatT, Math.round(55 * player.dmgMult), 'HEAT', 0.12, 0.8, true, false);
+      sparkFX(heatT.px, 1.2, heatT.pz, 0xff6a00, 20);
+      damageDestructibles(2.4);
+    }, 250);
+    ev('heat', {}); return;
+  }
   player.busy = 0.5;
   playAnim(player, 'Melee_Unarmed_Attack_Kick', { ts: 1.25, fade: 0.05 });
   setTimeout(() => {
@@ -2182,6 +2214,23 @@ function doSpecial() {
   if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0) return;
   unlockAudio();
   const fd = fighterDef();
+  // DESPERATION (Final Fight): DOWN + SPC at <50% HP = trade 10% max HP for a huge AOE blast
+  if (stick.dy > 0.5 && player.hp < player.maxHp * 0.5) {
+    inputHist.length = 0;
+    const cost = Math.round(player.maxHp * 0.1);
+    player.hp = Math.max(1, player.hp - cost); player.busy = 0.6;
+    banner('DESPERATION!', 'bad'); sfx('hit3', 1, false, 0.5); flash('#ff4444');
+    addSlowmo(0.4, 0.5); shake = 0.8;
+    playAnim(player, 'Melee_Unarmed_Attack_Kick', { ts: 1.8, fade: 0.05 });
+    burst(player.root.position.clone().add(new THREE.Vector3(0, 1, 0)), 44, 0xff4444, 8);
+    for (const e of enemies.slice()) {
+      if (e.hp > 0 && Math.abs(e.px - player.px) < 4.2 && Math.abs(e.pz - player.pz) < 2.2) {
+        landHit(e, Math.round(38 * player.dmgMult), 'DESPERATION', 0.1, 0.9, true, false);
+        e.px = clamp(e.px + (e.px >= player.px ? 3 : -3), 0.5, 1e6); syncPos(e);
+      }
+    }
+    damageDestructibles(3.5); setHud(); ev('desperation', {}); return;
+  }
   // ASSIST (accessibility): one-button specials — SPC fires your signature when affordable
   if (save.assist) {
     inputHist.length = 0;
@@ -2406,6 +2455,16 @@ function hurtPlayer(dmg) {
   dmg = Math.max(1, Math.round(dmg * (1 - (blessFx().armor || 0)))); // IRON SKIN
   dmgTaken += dmg; player.hp -= dmg; combo = 0; shake = 0.3; hitstop = 0.05; flash('#ff2a2a'); sfx('hit2', 0.8, false, 0.7);
   player.jugN = (player.jugN || 0) + 1; player.jugT = 2.5; // BURST (Guilty Gear): juggle tracking
+  // RAGE METER (The TakeOver): damage taken builds rage; full bar = 8s +40% damage
+  if (!(player.rageT > 0)) {
+    player.rage = clamp((player.rage || 0) + dmg, 0, 100);
+    if (player.rage >= 100) {
+      player.rage = 0; player.rageT = 8;
+      banner('RAGE!', 'bad'); sfx('hit3', 1, false, 0.5); flash('#ff2222');
+      sparkFX(player.px, 1.2, player.pz, 0xff2222, 24);
+      ev('rage', {});
+    }
+  }
   player.energy = clamp(player.energy + 12 * (1 + (blessFx().energyGain || 0)), 0, energyMax());
   playAnim(player, 'Hit_A', { ts: 1.4 });
   const sp = screenPos(player.root.position.clone().add(new THREE.Vector3(0, fighterHeight * 0.8, 0)));
@@ -2913,6 +2972,13 @@ function playerUpdate(dt) {
     if (Math.random() < dt * 8) sparkFX(p.px + rnd(-0.5, 0.5), 1.2 + rnd(0, 0.8), p.pz + rnd(-0.3, 0.3), 0xffd166, 2);
     if (p.radicalT <= 0) { p.dmgMult = p.baseDmgMult; p.spd = p.baseSpd; popText('RADICAL OVER', 'gold', innerWidth / 2, innerHeight * 0.35); }
   }
+  // RAGE (The TakeOver): +40% damage while raging; rage bar decays out of combat
+  if (p.rageT > 0) {
+    p.rageT -= dt;
+    p.dmgMult = p.baseDmgMult * (p.radicalT > 0 ? 1.3 : 1) * 1.4;
+    if (Math.random() < dt * 10) sparkFX(p.px + rnd(-0.5, 0.5), 1.0 + rnd(0, 1), p.pz + rnd(-0.3, 0.3), 0xff2222, 2);
+    if (p.rageT <= 0) { p.dmgMult = p.baseDmgMult * (p.radicalT > 0 ? 1.3 : 1); popText('RAGE SPENT', 'bad', innerWidth / 2, innerHeight * 0.35); }
+  } else if ((p.rage || 0) > 0) { p.rage = Math.max(0, p.rage - dt * 6); } // rage bleeds off
   // BURST juggle tracking (Guilty Gear): hits taken within a 2.5s window
   if (p.jugT > 0) { p.jugT -= dt; if (p.jugT <= 0) p.jugN = 0; }
   // FOCUS charge decay (SFIV)
