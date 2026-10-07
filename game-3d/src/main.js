@@ -547,8 +547,8 @@ const DISTRICTS = [
     moon: [0xffd9a0, 1.3], rim: [0xff6a00, 1.6], lampA: 0xff8c42, lampB: 0x6ab8d8, ground: 0x241c16, sw: ['#ff8c42', '#6ab8d8'] },
   { id: 'overpass', name: 'THE OVERPASS', sky: 0x141020, fog: [0x141020, 10, 30], hemi: [0xffc98a, 0x141020, 1.1],
     moon: [0xcfd8ff, 1.1], rim: [0x5a8aa8, 1.4], lampA: 0xffb347, lampB: 0x7af0ff, ground: 0x22242c, sw: ['#ffb347', '#7af0ff'] },
-  { id: 'industrial', name: 'THE IRONWORKS', sky: 0x0e1116, fog: [0x0e1116, 8, 26], hemi: [0xd8e2ee, 0x0e1116, 1.0],
-    moon: [0xbfd0ff, 1.1], rim: [0xff6a1a, 1.5], lampA: 0xffa64d, lampB: 0x3ad8ff, ground: 0x232428, sw: ['#ffa64d', '#3ad8ff'] },
+  { id: 'industrial', name: 'THE IRONWORKS', sky: 0x141821, fog: [0x141821, 8, 26], hemi: [0xf0f4ff, 0x3a3a44, 1.5],
+    moon: [0xd8e8ff, 1.6], rim: [0xff7a1a, 1.7], lampA: 0xffb35c, lampB: 0x4de1ff, ground: 0x333338, sw: ['#ffb35c', '#4de1ff'] },
 ];
 const districtDef = (id) => DISTRICTS.find((d) => d.id === id) || DISTRICTS[0];
 
