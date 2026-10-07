@@ -91,6 +91,7 @@ const FIGHTERS = [
       ['TAUNT', 'TAUNT btn / T', 'Talk trash, gain special meter.'],
       ['TECH', 'HIT while knocked down', 'Instant recovery + bounce + brief invuln. Never helpless.'],
       ['DUST LAUNCHER', '↓ + HVY', 'Universal overhead launcher. Pops them up for juggles.'],
+      ['TAG SPOT', 'TAUNT near a glowing wall', 'Spray the wall (3s, vulnerable). Big cash + 15 REP.'],
       ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
       ['DRAGON RUSH', '↓ + SPC (50 meter)', 'Shoulder dash straight through the pack.'],
     ] },
@@ -115,6 +116,7 @@ const FIGHTERS = [
       ['TAUNT', 'TAUNT btn / T', 'Talk trash, gain special meter.'],
       ['TECH', 'HIT while knocked down', 'Instant recovery + bounce + brief invuln. Never helpless.'],
       ['DUST LAUNCHER', '↓ + HVY', 'Universal overhead launcher. Pops them up for juggles.'],
+      ['TAG SPOT', 'TAUNT near a glowing wall', 'Spray the wall (3s, vulnerable). Big cash + 15 REP.'],
       ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
       ['BLINK FLURRY', '↓ + SPC (50 meter)', 'Blink between the 3 nearest enemies.'],
     ] },
@@ -139,6 +141,7 @@ const FIGHTERS = [
       ['TAUNT', 'TAUNT btn / T', 'Talk trash, gain special meter.'],
       ['TECH', 'HIT while knocked down', 'Instant recovery + bounce + brief invuln. Never helpless.'],
       ['DUST LAUNCHER', '↓ + HVY', 'Universal overhead launcher. Pops them up for juggles.'],
+      ['TAG SPOT', 'TAUNT near a glowing wall', 'Spray the wall (3s, vulnerable). Big cash + 15 REP.'],
       ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
       ['SEISMIC SLAM', '↓ + SPC (50 meter)', 'Ground pound launches everyone nearby.'],
     ] },
@@ -163,6 +166,7 @@ const FIGHTERS = [
       ['TAUNT', 'TAUNT btn / T', 'Talk trash, gain special meter.'],
       ['TECH', 'HIT while knocked down', 'Instant recovery + bounce + brief invuln. Never helpless.'],
       ['DUST LAUNCHER', '↓ + HVY', 'Universal overhead launcher. Pops them up for juggles.'],
+      ['TAG SPOT', 'TAUNT near a glowing wall', 'Spray the wall (3s, vulnerable). Big cash + 15 REP.'],
       ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
       ["KINGPIN'S WRATH", '↓ + SPC (50 meter)', 'Massive shockwave around him.'],
     ] },
@@ -187,6 +191,7 @@ const FIGHTERS = [
       ['TAUNT', 'TAUNT btn / T', 'Talk trash, gain special meter.'],
       ['TECH', 'HIT while knocked down', 'Instant recovery + bounce + brief invuln. Never helpless.'],
       ['DUST LAUNCHER', '↓ + HVY', 'Universal overhead launcher. Pops them up for juggles.'],
+      ['TAG SPOT', 'TAUNT near a glowing wall', 'Spray the wall (3s, vulnerable). Big cash + 15 REP.'],
       ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
       ['WRECKING SWING', '↓ + SPC (50 meter)', '360° swing clears the whole circle.'],
     ] },
@@ -211,6 +216,7 @@ const FIGHTERS = [
       ['TAUNT', 'TAUNT btn / T', 'Talk trash, gain special meter.'],
       ['TECH', 'HIT while knocked down', 'Instant recovery + bounce + brief invuln. Never helpless.'],
       ['DUST LAUNCHER', '↓ + HVY', 'Universal overhead launcher. Pops them up for juggles.'],
+      ['TAG SPOT', 'TAUNT near a glowing wall', 'Spray the wall (3s, vulnerable). Big cash + 15 REP.'],
       ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
       ['VENOM DASH', '↓ + SPC (50 meter)', 'Dash in a line, striking everything.'],
     ] },
@@ -256,6 +262,7 @@ const FIGHTERS = [
       ['TAUNT', 'TAUNT btn / T', 'Talk trash, gain special meter.'],
       ['TECH', 'HIT while knocked down', 'Instant recovery + bounce + brief invuln. Never helpless.'],
       ['DUST LAUNCHER', '↓ + HVY', 'Universal overhead launcher. Pops them up for juggles.'],
+      ['TAG SPOT', 'TAUNT near a glowing wall', 'Spray the wall (3s, vulnerable). Big cash + 15 REP.'],
       ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
       ['CANDLE RUSH', '↓ + SPC (50 meter)', 'Burning dash through the pack.'],
     ] },
@@ -1464,6 +1471,89 @@ function updatePickups(dt) {
 function R_safe() { return typeof missionR === 'function' ? missionR() : Math.random(); }
 function clearPickups() { for (const pk of pickups) streetGroup.remove(pk.mesh); pickups.length = 0; }
 
+// ---------- GRAFFITI TAG SPOTS (Jet Set Radio) ----------
+// Tag spots: claim the block with style. Stand in the zone + TAUNT to spray (3s channel, vulnerable).
+// Complete = big style cash + district REP. THE street-brawler mechanic.
+let tagSpots = [];
+function spawnTagSpots(mission, R) {
+  for (const s of tagSpots) streetGroup.remove(s.mesh);
+  tagSpots = [];
+  const n = 1 + Math.floor(R() * 2); // 1-2 spots per mission
+  const len = mission.len || 30;
+  for (let i = 0; i < n; i++) {
+    const x = 6 + R() * (len - 12), z = (R() < 0.5 ? -1 : 1) * (1.1 + R() * 0.3);
+    const g = new THREE.Group();
+    // blank wall panel awaiting paint
+    const panel = new THREE.Mesh(new THREE.PlaneGeometry(2.2, 1.6),
+      new THREE.MeshStandardMaterial({ color: 0x2a2d3a, roughness: 0.9, emissive: 0x111122, emissiveIntensity: 0.4 }));
+    panel.position.y = 1.1; g.add(panel);
+    // glowing outline = "paint me"
+    const edge = new THREE.Mesh(new THREE.PlaneGeometry(2.4, 1.8),
+      new THREE.MeshBasicMaterial({ color: 0xff4fd8, transparent: true, opacity: 0.35, side: THREE.DoubleSide }));
+    edge.position.set(0, 1.1, -0.02); g.add(edge);
+    g.position.set(x, 0, z);
+    g.rotation.y = z > 0 ? Math.PI : 0;
+    g.traverse((m) => { if (m.isMesh) m.castShadow = true; });
+    streetGroup.add(g);
+    tagSpots.push({ mesh: g, panel, edge, px: x, pz: z, done: false, t: Math.random() * 6 });
+  }
+}
+function nearestTagSpot(range) {
+  let best = null, bd = range;
+  for (const s of tagSpots) {
+    if (s.done) continue;
+    const d = Math.hypot(player.px - s.px, player.pz - s.pz);
+    if (d < bd) { bd = d; best = s; }
+  }
+  return best;
+}
+function updateTagSpots(dt) {
+  for (const s of tagSpots) {
+    if (s.done) continue;
+    s.t += dt;
+    s.edge.material.opacity = 0.25 + Math.sin(s.t * 4) * 0.15; // pulsing "paint me" glow
+    // spraying channel
+    if (player && player.sprayT > 0 && player.spraySpot === s) {
+      player.sprayT -= dt;
+      // paint particles
+      if (Math.random() < dt * 20) {
+        const cols = [0xff4fd8, 0x7af0ff, 0xffe14d, 0x80ed99];
+        sparkFX(s.px + rnd(-1, 1), 1.1 + rnd(-0.6, 0.6), s.pz, cols[Math.floor(Math.random() * cols.length)], 2);
+      }
+      s.panel.material.emissive.setHex(0x7744aa); // filling in...
+      s.panel.material.emissiveIntensity = Math.min(1, (s.panel.material.emissiveIntensity || 0.4) + dt * 0.5);
+      if (player.sprayT <= 0) completeTag(s);
+    }
+  }
+}
+function completeTag(s) {
+  s.done = true;
+  player.sprayT = 0; player.spraySpot = null; player.busy = 0;
+  playAnim(player, 'Melee_Unarmed_Idle', { loop: true });
+  // the piece: hot pink + cyan throw-up
+  s.panel.material.color.setHex(0xff4fd8);
+  s.panel.material.emissive.setHex(0xff4fd8); s.panel.material.emissiveIntensity = 0.7;
+  s.edge.material.color.setHex(0x7af0ff);
+  const cash = Math.round(120 * hustleMult() * (1 + (mission.wild || 0) * 0.2));
+  awardCash(cash, new THREE.Vector3(s.px, 1.5, s.pz), 'TAGGED');
+  save.rep = (save.rep || 0) + 15; writeSave(); // district REP
+  banner('TAGGED!', 'spc');
+  const sp = screenPos(new THREE.Vector3(s.px, 2.2, s.pz));
+  popText('+' + cash + ' + 15 REP', 'gold', sp.x, sp.y);
+  sfx('bell', 1, false, 1.2); flash('#ff4fd8');
+  sparkFX(s.px, 1.4, s.pz, 0xff4fd8, 24);
+  T.tags = (T.tags || 0) + 1; ev('tag', {}); setHud();
+}
+function startSpray(s) {
+  // 3s vulnerable channel — getting hit cancels it
+  player.sprayT = 3; player.spraySpot = s; player.busy = 3;
+  playAnim(player, 'Melee_Unarmed_Idle', { ts: 0.6, fade: 0.1 });
+  const sp = screenPos(player.root.position.clone().add(new THREE.Vector3(0, 2.4, 0)));
+  popText('SPRAYING...', 'spc', sp.x, sp.y);
+  sfx('whoosh', 0.5, false, 1.4);
+  ev('spray', {});
+}
+
 // ---------- crowd (CONDITIONAL: only on missions flagged crowd:true — owner directive) ----------
 const crowdGroup = new THREE.Group(); scene.add(crowdGroup);
 let crowdMembers = [];
@@ -2466,6 +2556,7 @@ function startMission(id, node) {
   clearFighters(); clearCrowd(); enemies = [];
   buildStreet(mission.district, mission.len, R);
   spawnBreakables(mission.district, mission.len, R);
+  spawnTagSpots(mission, R); // JET SET RADIO: graffiti tag spots — claim the block with style
   if (mission.crowd) spawnCrowd(R); // CONDITIONAL crowd only — owner directive
   setRain(hasMod('rain'));
   const fd = fighterDef();
@@ -2636,7 +2727,8 @@ function doParry(e) {
 }
 function doPunch() {
   if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.busy > 0) return;
-  unlockAudio(); T.taps++; hint(false); save.seenHint = true;
+  unlockAudio();
+  T.taps++; hint(false); save.seenHint = true;
   // fighting-game motion input + HIT (additive: plain tap combat unchanged)
   const mot = detectMotion();
   if (mot) { doMotionSpecial(mot); return; }
@@ -2759,6 +2851,9 @@ function doTaunt() {
   // TMNT taunt: talk trash, build special meter. Pure addition — costs a beat of vulnerability.
   if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.busy > 0 || player.airT > 0) return;
   unlockAudio();
+  // JET SET RADIO: near a tag spot, TAUNT starts spraying instead of trash-talking
+  const tag = nearestTagSpot(2.2);
+  if (tag) { startSpray(tag); setHud(); return; }
   // RADICAL MODE (TMNT: Shredder's Revenge): FULL meter + taunt = 12s powered state
   if (player.energy >= energyMax() - 0.5 && !(player.radicalT > 0)) {
     player.radicalT = 12; player.energy = 0; player.busy = 0.8;
@@ -3170,6 +3265,13 @@ function hurtPlayer(dmg) {
   if (mission && mission.endless && (endlessMuts || []).includes('GLASS JAW')) dmg = Math.round(dmg * 1.5);
   if (!player || player.hp <= 0 || missionOver || ended) return;
   if (player.techInvulnT > 0) return; // TECH recovery: brief invuln after a successful tech
+  // getting hit cancels an in-progress spray (Jet Set Radio vulnerability)
+  if (player.sprayT > 0) {
+    player.sprayT = 0; player.spraySpot = null; player.busy = 0;
+    playAnim(player, 'Hit_A', { ts: 1.4 });
+    const csp = screenPos(player.root.position.clone().add(new THREE.Vector3(0, 2.2, 0)));
+    popText('SPRAY RUINED!', 'bad', csp.x, csp.y);
+  }
   // FOCUS (SFIV): absorb one hit while in focus stance — no damage, +15 energy
   if (player.focusT > 0 && !player.focusHit) {
     player.focusHit = true; player.focusT = 0; hvyFocusing = false;
@@ -4256,6 +4358,7 @@ function frame(dt, doRender = true) {
       mission.blessOffered = true; offerMidBlessing();
     }
     updatePickups(dt);
+    updateTagSpots(dt); // JET SET RADIO: tag-spot glow + spray channel
     updateRain(dt);
     updateProjs(dt);
     player.energy = Math.min(energyMax(), player.energy + 5 * dt); // energy trickles back
@@ -4407,6 +4510,21 @@ window.__cdtest = {
     for (let i = 0; i < 3; i++) { try { landHit(e, 5, 'TESTJAB', 0.01, 0.1, false, false); } catch (err) { return { ok: 0, why: 'landHit-threw' }; } }
     return { ok: 1, fired: (T.antiinf || 0) > before, airborne: e.airborne };
   },
+  tagTest: () => {
+    if (!tagSpots.length) return { ok: 0, why: 'no-spots' };
+    const s = tagSpots[0];
+    player.px = s.px; player.pz = s.pz; syncPos(player);
+    player.busy = 0;
+    doTaunt();
+    return { ok: 1, spraying: player.sprayT > 0 };
+  },
+  tagDbg: () => ({
+    sprayT: player ? player.sprayT : 'no-player',
+    spots: tagSpots.length,
+    busy: player ? player.busy : 0,
+    state: typeof state !== 'undefined' ? state : '?'
+  }),
+  tagFastFwd: () => { if (player && player.sprayT > 0) { player.sprayT = 0.05; return { ok: 1 }; } return { ok: 0 }; },
   walkTo: (x) => { if (player) { player.px = x; } return true; },
   procBossInfo: () => { try { const a = procBoss(3); return { ok: 1, name: a && a.name, pats: a && a.patterns, typeof_pb: typeof procBoss }; } catch (e) { return { ok: 0, err: String(e && e.message || e).slice(0, 120) }; } },
   muts: () => ({ tier: endlessTier || 0, muts: (endlessMuts || []).slice() }),
