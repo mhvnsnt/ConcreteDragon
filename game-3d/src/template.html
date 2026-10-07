@@ -148,6 +148,14 @@ body.cine #cineSkip{display:block}
 .zoneHead .zn{font-family:'Bungee','Anton',Arial,sans-serif;font-size:18px;letter-spacing:1px;color:#ffd166;text-shadow:0 2px 0 #000}
 .zoneHead .zc{font-family:Arial,sans-serif;font-weight:700;font-size:11px;opacity:.75;line-height:1.5;margin-top:4px;text-transform:none}
 .zoneHead.locked{filter:grayscale(1) brightness(.6)}
+.blessCard{flex:0 0 200px;padding:10px 12px;pointer-events:auto;text-align:left;cursor:pointer;border:2px solid #7af0ff;border-radius:8px;background:#141428}
+.blessCard:hover{border-color:#ffd166}
+.blessCard .bn{font-family:'Bungee','Anton',Arial,sans-serif;font-size:15px;color:#7af0ff;letter-spacing:1px}
+.blessCard .bf{font-size:11px;letter-spacing:2px;color:#ffd166;margin:2px 0}
+.blessCard .bd{font-family:Arial,sans-serif;font-weight:700;font-size:11px;opacity:.85;line-height:1.5;text-transform:none}
+.blessCard .br{font-size:10px;letter-spacing:2px;margin-top:4px}
+.blessTitle{width:100%;text-align:center;font-family:'Bungee','Anton',Arial,sans-serif;font-size:20px;color:#ffd166;letter-spacing:2px;margin-bottom:2px}
+.card.goldcard{border:2px solid #ffd166;box-shadow:0 0 14px #ffd16688}
 .seasonBanner{flex:0 0 220px;padding:10px 12px;pointer-events:none;text-align:left;border:2px solid #ff8c2a;border-radius:8px;background:linear-gradient(135deg,#1a0a2a,#2a1a0a)}
 .seasonBanner .sn{font-family:'Bungee','Anton',Arial,sans-serif;font-size:20px;letter-spacing:1px;color:#ff8c2a;text-shadow:0 2px 0 #000}
 .seasonBanner .sc{font-family:Arial,sans-serif;font-weight:700;font-size:11px;opacity:.85;line-height:1.5;margin-top:6px;text-transform:none}
@@ -233,6 +241,7 @@ body.cine #cineSkip{display:block}
 <div id="mission" class="screen hidden">
   <div id="logo" style="font-size:32px">CONCRETE DRAGON</div>
   <div class="subtitle">Pick your mission</div>
+  <div id="repRow" style="display:flex;gap:6px;justify-content:center;margin:4px 0 8px;flex-wrap:wrap"></div>
   <div id="mList"></div>
   <div><span id="dailyTag"></span></div>
   <div id="metaLine3" style="margin-top:10px;font-family:Arial,sans-serif;font-weight:700;font-size:13px;text-transform:none;opacity:.85"></div>
@@ -245,6 +254,7 @@ body.cine #cineSkip{display:block}
   <div id="unlockBanner"></div>
   <div id="resStats"></div>
   <div id="cashLines"></div>
+  <div id="blessRow" style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;justify-content:center"></div>
   <div id="shopRow2" style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;justify-content:center"></div>
   <div id="metaLine2" style="margin-top:12px;font-family:Arial,sans-serif;font-weight:700;font-size:13px;text-transform:none;opacity:.85"></div>
   <button class="bigBtn btn9" id="nextBtn" style="display:none">NEXT →</button>

@@ -33,7 +33,7 @@ const save = {
   best_wave: 0, selected: 'kidblue', skins: {}, tex: {},
   unlocked: ['kidblue', 'ghost', 'brick'], missionsDone: [],
   daily: { date: '', score: 0 }, boards: {}, seenHint: false,
-  muted: false, quality: 'auto', difficulty: 'normal', circuitN: 0,
+  muted: false, quality: 'auto', difficulty: 'normal', circuitN: 0, blessings: [], rep: 0, goldCards: [],
 };
 const TIP_URL = 'https://paypal.me/MarquisWhitacre';
 function loadSave() {
@@ -46,6 +46,9 @@ function loadSave() {
   if (!Array.isArray(save.unlocked) || !save.unlocked.length) save.unlocked = ['kidblue', 'ghost', 'brick'];
   if (!Array.isArray(save.missionsDone)) save.missionsDone = [];
   if (!save.boards || typeof save.boards !== 'object') save.boards = {};
+  if (!Array.isArray(save.blessings)) save.blessings = [];
+  if (typeof save.rep !== 'number') save.rep = 0;
+  if (!Array.isArray(save.goldCards)) save.goldCards = [];
 }
 function writeSave() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) {} }
 const upCost = (lvl) => 100 * (lvl + 1);
@@ -222,6 +225,16 @@ const DIFFS = [
   { id: 'brutal', name: 'BRUTAL', hpMul: 2.0, dmgMul: 1.8, aggro: 1.6, desc: 'No mercy out here.' },
 ];
 const diffDef = () => DIFFS.find((d) => d.id === save.difficulty) || DIFFS[2];
+// ---------- REP TIERS (owner 2026-10-06, Brotato Danger-inspired): post-game ladder ----------
+// Unlock by clearing RUST BELT (m4). REP 1-5: meaner streets, better payouts.
+// Per-fighter gold cards for clearing REP 5 bosses — style prestige, zero power.
+const REP_MAX = 5;
+const repUnlocked = () => save.missionsDone.includes('m4');
+const repMult = () => { const r = save.rep || 0; return { hp: 1 + r * 0.3, dmg: 1 + r * 0.18, cash: 1 + r * 0.35 }; };
+const effDiff = () => {
+  const d = diffDef(), r = repMult();
+  return { hpMul: d.hpMul * r.hp, dmgMul: d.dmgMul * r.dmg, aggro: d.aggro };
+};
 const SKINS = { // style only — zero power. New packs drop in here.
   kidblue: [{ id: 'street', name: 'Street Blue', tint: 0x4fd1ff }, { id: 'noir', name: 'Noir', tint: 0x2b2b38 }, { id: 'gold', name: 'Champion Gold', tint: 0xffd166 }],
   ghost: [{ id: 'street', name: 'Ghost Mint', tint: 0x4dff88 }, { id: 'noir', name: 'Noir', tint: 0x2b2b38 }, { id: 'volt', name: 'Volt', tint: 0x7af0ff }],
@@ -511,6 +524,47 @@ function rollModifiers(seedNum, wild) {
   return out;
 }
 const hasMod = (id) => (mission.mods || []).includes(id);
+// ---------- BLESSINGS (owner 2026-10-06, Hades-inspired): pick 1 of 3 after each win ----------
+// Street-mythology figures grant boons. Last until you lose. DUO when two figures align.
+const BLESSINGS = [
+  { id: 'b_ret', fig: 'prophet', fname: 'CORNER PROPHET', rar: 'common', name: 'RETRIBUTION', desc: 'Counters deal +40% damage', fx: { counterDmg: 0.4 } },
+  { id: 'b_wind', fig: 'prophet', fname: 'CORNER PROPHET', rar: 'rare', name: 'SECOND WIND', desc: '+25 max energy, +20% energy gain', fx: { energyMax: 25, energyGain: 0.2 } },
+  { id: 'b_hands', fig: 'coach', fname: 'GYM COACH', rar: 'common', name: 'HEAVY HANDS', desc: '+15% punch damage', fx: { punchDmg: 0.15 } },
+  { id: 'b_road', fig: 'coach', fname: 'GYM COACH', rar: 'rare', name: 'ROADWORK', desc: '+12% move speed, dodge recharges 25% faster', fx: { moveSpd: 0.12, dodgeCd: 0.25 } },
+  { id: 'b_iron', fig: 'elder', fname: 'BLOCK ELDER', rar: 'common', name: 'IRON SKIN', desc: 'Take 12% less damage', fx: { armor: 0.12 } },
+  { id: 'b_blood', fig: 'elder', fname: 'BLOCK ELDER', rar: 'epic', name: 'OLD BLOOD', desc: 'Heal 4 HP per KO', fx: { lifesteal: 4 } },
+];
+const BLESS_DUOS = [
+  { figs: ['prophet', 'coach'], name: 'SUNDAY SERVICE', desc: 'Counters trigger a shockwave' },
+];
+function blessFx() {
+  const fx = {};
+  for (const id of (save.blessings || [])) {
+    const b = BLESSINGS.find((x) => x.id === id);
+    if (!b) continue;
+    for (const k in b.fx) fx[k] = (fx[k] || 0) + b.fx[k];
+  }
+  return fx;
+}
+function blessDuo() {
+  const figs = new Set((save.blessings || []).map((id) => (BLESSINGS.find((x) => x.id === id) || {}).fig));
+  return BLESS_DUOS.find((d) => d.figs.every((f) => figs.has(f))) || null;
+}
+const energyMax = () => 100 + (blessFx().energyMax || 0);
+function rollBlessings() {
+  const owned = new Set(save.blessings || []);
+  const pool = BLESSINGS.filter((b) => !owned.has(b.id));
+  const weights = { common: 60, rare: 30, epic: 10 };
+  const out = [];
+  const cp = pool.slice();
+  while (out.length < 3 && cp.length) {
+    let tw = 0; for (const b of cp) tw += weights[b.rar] || 10;
+    let r = Math.random() * tw, pick = cp[0];
+    for (const b of cp) { r -= weights[b.rar] || 10; if (r <= 0) { pick = b; break; } }
+    out.push(pick); cp.splice(cp.indexOf(pick), 1);
+  }
+  return out;
+}
 // ---------- STREET CIRCUIT: infinite procedural missions (one card, endless series) ----------
 const PM_A = ['RUST', 'NEON', 'CONCRETE', 'MIDNIGHT', 'IRON', 'VELVET', 'CHROME', 'ASHEN', 'COPPER', 'JAGUAR', 'SMOKE', 'TAR'];
 const PM_B = ['ALLEY', 'BLOCK', 'STRIP', 'YARDS', 'CORNER', 'DIVE', 'ROW', 'MILE', 'SECTOR', 'WARD', 'DEAD END', 'OVERPASS'];
@@ -813,7 +867,7 @@ function updatePickups(dt) {
       const sp = screenPos(pk.mesh.position.clone());
       if (pk.type === 'health') { player.hp = Math.min(player.maxHp, player.hp + player.maxHp * 0.3); popText('+HP', 'gold', sp.x, sp.y); }
       else if (pk.type === 'cash') { const c = Math.round(rnd(15, 40)); awardCash(c, pk.mesh.position.clone()); }
-      else { player.energy = clamp(player.energy + 35, 0, 100); popText('+ENERGY', 'big', sp.x, sp.y); }
+      else { player.energy = clamp(player.energy + 35, 0, energyMax()); popText('+ENERGY', 'big', sp.x, sp.y); }
       sfx('coin', 0.6, false, pk.type === 'health' ? 0.8 : 1.2);
       streetGroup.remove(pk.mesh);
       pickups.splice(i, 1);
@@ -1052,8 +1106,8 @@ function showSelect() {
   const cards = $('cards'); cards.innerHTML = '';
   for (const f of FIGHTERS) {
     const locked = !isUnlocked(f);
-    const c = el('div', 'card ' + (f.id === save.selected && !locked ? 'panel9g' : 'panel9') + (locked ? ' locked' : ''));
-    c.appendChild(el('div', 'nm', locked ? '???' : f.name));
+    const c = el('div', 'card ' + (f.id === save.selected && !locked ? 'panel9g' : 'panel9') + (locked ? ' locked' : '') + ((save.goldCards || []).includes(f.id) ? ' goldcard' : ''));
+    c.appendChild(el('div', 'nm', locked ? '???' : ((save.goldCards || []).includes(f.id) ? '★ ' : '') + f.name));
     c.appendChild(el('div', 'lk', locked ? unlockText(f) : f.tag));
     if (!locked) c.onclick = () => { save.selected = f.id; writeSave(); sfx('click', 0.7); refreshShowcase(); showSelectCards(); };
     cards.appendChild(c);
@@ -1089,8 +1143,8 @@ function showSelectCards() { // re-render cards row only (after pick)
   const cards = $('cards'); cards.innerHTML = '';
   for (const f of FIGHTERS) {
     const locked = !isUnlocked(f);
-    const c = el('div', 'card ' + (f.id === save.selected && !locked ? 'panel9g' : 'panel9') + (locked ? ' locked' : ''));
-    c.appendChild(el('div', 'nm', locked ? '???' : f.name));
+    const c = el('div', 'card ' + (f.id === save.selected && !locked ? 'panel9g' : 'panel9') + (locked ? ' locked' : '') + ((save.goldCards || []).includes(f.id) ? ' goldcard' : ''));
+    c.appendChild(el('div', 'nm', locked ? '???' : ((save.goldCards || []).includes(f.id) ? '★ ' : '') + f.name));
     c.appendChild(el('div', 'lk', locked ? unlockText(f) : f.tag));
     if (!locked) c.onclick = () => { save.selected = f.id; writeSave(); sfx('click', 0.7); refreshShowcase(); showSelectCards(); };
     cards.appendChild(c);
@@ -1105,6 +1159,27 @@ function showMission() {
     sb.appendChild(el('div', 'sn', season.tag));
     sb.appendChild(el('div', 'sc', season.card));
     list.appendChild(sb);
+  }
+  // REP TIERS (owner 2026-10-06): post-game ladder above BRUTAL
+  {
+    const rr = $('repRow'); rr.innerHTML = '';
+    const unlocked = repUnlocked();
+    const cap = el('span', '', 'REP:');
+    cap.style.cssText = 'font-family:Arial,sans-serif;font-weight:700;font-size:12px;letter-spacing:2px;align-self:center;opacity:.8';
+    rr.appendChild(cap);
+    for (let r = 0; r <= REP_MAX; r++) {
+      const b = el('button', 'diffBtn' + ((save.rep || 0) === r ? ' sel' : ''), r === 0 ? 'OFF' : 'R' + r);
+      b.title = r === 0 ? 'No REP modifier' : `REP ${r}: +${r * 30}% enemy HP, +${r * 18}% damage, +${r * 35}% cash` + (unlocked ? '' : ' — clear RUST BELT to unlock');
+      b.disabled = !unlocked && r > 0;
+      b.style.flex = '0 0 auto'; b.style.padding = '6px 10px'; b.style.minHeight = '36px';
+      b.onclick = (e) => { e.stopPropagation(); save.rep = r; writeSave(); sfx('uiclick', 0.7); showMission(); };
+      rr.appendChild(b);
+    }
+    if (!unlocked) {
+      const note = el('span', '', '🔒 Clear RUST BELT');
+      note.style.cssText = 'font-family:Arial,sans-serif;font-weight:700;font-size:11px;align-self:center;opacity:.6';
+      rr.appendChild(note);
+    }
   }
   // ZONES (owner 2026-10-06): missions grouped under zone headers
   for (const z of ZONES) {
@@ -1205,8 +1280,40 @@ function showResults(win, mission, stats) {
         } else { ub.classList.remove('show'); }
       } else { ub.classList.remove('show'); }
     } else { ub.classList.remove('show'); }
+    // GOLD CARDS: beat any boss on REP 5 -> this fighter's card goes gold (prestige, zero power)
+    if (mission.boss && (save.rep || 0) >= REP_MAX && !save.goldCards.includes(save.selected)) {
+      save.goldCards.push(save.selected); writeSave();
+      setTimeout(() => { banner('★ GOLD CARD: ' + fighterDef().name + ' ★'); sfx('bell', 1, true); }, 2200);
+      ev('goldcard', { fighter: save.selected });
+    }
   } else { save.losses++; }
-  save.cash += stats.cash; writeSave();
+  save.cash += Math.round(stats.cash * repMult().cash); writeSave();
+  // BLESSINGS: pick 1 of 3 after a win; lost on defeat (roguelite run-building)
+  const br = $('blessRow'); br.innerHTML = '';
+  if (win) {
+    const picks = rollBlessings();
+    if (picks.length) {
+      br.appendChild(el('div', 'blessTitle', '✦ CHOOSE A BLESSING ✦'));
+      const rarColor = { common: '#9a9a9a', rare: '#4fa3ff', epic: '#c77dff' };
+      for (const b of picks) {
+        const c = el('div', 'blessCard panel9');
+        c.appendChild(el('div', 'bf', b.fname));
+        c.appendChild(el('div', 'bn', b.name));
+        c.appendChild(el('div', 'bd', b.desc));
+        c.appendChild(el('div', 'br', b.rar.toUpperCase()));
+        c.querySelector('.br').style.color = rarColor[b.rar] || '#fff';
+        c.onclick = (e) => {
+          e.stopPropagation();
+          save.blessings.push(b.id); writeSave();
+          sfx('bell', 0.9, true); flash('#7af0ff');
+          const duo = blessDuo();
+          br.innerHTML = `<div class="blessTitle">✦ ${b.name} RECEIVED ✦${duo ? `<br><span style="color:#ffd166;font-size:14px">DUO: ${duo.name} — ${duo.desc}</span>` : ''}</div>`;
+          ev('blessing', { id: b.id });
+        };
+        br.appendChild(c);
+      }
+    }
+  } else { save.blessings = []; writeSave(); } // defeat breaks the run
   const resEl = $('results');
   if (win) {
     resEl.classList.add('win'); resEl.classList.remove('lose');
@@ -1340,7 +1447,7 @@ function spawnEnemy(famId, mi, bx, bz) {
   if (fam.head) attachHead(e, fam.head); // species head attachment (pumpkin, masks...)
   if (hasMod('titans') && missionR() < 0.18 && !v.boss) { e.sc = (e.sc || 1) * 1.35; e.root.scale.multiplyScalar(1.35); e.maxHp = e.hp = Math.round(e.hp * 2.2); e.name = 'TITAN ' + e.name; }
   else if (hasMod('frenzy') && missionR() < 0.25) { e.spd *= 1.5; e.dmgMult *= 1.25; e.name = 'FRENZIED ' + e.name; }
-  const df = diffDef();
+  const df = effDiff();
   e.isPlayer = false; e.name = v.name; e.maxHp = e.hp = Math.round(v.hp * df.hpMul);
   e.dmgMult = v.dmg * df.dmgMul; e.spd = v.spd; e.move = v.move; e.sig = fam.sig || null; e.sigUse = false;
   e.px = bx; e.pz = clamp(bz, -1.3, 1.3);
@@ -1356,7 +1463,7 @@ function spawnBoss(bossId, bx) {
                        : makeFighterRaw(b.tint, bx, -Math.PI / 2, b.scale, texObjs.patchwork);
   if (!e) return null;
   if (b.head) attachHead(e, b.head); // species head attachment (pumpkin king...)
-  const dfb = diffDef();
+  const dfb = effDiff();
   e.isPlayer = false; e.boss = b; e.name = b.name;
   e.maxHp = e.hp = Math.round(b.hp * dfb.hpMul); e.dmgMult = b.dmg * dfb.dmgMul; e.spd = b.spd; e.aggro = dfb.aggro;
   e.px = bx; e.pz = 0; e.ai = 'walk'; e.patIdx = 0; e.patT = 2.2; e.vy = 0; e.airborne = false;
@@ -1458,12 +1565,27 @@ function doPunch() {
   sfx('whoosh', 0.45, false, 1.1 + Math.random() * 0.2);
   setTimeout(() => {
     if (state !== 'fight' || missionOver || ended) return;
-    if (ce && ce.hp > 0) { ce.windup = 0; hideWarn(ce); landHit(ce, Math.round(dmg * player.dmgMult * 2), 'COUNTER', 0.12, 0.35, false, true); return; }
+    if (ce && ce.hp > 0) {
+      ce.windup = 0; hideWarn(ce);
+      const bfx = blessFx();
+      landHit(ce, Math.round(dmg * player.dmgMult * 2 * (1 + (bfx.counterDmg || 0))), 'COUNTER', 0.12, 0.35, false, true);
+      const duo = blessDuo(); // SUNDAY SERVICE: counters trigger a shockwave
+      if (duo) {
+        burst(player.root.position.clone().add(new THREE.Vector3(0, 1.0, 0)), 24, 0xffd166, 6);
+        shake = Math.max(shake, 0.4); sfx('hit3', 0.9, false, 0.8);
+        for (const o of enemies) {
+          if (o === ce || o.hp <= 0) continue;
+          if (Math.abs(o.px - player.px) < 2.6 && Math.abs(o.pz - player.pz) < 1.6)
+            landHit(o, Math.round(dmg * player.dmgMult * 0.8), 'SUNDAY SERVICE', 0.06, 0.3, false, false);
+        }
+      }
+      return;
+    }
     const t = nearestEnemy(range);
     if (t) {
       if (t.airborne) { t.vy = Math.max(t.vy, 2.2); landHit(t, Math.round(dmg * player.dmgMult * 0.6), 'JUGGLE', 0.03, 0.12, false, false); }
       else if (launcher) doFinisher(t);
-      else landHit(t, Math.round(dmg * player.dmgMult), label, hs, sh, false, false);
+      else landHit(t, Math.round(dmg * player.dmgMult * (1 + (blessFx().punchDmg || 0))), label, hs, sh, false, false);
     }
     damageDestructibles(1.7);
     damageDestructibles(range);
@@ -1475,7 +1597,7 @@ function doTaunt() {
   unlockAudio();
   player.busy = 0.8;
   playAnim(player, 'Melee_Unarmed_Idle', { ts: 0.7, fade: 0.1 });
-  player.energy = clamp(player.energy + 25, 0, 100);
+  player.energy = clamp(player.energy + 25 * (1 + (blessFx().energyGain || 0)), 0, energyMax());
   const sp = screenPos(player.root.position.clone().add(new THREE.Vector3(0, 2.2, 0)));
   popText('COME ON!', 'spc', sp.x, sp.y);
   sfx('uiclick', 0.6, false, 0.7);
@@ -1605,7 +1727,7 @@ function doDodge() {
   if (now - lastDodgeTap < 320 && player.dodgeCD <= 0) { lastDodgeTap = 0; doDesperation(); return; }
   lastDodgeTap = now;
   if (player.dodgeCD > 0) return;
-  player.dodgeCD = 0.9; player.dodgeT = 0.35;
+  player.dodgeCD = 0.9 * (1 - (blessFx().dodgeCd || 0)); player.dodgeT = 0.35;
   const m = Math.hypot(stick.dx, stick.dy);
   if (m > 0.25) { player.dodgeDx = stick.dx / m; player.dodgeDz = stick.dy / m; }
   else { const t = nearestEnemy(99); player.dodgeDx = t && t.px < player.px ? 1 : -1; player.dodgeDz = 0; }
@@ -1616,7 +1738,7 @@ function landHit(e, dmg, label, hs, sh, launcher, counter) {
   if (!e || e.hp <= 0 || state !== 'fight') return;
   T.hits++; if (counter) T.counters++;
   e.hp -= dmg; combo++; comboT = 1.2; maxCombo = Math.max(maxCombo, combo);
-  if (player) player.energy = clamp(player.energy + 8, 0, 100);
+  if (player) player.energy = clamp(player.energy + 8 * (1 + (blessFx().energyGain || 0)), 0, energyMax());
   const head = e.root.position.clone().add(new THREE.Vector3(0, fighterHeight * 0.78 * e.sc, 0.15));
   burst(head, counter ? 30 : 16, counter ? 0x7af0ff : 0xffd27a, counter ? 6 : 4);
   shake = sh; hitstop = hs; // snappy: tiny freeze on light hits, bigger only for counter/heavy/special/KO
@@ -1657,8 +1779,8 @@ function killEnemy(e) {
       clamp(e.root.position.x + rnd(-0.8, 0.8), 0.5, 1e6), clamp(e.root.position.z + rnd(-0.8, 0.8), -1.4, 1.4));
   }
   if (player && player.hp > 0) {
-    player.hp = Math.min(player.maxHp, player.hp + player.maxHp * 0.06);
-    player.energy = clamp(player.energy + 15, 0, 100);
+    player.hp = Math.min(player.maxHp, player.hp + player.maxHp * 0.06 + (blessFx().lifesteal || 0)); // OLD BLOOD
+    player.energy = clamp(player.energy + 15 * (1 + (blessFx().energyGain || 0)), 0, energyMax());
   }
   setTimeout(() => {
     removeFighter(e);
@@ -1670,8 +1792,9 @@ function killEnemy(e) {
 function hurtPlayer(dmg) {
   if (!player || player.hp <= 0 || missionOver || ended) return;
   if (player.dodgeT > 0) return;
+  dmg = Math.max(1, Math.round(dmg * (1 - (blessFx().armor || 0)))); // IRON SKIN
   player.hp -= dmg; combo = 0; shake = 0.3; hitstop = 0.05; flash('#ff2a2a'); sfx('hit2', 0.8, false, 0.7);
-  player.energy = clamp(player.energy + 12, 0, 100);
+  player.energy = clamp(player.energy + 12 * (1 + (blessFx().energyGain || 0)), 0, energyMax());
   playAnim(player, 'Hit_A', { ts: 1.4 });
   const sp = screenPos(player.root.position.clone().add(new THREE.Vector3(0, fighterHeight * 0.8, 0)));
   popText('-' + dmg, 'bad', sp.x, sp.y - 20);
@@ -2077,7 +2200,7 @@ function playerUpdate(dt) {
   if (p.dodgeCD > 0) p.dodgeCD -= dt;
   if (p.spinT > 0) p.spinT -= dt;
   if (p.slowT > 0) p.slowT -= dt; // WEB SNARE slow
-  const spd = 4.4 * (p.spd || 1) * (p.slowT > 0 ? 0.45 : 1);
+  const spd = 4.4 * (p.spd || 1) * (p.slowT > 0 ? 0.45 : 1) * (1 + (blessFx().moveSpd || 0));
   let mx = stick.dx * spd, mz = stick.dy * spd;
   if (p.dodgeT > 0) { mx = p.dodgeDx * 10; mz = p.dodgeDz * 10; }
   const maxX = mission.len === Infinity ? 1e6 : mission.len - 1.5;
@@ -2443,7 +2566,7 @@ function setHud() {
   $('cash').textContent = 'CASH: $' + (save.cash + cashRun);
   $('combo').style.opacity = combo >= 2 ? 1 : 0;
   $('combo').textContent = combo + ' HIT COMBO';
-  $('spc').style.width = clamp(player.energy, 0, 100) + '%';
+  $('spc').style.width = clamp(player.energy / energyMax() * 100, 0, 100) + '%';
   $('btnSpc').classList.toggle('ready', player.energy >= 60);
   const prog = mission && isFinite(mission.len) ? clamp(player.px / mission.len, 0, 1) : clamp(distWalked / 220, 0, 1);
   $('prog').style.width = (prog * 100) + '%';
@@ -2492,7 +2615,7 @@ function loop() {
     updatePickups(dt);
     updateRain(dt);
     updateProjs(dt);
-    player.energy = Math.min(100, player.energy + 5 * dt); // energy trickles back
+    player.energy = Math.min(energyMax(), player.energy + 5 * dt); // energy trickles back
     setHud();
     camX += ((player.px + 0.8) - camX) * Math.min(1, dt * 5);
     if (pushT > 0) { // KO camera push-in (F6): lean toward the fallen enemy during slow-mo
@@ -2569,6 +2692,8 @@ window.__cdtest = {
   showMission: () => showMission(),
   dbgBoss: (id) => { const b = bossDef(id); return b ? { name: b.name, hp: b.hp, proc: !!b.proc, sig: b.sig ? b.sig.name : null } : null; },
   seasonFams: () => { const s = activeSeason(); return s ? s.fams : []; },
+  dbgBless: (ids) => { save.blessings = ids; writeSave(); return { fx: blessFx(), duo: blessDuo() ? blessDuo().name : null }; },
+  dbgRep: (r) => { save.rep = r; writeSave(); const d = effDiff(); return { hpMul: +d.hpMul.toFixed(2), dmgMul: +d.dmgMul.toFixed(2), cash: +repMult().cash.toFixed(2) }; },
   spawnCreature: (cid) => { if (player) { const e = makeCreatureRaw(cid, 0xffffff, player.px + 3, -Math.PI / 2, 1); if (e) { e.maxHp = e.hp = 200; e.dmgMult = 1; e.spd = 1.5; e.px = player.px + 3; e.pz = 0; e.ai = 'walk'; e.aiT = 1; syncPos(e); playAnim(e, 'Running_A', { loop: true }); enemies.push(e); } return e; } },
   hurt: (n) => { if (player) hurtPlayer(n); },
   doJump, doPunch, doHeavy, doSpecial, doTaunt, doDesperation,
