@@ -271,48 +271,57 @@ function unlockText(f) {
 // ---------- data: enemy families + variants (SoR2 system: variants gain moves/gear) ----------
 const ENEMY_FAMS = [
   { id: 'thug', name: 'STREET THUG', tint: 0xff5a5a, hp: 70, dmg: 1.0, scale: 1.0, spd: 1.6,
+    sig: { id: 'curbcheck', name: 'CURB CHECK', chance: 0.22 },
     variants: [
       { at: 0 },
       { at: 2, name: 'THUG BRUISER', tint: 0xd43d3d, hpMul: 1.6, scaleMul: 1.12, move: 'uppercut' },
       { at: 4, name: 'THUG KNIFE', tint: 0xff7a7a, dmgMul: 1.4, move: 'knife' },
     ] },
   { id: 'rico', name: 'BIG RICO', tint: 0x9a6bff, hp: 100, dmg: 1.1, scale: 1.15, spd: 1.4,
+    sig: { id: 'debtcollector', name: 'DEBT COLLECTOR', chance: 0.22 },
     variants: [
       { at: 0 },
       { at: 3, name: 'RICO ENFORCER', tint: 0x7a4de0, hpMul: 1.5, dmgMul: 1.2, move: 'slam' },
     ] },
   { id: 'jabber', name: 'JABBER', tint: 0x7af0ff, hp: 60, dmg: 0.9, scale: 0.95, spd: 2.2,
+    sig: { id: 'hundredhands', name: 'HUNDRED HANDS', chance: 0.25 },
     variants: [
       { at: 0 },
       { at: 3, name: 'JABBER SWIFT', tint: 0x4dd2ff, spdMul: 1.4, move: 'flurry' },
     ] },
   { id: 'heavyd', name: 'HEAVY D', tint: 0xff8c42, hp: 105, dmg: 1.2, scale: 1.18, spd: 1.2,
+    sig: { id: 'freighttrain', name: 'FREIGHT TRAIN', chance: 0.25 },
     variants: [
       { at: 0 },
       { at: 4, name: 'HEAVY D PLUS', tint: 0xe06a1e, hpMul: 1.7, scaleMul: 1.1, move: 'charge' },
     ] },
   { id: 'stray', name: 'STRAY', tint: 0x9a9a8a, hp: 55, dmg: 0.85, scale: 0.9, spd: 2.6,
+    sig: { id: 'shivrain', name: 'SHIV RAIN', chance: 0.24 },
     variants: [
       { at: 0 },
       { at: 3, name: 'STRAY SWIFT', tint: 0x7a7a6a, spdMul: 1.5, move: 'flurry' },
       { at: 5, name: 'STRAY SHIV', tint: 0xb8b89a, dmgMul: 1.5, move: 'knife' },
     ] },
   { id: 'pumpkin', name: 'JACK', tint: 0xe07b1f, hp: 75, dmg: 1.0, scale: 1.0, spd: 1.7, head: 'pumpkin',
+    sig: { id: 'harvestmoon', name: 'HARVEST MOON', chance: 0.24 },
     variants: [
       { at: 0 },
       { at: 3, name: 'JACK BRUISER', tint: 0xc45f10, hpMul: 1.6, scaleMul: 1.12, move: 'uppercut' },
     ] },
   { id: 'zombie', name: 'ROTTEN', tint: 0x7a9a5a, hp: 85, dmg: 1.0, scale: 1.0, spd: 1.3, creature: 'zombie',
+    sig: { id: 'gravebite', name: 'GRAVEBITE', chance: 0.24 },
     variants: [
       { at: 0 },
       { at: 3, name: 'ROTTEN HORDE', tint: 0x5a7a42, hpMul: 1.5, dmgMul: 1.2, move: 'flurry' },
     ] },
   { id: 'demon', name: 'HELLION', tint: 0xc12a2a, hp: 110, dmg: 1.25, scale: 1.0, spd: 1.6, creature: 'demon',
+    sig: { id: 'hellfirearc', name: 'HELLFIRE ARC', chance: 0.26 },
     variants: [
       { at: 0 },
       { at: 4, name: 'HELLION BRUTE', tint: 0x8a1a1a, hpMul: 1.7, scaleMul: 1.12, move: 'slam' },
     ] },
   { id: 'spider', name: 'WEAVER', tint: 0x3a3a4a, hp: 65, dmg: 0.9, scale: 1.25, spd: 2.8, creature: 'spider',
+    sig: { id: 'websnare', name: 'WEB SNARE', chance: 0.26 },
     variants: [
       { at: 0 },
       { at: 4, name: 'WEAVER BROODMOTHER', tint: 0x1a1a26, hpMul: 2.2, scaleMul: 1.35, dmgMul: 1.3, move: 'flurry' },
@@ -333,18 +342,23 @@ function famVariant(fam, mi) {
 const BOSSES = [
   { id: 'kingpin', name: 'KINGPIN', tint: 0xffb03d, hp: 420, dmg: 1.3, scale: 1.35, spd: 1.5,
     patterns: ['slam', 'charge', 'summon'], unlockFighter: 'kingpin',
+    sig: { id: 'kingsdecree', name: "KING'S DECREE" },
     intro: 'HE RUNS THIS BLOCK' },
   { id: 'sledge', name: 'SLEDGE', tint: 0xb3541e, hp: 560, dmg: 1.5, scale: 1.45, spd: 1.3,
     patterns: ['slam', 'slam', 'charge'], unlockFighter: 'sledge',
+    sig: { id: 'wreckingball', name: 'WRECKING BALL' },
     intro: 'THE YARD ENFORCER' },
   { id: 'viper', name: 'VIPER', tint: 0x39d353, hp: 380, dmg: 1.15, scale: 1.05, spd: 2.4,
     patterns: ['flurry', 'charge', 'summon'], unlockFighter: 'viper',
+    sig: { id: 'serpentsembrace', name: "SERPENT'S EMBRACE" },
     intro: 'FAST HANDS, FASTER MOUTH' },
   { id: 'rust', name: 'RUST', tint: 0xc0c9d6, hp: 640, dmg: 1.55, scale: 1.5, spd: 1.25,
     patterns: ['slam', 'charge', 'summon'], unlockFighter: 'dust',
+    sig: { id: 'ruststorm', name: 'RUST STORM' },
     intro: 'THE RUST GIANT' },
   { id: 'dragon', name: 'THE CONCRETE DRAGON', tint: 0xff4d00, hp: 950, dmg: 1.7, scale: 1.0, spd: 1.4, creature: 'dragon',
     patterns: ['slam', 'charge', 'summon'], unlockSkin: { fighter: 'kidblue', id: 'dragonfire', name: 'Dragon Fire', tint: 0xff4d00 },
+    sig: { id: 'dragonsmaw', name: "DRAGON'S MAW" },
     intro: 'THE NAMESAKE' },
 ];
 
@@ -1212,7 +1226,7 @@ function spawnEnemy(famId, mi, bx, bz) {
   else if (hasMod('frenzy') && missionR() < 0.25) { e.spd *= 1.5; e.dmgMult *= 1.25; e.name = 'FRENZIED ' + e.name; }
   const df = diffDef();
   e.isPlayer = false; e.name = v.name; e.maxHp = e.hp = Math.round(v.hp * df.hpMul);
-  e.dmgMult = v.dmg * df.dmgMul; e.spd = v.spd; e.move = v.move;
+  e.dmgMult = v.dmg * df.dmgMul; e.spd = v.spd; e.move = v.move; e.sig = fam.sig || null; e.sigUse = false;
   e.px = bx; e.pz = clamp(bz, -1.3, 1.3);
   e.ai = 'walk'; e.aiT = rnd(0.4, 1.2) / df.aggro; e.windup = 0; e.vy = 0; e.airborne = false; e.aggro = df.aggro;
   syncPos(e);
@@ -1674,8 +1688,10 @@ function enemyAI(e, dt) {
     e.aiT -= dt;
     if (adx < 1.35 && adz < 0.65 && e.aiT <= 0) {
       e.ai = 'windup';
-      e.windup = e.move === 'flurry' ? 0.5 : 0.75;
-      showWarn(e);
+      // ENEMY SIGNATURES (owner 2026-10-06): every archetype has its own signature move
+      e.sigUse = e.sig && Math.random() < (window.__cdSigChance ?? e.sig.chance);
+      e.windup = e.sigUse ? 0.9 : (e.move === 'flurry' ? 0.5 : 0.75);
+      showWarn(e, e.sigUse ? e.sig.name : undefined);
       playAnim(e, 'Melee_Unarmed_Idle', { loop: true });
     }
   } else if (e.ai === 'windup') {
@@ -1688,6 +1704,7 @@ function enemyAI(e, dt) {
 }
 function enemyStrike(e) {
   if (e.hp <= 0 || state !== 'fight' || missionOver || ended) return;
+  if (e.sigUse && e.sig) { execEnemySig(e); return; }
   // HEAVY D PLUS sometimes charges instead of punching
   if (e.move === 'charge' && Math.random() < 0.35) {
     e.chargeT = 0.55; e.chargeDx = Math.sign(player.px - e.px) || 1; e.chargeHit = false;
@@ -1710,6 +1727,64 @@ function enemyStrike(e) {
     }, 260 + i * 240);
   }
 }
+// ---------- ENEMY SIGNATURE MOVES (owner 2026-10-06): every archetype has its own ----------
+// Data-driven: ENEMY_FAMS[].sig = { id, name, chance }. Original names, distinct behavior.
+// Guard helper: delayed hit on the player if still in range (dodge-aware).
+function sigHitPlayer(e, rx, rz, dmg, label, delay, opts = {}) {
+  setTimeout(() => {
+    if (!e || e.hp <= 0 || state !== 'fight' || missionOver || ended || !player || player.hp <= 0) return;
+    const dx = Math.abs(player.px - e.px), dz = Math.abs(player.pz - e.pz);
+    if (dx < rx && dz < rz) {
+      if (player.dodgeT > 0) { nearMiss(e); return; }
+      hurtPlayer(dmg);
+      const sp = screenPos(player.root.position.clone().add(new THREE.Vector3(0, 1.6, 0)));
+      popText(label, 'spc', sp.x, sp.y - 50);
+      if (opts.slow) { player.slowT = opts.slow; }
+      if (opts.heal) { e.hp = Math.min(e.maxHp, e.hp + Math.round(dmg * opts.heal)); }
+      if (opts.burst) { const bp = e.root.position.clone().add(new THREE.Vector3(0, 1.2, 0)); burst(bp, 22, opts.burst, 6); shake = Math.max(shake, 0.45); }
+    }
+  }, delay);
+}
+function execEnemySig(e) {
+  const id = e.sig.id, dir = Math.sign(player.px - e.px) || 1;
+  T.esig = T.esig || {}; T.esig[id] = (T.esig[id] || 0) + 1; // test hook
+  const base = Math.round(14 * e.dmgMult);
+  if (id === 'curbcheck') { // STREET THUG: heavy overhand, big shake
+    playAnim(e, 'Melee_Unarmed_Attack_Kick', { ts: 1.3 });
+    sigHitPlayer(e, 1.8, 0.9, Math.round(base * 1.6), 'CURB CHECK', 320, { burst: 0xffb03d });
+  } else if (id === 'debtcollector') { // BIG RICO: wide shoulder-slam AOE
+    playAnim(e, 'Melee_Unarmed_Attack_Kick', { ts: 1.1 });
+    sfx('hit3', 0.9, false, 0.8);
+    sigHitPlayer(e, 2.4, 1.4, Math.round(base * 1.3), 'DEBT COLLECTOR', 380, { burst: 0x9a6bff });
+  } else if (id === 'hundredhands') { // JABBER: 4-hit rapid flurry
+    playAnim(e, 'Melee_Unarmed_Attack_Punch_A', { ts: 2.6 });
+    for (let i = 0; i < 4; i++) sigHitPlayer(e, 1.6, 0.8, Math.round(base * 0.55), i === 3 ? 'HUNDRED HANDS' : '', 200 + i * 170);
+  } else if (id === 'freighttrain') { // HEAVY D: signature charge, hits on pass
+    banner('FREIGHT TRAIN');
+    e.chargeT = 0.7; e.chargeDx = dir; e.chargeHit = false; e.chargeDmg = Math.round(base * 1.5);
+    playAnim(e, 'Running_A', { ts: 2.6 }); sfx('hit2', 1, false, 0.6);
+  } else if (id === 'shivrain') { // STRAY: double knife slash, second cuts deeper
+    playAnim(e, 'Melee_Unarmed_Attack_Punch_A', { ts: 2.2 });
+    sigHitPlayer(e, 1.7, 0.85, Math.round(base * 0.9), '', 220);
+    sigHitPlayer(e, 1.7, 0.85, Math.round(base * 1.6), 'SHIV RAIN', 460, { burst: 0xd8d8e8 });
+  } else if (id === 'harvestmoon') { // JACK: leaping slam, pumpkin shockwave ring
+    playAnim(e, 'Melee_Unarmed_Attack_Kick', { ts: 1.2 });
+    sfx('hit3', 1, false, 0.7);
+    sigHitPlayer(e, 2.3, 1.3, Math.round(base * 1.4), 'HARVEST MOON', 400, { burst: 0xff7a1a });
+  } else if (id === 'gravebite') { // ROTTEN: lunge bite, drains life
+    playAnim(e, 'Melee_Unarmed_Attack_Punch_A', { ts: 1.8 });
+    sfx('hit2', 0.9, false, 0.8);
+    sigHitPlayer(e, 2.0, 1.0, Math.round(base * 1.2), 'GRAVEBITE', 300, { burst: 0x7a9a5a, heal: 0.4 });
+  } else if (id === 'hellfirearc') { // HELLION: fire wave projectile
+    playAnim(e, 'Melee_Unarmed_Attack_Punch_A', { ts: 1.4 });
+    banner('HELLFIRE ARC');
+    fireProj({ x: e.px + dir * 0.8, z: e.pz, y: 1.15, vx: dir * 7.5, kind: 'shock', dmg: Math.round(base * 1.2), color: 0xff5a1a, fromPlayer: false, life: 1.4, label: 'HELLFIRE ARC' });
+  } else if (id === 'websnare') { // WEAVER: web shot that slows
+    playAnim(e, 'Melee_Unarmed_Attack_Punch_A', { ts: 1.4 });
+    fireProj({ x: e.px + dir * 0.8, z: e.pz, y: 1.0, vx: dir * 6.5, kind: 'orb', dmg: Math.round(base * 0.9), color: 0xd8d8e8, fromPlayer: false, life: 1.6, label: 'WEB SNARE' });
+    // web applies slow on hit — hooked in the projectile update via label
+  }
+}
 // ---------- boss AI: telegraphed patterns ----------
 function bossAI(e, dt, dx, dz, adx, adz) {
   if (e.ai === 'walk') {
@@ -1727,6 +1802,13 @@ function bossAI(e, dt, dx, dz, adx, adz) {
   syncPos(e);
 }
 function startPattern(e) {
+  // BOSS SIGNATURES (owner 2026-10-06): 25% of the time the boss uses its personal signature
+  if (e.boss.sig && Math.random() < 0.25) {
+    e.pat = 'sig'; e.ai = 'windup'; e.windup = 1.0;
+    playAnim(e, 'Melee_Unarmed_Idle', { loop: true });
+    showWarn(e, e.boss.sig.name);
+    return;
+  }
   const pat = e.boss.patterns[e.patIdx % e.boss.patterns.length]; e.patIdx++;
   e.pat = pat; e.ai = 'windup';
   playAnim(e, 'Melee_Unarmed_Idle', { loop: true });
@@ -1737,6 +1819,7 @@ function startPattern(e) {
 }
 function execPattern(e) {
   const pat = e.pat, R = missionR;
+  if (pat === 'sig') { execBossSig(e); return; }
   if (pat === 'slam') {
     playAnim(e, 'Melee_Unarmed_Attack_Kick', { ts: 1.1 });
     burst(e.root.position.clone().add(new THREE.Vector3(0, 0.3, 0)), 26, 0xff8c42, 6);
@@ -1763,6 +1846,47 @@ function execPattern(e) {
     }, 230);
   }
   e.ai = 'recover'; e.aiT = 1.3;
+}
+// ---------- BOSS SIGNATURE MOVES (owner 2026-10-06): each boss has its own ----------
+function execBossSig(e) {
+  const id = e.boss.sig.id, dir = Math.sign(player.px - e.px) || 1;
+  T.bsig = T.bsig || {}; T.bsig[id] = (T.bsig[id] || 0) + 1; // test hook
+  const base = Math.round(22 * e.dmgMult);
+  const bp = e.root.position.clone();
+  if (id === 'kingsdecree') { // KINGPIN: double shockwave rings
+    banner("KING'S DECREE");
+    playAnim(e, 'Melee_Unarmed_Attack_Kick', { ts: 1.0 });
+    for (let w = 0; w < 2; w++) setTimeout(() => {
+      if (!e || e.hp <= 0 || state !== 'fight' || missionOver || ended) return;
+      burst(bp.clone().add(new THREE.Vector3(0, 0.4, 0)), 30, 0xffb03d, 7); shake = 0.55; sfx('hit3', 1, false, 0.7);
+      const dx = Math.abs(player.px - e.px), dz = Math.abs(player.pz - e.pz);
+      if (dx < 3.2 && dz < 1.8) { if (player.dodgeT > 0) nearMiss(e); else hurtPlayer(Math.round(base * (w ? 1.2 : 0.9))); }
+    }, 250 + w * 550);
+  } else if (id === 'wreckingball') { // SLEDGE: 360 spin, hits everything around
+    banner('WRECKING BALL');
+    playAnim(e, 'Melee_Unarmed_Attack_Kick', { ts: 2.2 });
+    burst(bp.clone().add(new THREE.Vector3(0, 0.5, 0)), 26, 0xb3541e, 6); shake = 0.5; sfx('hit3', 1, false, 0.6);
+    sigHitPlayer(e, 3.0, 1.8, Math.round(base * 1.3), 'WRECKING BALL', 350, { burst: 0xb3541e });
+  } else if (id === 'serpentsembrace') { // VIPER: venom dash through the player
+    banner("SERPENT'S EMBRACE");
+    e.chargeT = 0.5; e.chargeDx = dir; e.chargeHit = false; e.chargeDmg = Math.round(base * 1.1);
+    playAnim(e, 'Running_A', { ts: 3.0 }); sfx('hit2', 1, false, 0.8);
+  } else if (id === 'ruststorm') { // RUST: debris vortex, 3 ticks
+    banner('RUST STORM');
+    playAnim(e, 'Melee_Unarmed_Attack_Kick', { ts: 1.2 });
+    for (let w = 0; w < 3; w++) setTimeout(() => {
+      if (!e || e.hp <= 0 || state !== 'fight' || missionOver || ended) return;
+      burst(bp.clone().add(new THREE.Vector3((Math.random() - 0.5) * 2, 0.8, (Math.random() - 0.5) * 1.4)), 18, 0xc0c9d6, 5);
+      shake = Math.max(shake, 0.4); sfx('hit2', 0.8, false, 0.9);
+      const dx = Math.abs(player.px - e.px), dz = Math.abs(player.pz - e.pz);
+      if (dx < 2.8 && dz < 1.6) { if (player.dodgeT > 0) nearMiss(e); else hurtPlayer(Math.round(base * 0.7)); }
+    }, 300 + w * 450);
+  } else if (id === 'dragonsmaw') { // CONCRETE DRAGON: 3-fireball spread
+    banner("DRAGON'S MAW");
+    playAnim(e, 'Melee_Unarmed_Attack_Punch_A', { ts: 1.3 });
+    for (let i = -1; i <= 1; i++) fireProj({ x: e.px + dir * 1.2, z: e.pz, y: 1.6, vx: dir * 8, vz: i * 1.6, kind: 'fire', dmg: Math.round(base * 0.8), color: 0xff4d00, fromPlayer: false, life: 1.6, label: "DRAGON'S MAW" });
+  }
+  e.ai = 'recover'; e.aiT = 1.4 / (e.aggro || 1);
 }
 // ---------- spawn director ----------
 function director(dt) {
@@ -1829,7 +1953,8 @@ function playerUpdate(dt) {
   if (p.dodgeT > 0) p.dodgeT -= dt;
   if (p.dodgeCD > 0) p.dodgeCD -= dt;
   if (p.spinT > 0) p.spinT -= dt;
-  const spd = 4.4 * (p.spd || 1);
+  if (p.slowT > 0) p.slowT -= dt; // WEB SNARE slow
+  const spd = 4.4 * (p.spd || 1) * (p.slowT > 0 ? 0.45 : 1);
   let mx = stick.dx * spd, mz = stick.dy * spd;
   if (p.dodgeT > 0) { mx = p.dodgeDx * 10; mz = p.dodgeDz * 10; }
   const maxX = mission.len === Infinity ? 1e6 : mission.len - 1.5;
@@ -1874,7 +1999,7 @@ function playerUpdate(dt) {
       e.px += e.chargeDx * 8 * dt; syncPos(e); e.chargeT -= dt;
       if (!e.chargeHit && Math.abs(e.px - p.px) < 1.15 && Math.abs(e.pz - p.pz) < 0.9) {
         e.chargeHit = true;
-        if (p.dodgeT > 0) nearMiss(e); else hurtPlayer(Math.round(20 * e.dmgMult));
+        if (p.dodgeT > 0) nearMiss(e); else hurtPlayer(e.chargeDmg || Math.round(20 * e.dmgMult));
       }
       if (e.chargeT <= 0) { e.chargeHit = false; e.ai = 'recover'; e.aiT = 1.0; playAnim(e, 'Melee_Unarmed_Idle', { loop: true }); }
     }
@@ -1972,7 +2097,14 @@ function updateProjs(dt) {
         if (!d.dead && Math.abs(d.px - p.x) < 1.0 && Math.abs(d.pz - p.z) < 1.0) { destroyDestructible(d); if (!p.pierce) { dead = true; break; } }
       }
     } else if (!dead && p.from === 'e' && player && player.hp > 0) {
-      if (Math.abs(player.px - p.x) < 0.8 && Math.abs(player.pz - p.z) < 1.1 && p.y < 2.4) { hurtPlayer(p.dmg, p.vx >= 0 ? 1 : -1); dead = true; }
+      if (Math.abs(player.px - p.x) < 0.8 && Math.abs(player.pz - p.z) < 1.1 && p.y < 2.4) {
+        hurtPlayer(p.dmg, p.vx >= 0 ? 1 : -1); dead = true;
+        if (p.label === 'WEB SNARE') { // WEAVER signature: webbed = slowed
+          player.slowT = 1.6;
+          const sp = screenPos(player.root.position.clone().add(new THREE.Vector3(0, 1.6, 0)));
+          popText('WEBBED!', 'bad', sp.x, sp.y - 50); sfx('hit2', 0.7, false, 0.6);
+        }
+      }
     }
     if (dead) { scene.remove(p.spr); p.spr.material.dispose(); projs.splice(i, 1); }
   }
@@ -2305,6 +2437,12 @@ window.__cdtest = {
   freeze: (on) => { window.__cdfreeze = !!on; },
   spawnBoss: (id) => { if (player) return spawnBoss(id || 'kingpin', player.px + 6); },
   spawnFam: (famId) => { if (player) return spawnEnemy(famId, 0, player.px + 3, 0); },
+  sigChance: (v) => { window.__cdSigChance = v; },
+  forceBossSig: () => { if (bossRef) { bossRef.pat = 'sig'; bossRef.ai = 'windup'; bossRef.windup = 0.01; } },
+  forceFoeSig: () => { const e = enemies.find(x => x.hp > 0 && !x.boss); if (e) { e.ai = 'windup'; e.windup = 0.01; e.sigUse = !!e.sig; } },
+  clearFoes: () => { for (const e of enemies.slice()) { removeFighter(e); const i = enemies.indexOf(e); if (i >= 0) enemies.splice(i, 1); } bossRef = null; },
+  healPlayer: () => { if (player) { player.hp = player.maxHp || 100; setHud(); } },
+  esigLog: () => T.esig || {}, bsigLog: () => T.bsig || {},
   spawnCreature: (cid) => { if (player) { const e = makeCreatureRaw(cid, 0xffffff, player.px + 3, -Math.PI / 2, 1); if (e) { e.maxHp = e.hp = 200; e.dmgMult = 1; e.spd = 1.5; e.px = player.px + 3; e.pz = 0; e.ai = 'walk'; e.aiT = 1; syncPos(e); playAnim(e, 'Running_A', { loop: true }); enemies.push(e); } return e; } },
   hurt: (n) => { if (player) hurtPlayer(n); },
   doJump, doPunch, doHeavy, doSpecial, doTaunt, doDesperation,
