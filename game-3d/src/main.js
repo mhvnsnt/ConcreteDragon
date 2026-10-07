@@ -4208,7 +4208,7 @@ function playerUpdate(dt) {
     if (tgt) { p.face = tgt.px >= p.px ? 1 : -1; p.root.rotation.y = p.face > 0 ? Math.PI / 2 : -Math.PI / 2; }
   }
   const spdNow = Math.hypot(mx, mz);
-  const wantRun = spdNow > 0.6 && p.dodgeT <= 0 && p.busy <= 0 && p.airT <= 0 && (p.knockT || 0) <= 0;
+  const wantRun = spdNow > 0.6 && p.dodgeT <= 0 && p.busy <= 0 && (p.airT || 0) <= 0 && (p.knockT || 0) <= 0;
   if (wantRun) {
     // OWNER 2026-10-07: run anim starts IMMEDIATELY on movement and its speed
     // tracks velocity every frame — no sliding, no foot-skate.
@@ -4712,7 +4712,7 @@ window.__cdtest = {
   spawnBoss: (id) => { if (player) return spawnBoss(id || 'kingpin', player.px + 6); },
   spawnFam: (famId) => { if (player) return spawnEnemy(famId, 0, player.px + 3, 0); },
   sigChance: (v) => { window.__cdSigChance = v; },
-  playerDbg: () => player ? { busy: +player.busy.toFixed(2), stance: player.stance||0, hp: Math.round(player.hp), state, fid: fighterDef().id, hasFin: !!fighterDef().stanceFin } : null,
+  playerDbg: () => player ? { busy: +player.busy.toFixed(2), stance: player.stance||0, hp: Math.round(player.hp), state, fid: fighterDef().id, hasFin: !!fighterDef().stanceFin, face: player.face, animMove: !!player.animMove, animTs: player.cur ? +player.cur.timeScale.toFixed(2) : 0, px: +player.px.toFixed(2) } : null,
   fireStanceFin: (fid) => { const fd = FIGHTERS.find(f => f.id === fid); if (fd && fd.stanceFin && player) { player.stance = 1; doStanceFin(fd); return fd.stanceFin.kind; } return null; },
   forceStance: () => { if (player && player.stance !== 1) doStance(); return true; },
   forceBossSig: () => { if (bossRef) { bossRef.pat = 'sig'; bossRef.ai = 'windup'; bossRef.windup = 0.01; } },
