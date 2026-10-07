@@ -71,12 +71,13 @@ const FIGHTERS = [
   { id: 'kidblue', name: 'KID BLUE', tag: 'Balanced brawler. Big heart, bigger hands.', hp: 100, dmg: 1.0, spd: 1.0, unlock: { type: 'start' },
     spc2: { name: 'DRAGON RUSH', cost: 35, desc: 'Shoulder-first dash through the whole pack.' },
     qcf: { name: "DRAGON'S BREATH", sigkind: 'fireball', kind: 'fire', dmg: 30, speed: 9.5, color: 0xff7a2a, desc: 'Fireball', tag: 'Fireball projectile — 25 energy' },
-    bfname: 'STREET DASH', duname: 'SKY UPPER',
+    bfname: 'STREET DASH', blitzname: 'DRAGON BLITZ', duname: 'SKY UPPER',
     mega: { name: "DRAGON'S JUDGMENT" },
     fin: 'launch', finname: 'LAUNCHER', findesc: 'Pop-up finisher — juggle them in the air',
     moves: [
       ['STREET JAB', 'HIT', 'Quick jab. Chains into cross and kick.'],
       ['DRAGON LUNGE', '→ + HIT', 'Dash punch. Closes distance fast.'],
+      ['DRAGON BLITZ', '→→ + HIT', 'Blitz: double-tap toward, then HIT. Lunging character strike.'],
       ['DRAGON BACKFIST', '← + HIT', 'Step back, spinning backfist with knockback.'],
       ['DRAGON SWEEP', '↓ + HIT', 'Sweep the legs — launches for juggles.'],
       ['DRAGON HOOK', 'HVY', 'Slow, crushing hook. Big damage.'],
@@ -89,12 +90,13 @@ const FIGHTERS = [
   { id: 'ghost', name: 'GHOST', tag: 'Fast striker. Blink and you lose.', hp: 85, dmg: 0.9, spd: 1.25, unlock: { type: 'start' },
     spc2: { name: 'BLINK FLURRY', cost: 35, desc: 'Blink between the 3 nearest enemies, striking each.' },
     qcf: { name: 'PHANTOM STEP', sigkind: 'teleport', dmg: 36, color: 0x9a7bff, desc: 'Blink behind the nearest enemy and strike', tag: 'Teleport strike — 25 energy' },
-    bfname: 'PHASE STEP', duname: 'WRAITH RISE',
+    bfname: 'PHASE STEP', blitzname: 'PHANTOM BLITZ', duname: 'WRAITH RISE',
     mega: { name: 'MIDNIGHT REQUIEM' },
     fin: 'blink', finname: 'BLINK STRIKE', findesc: 'Teleports behind — the unseen finisher',
     moves: [
       ['PHANTOM JAB', 'HIT', 'Fastest jab in the game. Chains into cross and kick.'],
       ['BLINK STEP', '→ + HIT', 'Blink-step punch. Closes distance instantly.'],
+      ['PHANTOM BLITZ', '→→ + HIT', 'Blitz: double-tap toward, then HIT. Lunging character strike.'],
       ['WRAITH FADE', '← + HIT', 'Fade back, snapping backfist.'],
       ['ANKLE BITER', '↓ + HIT', 'Ankle sweep — launches for juggles.'],
       ['WRAITH HOOK', 'HVY', 'Charged hook. Big damage.'],
@@ -107,12 +109,13 @@ const FIGHTERS = [
   { id: 'brick', name: 'BRICK', tag: 'Walking wall. Hits like rent day.', hp: 135, dmg: 1.25, spd: 0.85, unlock: { type: 'start' },
     spc2: { name: 'SEISMIC SLAM', cost: 35, desc: 'Ground pound: shockwave launches everyone near.' },
     qcf: { name: 'RENT COLLECTION', sigkind: 'grab', dmg: 46, color: 0xffb02e, desc: 'Command grab — yank and slam', tag: 'Command grab — 25 energy' },
-    bfname: 'PAVEMENT RUSH', duname: 'HIGH-RISE',
+    bfname: 'PAVEMENT RUSH', blitzname: 'BATTERING RAM', duname: 'HIGH-RISE',
     mega: { name: 'RENT DUE' },
     fin: 'slam', finname: 'CURB STOMP', findesc: 'AOE slam — shakes the whole block',
     moves: [
       ['CONCRETE JAB', 'HIT', 'Heavy jab. Chains into cross and kick.'],
       ['BULLDOZER', '→ + HIT', 'Bulldozer dash punch.'],
+      ['BATTERING RAM', '→→ + HIT', 'Blitz: double-tap toward, then HIT. Lunging character strike.'],
       ['WRECKING BACKFIST', '← + HIT', 'Step back, wrecking-ball backfist.'],
       ['TREE-TRUNK SWEEP', '↓ + HIT', 'Tree-trunk sweep — launches for juggles.'],
       ['RENT COLLECTOR', 'HVY', 'The rent collector. Huge damage.'],
@@ -125,12 +128,13 @@ const FIGHTERS = [
   { id: 'kingpin', name: 'KINGPIN', tag: 'Used to run this block. Now he runs with you.', hp: 150, dmg: 1.3, spd: 0.9, unlock: { type: 'boss', boss: 'kingpin' },
     spc2: { name: "KINGPIN'S WRATH", cost: 35, desc: 'Royal beatdown: massive AOE around him.' },
     qcf: { name: 'ROYAL DECREE', sigkind: 'orb', kind: 'orb', dmg: 40, speed: 5, color: 0xffd166, desc: 'Slow explosive orb', tag: 'Explosive orb — 25 energy' },
-    bfname: 'HOSTILE MARCH', duname: 'THRONE RISE',
+    bfname: 'HOSTILE MARCH', blitzname: 'ROYAL CHARGE', duname: 'THRONE RISE',
     mega: { name: 'HOSTILE TAKEOVER' },
     fin: 'gavel', finname: 'GAVEL DROP', findesc: 'Heavy single hit — long hit-stop',
     moves: [
       ['BOSS JAB', 'HIT', 'Boss-grade jab. Chains into cross and kick.'],
       ['POWER MARCH', '→ + HIT', 'Power dash punch.'],
+      ['ROYAL CHARGE', '→→ + HIT', 'Blitz: double-tap toward, then HIT. Lunging character strike.'],
       ['ROYAL BACKHAND', '← + HIT', 'Step back, royal backhand.'],
       ['CANE SWEEP', '↓ + HIT', 'Cane sweep — launches for juggles.'],
       ['THE GAVEL', 'HVY', 'The gavel. Enormous damage.'],
@@ -143,12 +147,13 @@ const FIGHTERS = [
   { id: 'sledge', name: 'SLEDGE', tag: 'Yard enforcer. Swings first, talks never.', hp: 165, dmg: 1.45, spd: 0.8, unlock: { type: 'boss', boss: 'sledge' },
     spc2: { name: 'WRECKING SWING', cost: 35, desc: '360° swing that clears the whole circle.' },
     qcf: { name: 'IRON CYCLONE', sigkind: 'spin', dmg: 16, color: 0x80ed99, desc: 'Traveling spin — multi-hit', tag: 'Traveling spin — 25 energy' },
-    bfname: 'WRECKING RUSH', duname: 'CRANE UPPER',
+    bfname: 'WRECKING RUSH', blitzname: 'SLEDGEHAMMER RUN', duname: 'CRANE UPPER',
     mega: { name: 'DEMOLITION DAY' },
     fin: 'demo', finname: 'DEMOLITION', findesc: 'Far knockback — total wreckage',
     moves: [
       ['SLEDGE JAB', 'HIT', 'Sledgehammer jab. Chains into cross and kick.'],
       ['TACKLE CHARGE', '→ + HIT', 'Charging shoulder tackle.'],
+      ['SLEDGEHAMMER RUN', '→→ + HIT', 'Blitz: double-tap toward, then HIT. Lunging character strike.'],
       ['YARD SWING', '← + HIT', 'Step back, wrecking swing.'],
       ['DEMOLITION SWEEP', '↓ + HIT', 'Demolition sweep — launches for juggles.'],
       ['FULL SLEDGE', 'HVY', 'Full sledge. Devastating.'],
@@ -161,12 +166,13 @@ const FIGHTERS = [
   { id: 'viper', name: 'VIPER', tag: 'Fast hands, faster mouth.', hp: 95, dmg: 1.05, spd: 1.35, unlock: { type: 'boss', boss: 'viper' },
     spc2: { name: 'VENOM DASH', cost: 35, desc: 'Serpent dash: strikes everything in a line.' },
     qcf: { name: "SERPENT'S WAKE", sigkind: 'groundwave', kind: 'fangwave', dmg: 26, speed: 9, color: 0x7cff6b, desc: 'Ground fang wave', tag: 'Ground fang wave — 25 energy' },
-    bfname: 'SERPENT DASH', duname: 'COIL SPRING',
+    bfname: 'SERPENT DASH', blitzname: 'VIPER STRIKE', duname: 'COIL SPRING',
     mega: { name: "SERPENT'S COIL" },
     fin: 'dot', finname: 'FANG BARB', findesc: 'Venom keeps chewing — damage over time',
     moves: [
       ['FANG FLICKER', 'HIT', 'Flicker jab. Chains into cross and kick.'],
       ['SERPENT STRIKE', '→ + HIT', 'Serpent strike dash.'],
+      ['VIPER STRIKE', '→→ + HIT', 'Blitz: double-tap toward, then HIT. Lunging character strike.'],
       ['SLITHER BACK', '← + HIT', 'Slither back, snapping strike.'],
       ['TAIL SWEEP', '↓ + HIT', 'Tail sweep — launches for juggles.'],
       ['THE FANG', 'HVY', 'The fang. Big damage.'],
@@ -179,12 +185,13 @@ const FIGHTERS = [
   { id: 'dust', name: 'DUST', tag: 'Quick hands. Gone before you blink.', hp: 80, dmg: 0.95, spd: 1.4, unlock: { type: 'boss', boss: 'rust' },
     spc2: { name: 'DUST DEVIL', cost: 35, desc: 'Spin into the pack: AOE hits while moving.' },
     qcf: { name: 'DESERT SPIKES', sigkind: 'erupt', dmg: 30, color: 0xd8b56b, desc: 'Spikes erupt under nearby enemies', tag: 'Ground eruption — 25 energy' },
-    bfname: 'DUST RUSH', duname: 'HABOOB RISE',
+    bfname: 'DUST RUSH', blitzname: 'DUST DEVIL', duname: 'HABOOB RISE',
     mega: { name: 'DUST BOWL' },
     fin: 'cyclone', finname: 'CYCLONE LIFT', findesc: 'Extended air — juggle them longer',
     moves: [
       ['DUST JAB', 'HIT', 'Fastest hands on the block. Chains into cross and kick.'],
       ['SMOKE STEP', '→ + HIT', 'Dust-step punch. Closes distance like smoke.'],
+      ['DUST DEVIL', '→→ + HIT', 'Blitz: double-tap toward, then HIT. Lunging character strike.'],
       ['WHIP BACKFIST', '← + HIT', 'Slip back, whipping backfist.'],
       ['DUST-CLOUD SWEEP', '↓ + HIT', 'Dust-cloud sweep — launches for juggles.'],
       ['STORM BACKHAND', 'HVY', 'The backhand of the storm. Big damage.'],
@@ -196,12 +203,13 @@ const FIGHTERS = [
     unlock: { type: 'boss', boss: 'pumpkinking' }, head: 'pumpkin', tint: 0xe07b1f,
     spc2: { name: 'CANDLE RUSH', cost: 35, desc: 'Burning dash: leaves a fire trail through the pack.' },
     qcf: { name: 'PUMPKIN BOMB', sigkind: 'fireball', kind: 'fire', dmg: 34, speed: 8, color: 0xff7a1a, arc: 1, desc: 'Lobbed flaming pumpkin', tag: 'Lobbed pumpkin bomb — 25 energy' },
-    bfname: 'PATCH SPRINT', duname: 'SCARECROW RISE',
+    bfname: 'PATCH SPRINT', blitzname: 'HARVEST RUSH', duname: 'SCARECROW RISE',
     mega: { name: 'GREAT PUMPKIN' },
     fin: 'launch', finname: 'PORCH STOMP', findesc: 'Curb stomp with a burning grin',
     moves: [
       ['PATCH JAB', 'HIT', 'Quick vine jab. Chains into cross and kick.'],
       ['VINE LUNGE', '→ + HIT', 'Vine-whip lunge punch. Closes distance fast.'],
+      ['HARVEST RUSH', '→→ + HIT', 'Blitz: double-tap toward, then HIT. Lunging character strike.'],
       ['HAYMAKER', '← + HIT', 'Step back, haymaker backfist with knockback.'],
       ['ROOT SWEEP', '↓ + HIT', 'Root sweep — launches for juggles.'],
       ['GOURD CRUSHER', 'HVY', 'Overhead gourd crusher. Big damage.'],
@@ -1996,6 +2004,9 @@ function doPunch() {
   // fighting-game motion input + HIT (additive: plain tap combat unchanged)
   const mot = detectMotion();
   if (mot) { doMotionSpecial(mot); return; }
+  // BLITZ (Streets of Rage 4): double-tap toward + HIT = character-specific lunging strike
+  const _fdir = player.face > 0 ? 'R' : 'L';
+  if (seqMatch([_fdir, _fdir], 0.5) && (player.blitzCD || 0) <= 0) { doBlitz(); return; }
   // aerial: dive kick
   if (player.airT > 0) { doJumpAttack(); return; }
   let ce = null;
@@ -2051,6 +2062,32 @@ function doPunch() {
     damageDestructibles(1.7);
     damageDestructibles(range);
   }, delay * 1000);
+}
+function doBlitz() {
+  if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.busy > 0) return;
+  const fd = fighterDef(player.fid);
+  const face = player.face || 1;
+  player.blitzCD = 1.4; player.busy = 0.34;
+  const lunge = 2.6 * face;
+  const x0 = player.px;
+  player.px = clamp(player.px + lunge, 0.5, mission.len === Infinity ? 1e6 : mission.len - 1.5);
+  player.blitzX0 = x0; player.blitzX1 = player.px;
+  playAnim(player, 'Melee_Unarmed_Attack_Punch_A', { ts: 2.6 * (player.spd || 1), fade: 0.05 });
+  sfx('whoosh', 0.7, false, 0.9);
+  sparkFX(player.px + face * 0.6, 1.1, player.pz, 0xffd166, 10);
+  ev('blitz', {});
+  setTimeout(() => {
+    if (state !== 'fight' || missionOver || ended) return;
+    const bfx = blessFx();
+    const xa = Math.min(player.blitzX0 ?? player.px, player.blitzX1 ?? player.px) - 1.1;
+    const xb = Math.max(player.blitzX0 ?? player.px, player.blitzX1 ?? player.px) + 1.1;
+    for (const e of enemies) {
+      if (e.hp <= 0 || e.dead) continue;
+      if (e.px > xa && e.px < xb && Math.abs(e.pz - player.pz) < 1.25)
+        landHit(e, Math.round(24 * player.dmgMult * (1 + (bfx.punchDmg || 0))), (fd.blitzname || 'BLITZ'), 0.08, 0.35, false, false);
+    }
+    damageDestructibles(2.4);
+  }, 140);
 }
 function doTaunt() {
   // TMNT taunt: talk trash, build special meter. Pure addition — costs a beat of vulnerability.
@@ -2280,7 +2317,18 @@ function killEnemy(e) {
 }
 function hurtPlayer(dmg) {
   if (!player || player.hp <= 0 || missionOver || ended) return;
-  if (player.dodgeT > 0) return;
+  // WITCH TIME (Bayonetta): dodge at the last instant — the world slows for you (a big moment, not every hit)
+  if (player.dodgeT > 0) {
+    if (player.dodgeT > 0.16 && (player.witchCD || 0) <= 0) {
+      player.witchCD = 3;
+      addSlowmo(0.22, 1.1); shake = 0.35; flash('#9a7bff');
+      banner('WITCH TIME'); sfx('bell', 1, true);
+      player.energy = clamp(player.energy + 20 * (1 + (blessFx().energyGain || 0)), 0, energyMax());
+      sparkFX(player.px, 1.2, player.pz, 0x9a7bff, 18);
+      ev('witchtime', {});
+    }
+    return;
+  }
   dmg = Math.max(1, Math.round(dmg * (1 - (blessFx().armor || 0)))); // IRON SKIN
   dmgTaken += dmg; player.hp -= dmg; combo = 0; shake = 0.3; hitstop = 0.05; flash('#ff2a2a'); sfx('hit2', 0.8, false, 0.7);
   player.energy = clamp(player.energy + 12 * (1 + (blessFx().energyGain || 0)), 0, energyMax());
@@ -2758,6 +2806,8 @@ function playerUpdate(dt) {
   const p = player;
   if (p.dodgeT > 0) p.dodgeT -= dt;
   if (p.dodgeCD > 0) p.dodgeCD -= dt;
+  if (p.blitzCD > 0) p.blitzCD -= dt;
+  if (p.witchCD > 0) p.witchCD -= dt;
   // DASH STRIKE (Ruiner-inspired): the dodge IS a weapon — plow through an enemy once per dodge
   if (p.dodgeT > 0 && !p.dashStruck) {
     for (const e of enemies) {
@@ -3286,6 +3336,11 @@ window.__cdtest = {
   healPlayer: () => { if (player) { player.hp = player.maxHp || 100; setHud(); } },
   esigLog: () => T.esig || {}, bsigLog: () => T.bsig || {},
   showMission: () => showMission(),
+  dbgBlitz: () => { doBlitz(); return player.blitzCD; },
+  dbgHurt: (d) => hurtPlayer(d),
+  dbgDodgeT: (v) => { if (player) player.dodgeT = v; return player.dodgeT; },
+  dbgEvents: () => T.events.map((e) => e.name),
+  dbgPlayer: () => player ? { hp: player.hp, energy: Math.round(player.energy), px: +player.px.toFixed(2), witchCD: +(player.witchCD||0).toFixed(2), blitzCD: +(player.blitzCD||0).toFixed(2) } : null,
   dbgBoss: (id) => { const b = bossDef(id); return b ? { name: b.name, hp: b.hp, proc: !!b.proc, sig: b.sig ? b.sig.name : null } : null; },
   seasonFams: () => { const s = activeSeason(); return s ? s.fams : []; },
   dbgBless: (ids) => { save.blessings = ids; writeSave(); return { fx: blessFx(), duo: blessDuo() ? blessDuo().name : null }; },
