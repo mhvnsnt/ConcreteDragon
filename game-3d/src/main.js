@@ -73,6 +73,7 @@ const FIGHTERS = [
     qcf: { name: "DRAGON'S BREATH", sigkind: 'fireball', kind: 'fire', dmg: 30, speed: 9.5, color: 0xff7a2a, desc: 'Fireball', tag: 'Fireball projectile — 25 energy' },
     bfname: 'STREET DASH', blitzname: 'DRAGON BLITZ', duname: 'SKY UPPER',
     mega: { name: "DRAGON'S JUDGMENT" },
+    stance: { name: "RUSH STANCE", dmg: 0.85, spd: 1.25, desc: "All hands, no brakes. Faster, lighter hits." },
     fin: 'launch', finname: 'LAUNCHER', findesc: 'Pop-up finisher — juggle them in the air',
     moves: [
       ['STREET JAB', 'HIT', 'Quick jab. Chains into cross and kick.'],
@@ -92,6 +93,7 @@ const FIGHTERS = [
     qcf: { name: 'PHANTOM STEP', sigkind: 'teleport', dmg: 36, color: 0x9a7bff, desc: 'Blink behind the nearest enemy and strike', tag: 'Teleport strike — 25 energy' },
     bfname: 'PHASE STEP', blitzname: 'PHANTOM BLITZ', duname: 'WRAITH RISE',
     mega: { name: 'MIDNIGHT REQUIEM' },
+    stance: { name: "WRAITH STANCE", dmg: 1.2, spd: 0.95, desc: "Blinks hit harder. Meaner, not faster." },
     fin: 'blink', finname: 'BLINK STRIKE', findesc: 'Teleports behind — the unseen finisher',
     moves: [
       ['PHANTOM JAB', 'HIT', 'Fastest jab in the game. Chains into cross and kick.'],
@@ -111,6 +113,7 @@ const FIGHTERS = [
     qcf: { name: 'RENT COLLECTION', sigkind: 'grab', dmg: 46, color: 0xffb02e, desc: 'Command grab — yank and slam', tag: 'Command grab — 25 energy' },
     bfname: 'PAVEMENT RUSH', blitzname: 'BATTERING RAM', duname: 'HIGH-RISE',
     mega: { name: 'RENT DUE' },
+    stance: { name: "PAYLOAD STANCE", dmg: 1.35, spd: 0.78, desc: "The wall walks forward." },
     fin: 'slam', finname: 'CURB STOMP', findesc: 'AOE slam — shakes the whole block',
     moves: [
       ['CONCRETE JAB', 'HIT', 'Heavy jab. Chains into cross and kick.'],
@@ -130,6 +133,7 @@ const FIGHTERS = [
     qcf: { name: 'ROYAL DECREE', sigkind: 'orb', kind: 'orb', dmg: 40, speed: 5, color: 0xffd166, desc: 'Slow explosive orb', tag: 'Explosive orb — 25 energy' },
     bfname: 'HOSTILE MARCH', blitzname: 'ROYAL CHARGE', duname: 'THRONE RISE',
     mega: { name: 'HOSTILE TAKEOVER' },
+    stance: { name: "IRON THRONE", dmg: 1.2, spd: 0.92, desc: "Every decree lands heavier." },
     fin: 'gavel', finname: 'GAVEL DROP', findesc: 'Heavy single hit — long hit-stop',
     moves: [
       ['BOSS JAB', 'HIT', 'Boss-grade jab. Chains into cross and kick.'],
@@ -149,6 +153,7 @@ const FIGHTERS = [
     qcf: { name: 'IRON CYCLONE', sigkind: 'spin', dmg: 16, color: 0x80ed99, desc: 'Traveling spin — multi-hit', tag: 'Traveling spin — 25 energy' },
     bfname: 'WRECKING RUSH', blitzname: 'SLEDGEHAMMER RUN', duname: 'CRANE UPPER',
     mega: { name: 'DEMOLITION DAY' },
+    stance: { name: "DEMOLITION STANCE", dmg: 1.3, spd: 0.85, desc: "Swinging for the fences." },
     fin: 'demo', finname: 'DEMOLITION', findesc: 'Far knockback — total wreckage',
     moves: [
       ['SLEDGE JAB', 'HIT', 'Sledgehammer jab. Chains into cross and kick.'],
@@ -168,6 +173,7 @@ const FIGHTERS = [
     qcf: { name: "SERPENT'S WAKE", sigkind: 'groundwave', kind: 'fangwave', dmg: 26, speed: 9, color: 0x7cff6b, desc: 'Ground fang wave', tag: 'Ground fang wave — 25 energy' },
     bfname: 'SERPENT DASH', blitzname: 'VIPER STRIKE', duname: 'COIL SPRING',
     mega: { name: "SERPENT'S COIL" },
+    stance: { name: "COIL STANCE", dmg: 1.1, spd: 1.22, desc: "Strike from anywhere." },
     fin: 'dot', finname: 'FANG BARB', findesc: 'Venom keeps chewing — damage over time',
     moves: [
       ['FANG FLICKER', 'HIT', 'Flicker jab. Chains into cross and kick.'],
@@ -187,6 +193,7 @@ const FIGHTERS = [
     qcf: { name: 'DESERT SPIKES', sigkind: 'erupt', dmg: 30, color: 0xd8b56b, desc: 'Spikes erupt under nearby enemies', tag: 'Ground eruption — 25 energy' },
     bfname: 'DUST RUSH', blitzname: 'DUST DEVIL', duname: 'HABOOB RISE',
     mega: { name: 'DUST BOWL' },
+    stance: { name: "STORM STANCE", dmg: 1.05, spd: 1.3, desc: "Become the weather." },
     fin: 'cyclone', finname: 'CYCLONE LIFT', findesc: 'Extended air — juggle them longer',
     moves: [
       ['DUST JAB', 'HIT', 'Fastest hands on the block. Chains into cross and kick.'],
@@ -205,6 +212,7 @@ const FIGHTERS = [
     qcf: { name: 'PUMPKIN BOMB', sigkind: 'fireball', kind: 'fire', dmg: 34, speed: 8, color: 0xff7a1a, arc: 1, desc: 'Lobbed flaming pumpkin', tag: 'Lobbed pumpkin bomb — 25 energy' },
     bfname: 'PATCH SPRINT', blitzname: 'HARVEST RUSH', duname: 'SCARECROW RISE',
     mega: { name: 'GREAT PUMPKIN' },
+    stance: { name: "HARVEST STANCE", dmg: 1.25, spd: 0.9, desc: "The patch feeds on pain." },
     fin: 'launch', finname: 'PORCH STOMP', findesc: 'Curb stomp with a burning grin',
     moves: [
       ['PATCH JAB', 'HIT', 'Quick vine jab. Chains into cross and kick.'],
@@ -242,6 +250,7 @@ for (const f of FIGHTERS) {
     ['WALL SPLAT', 'Launch near props', 'Slam them into scenery for bonus damage'],
     ['↑↑↓←→ + SPC', f.mega.name, 'MEGA SUPER — needs FULL energy. Cinematic.'],
     ['4TH HIT', f.finname, f.findesc],
+    ['STANCE', 'TAUNT ×2 / double-tap T', 'Swap loadouts: ' + (f.stance ? f.stance.name + ' — ' + f.stance.desc : 'balanced')],
   );
 }
 const DIFFS = [
@@ -1934,7 +1943,7 @@ function startMission(id, node) {
   player.baseSpd = player.spd;
   player.px = 2; player.pz = 0; player.face = 1;
   player.energy = 50; player.dodgeT = 0; player.dodgeCD = 0; player.busy = 0; player.spinT = 0;
-  player.animMove = false;
+  player.animMove = false; player.stance = 0; // mixtape stance resets to balanced each mission
   playAnim(player, 'Melee_Unarmed_Idle', { loop: true });
   spawnQueue = mission.spawns.map((s) => Object.assign({}, s, { done: false })).sort((a, b) => a.at - b.at);
   bossSpawned = false; bossRef = null; missionOver = false; ended = false;
@@ -2214,6 +2223,33 @@ function doTaunt() {
   popText('COME ON!', 'spc', sp.x, sp.y);
   sfx('uiclick', 0.6, false, 0.7);
   setHud(); ev('taunt', {});
+}
+function doStance() {
+  // MIXTAPE STANCE SYSTEM (Double Dragon Neon): two switchable loadouts mid-fight.
+  // Double-tap TAUNT swaps stances — trade damage for speed or vice versa. Style, not power: pure tradeoff.
+  if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.busy > 0 || player.airT > 0) return;
+  unlockAudio();
+  const fd = fighterDef();
+  player.stance = player.stance ? 0 : 1;
+  const st = fd.stance;
+  const baseD = fd.dmg * powerMult() * (1 + (blessFx().dmg || 0));
+  const baseS = fd.spd * (1 + (blessFx().spd || 0) + (blessFx().moveSpd || 0) + (save.up_speed || 0) * 0.04);
+  if (player.stance === 1 && st) {
+    player.baseDmgMult = baseD * st.dmg; player.baseSpd = baseS * st.spd;
+    banner(st.name, 'spc');
+    const sp = screenPos(player.root.position.clone().add(new THREE.Vector3(0, 2.4, 0)));
+    popText(st.desc, 'gold', sp.x, sp.y);
+  } else {
+    player.baseDmgMult = baseD; player.baseSpd = baseS;
+    banner('BALANCED STANCE', 'spc');
+  }
+  // RADICAL/RAGE recompute from base every frame; otherwise snap current values now
+  if (!(player.radicalT > 0) && !(player.rageT > 0)) { player.dmgMult = player.baseDmgMult; player.spd = player.baseSpd; }
+  player.busy = 0.4;
+  playAnim(player, 'Melee_Unarmed_Idle', { ts: 1.6, fade: 0.1 });
+  sfx('uiclick', 0.9, false, 1.2);
+  sparkFX(player.px, 1.4, player.pz, 0xff4fd8, 10);
+  setHud(); ev('stance', { stance: player.stance });
 }
 function doJump() {
   if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.busy > 0) return;
@@ -2557,6 +2593,7 @@ function nearMiss(e) {
 // ---------- input: left-half stick, right-half tap, buttons ----------
 const stick = { active: false, id: null, ox: 0, oy: 0, dx: 0, dy: 0 };
 let showcaseDragX = null;
+let tauntLastT = 0, tauntKeyLastT = 0; // double-tap detection for stance swap
 function stickStart(e) {
   stick.active = true; stick.id = e.pointerId; stick.ox = e.clientX; stick.oy = e.clientY; stick.dx = 0; stick.dy = 0;
   const s = $('stick'); s.style.display = 'block'; s.style.left = (stick.ox - 55) + 'px'; s.style.top = (stick.oy - 55) + 'px';
@@ -2606,7 +2643,12 @@ function setupInput() {
   $('againBtn').addEventListener('click', (e) => { e.stopPropagation(); unlockAudio(); sfx('uiclick', 0.8); showMission(); });
   $('backBtn').addEventListener('click', (e) => { e.stopPropagation(); sfx('uiclick', 0.8); showSelect(); });
   $('pauseBtn').addEventListener('click', (e) => { e.stopPropagation(); togglePause(); });
-  $('tauntBtn').addEventListener('click', (e) => { e.stopPropagation(); doTaunt(); });
+  $('tauntBtn').addEventListener('click', (e) => {
+    e.stopPropagation();
+    // double-tap TAUNT = stance swap (mixtape system); single = taunt
+    const now = performance.now();
+    if (now - tauntLastT < 350) { tauntLastT = 0; doStance(); } else { tauntLastT = now; doTaunt(); }
+  });
   $('resumeBtn').addEventListener('click', (e) => { e.stopPropagation(); togglePause(false); });
   $('restartBtn').addEventListener('click', (e) => { e.stopPropagation(); togglePause(false); startMission(mission.id); });
   $('quitBtn').addEventListener('click', (e) => { e.stopPropagation(); setPaused(false); $('pauseOv').classList.add('hidden'); showMission(); });
@@ -2645,7 +2687,7 @@ function setupInput() {
     if (k === 'k') doHeavy();
     if (k === 'l') doDodge();
     if (k === 'u') doSpecial();
-    if (k === 't') doTaunt();
+    if (k === 't') { const now = performance.now(); if (now - tauntKeyLastT < 350) { tauntKeyLastT = 0; doStance(); } else { tauntKeyLastT = now; doTaunt(); } }
     if (k === ' ') { e.preventDefault(); doJump(); }
   });
   document.addEventListener('keyup', (e) => {
@@ -3438,7 +3480,7 @@ function setHud() {
   if (!player) return;
   const fd = fighterDef();
   $('php').style.width = Math.max(0, player.hp / player.maxHp * 100) + '%';
-  $('pname').textContent = fd.name;
+  $('pname').textContent = fd.name + (player.stance && fd.stance ? ' — ' + fd.stance.name : '');
   const e = (bossRef && bossRef.hp > 0) ? bossRef : nearestEnemy(99);
   if (e) { $('ehp').style.width = Math.max(0, e.hp / e.maxHp * 100) + '%'; $('ename').textContent = e.name; }
   else { $('ehp').style.width = '0%'; $('ename').textContent = ''; }
@@ -3611,7 +3653,8 @@ window.__cdtest = {
   dbgRep: (r) => { save.rep = r; writeSave(); const d = effDiff(); return { hpMul: +d.hpMul.toFixed(2), dmgMul: +d.dmgMul.toFixed(2), cash: +repMult().cash.toFixed(2) }; },
   spawnCreature: (cid) => { if (player) { const e = makeCreatureRaw(cid, 0xffffff, player.px + 3, -Math.PI / 2, 1); if (e) { e.maxHp = e.hp = 200; e.dmgMult = 1; e.spd = 1.5; e.px = player.px + 3; e.pz = 0; e.ai = 'walk'; e.aiT = 1; syncPos(e); playAnim(e, 'Running_A', { loop: true }); enemies.push(e); } return e; } },
   hurt: (n) => { if (player) hurtPlayer(n); },
-  doJump, doPunch, doHeavy, doSpecial, doTaunt, doDesperation,
+  doJump, doPunch, doHeavy, doSpecial, doTaunt, doDesperation, doStance,
+  stanceInfo: () => player ? { stance: player.stance || 0, name: (player.stance && fighterDef().stance) ? fighterDef().stance.name : 'BALANCED', dmg: +player.dmgMult.toFixed(2), spd: +player.spd.toFixed(2) } : null,
   step: (dt) => { playerUpdate(dt || 1 / 60); }, // drive the real physics deterministically
   estep: (dt) => { for (const e of enemies.slice()) enemyAI(e, dt || 1 / 60); }, // drive enemy AI deterministically (test only)
   dbg: () => player ? { st: state, mo: missionOver, en: ended, hp: player.hp, busy: player.busy, airT: player.airT, py: player.py, vy: player.vy, frames: dbgFrames } : null,
@@ -3622,6 +3665,7 @@ window.__cdtest = {
   pickups: () => pickups.map((p) => p.type),
   smash: (i) => { const d = destructibles[i]; if (d) destroyDestructible(d); },
   setDiff: (id) => { save.difficulty = id; writeSave(); },
+  zeroBusy: () => { if (player) player.busy = 0; },
   info: () => ({ px: player ? +player.px.toFixed(1) : 0, hp: player ? Math.round(player.hp) : 0, foes: enemies.length, boss: bossRef ? Math.round(bossRef.hp) : 0, cash: cashRun, kills }),
   foes: () => enemies.map((e) => ({ px: +e.px.toFixed(2), pz: +(e.pz || 0).toFixed(2), ai: e.ai, hp: Math.round(e.hp), name: e.name, wu: +((e.windup || 0).toFixed(2)) })),
   // combat+cinematics wave: motion inputs, energy, mega, projectiles, cine

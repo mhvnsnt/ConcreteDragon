@@ -96,3 +96,27 @@ Per-pack LICENSE.md files in each parts/<pack>/ dir. All GLBs verified (valid gl
 - **Kenney rate limit:** 5 more packs (city-kit-industrial, graveyard, modular-dungeon, fantasy-town, factory) truncated by kenney.nl on shared egress IP — retry later.
 - **Quaternius Drive:** quota-blocked; used Poly Pizza CC0 mirrors for the 4 brawlers.
 - **KayKit itch.io:** free download needs browser session (download key flow).
+
+## Wave 6 — universe models + animations (2026-10-07, owner: "more models and animations that fit our universe too")
+
+| Pack | Source | License | Contents → use |
+|------|--------|---------|----------------|
+| kenney-city-kit-industrial (37 GLB) | https://kenney.nl/assets/city-kit-industrial (direct zip) | CC0 (bundled License.txt) | industrial buildings/warehouses/smokestacks — industrial districts |
+| kenney-factory-kit (143 GLB) | https://kenney.nl/assets/factory-kit (direct zip) | CC0 (bundled License.txt) | machinery/conveyors/pipes/containers — factory arenas, smashables |
+| kenney-fantasy-town-kit (167 GLB) | https://kenney.nl/assets/fantasy-town-kit (direct zip) | CC0 (bundled License.txt) | town buildings/market stalls/towers — district backdrops |
+| kaykit-adventures-anims (5 GLB) | https://github.com/KayKit-Game-Assets/KayKit-Character-Pack-Adventures-1.0 | CC0 (bundled LICENSE.txt) | 5 chars × ~75 clips: Unarmed Punch_A/B, Kick, Dodge x4, Hit, Death — THE fight-animation library; itch.io download was JS-blocked, GitHub carries identical clips |
+| pp-street-culture (15 GLB) | Poly Pizza model pages (see parts/pp-street-culture/LICENSE.md) | CC-BY ×12 (dook/Google) + CC0 ×3 | boomboxes, graffiti walls, basketball hoops, fire escapes, subway cars, food carts, lowriders |
+| pp-animated-fighters (6 GLB) | Poly Pizza model pages (see parts/pp-animated-fighters/LICENSE.md) | CC0 ×4 + CC-BY ×2 (dook) | skeleton (15 clips), zombie (16), robot-enemy (7), enemy-small (8, Punch), knight, female-fighter |
+| pp-street-weapons (5 GLB) | Poly Pizza model pages (see parts/pp-street-weapons/LICENSE.md) | CC0 ×1 + CC-BY ×4 | chain, pipe, duct-pipe, beer/water bottles |
+| pp-more-creatures (4 GLB) | Poly Pizza model pages (see parts/pp-more-creatures/LICENSE.md) | CC0 ×1 + CC-BY ×3 | scarecrow, goblin, frog (animated), giant squid |
+
+Per-pack LICENSE.md files in each parts/<pack>/ dir. All GLBs verified (valid glTF magic; clip sets read from GLB JSON).
+
+### Browser-pull candidates — wave 6 (Sketchfab session signed in as MHVNSNT)
+- Boxing Gloves - Right Handed by Gohar.Munir — CC-BY — https://sketchfab.com/3d-models/boxing-gloves-right-handed-1ae09e8e4959418b9c4274f9515c5d29
+- Crowbar - Game Ready Low Poly by Wonderful Optics Workshop — CC-BY — https://sketchfab.com/3d-models/crowbar-game-ready-low-poly-ec466870e57b4198b57b854bf9d37beb
+
+### Logged gaps — wave 6 (honest)
+- **Kenney graveyard-pack / modular-dungeon-pack:** slugs don't exist on kenney.nl (closest: mini-dungeon, modular-cave-kit); graveyard covered by kaykit-halloween-bits (wave 3).
+- **Sketchfab MelonMan sledgehammer:** Standard license, no download — skipped per CC-only rule (browser task verified).
+- **KayKit itch.io animations:** JS-driven download uncapturable — SOLVED via GitHub CC0 repos (identical clips).

@@ -297,3 +297,26 @@ browser-pull); 5 more Kenney packs rate-limited (retry later);
 Quaternius Drive quota-blocked (used Poly Pizza mirrors);
 KayKit character animations need browser session (itch.io free tier);
 Sketchfab sledgehammers/trashcans need browser session.
+
+## §13 — Wave 6: universe models + animations (2026-10-07)
+
+Owner: "more models and animations that fit our universe too." 382 models across 8 packs.
+
+| Pack | Models | License | Use |
+|---|---|---|---|
+| kenney-city-kit-industrial | 37 GLB | CC0 | industrial buildings, warehouses, smokestacks — industrial districts |
+| kenney-factory-kit | 143 GLB | CC0 | machinery, conveyors, pipes, containers — factory arenas, smashables |
+| kenney-fantasy-town-kit | 167 GLB | CC0 | town buildings, market stalls, towers — varied district backdrops |
+| kaykit-adventures-anims | 5 GLB | CC0 | Knight/Barbarian/Mage/Rogue/Rogue_Hooded, ~75 clips each incl. Unarmed Punch_A/B, Kick, Dodge x4, Hit_A/B, Death — THE fight-animation library |
+| pp-street-culture | 15 GLB | CC-BY x12 + CC0 x3 | boomboxes, graffiti walls, basketball hoops, fire escapes, subway cars, food carts, lowriders |
+| pp-animated-fighters | 6 GLB | CC0 x4 + CC-BY x2 | skeleton (15 clips), zombie (16 clips), robot-enemy (7 clips), enemy-small (8 clips incl. Punch), knight, female-fighter |
+| pp-street-weapons | 5 GLB | CC0 x1 + CC-BY x4 | chain, pipe, duct-pipe, beer bottle, water bottle — street plunder |
+| pp-more-creatures | 4 GLB | CC0 x1 + CC-BY x3 | scarecrow, goblin, frog (ANIMATED), giant squid (sea-monster boss tier) |
+
+**KayKit animation retrieval — SOLVED:** the itch.io "KayKit Character Animations" free download is JS-driven and uncapturable by automation; the identical clips ship embedded in the GitHub CC0 repos (KayKit-Game-Assets/KayKit-Character-Pack-Adventures-1.0). Retarget these clips onto game fighters.
+
+**Sketchfab browser-pull candidates (CC verified from search, session signed in as MHVNSNT):**
+- Boxing Gloves - Right Handed by Gohar.Munir (CC-BY, game-ready LODs): https://sketchfab.com/3d-models/boxing-gloves-right-handed-1ae09e8e4959418b9c4274f9515c5d29
+- Crowbar - Game Ready Low Poly by Wonderful Optics Workshop (CC-BY): https://sketchfab.com/3d-models/crowbar-game-ready-low-poly-ec466870e57b4198b57b854bf9d37beb
+
+**Attribution debt (CC-BY):** dook, Google (Poly Pizza), JellyLion, Quaternius, Tulio Portela, mynameisRJ, VanHyfte_Clement, wesamtufail, Oliver Wobst, caz, Aaron Clifford, Ian MacGillivray, Zsky, Gohar.Munir (pending), Wonderful Optics Workshop (pending) — all on the in-game credits screen.
