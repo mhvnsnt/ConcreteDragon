@@ -162,5 +162,9 @@
 {
     "file": "roads.glb",
     "source": "Kenney city-kit-roads (CC0 1.0) \u2014 overpass district props"
+  },
+{
+    "file": "industrial.glb",
+    "source": "Kenney city-kit-industrial (CC0 1.0) \u2014 factory district props"
   }
 ]

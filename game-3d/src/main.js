@@ -547,6 +547,8 @@ const DISTRICTS = [
     moon: [0xffd9a0, 1.3], rim: [0xff6a00, 1.6], lampA: 0xff8c42, lampB: 0x6ab8d8, ground: 0x241c16, sw: ['#ff8c42', '#6ab8d8'] },
   { id: 'overpass', name: 'THE OVERPASS', sky: 0x141020, fog: [0x141020, 10, 30], hemi: [0xffc98a, 0x141020, 1.1],
     moon: [0xcfd8ff, 1.1], rim: [0x5a8aa8, 1.4], lampA: 0xffb347, lampB: 0x7af0ff, ground: 0x22242c, sw: ['#ffb347', '#7af0ff'] },
+  { id: 'industrial', name: 'THE IRONWORKS', sky: 0x0e1116, fog: [0x0e1116, 8, 26], hemi: [0xd8e2ee, 0x0e1116, 1.0],
+    moon: [0xbfd0ff, 1.1], rim: [0xff6a1a, 1.5], lampA: 0xffa64d, lampB: 0x3ad8ff, ground: 0x232428, sw: ['#ffa64d', '#3ad8ff'] },
 ];
 const districtDef = (id) => DISTRICTS.find((d) => d.id === id) || DISTRICTS[0];
 
@@ -641,6 +643,9 @@ const MISSIONS = [
   { id: 'm5', zone: 'z1', district: 'overpass', name: 'OVERPASS RUN', len: 90, crowd: false,
     spawns: [{ at: 10, fam: 'rico', n: 3 }, { at: 26, fam: 'heavyd', n: 2 }, { at: 42, fam: 'jabber', n: 3 }, { at: 58, fam: 'rico', n: 4 }, { at: 74, fam: 'heavyd', n: 3 }],
     card: 'Six lanes. No exits. No mercy.', boss: 'sledge', purse: 750, unlock: { type: 'mission', id: 'm4' }, reward: 'SLEDGE rematch + $750 purse' },
+  { id: 'm6', zone: 'z1', district: 'industrial', name: 'FACTORY FLOOR', len: 110, crowd: false,
+    spawns: [{ at: 12, fam: 'rico', n: 3 }, { at: 30, fam: 'heavyd', n: 2 }, { at: 48, fam: 'jabber', n: 3 }, { at: 66, fam: 'rico', n: 4 }, { at: 86, fam: 'heavyd', n: 3 }],
+    card: 'Smoke, steel, and no way out.', boss: 'foreman', purse: 750, unlock: { type: 'mission', id: 'm5' }, reward: 'THE FOREMAN rematch + $750 purse' },
   { id: 'h1', zone: 'z2', district: 'graveyard', name: 'GRAVEYARD SHIFT', len: 60, crowd: false,
     spawns: [{ at: 10, fam: 'zombie', n: 2 }, { at: 24, fam: 'pumpkin', n: 2 }, { at: 38, fam: 'witch', n: 2 }, { at: 50, fam: 'spider', n: 2 }],
     card: 'They rose with the fog.', boss: null, unlock: { type: 'mission', id: 'm2' }, reward: 'The dead walk' },
@@ -1040,6 +1045,7 @@ const parse = (name) => new Promise((res, rej) => loader.parse(b64ToBuf(A[name])
 const streetGroup = new THREE.Group(); scene.add(streetGroup);
 let streetParts = {};
 let roadParts = {}; // overpass district kit (Kenney city-kit-roads)
+let indParts = {};  // industrial district kit (Kenney city-kit-industrial)
 let rainPts = null;
 function setRain(on) {
   if (rainPts) { streetGroup.remove(rainPts); rainPts.geometry.dispose(); rainPts = null; }
@@ -1156,6 +1162,7 @@ function buildLayout(kind, L, R, place, curb, K) {
 }
 function buildStreet(district, missionLen, seedFn) {
   if (districtDef(district).id === 'overpass') return buildRoads(district, missionLen, seedFn);
+  if (districtDef(district).id === 'industrial') return buildIndustrial(district, missionLen, seedFn);
   clearStreet();
   const d = districtDef(district);
   applyDistrict(d, (mission && mission.circuitN || 0) * 31 + (mission && mission.id ? mission.id.length : 0) + 7);
@@ -1235,6 +1242,43 @@ function buildRoads(district, missionLen, seedFn) {
   return { curb: -rw / 2, roadW: rw };
 }
 
+// ---------- industrial district (A5 wiring queue item 17: Kenney city-kit-industrial — owner 2026-10-06) ----------
+// Warehouse yard: factory blocks flank the lane with chimneys behind, shipping containers
+// and fuel tanks in the yard, water-tower landmark, solar arrays. Same KayKit-scaled world
+// (K=2.2) so fighters/enemies/colliders behave identically.
+function buildIndustrial(district, missionLen, seedFn) {
+  clearStreet();
+  const d = districtDef(district);
+  applyDistrict(d, (mission && mission.circuitN || 0) * 31 + (mission && mission.id ? mission.id.length : 0) + 13);
+  const R = seedFn || Math.random;
+  const K = 2.2;
+  const place = (name, x, z, ry = 0, sc = K, tint = null) => placeProp(name, x, z, ry, sc, tint, indParts);
+  const L = isFinite(missionLen) ? missionLen + 30 : 220;
+  const blocks = ['ind_building_a', 'ind_building_c', 'ind_building_e', 'ind_building_g',
+    'ind_building_i', 'ind_building_l', 'ind_building_p', 'ind_building_r'];
+  const chims = ['ind_chimney_s', 'ind_chimney_m', 'ind_chimney_l'];
+  for (let x = 0; x < L; x += 24) {
+    const side = (Math.floor(x / 24) % 2 === 0) ? 1 : -1;
+    place(blocks[Math.floor(R() * blocks.length)], x + rnd(-4, 4), side * rnd(12, 16),
+      (side > 0 ? Math.PI : 0) + rnd(-0.25, 0.25), 3.1);
+    if (R() < 0.6) place(chims[Math.floor(R() * chims.length)], x + rnd(-9, 9), -side * rnd(13, 17), R() * 3, 2.8);
+    if (R() < 0.45) place('ind_solar_l', x + rnd(-6, 6), side * rnd(10, 13), R() * 3, 2.6);
+  }
+  // container yard: stacks along the lane edges, fuel tanks, solar arrays
+  for (let x = 10; x < L; x += 13) {
+    if (R() < 0.75) place(['ind_container_a', 'ind_container_b', 'ind_container_c'][Math.floor(R() * 3)],
+      x + rnd(-3, 3), (R() < 0.5 ? -1 : 1) * rnd(4.5, 7), rnd(-0.15, 0.15));
+    if (R() < 0.4) place('ind_tank_large', x + rnd(-4, 4), (R() < 0.5 ? -1 : 1) * rnd(7, 10), R() * 3);
+    if (R() < 0.35) place('ind_solar', x + rnd(-3, 3), (R() < 0.5 ? -1 : 1) * rnd(3.2, 5), R() * 3, 2.4);
+  }
+  place('ind_water_tower', L * 0.62, -9.5, 0.4, 3.0); // district landmark
+  place('ind_windmill', 14, 13.5, 0.3, 3.2);
+  for (let x = 6; x < L; x += 16) placeProp('streetlight', x, (Math.floor(x / 16) % 2 === 0 ? 1 : -1) * 4.4, 0);
+  const g2 = new THREE.Mesh(new THREE.PlaneGeometry(L + 70, 70), new THREE.MeshStandardMaterial({ color: d.ground, roughness: 1 }));
+  g2.rotation.x = -Math.PI / 2; g2.position.set(L / 2 - 10, -0.06, 0); g2.receiveShadow = true; streetGroup.add(g2);
+  return { curb: -6, roadW: 12 };
+}
+
 // ---------- destructibles + collision (SoR/Fatal Fury style: smash cars/crates, spill pickups) ----------
 const DESTRUCT_DEFS = {
   box_A: { hp: 20, name: 'CRATE', pickups: ['cash', 'cash'] },
@@ -1244,11 +1288,19 @@ const DESTRUCT_DEFS = {
   dumpster: { hp: 45, name: 'DUMPSTER', pickups: ['cash', 'health', 'special'] },
   barrier: { hp: 25, name: 'BARRIER', pickups: ['cash'] },   // overpass kit
   cone: { hp: 12, name: 'CONE', pickups: ['cash'] },          // overpass kit
+  ind_container_a: { hp: 35, name: 'SHIPPING CONTAINER', pickups: ['cash', 'health'] }, // industrial kit
+  ind_container_b: { hp: 35, name: 'SHIPPING CONTAINER', pickups: ['cash', 'health'] }, // industrial kit
+  ind_container_c: { hp: 35, name: 'SHIPPING CONTAINER', pickups: ['cash', 'health'] }, // industrial kit
+  ind_tank: { hp: 50, name: 'FUEL TANK', pickups: ['cash', 'cash', 'health'] },          // industrial kit
+  ind_solar: { hp: 15, name: 'SOLAR PANEL', pickups: ['cash'] },                        // industrial kit
   car_taxi: { hp: 70, name: 'TAXI', pickups: ['cash', 'cash', 'cash', 'special'] },
   car_police: { hp: 70, name: 'SQUAD CAR', pickups: ['cash', 'cash', 'health', 'special'] },
 };
 const SOLID_PROPS = new Set(['streetlight', 'firehydrant', 'k_barrier', 'k_fence', 'k_lamppost',
-  'lamp', 'trafficlight', 'hwy_sign', 'pole', 'pillar', 'pillar_wide', 'worklight', 'fence', 'guardrail']); // overpass kit
+  'lamp', 'trafficlight', 'hwy_sign', 'pole', 'pillar', 'pillar_wide', 'worklight', 'fence', 'guardrail', // overpass kit
+  'ind_building_a', 'ind_building_c', 'ind_building_e', 'ind_building_g', 'ind_building_i',
+  'ind_building_l', 'ind_building_p', 'ind_building_r', 'ind_chimney_s', 'ind_chimney_m',
+  'ind_chimney_l', 'ind_tank_large', 'ind_water_tower', 'ind_windmill', 'ind_solar_l']); // industrial kit
 // wave-6 arena dressing: Kenney CC0 smashables
 Object.assign(DESTRUCT_DEFS, {
   k_cone: { hp: 8, name: 'TRAFFIC CONE', pickups: ['cash'] },
@@ -1263,7 +1315,7 @@ const platforms = [];     // {x, z, w, d, top} — jumpable platforms (zone 4, p
 // placeProp: ground-aligns via bounding box (BUG FIX 2026-10-06: cars sank), registers collision + destructible HP
 function placeProp(name, x, z, ry = 0, sc = 2.2, tint = null, parts = null) {
   const SP = parts || streetParts;
-  const part = SP[name] || (name === 'tnt_crate' ? streetParts['box_A'] : null);
+  const part = SP[name] || streetParts[name] || (name === 'tnt_crate' ? streetParts['box_A'] : null);
   if (!part) return null;
   if (name === 'tnt_crate' && tint === null) tint = 0xff3a1a; // TNT painted red
   const o = part.clone(); o.position.set(x, 0, z); o.rotation.y = ry; o.scale.multiplyScalar(sc);
@@ -1331,9 +1383,11 @@ function destroyDestructible(d) {
 }
 function spawnBreakables(district, missionLen, R) {
   const L = isFinite(missionLen) ? missionLen : 200;
-  const over = district === 'overpass';
-  const names = over ? ['barrier', 'cone', 'dumpster'] : ['trash_A', 'trash_B', 'box_A', 'tnt_crate'];
-  const P = over ? roadParts : null, SC = over ? 1.6 : 2.2;
+  const over = district === 'overpass', ind = district === 'industrial';
+  const names = over ? ['barrier', 'cone', 'dumpster']
+    : ind ? ['box_A', 'ind_container_a', 'ind_container_b', 'ind_tank', 'ind_solar']
+    : ['trash_A', 'trash_B', 'box_A', 'tnt_crate'];
+  const P = over ? roadParts : ind ? indParts : null, SC = over ? 1.6 : 2.2;
   const step = (typeof hasMod === 'function' && mission && hasMod('party')) ? 5 : 9;
   for (let px = 8; px < L; px += rnd(step, step + 7)) {
     const nm = names[Math.floor(R() * names.length)];
@@ -4177,7 +4231,7 @@ async function loadArenaProps() {
 }
 async function boot() {
   loadSave();
-  const [fg, am, ag, amv, st, rd] = await Promise.all(['fighter.glb', 'anim_melee.glb', 'anim_general.glb', 'anim_move.glb', 'street.glb', 'roads.glb'].map(parse));
+  const [fg, am, ag, amv, st, rd, ix] = await Promise.all(['fighter.glb', 'anim_melee.glb', 'anim_general.glb', 'anim_move.glb', 'street.glb', 'roads.glb', 'industrial.glb'].map(parse));
   for (const g of [am, ag, amv]) for (const c of g.animations) clips[c.name] = c;
   fighterTemplate = fg.scene;
   const names = new Set(); fighterTemplate.traverse((o) => names.add(o.name));
@@ -4192,6 +4246,7 @@ async function boot() {
   streetParts = {}; st.scene.children.slice().forEach((c) => { streetParts[c.name] = c; });
   await loadArenaProps(); // Kenney CC0 arena dressing
   roadParts = {}; rd.scene.children.slice().forEach((c) => { roadParts[c.name] = c; });
+  indParts = {}; ix.scene.children.slice().forEach((c) => { indParts[c.name] = c; });
   resize(); $('loading').style.display = 'none';
   applyQuality();
   T.state = 'ready'; ev('loaded');
