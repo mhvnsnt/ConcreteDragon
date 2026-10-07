@@ -321,7 +321,24 @@ const critCh = () => 0.03 + (save.up_crit || 0) * 0.04 + (blessFx().crit || 0);
 const luckMult = () => 1 + (save.up_luck || 0) * 0.08 + (blessFx().luck || 0);
 const dodgeRechargeMult = () => (1 - Math.min(0.6, (save.up_dodge || 0) * 0.08)) * (1 - (blessFx().dodgeCd || 0) - (blessFx().dodge || 0));
 const magnetR = () => 1.6 * (1 + (save.up_magnet || 0) * 0.2);
-const fighterDef = (id) => FIGHTERS.find((f) => f.id === (id || save.selected)) || FIGHTERS[0];
+const fighterDef = (id) => FIGHTERS.find((f) => f.id === (id || save.selected)) || variantFighter(id) || FIGHTERS[0];
+// INFINITE UNLOCKS (owner 2026-10-06): titled challenger variants (e.g. kingpin_nightmare)
+// resolve dynamically by cloning the base fighter with boosted stats + title flair
+const variantCache = {};
+function variantFighter(id) {
+  if (!id || !id.includes('_')) return null;
+  if (variantCache[id]) return variantCache[id];
+  const [baseId, title] = id.split('_');
+  const base = FIGHTERS.find((f) => f.id === baseId);
+  if (!base) return null;
+  const v = Object.assign({}, base, {
+    id, name: title.toUpperCase() + ' ' + base.name,
+    tag: 'Challenger variant. Earned in the endless road.',
+    hp: Math.round(base.hp * 1.25), dmg: +(base.dmg * 1.15).toFixed(2),
+    unlock: { type: 'variant', base: baseId, title },
+  });
+  variantCache[id] = v; return v;
+}
 const skinTint = (fid) => {
   const sv = save.skins[fid];
   if (typeof sv === 'string' && sv.startsWith('custom:')) return parseInt(sv.slice(7), 16);
@@ -1520,7 +1537,10 @@ function showSelect() {
   buildStreet('neon', 40, Math.random);
   refreshShowcase();
   const cards = $('cards'); cards.innerHTML = '';
-  for (const f of FIGHTERS) {
+  // INFINITE UNLOCKS: unlocked challenger variants appear after their base fighter
+  const allFighters = [...FIGHTERS];
+  for (const uid of save.unlocked) { const vf = variantFighter(uid); if (vf && !allFighters.find((f) => f.id === uid)) allFighters.push(vf); }
+  for (const f of allFighters) {
     const locked = !isUnlocked(f);
     const c = el('div', 'card ' + (f.id === save.selected && !locked ? 'panel9g' : 'panel9') + (locked ? ' locked' : '') + ((save.goldCards || []).includes(f.id) ? ' goldcard' : ''));
     c.appendChild(el('div', 'nm', locked ? '???' : ((save.goldCards || []).includes(f.id) ? '★ ' : '') + f.name));
@@ -1557,7 +1577,9 @@ function showSelect() {
 }
 function showSelectCards() { // re-render cards row only (after pick)
   const cards = $('cards'); cards.innerHTML = '';
-  for (const f of FIGHTERS) {
+  const allFighters = [...FIGHTERS];
+  for (const uid of save.unlocked) { const vf = variantFighter(uid); if (vf && !allFighters.find((f) => f.id === uid)) allFighters.push(vf); }
+  for (const f of allFighters) {
     const locked = !isUnlocked(f);
     const c = el('div', 'card ' + (f.id === save.selected && !locked ? 'panel9g' : 'panel9') + (locked ? ' locked' : '') + ((save.goldCards || []).includes(f.id) ? ' goldcard' : ''));
     c.appendChild(el('div', 'nm', locked ? '???' : ((save.goldCards || []).includes(f.id) ? '★ ' : '') + f.name));
@@ -1676,6 +1698,17 @@ function showResults(win, mission, stats) {
         save.cash += bounty;
         save.pbKills = (save.pbKills || 0) + 1;
         ub.textContent = '★ ENDLESS CHALLENGER DOWN — BOUNTY $' + bounty + ' ★';
+        // INFINITE UNLOCKS: every 5th endless kill unlocks a titled challenger variant as playable
+        if (save.pbKills % 5 === 0) {
+          const titles = ['nightmare', 'iron', 'blood', 'savage', 'obsidian'];
+          const baseIds = ['kingpin', 'sledge', 'viper', 'dust', 'jack'];
+          const vid = baseIds[(save.pbKills / 5 - 1) % baseIds.length] + '_' + titles[(save.pbKills / 5 - 1) % titles.length];
+          if (!save.unlocked.includes(vid)) {
+            save.unlocked.push(vid); writeSave();
+            const vf = variantFighter(vid);
+            setTimeout(() => { ub.textContent = '★ ' + (vf ? vf.name : vid) + ' UNLOCKED AS PLAYABLE ★'; ub.classList.add('show'); sfx('bell', 0.9, true); }, 2200);
+          }
+        }
         ub.classList.add('show');
         sfx('bell', 0.9, true); flash('#ffe14d');
         setTimeout(() => sfx('coin', 0.8, false, 1.2), 180);
