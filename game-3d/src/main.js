@@ -1053,6 +1053,10 @@ moon.shadow.mapSize.set(1024, 1024); Object.assign(moon.shadow.camera, { left: -
 const rim = new THREE.DirectionalLight(0xff4fd8, 1.6); rim.position.set(3, 3, -5); scene.add(rim);
 const lampL = new THREE.PointLight(0xffa64d, 22, 9, 1.6); lampL.position.set(-3.2, 3.2, -1.2); scene.add(lampL);
 const lampR = new THREE.PointLight(0x4de1ff, 18, 9, 1.6); lampR.position.set(3.4, 3.0, -1.2); scene.add(lampR);
+// OWNER 2026-10-07 (readability polish): soft key light that follows the player
+// so the fighter pops from the background in every district/lighting setup.
+const playerKey = new THREE.PointLight(0xfff2d8, 14, 7, 1.7);
+playerKey.position.set(0, 3.2, 1.6); scene.add(playerKey);
 function applyDistrict(d, seedNum) {
   const R = seedPRNG(seedNum || 1);
   const hueShift = (R() - 0.5) * 0.1; // seeded palette mutation — same district, different night
@@ -4216,6 +4220,7 @@ function playerUpdate(dt) {
     playAnim(p, 'Melee_Unarmed_Idle', { loop: true });
   }
   syncPos(p);
+  if (typeof playerKey !== 'undefined') playerKey.position.set(p.px, 3.2, p.pz + 1.6);
   // charging enemies (boss charge / heavy-d-plus charge)
   for (const e of enemies) {
     if (e.chargeT > 0 && e.hp > 0) {
