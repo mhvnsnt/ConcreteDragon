@@ -158,5 +158,9 @@
  {
   "file": "props/k_tire.glb",
   "source": "Kenney Car Kit (CC0 1.0) \u2014 kenney.nl"
- }
+ },
+{
+    "file": "roads.glb",
+    "source": "Kenney city-kit-roads (CC0 1.0) \u2014 overpass district props"
+  }
 ]
