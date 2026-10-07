@@ -1529,6 +1529,7 @@ function setupInput() {
 let camX = 2;
 function enemyAI(e, dt) {
   if (e.hp <= 0) return;
+  if (window.__cdfreeze) return; // test hook: freeze enemy AI for deterministic verification
   if (e.airborne) { // launched / juggled
     e.vy -= 18 * dt; e.root.position.y += e.vy * dt;
     if (e.root.position.y <= 0) {
@@ -2177,6 +2178,12 @@ boot().catch((e) => { T.errors.push(String(e && e.stack || e)); console.error(e)
 window.__cdtest = {
   startMission, state: () => state,
   tp: (x) => { if (player) player.px = x; },
+  tp2: (x, z) => { if (player) { player.px = x; player.pz = z; } },
+  projCount: () => projs.length,
+  projDbg: () => projs.map((p) => ({ x: +p.x.toFixed(2), y: +p.y.toFixed(2), vx: +p.vx.toFixed(2), kind: p.kind, life: +p.life.toFixed(2) })),
+  simDbg: () => ({ hs: +hitstop.toFixed(3), sm: slowmo, smT: +slowmoT.toFixed(3), st: state }),
+  unpause: () => setPaused(false),
+  freeze: (on) => { window.__cdfreeze = !!on; },
   spawnBoss: (id) => { if (player) return spawnBoss(id || 'kingpin', player.px + 6); },
   hurt: (n) => { if (player) hurtPlayer(n); },
   doJump, doPunch, doHeavy, doSpecial, doTaunt, doDesperation,
@@ -2190,7 +2197,7 @@ window.__cdtest = {
   smash: (i) => { const d = destructibles[i]; if (d) destroyDestructible(d); },
   setDiff: (id) => { save.difficulty = id; writeSave(); },
   info: () => ({ px: player ? +player.px.toFixed(1) : 0, hp: player ? Math.round(player.hp) : 0, foes: enemies.length, boss: bossRef ? Math.round(bossRef.hp) : 0, cash: cashRun, kills }),
-  foes: () => enemies.map((e) => ({ px: +e.px.toFixed(2), ai: e.ai, hp: Math.round(e.hp), name: e.name, wu: +((e.windup || 0).toFixed(2)) })),
+  foes: () => enemies.map((e) => ({ px: +e.px.toFixed(2), pz: +(e.pz || 0).toFixed(2), ai: e.ai, hp: Math.round(e.hp), name: e.name, wu: +((e.windup || 0).toFixed(2)) })),
   // combat+cinematics wave: motion inputs, energy, mega, projectiles, cine
   energy: () => player ? Math.round(player.energy) : 0,
   setEnergy: (v) => { if (player) { player.energy = v; setHud(); } },
@@ -2206,6 +2213,8 @@ window.__cdtest = {
   fin: () => fighterDef().fin,
   qcfName: () => fighterDef().qcf.name,
   megaName: () => fighterDef().mega.name,
+  setFighter: (id) => { if (FIGHTERS.some(f => f.id === id)) { save.selected = id; writeSave(); } },
+  qcfKind: () => fighterDef().qcf.sigkind,
   texName: () => texVar(save.selected).id,
   setTex: (id) => { save.tex[save.selected] = id; writeSave(); refreshShowcase(); },
 };

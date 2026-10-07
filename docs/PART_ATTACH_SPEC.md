@@ -179,3 +179,26 @@ skeletons + tint shifts.
 beast-person is FINE; Blanka himself (name, exact look, backstory) is NEVER
 used. Same for all franchise characters — archetypes in, names/likenesses
 out. Builder-invented names need owner approval per standing rule.
+
+## 9. WAVE 3 NOTES — HALLOWEEN/MONSTERS (owner 2026-10-06)
+
+**Staged packs (all CC0-verified, per-pack LICENSE.md):**
+
+| pack | models | license | use |
+|---|---|---|---|
+| kaykit-halloween-bits | 63 glTF | CC0 (Kay Lousberg) | graveyard env: graves, coffins, crypt, fences, dead trees, skulls, candles, lanterns; **pumpkin_orange_jackolantern.gltf = pumpkin-head harvest** |
+| gobkit-animals | 38 GLB (rigged+animated, baked idle/attack/dead/walk) | CC0 1.0 | Bat → vampire bats; Shark/Anglerfish/Jellyfish/Whale → sea monsters (scale up); **Plesiosaurus → sea serpent**; Rat → giant rat; Owl/Fugu → ambient; minions A–D → Halloween grunt enemies; dinos → boss tier |
+| oga-vampire-bat | 1 (.blend — NEEDS Blender→GLB conversion) | CC0 (rubberduck, OGA node 86190) | animated vampire bat, frost variant included |
+| quaternius-spider | 1 animated GLB | CC0 (Quaternius via Poly Pizza) | giant spider enemy — scale up |
+
+**Sea monster coverage:** Whale (scaled 3–4x) = leviathan boss; Plesiosaurus = sea serpent; Anglerfish/Jellyfish/Shark = deep-sea pack. No dedicated kraken found CC0-clean — paid/print-licensed options rejected.
+
+**Humanoid gap — composition recipes (no clean CC0 3D vampire/witch/mummy found; web hunt exhausted OGA + Poly Pizza):**
+- **Pumpkin-head guy (priority):** mount `pumpkin_orange_jackolantern.gltf` head on fighter `head` bone (mask approach, §8) + autumn-orange painted body texture. Unlockable Halloween character.
+- **Tall thin suited figure (priority, original design — never a named character):** KayKit `Rogue_Hooded.glb` scaled (0.9, 1.25, 0.9) + near-black suit painted texture + pale blank head tint. Faceless by texture (no face paint on head zone).
+- **Vampire:** `Rogue_Hooded.glb` or quaternius `man` + pale skin tint + dark cape tones + red-eye head-zone paint. Vampire bats (above) as companions/summons.
+- **Witch:** KayKit `Mage.glb` (rigged + animated) + cone-hat attachment (primitive, painted) + dark dress texture variant. Broom = weapon attachment on `hand.r`.
+- **Mummy:** quaternius `man`/KayKit body + full-body bandage painted texture (wrap pattern in patchwork style) + dusty tint.
+- **Scarecrow:** jack-o-lantern head + straw-textured body (painted) — optional stretch.
+
+**Env:** halloween-bits props → haunted-house/graveyard zone dressing; fog = shader/atmosphere (build-side). Seasonal event system (Halloween missions + unlocks) is build-worker scope.
