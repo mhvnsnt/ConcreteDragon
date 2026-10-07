@@ -1429,6 +1429,7 @@ const PICKUP_DEFS = {
   health: { color: 0xff4d6d, label: '+HP' },
   cash: { color: 0x80ed99, label: '+$' },
   special: { color: 0x7af0ff, label: '+SPC' },
+  food: { color: 0xffb020, label: '+FOOD' }, // RIVER CITY RANSOM: food heals big — eat between beatdowns
 };
 function spawnPickup(type, x, z) {
   const d = PICKUP_DEFS[type]; if (!d) return;
@@ -1438,6 +1439,10 @@ function spawnPickup(type, x, z) {
     const a = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.2, 0.2), mat);
     const b = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.55, 0.2), mat);
     g.add(a, b);
+  } else if (type === 'food') {
+    // burger: bun + patty
+    const bun = new THREE.Mesh(new THREE.SphereGeometry(0.28, 8, 6, 0, Math.PI * 2, 0, Math.PI / 2), mat); g.add(bun);
+    const patty = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.12, 8), new THREE.MeshStandardMaterial({ color: 0x6b4226, roughness: 0.8 })); patty.position.y = -0.05; g.add(patty);
   } else if (type === 'cash') {
     g.add(new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.32, 0.08), mat));
   } else {
@@ -1467,6 +1472,7 @@ function updatePickups(dt) {
       const d = PICKUP_DEFS[pk.type];
       const sp = screenPos(pk.mesh.position.clone());
       if (pk.type === 'health') { player.hp = Math.min(player.maxHp, player.hp + player.maxHp * 0.3); popText('+HP', 'gold', sp.x, sp.y); }
+      else if (pk.type === 'food') { player.hp = Math.min(player.maxHp, player.hp + player.maxHp * 0.5); player.energy = clamp(player.energy + 20, 0, energyMax()); popText('+FOOD! +HP +SPC', 'gold', sp.x, sp.y); }
       else if (pk.type === 'cash') { const c = Math.round(rnd(15, 40)); awardCash(c, pk.mesh.position.clone()); }
       else { player.energy = clamp(player.energy + 35, 0, energyMax()); popText('+ENERGY', 'big', sp.x, sp.y); }
       sfx('coin', 0.6, false, pk.type === 'health' ? 0.8 : 1.2);
@@ -1618,6 +1624,90 @@ function updateMascot(dt) {
 }
 function mascotMagnetBonus() { return mascotId === 'm_pigeon' ? 0.3 : 0; } // +30% magnet radius
 function mascotGlowBonus() { return mascotId === 'm_dog' ? 1 : 0; } // pickups glow brighter
+
+// ---------- DOJO SHOP (River City Ransom) ----------
+// Buyable MOVES (not stats — style-not-power keeps stats out of the shop). New combat options, permanently unlocked.
+// FOOD pickups heal more than standard health packs — eat between beatdowns.
+const DOJO_MOVES = [
+  { id: 'd_spin', name: 'SPINNING BACKFIST', input: '← + SPC', cost: 500, energy: 20, desc: '360° spin strike. Clears space around you.' },
+  { id: 'd_tackle', name: 'SHOULDER TACKLE', input: '→ + SPC', cost: 750, energy: 25, desc: 'Dash tackle with big knockback.' },
+  { id: 'd_upper', name: 'RISING UPPERCUT', input: '↓ + SPC', cost: 1000, energy: 25, desc: 'Rising launcher uppercut. Juggle starter.' },
+];
+function dojoUnlocked(id) {
+  save.dojoMoves = save.dojoMoves || [];
+  return save.dojoMoves.includes(id);
+}
+function doDojoMove(id) {
+  const mv = DOJO_MOVES.find(m => m.id === id);
+  if (!mv || !dojoUnlocked(id)) return false;
+  if (player.energy < mv.energy || player.busy > 0) return false;
+  player.energy -= mv.energy; player.busy = 0.6;
+  unlockAudio(); T.taps++; hint(false);
+  const dir = player.face || 1;
+  if (id === 'd_spin') {
+    playAnim(player, 'Melee_Unarmed_Attack_Punch_B', { ts: 1.8, fade: 0.05 });
+    sfx('whoosh', 0.8, false, 0.7);
+    setTimeout(() => {
+      if (state !== 'fight' || missionOver || ended) return;
+      for (const e of enemies.slice()) {
+        if (e.hp > 0 && Math.abs(e.px - player.px) < 2.6 && Math.abs(e.pz - player.pz) < 1.8)
+          landHit(e, Math.round(28 * player.dmgMult), mv.name, 0.08, 0.5, false, false);
+      }
+      damageDestructibles(2.6); sparkFX(player.px, 1.2, player.pz, 0xffe14d, 16);
+    }, 180);
+  } else if (id === 'd_tackle') {
+    playAnim(player, 'Melee_Unarmed_Attack_Kick', { ts: 1.6, fade: 0.05 });
+    player.dodgeDX = dir * 14; player.dodgeT = 0.3;
+    sfx('whoosh', 0.8, false, 0.9);
+    setTimeout(() => {
+      if (state !== 'fight' || missionOver || ended) return;
+      for (const e of enemies.slice()) {
+        if (e.hp > 0 && Math.abs(e.px - player.px) < 2.2 && Math.abs(e.pz - player.pz) < 1.4) {
+          landHit(e, Math.round(32 * player.dmgMult), mv.name, 0.09, 0.6, false, false);
+          e.px = clamp(e.px + dir * 2.5, 0.5, 1e6); syncPos(e);
+        }
+      }
+      damageDestructibles(2.2);
+    }, 150);
+  } else if (id === 'd_upper') {
+    playAnim(player, 'Melee_Unarmed_Attack_Punch_A', { ts: 1.7, fade: 0.05 });
+    sfx('whoosh', 0.8, false, 1.1);
+    setTimeout(() => {
+      if (state !== 'fight' || missionOver || ended) return;
+      const t = nearestEnemy(2.0);
+      if (t && !t.boss) landHit(t, Math.round(26 * player.dmgMult), mv.name, 0.09, 0.5, true, false);
+      else if (t) landHit(t, Math.round(26 * player.dmgMult), mv.name, 0.09, 0.5, false, false);
+      sparkFX(player.px + dir, 1.4, player.pz, 0x7af0ff, 12);
+    }, 160);
+  }
+  const sp = screenPos(player.root.position.clone().add(new THREE.Vector3(0, 2.4, 0)));
+  popText(mv.name + '!', 'spc', sp.x, sp.y);
+  T.dojomove = (T.dojomove || 0) + 1; ev('dojomove', { id }); setHud();
+  return true;
+}
+function renderDojo(into) {
+  into.appendChild(el('div', 'storeTitle', '🥋 DOJO — BUY MOVES'));
+  save.dojoMoves = save.dojoMoves || [];
+  for (const m of DOJO_MOVES) {
+    const owned = save.dojoMoves.includes(m.id);
+    const c = el('div', 'storeCard panel9');
+    c.appendChild(el('div', 'sn', (owned ? '✅ ' : '') + m.name));
+    c.appendChild(el('div', 'st', m.input + ' · ' + m.energy + ' energy'));
+    c.appendChild(el('div', 'st', m.desc));
+    if (!owned) {
+      const b = el('button', 'buyBtn', 'BUY $' + m.cost);
+      b.onclick = (e) => {
+        e.stopPropagation();
+        if ((save.cash || 0) < m.cost) { sfx('uiclick', 0.5, false, 0.6); popText('NOT ENOUGH CASH', 'bad', innerWidth / 2, innerHeight * 0.4); return; }
+        save.cash -= m.cost; save.dojoMoves.push(m.id); writeSave();
+        sfx('bell', 1, false, 1.2); banner(m.name + ' LEARNED!', 'spc');
+        renderDojo(into); setHud(); ev('dojobuy', { id: m.id });
+      };
+      c.appendChild(b);
+    }
+    into.appendChild(c);
+  }
+}
 
 // ---------- crowd (CONDITIONAL: only on missions flagged crowd:true — owner directive) ----------
 const crowdGroup = new THREE.Group(); scene.add(crowdGroup);
@@ -2194,6 +2284,7 @@ function renderStore(into) {
     rb.onclick = (e) => { e.stopPropagation(); const id = sel.value; if ((save.gearInv[id] || 0) > 0) { save.gearInv[id]--; save.cash += 40; writeSave(); sfx('coin', 0.8); renderStore(into); renderMeta(); } };
     rc.appendChild(rb); into.appendChild(rc);
   }
+  renderDojo(into); // DOJO (River City Ransom): buyable moves live in the corner store too
 }
 function renderShop(into) {
   into.innerHTML = '';
@@ -3139,6 +3230,10 @@ function doSpecial() {
   if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0) return;
   unlockAudio();
   const fd = fighterDef();
+  // DOJO MOVES (River City Ransom): directional SPC fires purchased dojo techniques
+  if (stick.dx < -0.5 && doDojoMove('d_spin')) return;
+  if (stick.dx > 0.5 && doDojoMove('d_tackle')) return;
+  if (stick.dy > 0.5 && doDojoMove('d_upper')) return;
   // DESPERATION (Final Fight): DOWN + SPC at <50% HP = trade 10% max HP for a huge AOE blast
   if (stick.dy > 0.5 && player.hp < player.maxHp * 0.5) {
     inputHist.length = 0;
@@ -3345,7 +3440,7 @@ function killEnemy(e) {
   if (mission.crowd) crowdCheer();
   if (R_safe() < 0.32 * luckMult()) {
     const roll = R_safe();
-    spawnPickup(roll < 0.4 ? 'health' : roll < 0.8 ? 'cash' : 'special',
+    spawnPickup(roll < 0.35 ? 'health' : roll < 0.65 ? 'cash' : roll < 0.85 ? 'special' : 'food',
       clamp(e.root.position.x + rnd(-0.8, 0.8), 0.5, 1e6), clamp(e.root.position.z + rnd(-0.8, 0.8), -1.4, 1.4));
   }
   // RECRUIT (River City Girls): KO'd grunts sometimes join your crew for the mission
@@ -4640,6 +4735,14 @@ window.__cdtest = {
     if (!save.mascotsUnlocked.includes(id)) save.mascotsUnlocked.push(id);
     save.mascot = id; writeSave(); spawnMascot();
     return { ok: 1, spawned: !!mascotMesh, id: mascotId };
+  },
+  dojoTest: (id) => {
+    save.dojoMoves = save.dojoMoves || [];
+    if (!save.dojoMoves.includes(id)) save.dojoMoves.push(id);
+    player.energy = 100; player.busy = 0;
+    const before = T.dojomove || 0;
+    const ok = doDojoMove(id);
+    return { ok, fired: (T.dojomove || 0) > before };
   },
   grappleTest: () => {
     const e = enemies.find(x => x.hp > 0 && !x.boss);
