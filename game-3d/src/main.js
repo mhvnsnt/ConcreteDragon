@@ -30,10 +30,13 @@ const ev = (name, data) => { T.events.push({ t: +performance.now().toFixed(0), n
 const SAVE_KEY = 'concretedragon.save.v2';
 const save = {
   cash: 0, up_power: 0, up_tough: 0, up_hustle: 0, wins: 0, losses: 0,
+  up_dodge: 0, up_magnet: 0, up_revive: 0, up_crit: 0, up_regen: 0, up_luck: 0, up_energy: 0, up_counter: 0, up_speed: 0,
   best_wave: 0, selected: 'kidblue', skins: {}, tex: {},
   unlocked: ['kidblue', 'ghost', 'brick'], missionsDone: [],
   daily: { date: '', score: 0 }, boards: {}, seenHint: false,
   muted: false, quality: 'auto', difficulty: 'normal', circuitN: 0, blessings: [], rep: 0, goldCards: [],
+  gearInv: {}, gearTier: {}, gearEq: {}, charm: null, charmsUnlocked: [],
+  assist: false, missionGrades: {},
 };
 const TIP_URL = 'https://paypal.me/MarquisWhitacre';
 function loadSave() {
@@ -49,6 +52,13 @@ function loadSave() {
   if (!Array.isArray(save.blessings)) save.blessings = [];
   if (typeof save.rep !== 'number') save.rep = 0;
   if (!Array.isArray(save.goldCards)) save.goldCards = [];
+  if (!save.gearInv || typeof save.gearInv !== 'object') save.gearInv = {};
+  if (!save.gearTier || typeof save.gearTier !== 'object') save.gearTier = {};
+  if (!save.gearEq || typeof save.gearEq !== 'object') save.gearEq = {};
+  if (!Array.isArray(save.charmsUnlocked)) save.charmsUnlocked = [];
+  if (!save.missionGrades || typeof save.missionGrades !== 'object') save.missionGrades = {};
+  for (const k of ['up_dodge','up_magnet','up_revive','up_crit','up_regen','up_luck','up_energy','up_counter','up_speed'])
+    if (typeof save[k] !== 'number') save[k] = 0;
 }
 function writeSave() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) {} }
 const upCost = (lvl) => 100 * (lvl + 1);
@@ -279,7 +289,21 @@ const UPS = [
   { key: 'up_power', name: 'POWER', desc: '+12% damage' },
   { key: 'up_tough', name: 'TOUGH', desc: '+12 max HP' },
   { key: 'up_hustle', name: 'HUSTLE', desc: '+15% cash' },
+  { key: 'up_dodge', name: 'SLIPPERY', desc: '+8% dodge recharge / lvl' },
+  { key: 'up_magnet', name: 'MAGNET', desc: '+20% pickup radius / lvl' },
+  { key: 'up_revive', name: 'SECOND CHANCE', desc: 'Revive once per mission' },
+  { key: 'up_crit', name: 'KILLER INSTINCT', desc: '+4% crit chance / lvl' },
+  { key: 'up_regen', name: 'REGEN', desc: '+1 HP / 2s / lvl' },
+  { key: 'up_luck', name: 'STREET SMARTS', desc: '+8% luck / lvl' },
+  { key: 'up_energy', name: 'DEEP BREATH', desc: '+10 max energy / lvl' },
+  { key: 'up_counter', name: 'COUNTER PUNCHER', desc: '+10% counter dmg / lvl' },
+  { key: 'up_speed', name: 'ROADWORK', desc: '+4% move speed / lvl' },
 ];
+// gym-derived helpers (Hades Mirror-inspired: every mission pays in, win or lose)
+const critCh = () => 0.03 + (save.up_crit || 0) * 0.04 + (blessFx().crit || 0);
+const luckMult = () => 1 + (save.up_luck || 0) * 0.08 + (blessFx().luck || 0);
+const dodgeRechargeMult = () => (1 - Math.min(0.6, (save.up_dodge || 0) * 0.08)) * (1 - (blessFx().dodgeCd || 0) - (blessFx().dodge || 0));
+const magnetR = () => 1.6 * (1 + (save.up_magnet || 0) * 0.2);
 const fighterDef = (id) => FIGHTERS.find((f) => f.id === (id || save.selected)) || FIGHTERS[0];
 const skinTint = (fid) => {
   const sv = save.skins[fid];
@@ -539,18 +563,21 @@ const BLESS_DUOS = [
 ];
 function blessFx() {
   const fx = {};
+  const add = (o) => { for (const k in o) fx[k] = (fx[k] || 0) + o[k]; };
   for (const id of (save.blessings || [])) {
     const b = BLESSINGS.find((x) => x.id === id);
     if (!b) continue;
-    for (const k in b.fx) fx[k] = (fx[k] || 0) + b.fx[k];
+    add(b.fx);
   }
+  add(gearFx());   // gear: persistent build layer, tier-scaled
+  add(charmFx());  // charm: pre-mission loadout choice
   return fx;
 }
 function blessDuo() {
   const figs = new Set((save.blessings || []).map((id) => (BLESSINGS.find((x) => x.id === id) || {}).fig));
   return BLESS_DUOS.find((d) => d.figs.every((f) => figs.has(f))) || null;
 }
-const energyMax = () => 100 + (blessFx().energyMax || 0);
+const energyMax = () => 100 + (blessFx().energyMax || 0) + (save.up_energy || 0) * 10;
 function rollBlessings() {
   const owned = new Set(save.blessings || []);
   const pool = BLESSINGS.filter((b) => !owned.has(b.id));
@@ -564,6 +591,120 @@ function rollBlessings() {
     out.push(pick); cp.splice(cp.indexOf(pick), 1);
   }
   return out;
+}
+// ---------- GEAR (owner 2026-10-06, Brotato-inspired): tags + merge tiers ----------
+// 5 slots, 4 tiers (IRON/BRONZE/SILVER/GOLD), tags BRAWLER/STREET/HEAVY/SWIFT/LOUD.
+// Two of the same piece merge into +1 tier. Store stock weights toward owned tags.
+// Gear feeds the SAME stat vocabulary as blessings (blessFx merges all) — builds cohere.
+const GEAR_SLOTS = ['GLOVES', 'WRAPS', 'CHAINS', 'BOOTS', 'JACKET'];
+const GEAR_TIERS = ['IRON', 'BRONZE', 'SILVER', 'GOLD'];
+const GEAR_TIERM = [1, 1.7, 2.6, 3.8];
+const GEAR = [
+  { id: 'g_tape', slot: 'GLOVES', name: 'TAPE JOB', tags: ['BRAWLER'], fx: { punchDmg: 0.06 }, desc: '+6% punch dmg / tier' },
+  { id: 'g_brass', slot: 'GLOVES', name: 'BRASS KNUCKS', tags: ['STREET'], fx: { punchDmg: 0.04, crit: 0.05 }, desc: '+4% punch dmg, +5% crit / tier' },
+  { id: 'g_mma', slot: 'GLOVES', name: 'MMA GLOVES', tags: ['SWIFT'], fx: { punchDmg: 0.03, spd: 0.04 }, desc: '+3% dmg, +4% speed / tier' },
+  { id: 'g_work', slot: 'GLOVES', name: 'WORK GLOVES', tags: ['HEAVY'], fx: { punchDmg: 0.08, spd: -0.02 }, desc: '+8% punch dmg, -2% speed / tier' },
+  { id: 'g_wraps', slot: 'WRAPS', name: 'HAND WRAPS', tags: ['BRAWLER'], fx: { counterDmg: 0.15 }, desc: '+15% counter dmg / tier' },
+  { id: 'g_chainw', slot: 'WRAPS', name: 'CHAIN WRAPS', tags: ['LOUD'], fx: { counterDmg: 0.10, dmg: 0.04 }, desc: '+10% counter, +4% dmg / tier' },
+  { id: 'g_speedw', slot: 'WRAPS', name: 'SPEED WRAPS', tags: ['SWIFT'], fx: { crit: 0.08 }, desc: '+8% crit / tier' },
+  { id: 'g_cuffs', slot: 'WRAPS', name: 'STEEL CUFFS', tags: ['HEAVY'], fx: { armor: 0.04 }, desc: '+4% armor / tier' },
+  { id: 'g_chain', slot: 'CHAINS', name: 'BIKE CHAIN', tags: ['HEAVY'], fx: { armor: 0.05 }, desc: '+5% armor / tier' },
+  { id: 'g_gold', slot: 'CHAINS', name: 'GOLD CHAIN', tags: ['LOUD'], fx: { armor: 0.03, luck: 0.05 }, desc: '+3% armor, +5% luck / tier' },
+  { id: 'g_dog', slot: 'CHAINS', name: 'DOG TAGS', tags: ['STREET'], fx: { lifesteal: 2 }, desc: '+2 HP per KO / tier' },
+  { id: 'g_band', slot: 'CHAINS', name: 'SWEATBAND', tags: ['SWIFT'], fx: { dodge: 0.10 }, desc: 'Dodge recharges 10% faster / tier' },
+  { id: 'g_grillz', slot: 'CHAINS', name: 'GRILLZ', tags: ['LOUD'], fx: { lifesteal: 2, punchDmg: 0.02 }, desc: '+2 HP/KO, +2% punch dmg / tier' },
+  { id: 'g_boots', slot: 'BOOTS', name: 'STEEL TOES', tags: ['HEAVY'], fx: { spd: 0.04, dmg: 0.03 }, desc: '+4% speed, +3% dmg / tier' },
+  { id: 'g_sneak', slot: 'BOOTS', name: 'SNEAKERS', tags: ['SWIFT'], fx: { spd: 0.08 }, desc: '+8% speed / tier' },
+  { id: 'g_timbs', slot: 'BOOTS', name: 'TIMBS', tags: ['STREET'], fx: { spd: 0.04, armor: 0.02 }, desc: '+4% speed, +2% armor / tier' },
+  { id: 'g_jean', slot: 'JACKET', name: 'JEAN JACKET', tags: ['STREET'], fx: { hp: 10 }, desc: '+10 max HP / tier' },
+  { id: 'g_leather', slot: 'JACKET', name: 'LEATHER JACKET', tags: ['LOUD'], fx: { hp: 8, armor: 0.02 }, desc: '+8 HP, +2% armor / tier' },
+  { id: 'g_hoodie', slot: 'JACKET', name: 'HOODIE', tags: ['SWIFT'], fx: { energyGain: 0.15 }, desc: '+15% energy gain / tier' },
+  { id: 'g_puffer', slot: 'JACKET', name: 'PUFFER', tags: ['BRAWLER'], fx: { hp: 12, spd: -0.02 }, desc: '+12 HP, -2% speed / tier' },
+  { id: 'g_snap', slot: 'JACKET', name: 'SNAPBACK', tags: ['STREET'], fx: { luck: 0.08 }, desc: '+8% luck / tier' },
+];
+const gearTier = (id) => ((save.gearTier || {})[id] || 0);
+function gearFx() { // equipped gear, tier-scaled — feeds the shared stat vocabulary
+  const fx = {};
+  for (const slot of GEAR_SLOTS) {
+    const id = (save.gearEq || {})[slot]; if (!id) continue;
+    const g = GEAR.find((x) => x.id === id); if (!g) continue;
+    const m = GEAR_TIERM[gearTier(id)] || 1;
+    for (const k in g.fx) fx[k] = (fx[k] || 0) + g.fx[k] * m;
+  }
+  return fx;
+}
+function ownedTags() {
+  const s = new Set();
+  for (const slot of GEAR_SLOTS) {
+    const id = (save.gearEq || {})[slot]; const g = GEAR.find((x) => x.id === id);
+    if (g) g.tags.forEach((t) => s.add(t));
+  }
+  return s;
+}
+function gearStock(n = 3) { // store stock weights toward tags you already run (Brotato's quiet genius)
+  const tags = ownedTags();
+  const out = []; const cp = GEAR.slice();
+  while (out.length < n && cp.length) {
+    let tw = 0; const ws = cp.map((g) => { const w = 10 + (g.tags.some((t) => tags.has(t)) ? 18 : 0); tw += w; return w; });
+    let r = Math.random() * tw, pi = 0;
+    for (let i = 0; i < cp.length; i++) { r -= ws[i]; if (r <= 0) { pi = i; break; } }
+    out.push(cp[pi]); cp.splice(pi, 1);
+  }
+  return out;
+}
+const gearCost = (g) => Math.round(120 * (gearTier(g.id) + 1));
+function grantGear(id) { // mission reward drop
+  save.gearInv = save.gearInv || {}; save.gearInv[id] = (save.gearInv[id] || 0) + 1;
+  const g = GEAR.find((x) => x.id === id);
+  banner('GEAR: ' + (g ? g.name : id)); sfx('coin', 0.9, false, 1.1);
+  writeSave();
+}
+function tryMergeGear(id) { // 2 of the same -> +1 tier
+  save.gearInv = save.gearInv || {}; save.gearTier = save.gearTier || {};
+  if ((save.gearInv[id] || 0) >= 2 && gearTier(id) < 3) {
+    save.gearInv[id] -= 2; save.gearTier[id] = gearTier(id) + 1;
+    const g = GEAR.find((x) => x.id === id);
+    banner((g ? g.name : id) + ' → ' + GEAR_TIERS[gearTier(id)]); sfx('bell', 1, true);
+    writeSave(); return true;
+  }
+  return false;
+}
+// ---------- CHARMS (owner 2026-10-06, Hades keepsake-inspired): one pre-mission loadout choice ----------
+// Equip one before a mission. Earned from bosses / milestones. Loads the dice without removing RNG.
+const CHARMS = [
+  { id: 'c_brass', name: 'BRASS KNUCKLES', fx: { dmg: 0.10 }, desc: '+10% all damage', unlock: { type: 'boss', boss: 'kingpin' } },
+  { id: 'c_dice', name: 'LUCKY DICE', fx: { luck: 0.15 }, desc: '+15% luck (drops + store)', unlock: { type: 'circuit', n: 5 } },
+  { id: 'c_wind', name: 'SECOND WIND', fx: {}, desc: 'Revive once per mission at 1 HP', unlock: { type: 'boss', boss: 'sledge' }, revive: true },
+  { id: 'c_magnet', name: 'CASH MAGNET', fx: { cash: 0.25 }, desc: '+25% cash earned', unlock: { type: 'boss', boss: 'viper' } },
+  { id: 'c_adren', name: 'ADRENALINE', fx: { energyGain: 0.20 }, desc: '+20% energy gain', unlock: { type: 'boss', boss: 'rust' } },
+  { id: 'c_iron', name: 'IRON WILL', fx: { hp: 15 }, desc: '+15 max HP', unlock: { type: 'boss', boss: 'pumpkinking' } },
+];
+function charmUnlocked(c) {
+  if ((save.charmsUnlocked || []).includes(c.id)) return true;
+  const u = c.unlock || {};
+  if (u.type === 'boss') { const done = save.missionsDone || []; if (done.some((id) => String(id).includes(u.boss) || missionDef(id).boss === u.boss)) { save.charmsUnlocked.push(c.id); writeSave(); return true; } }
+  if (u.type === 'circuit' && (save.circuitN || 0) >= u.n) { save.charmsUnlocked.push(c.id); writeSave(); return true; }
+  return false;
+}
+function charmFx() {
+  const c = CHARMS.find((x) => x.id === save.charm);
+  return c ? c.fx : {};
+}
+// ---------- STYLE METER (DMC-inspired): grades move VARIETY, not just hit count ----------
+// Spamming one move tanks your rank; variety raises it. The anti-spam, pro-expression layer.
+let styleRank = 0, styleT = 0;
+const styleHist = [];
+const STYLE_RANKS = ['D', 'C', 'B', 'A', 'S', 'SS', 'SSS'];
+const STYLE_COLORS = ['#8a8a8a', '#9ad1ff', '#7af0ff', '#80ed99', '#ffd166', '#ff9df0', '#ff5a5a'];
+function styleHit(label) {
+  if (label) { styleHist.push(label); if (styleHist.length > 10) styleHist.shift(); }
+  const uniq = new Set(styleHist).size;
+  styleRank = Math.min(6, Math.floor(uniq * 6 / 10) + (combo >= 12 ? 1 : 0));
+  styleT = 4; // rank holds 4s without new variety
+}
+function lastStandFx() { // Garou TOP: screen edges burn while you're dangerous
+  const e = $('lsEdge'); if (e) e.style.opacity = '1';
+  setTimeout(() => { const x = $('lsEdge'); if (x && (!player || player.hp >= player.maxHp * 0.3)) x.style.opacity = '0'; }, 600);
 }
 // ---------- STREET CIRCUIT: infinite procedural missions (one card, endless series) ----------
 const PM_A = ['RUST', 'NEON', 'CONCRETE', 'MIDNIGHT', 'IRON', 'VELVET', 'CHROME', 'ASHEN', 'COPPER', 'JAGUAR', 'SMOKE', 'TAR'];
@@ -857,8 +998,8 @@ function updatePickups(dt) {
     pk.mesh.rotation.y += dt * 2.4;
     const dx = player.px - pk.px, dz = player.pz - pk.pz;
     const dist = Math.hypot(dx, dz);
-    if (dist < 2.6 && dist > 0.01) { // magnet
-      const pull = (2.6 - dist) * 4 * dt;
+    if (dist < magnetR() && dist > 0.01) { // magnet (gym MAGNET widens it)
+      const pull = (magnetR() - dist) * 4 * dt;
       pk.px += dx / dist * pull; pk.pz += dz / dist * pull;
       pk.mesh.position.x = pk.px; pk.mesh.position.z = pk.pz;
     }
@@ -1047,6 +1188,104 @@ function renderMeta() {
   $('metaLine3').innerHTML = html;
   $('titleMeta').innerHTML = html;
 }
+// ---------- GEAR / CHARM / CORNER STORE UI ----------
+function renderGear() {
+  const row = $('gearRow'); if (!row) return;
+  row.querySelectorAll('.gearSlot').forEach((d) => d.remove());
+  for (const slot of GEAR_SLOTS) {
+    const id = (save.gearEq || {})[slot];
+    const g = GEAR.find((x) => x.id === id);
+    const d = el('div', 'gearSlot' + (g ? ' sel' : ''));
+    d.innerHTML = `<div>${slot}</div><div class="gt">${g ? g.name + ' · ' + GEAR_TIERS[gearTier(id)] : '— empty —'}</div>`;
+    d.title = g ? g.desc + ' [' + g.tags.join('/') + ']' : 'Equip gear from your inventory';
+    d.onclick = () => openGearPanel(slot);
+    row.appendChild(d);
+  }
+}
+function openGearPanel(slot) {
+  const row = $('gearRow'); if (!row) return;
+  row.querySelectorAll('.gearSlot').forEach((d) => d.remove());
+  const inv = save.gearInv || {};
+  const list = GEAR.filter((g) => g.slot === slot && (inv[g.id] || 0) > 0);
+  if (!list.length) {
+    const d = el('div', 'gearSlot'); d.textContent = 'No ' + slot + ' gear yet — win missions, check the corner store';
+    d.onclick = () => renderGear(); row.appendChild(d); return;
+  }
+  for (const g of list) {
+    const d = el('div', 'gearSlot' + ((save.gearEq || {})[slot] === g.id ? ' sel' : ''));
+    d.innerHTML = `<div>${g.name} ×${inv[g.id]}</div><div class="gt">${GEAR_TIERS[gearTier(g.id)]} · ${g.tags.join('/')} · ${g.desc}</div>`;
+    d.onclick = () => {
+      save.gearEq = save.gearEq || {}; save.gearEq[slot] = g.id; writeSave();
+      sfx('uiclick', 0.8); renderGear();
+    };
+    row.appendChild(d);
+    if ((inv[g.id] || 0) >= 2 && gearTier(g.id) < 3) {
+      const m = el('div', 'gearSlot'); m.innerHTML = `<div>⚒ MERGE</div><div class="gt">${g.name} → ${GEAR_TIERS[gearTier(g.id) + 1]}</div>`;
+      m.onclick = (e) => { e.stopPropagation(); if (tryMergeGear(g.id)) renderGear(); };
+      row.appendChild(m);
+    }
+  }
+  const back = el('div', 'gearSlot'); back.textContent = '← back';
+  back.onclick = () => renderGear(); row.appendChild(back);
+}
+function renderCharms() {
+  const row = $('charmRow'); if (!row) return;
+  row.querySelectorAll('.charmDot').forEach((d) => d.remove());
+  const avail = CHARMS.filter((c) => charmUnlocked(c));
+  if (!avail.length) {
+    const d = el('div', 'charmDot'); d.textContent = 'Beat bosses to earn charms';
+    d.style.cursor = 'default'; row.appendChild(d); return;
+  }
+  for (const c of avail) {
+    const d = el('div', 'charmDot' + (save.charm === c.id ? ' sel' : ''));
+    d.innerHTML = `<div>${c.name}</div><div class="gt">${c.desc}</div>`;
+    d.onclick = () => { save.charm = save.charm === c.id ? null : c.id; writeSave(); sfx('uiclick', 0.8); renderCharms(); };
+    row.appendChild(d);
+  }
+}
+// CORNER STORE: between-mission gear shop (Brotato shop loop) — buy, reroll, recycle
+let storeStock = [];
+function renderStore(into) {
+  into.innerHTML = '';
+  into.appendChild(el('div', 'storeTitle', '🏪 CORNER STORE — GEAR'));
+  if (!storeStock.length) storeStock = gearStock(3);
+  for (const g of storeStock) {
+    const cost = gearCost(g);
+    const c = el('div', 'storeCard panel9');
+    c.appendChild(el('div', 'sn', g.name));
+    c.appendChild(el('div', 'st', g.slot + ' · ' + GEAR_TIERS[gearTier(g.id)] + ' · ' + g.tags.join('/')));
+    c.appendChild(el('div', 'sd', g.desc));
+    const b = el('button', '', '$' + cost + (save.cash < cost ? ' 🔒' : ''));
+    b.disabled = save.cash < cost;
+    b.onclick = (e) => {
+      e.stopPropagation(); if (save.cash < cost) return;
+      save.cash -= cost; save.gearInv = save.gearInv || {}; save.gearInv[g.id] = (save.gearInv[g.id] || 0) + 1;
+      // auto-equip if slot empty
+      save.gearEq = save.gearEq || {};
+      if (!save.gearEq[g.slot]) save.gearEq[g.slot] = g.id;
+      storeStock = storeStock.filter((x) => x.id !== g.id);
+      writeSave(); sfx('coin', 0.9); renderStore(into); renderMeta();
+    };
+    c.appendChild(b); into.appendChild(c);
+  }
+  const rr = el('button', '', '🎲 REROLL $50');
+  rr.disabled = save.cash < 50;
+  rr.onclick = (e) => { e.stopPropagation(); if (save.cash < 50) return; save.cash -= 50; storeStock = gearStock(3); writeSave(); sfx('uiclick', 0.8); renderStore(into); renderMeta(); };
+  into.appendChild(rr);
+  // recycle: sell back owned gear for partial refund
+  const inv = save.gearInv || {};
+  const owned = GEAR.filter((g) => (inv[g.id] || 0) > 0 && (save.gearEq || {})[g.slot] !== g.id);
+  if (owned.length) {
+    const rc = el('div', 'storeCard panel9');
+    rc.appendChild(el('div', 'sn', '♻ RECYCLE'));
+    const sel = el('select', '');
+    for (const g of owned) { const o = el('option', '', `${g.name} ×${inv[g.id]} (+$40)`); o.value = g.id; sel.appendChild(o); }
+    rc.appendChild(sel);
+    const rb = el('button', '', 'SELL $40');
+    rb.onclick = (e) => { e.stopPropagation(); const id = sel.value; if ((save.gearInv[id] || 0) > 0) { save.gearInv[id]--; save.cash += 40; writeSave(); sfx('coin', 0.8); renderStore(into); renderMeta(); } };
+    rc.appendChild(rb); into.appendChild(rc);
+  }
+}
 function renderShop(into) {
   into.innerHTML = '';
   for (const u of UPS) {
@@ -1136,7 +1375,7 @@ function showSelect() {
       tr.appendChild(b);
     }
   }
-  renderShop($('shopRow')); renderMeta();
+  renderShop($('shopRow')); renderGear(); renderCharms(); renderMeta();
   showOnly('select');
 }
 function showSelectCards() { // re-render cards row only (after pick)
@@ -1314,6 +1553,21 @@ function showResults(win, mission, stats) {
       }
     }
   } else { save.blessings = []; writeSave(); } // defeat breaks the run
+  // CORNER STORE + GEAR DROP + MISSION GRADE (roguelite run loop)
+  const sr = $('storeRow'); sr.innerHTML = '';
+  if (win) {
+    const grade = recordGrade(mission, stats);
+    const gc = { S: '#ff5a5a', A: '#ffd166', B: '#80ed99', C: '#9ad1ff' }[grade];
+    $('resStats').innerHTML += `<div class="stat">RANK <b style="color:${gc};font-size:22px">${grade}</b> ${grade === 'S' ? '— FLAWLESS' : ''}</div>`;
+    // gear drop: 45% chance, weighted to unowned
+    if (Math.random() < 0.45 * luckMult()) {
+      const unowned = GEAR.filter((g) => !((save.gearInv || {})[g.id] || 0) && (save.gearEq || {})[g.slot] !== g.id);
+      const drop = (unowned.length ? unowned : GEAR)[Math.floor(Math.random() * (unowned.length ? unowned.length : GEAR.length))];
+      grantGear(drop.id);
+    }
+    storeStock = []; // fresh stock each win
+    renderStore(sr);
+  }
   const resEl = $('results');
   if (win) {
     resEl.classList.add('win'); resEl.classList.remove('lose');
@@ -1355,11 +1609,11 @@ function showResults(win, mission, stats) {
 // ---------- mission runtime ----------
 let player = null, enemies = [], mission = null, missionR = Math.random;
 let spawnQueue = [], bossSpawned = false, bossRef = null, missionOver = false, ended = false;
-let gameTime = 0, combo = 0, comboT = 0, maxCombo = 0, atkIdx = 0;
+let gameTime = 0, combo = 0, comboT = 0, maxCombo = 0, atkIdx = 0, dmgTaken = 0, missionMaxHp = 100;
 let cashRun = 0, kills = 0, distWalked = 0, endlessT = 3;
 function hint(on) { $('hint').style.opacity = on ? 1 : 0; }
 function awardCash(base, pos, tag) {
-  const amount = Math.max(1, Math.round(base * hustleMult()));
+  const amount = Math.max(1, Math.round(base * hustleMult() * (1 + (blessFx().cash || 0))));
   cashRun += amount;
   const txt = tag ? tag + ' +$' + amount : '+$' + amount;
   const sp = pos ? screenPos(pos) : { x: innerWidth / 2, y: innerHeight * 0.45 };
@@ -1391,17 +1645,17 @@ function startMission(id) {
   player = makeFighterRaw(skinTint(fd.id), 0, Math.PI / 2, 1, texObj(fd.id));
   if (fd.head) attachHead(player, fd.head); // species head for playable fighters (JACK...)
   player.isPlayer = true;
-  player.maxHp = Math.round(fd.hp + toughBonus());
+  player.maxHp = Math.round(fd.hp + toughBonus() + (blessFx().hp || 0));
   player.hp = player.maxHp;
-  player.dmgMult = fd.dmg * powerMult();
-  player.spd = fd.spd;
+  player.dmgMult = fd.dmg * powerMult() * (1 + (blessFx().dmg || 0));
+  player.spd = fd.spd * (1 + (blessFx().spd || 0) + (blessFx().moveSpd || 0) + (save.up_speed || 0) * 0.04);
   player.px = 2; player.pz = 0; player.face = 1;
   player.energy = 50; player.dodgeT = 0; player.dodgeCD = 0; player.busy = 0; player.spinT = 0;
   player.animMove = false;
   playAnim(player, 'Melee_Unarmed_Idle', { loop: true });
   spawnQueue = mission.spawns.map((s) => Object.assign({}, s, { done: false })).sort((a, b) => a.at - b.at);
   bossSpawned = false; bossRef = null; missionOver = false; ended = false;
-  gameTime = 0; combo = 0; comboT = 0; maxCombo = 0; atkIdx = 0;
+  gameTime = 0; combo = 0; comboT = 0; maxCombo = 0; atkIdx = 0; dmgTaken = 0; missionMaxHp = player.maxHp;
   cashRun = 0; kills = 0; distWalked = 0; endlessT = 3;
   camX = 2;
   state = 'fight'; ev('mission_start', { id: mission.id });
@@ -1568,7 +1822,7 @@ function doPunch() {
     if (ce && ce.hp > 0) {
       ce.windup = 0; hideWarn(ce);
       const bfx = blessFx();
-      landHit(ce, Math.round(dmg * player.dmgMult * 2 * (1 + (bfx.counterDmg || 0))), 'COUNTER', 0.12, 0.35, false, true);
+      landHit(ce, Math.round(dmg * player.dmgMult * 2 * (1 + (bfx.counterDmg || 0) + (save.up_counter || 0) * 0.1)), 'COUNTER', 0.12, 0.35, false, true);
       const duo = blessDuo(); // SUNDAY SERVICE: counters trigger a shockwave
       if (duo) {
         burst(player.root.position.clone().add(new THREE.Vector3(0, 1.0, 0)), 24, 0xffd166, 6);
@@ -1727,7 +1981,7 @@ function doDodge() {
   if (now - lastDodgeTap < 320 && player.dodgeCD <= 0) { lastDodgeTap = 0; doDesperation(); return; }
   lastDodgeTap = now;
   if (player.dodgeCD > 0) return;
-  player.dodgeCD = 0.9 * (1 - (blessFx().dodgeCd || 0)); player.dodgeT = 0.35;
+  player.dodgeCD = 0.9 * dodgeRechargeMult(); player.dodgeT = 0.35;
   const m = Math.hypot(stick.dx, stick.dy);
   if (m > 0.25) { player.dodgeDx = stick.dx / m; player.dodgeDz = stick.dy / m; }
   else { const t = nearestEnemy(99); player.dodgeDx = t && t.px < player.px ? 1 : -1; player.dodgeDz = 0; }
@@ -1737,13 +1991,18 @@ function doDodge() {
 function landHit(e, dmg, label, hs, sh, launcher, counter) {
   if (!e || e.hp <= 0 || state !== 'fight') return;
   T.hits++; if (counter) T.counters++;
-  e.hp -= dmg; combo++; comboT = 1.2; maxCombo = Math.max(maxCombo, combo);
+  // CRIT (gear/gym) + LAST STAND (Garou TOP-inspired): below 30% HP you hit 25% harder
+  let dealt = dmg, critOn = false, lsOn = false;
+  if (Math.random() < critCh()) { dealt = Math.round(dealt * 1.6); critOn = true; }
+  if (player && player.hp > 0 && player.hp < player.maxHp * 0.3) { dealt = Math.round(dealt * 1.25); lsOn = true; lastStandFx(); }
+  e.hp -= dealt; combo++; comboT = 2.5; maxCombo = Math.max(maxCombo, combo); // SoR4 combo keep-alive: 2.5s rhythm
+  styleHit(label); // DMC-style variety grading
   if (player) player.energy = clamp(player.energy + 8 * (1 + (blessFx().energyGain || 0)), 0, energyMax());
   const head = e.root.position.clone().add(new THREE.Vector3(0, fighterHeight * 0.78 * e.sc, 0.15));
   burst(head, counter ? 30 : 16, counter ? 0x7af0ff : 0xffd27a, counter ? 6 : 4);
   shake = sh; hitstop = hs; // snappy: tiny freeze on light hits, bigger only for counter/heavy/special/KO
   sfx(['hit1', 'hit2', 'hit3'][Math.floor(Math.random() * 3)], 0.9, false, 0.9 + Math.random() * 0.2);
-  const sp = screenPos(head); popText((counter ? 'COUNTER! -' : '-') + dmg, counter ? 'big' : '', sp.x, sp.y - 30);
+  const sp = screenPos(head); popText((critOn ? 'CRIT ' : '') + (lsOn ? 'LAST STAND ' : '') + (counter ? 'COUNTER! -' : '-') + dealt, counter ? 'big' : '', sp.x, sp.y - 30);
   if (counter) flash('#7af0ff');
   if (launcher && !e.boss) {
     e.airborne = true; e.vy = 5.2; e.ai = 'launched';
@@ -1773,7 +2032,7 @@ function killEnemy(e) {
   awardCash(base, e.root.position.clone());
   if (combo >= 5) awardCash(Math.min(combo, 20), e.root.position.clone().add(new THREE.Vector3(0, 0.4, 0)), 'COMBO');
   if (mission.crowd) crowdCheer();
-  if (R_safe() < 0.32) {
+  if (R_safe() < 0.32 * luckMult()) {
     const roll = R_safe();
     spawnPickup(roll < 0.4 ? 'health' : roll < 0.8 ? 'cash' : 'special',
       clamp(e.root.position.x + rnd(-0.8, 0.8), 0.5, 1e6), clamp(e.root.position.z + rnd(-0.8, 0.8), -1.4, 1.4));
@@ -1793,13 +2052,23 @@ function hurtPlayer(dmg) {
   if (!player || player.hp <= 0 || missionOver || ended) return;
   if (player.dodgeT > 0) return;
   dmg = Math.max(1, Math.round(dmg * (1 - (blessFx().armor || 0)))); // IRON SKIN
-  player.hp -= dmg; combo = 0; shake = 0.3; hitstop = 0.05; flash('#ff2a2a'); sfx('hit2', 0.8, false, 0.7);
+  dmgTaken += dmg; player.hp -= dmg; combo = 0; shake = 0.3; hitstop = 0.05; flash('#ff2a2a'); sfx('hit2', 0.8, false, 0.7);
   player.energy = clamp(player.energy + 12 * (1 + (blessFx().energyGain || 0)), 0, energyMax());
   playAnim(player, 'Hit_A', { ts: 1.4 });
   const sp = screenPos(player.root.position.clone().add(new THREE.Vector3(0, fighterHeight * 0.8, 0)));
   popText('-' + dmg, 'bad', sp.x, sp.y - 20);
   setHud();
   if (player.hp <= 0) {
+    // SECOND CHANCE (gym) + SECOND WIND (charm): revive once per mission — no shame, training aid
+    const charmRevive = save.charm === 'c_wind' && !player.usedCharmRevive;
+    if (!player.usedGymRevive && (save.up_revive || 0) >= 1) {
+      player.usedGymRevive = true; player.hp = Math.round(player.maxHp * 0.3);
+      banner('SECOND CHANCE'); flash('#80ed99'); sfx('bell', 1, true); setHud(); return;
+    }
+    if (charmRevive) {
+      player.usedCharmRevive = true; player.hp = 1;
+      banner('SECOND WIND'); flash('#7af0ff'); sfx('bell', 1, true); setHud(); return;
+    }
     player.hp = 0; setHud();
     playAnim(player, 'Death_A', { clamp: true });
     missionOver = true;
@@ -2170,11 +2439,29 @@ function checkMissionEnd() {
   if (ended || missionOver || mission.endless) return;
   if (bossSpawned && enemies.length === 0) missionComplete(true);
 }
+// ---------- MISSION GRADES (Sonic S-rank chase): D→S on combo + damage discipline ----------
+function missionGrade(stats) {
+  const dmgRatio = stats.dmgTaken / Math.max(1, missionMaxHp || 100);
+  if (stats.maxCombo >= 15 && dmgRatio <= 0.25) return 'S';
+  if (stats.maxCombo >= 10 && dmgRatio <= 0.5) return 'A';
+  if (stats.maxCombo >= 6) return 'B';
+  return 'C';
+}
+const GRADE_ORDER = ['C', 'B', 'A', 'S'];
+function recordGrade(mission, stats) {
+  const g = missionGrade(stats);
+  const key = mission.proc ? 'circuit' : mission.id;
+  const prev = (save.missionGrades || {})[key];
+  if (!prev || GRADE_ORDER.indexOf(g) > GRADE_ORDER.indexOf(prev)) {
+    save.missionGrades = save.missionGrades || {}; save.missionGrades[key] = g; writeSave();
+  }
+  return g;
+}
 function missionComplete(win) {
   if (ended) return; ended = true; missionOver = true;
   $('touch').classList.remove('on');
   for (const e of enemies) hideWarn(e);
-  const stats = { kills, maxCombo, cash: cashRun, dist: distWalked, waveBonus: 0 };
+  const stats = { kills, maxCombo, cash: cashRun, dist: distWalked, waveBonus: 0, dmgTaken, time: gameTime };
   if (win) {
     if (mission.endless) stats.waveBonus = Math.round(distWalked * 0.5);
     if (mission.daily) {
@@ -2566,6 +2853,15 @@ function setHud() {
   $('cash').textContent = 'CASH: $' + (save.cash + cashRun);
   $('combo').style.opacity = combo >= 2 ? 1 : 0;
   $('combo').textContent = combo + ' HIT COMBO';
+  const sr2 = $('styleRank');
+  if (sr2) {
+    sr2.style.opacity = styleRank >= 2 && combo >= 3 ? 1 : 0;
+    sr2.textContent = STYLE_RANKS[styleRank] + ' STYLE';
+    sr2.style.color = STYLE_COLORS[styleRank];
+  }
+  // LAST STAND edge glow persists while dangerous
+  const lse = $('lsEdge');
+  if (lse) lse.style.opacity = (player.hp > 0 && player.hp < player.maxHp * 0.3) ? '1' : '0';
   $('spc').style.width = clamp(player.energy / energyMax() * 100, 0, 100) + '%';
   $('btnSpc').classList.toggle('ready', player.energy >= 60);
   const prog = mission && isFinite(mission.len) ? clamp(player.px / mission.len, 0, 1) : clamp(distWalked / 220, 0, 1);
@@ -2611,6 +2907,10 @@ function loop() {
     for (const e of enemies) positionWarn(e);
     for (const e of enemies) if (e.dotT > 0 && e.hp > 0 && !e.dead) { e.dotT -= dt; e.hp -= e.dotDps * dt; sparkFX(e.px, 1.2, e.pz, 0x7cff6b, 1); if (e.hp <= 0) killEnemy(e); }
     if (comboT > 0 && (comboT -= dt) <= 0) { combo = 0; setHud(); }
+    if (styleT > 0 && (styleT -= dt) <= 0) { styleRank = 0; styleHist.length = 0; } // style rank decays
+    if ((save.up_regen || 0) > 0 && player.hp > 0 && player.hp < player.maxHp) {
+      player.hp = Math.min(player.maxHp, player.hp + (save.up_regen * 0.5) * dt); // REGEN: +1 HP/2s/lvl
+    }
     if (gameTime > 2 && !save.seenHint) hint(false);
     updatePickups(dt);
     updateRain(dt);

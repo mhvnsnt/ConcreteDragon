@@ -36,6 +36,16 @@ html,body{margin:0;height:100%;overflow:hidden;background:#150f2a;touch-action:n
 #bossBar{height:14px;border:6px solid transparent;border-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'48'%20height%3D'48'%3E%3Crect%20x%3D'2'%20y%3D'14'%20width%3D'44'%20height%3D'20'%20rx%3D'6'%20fill%3D'%23000000'%20fill-opacity%3D'0.72'%20stroke%3D'%23ffffff'%20stroke-opacity%3D'0.9'%20stroke-width%3D'3'%2F%3E%3C%2Fsvg%3E") 6 fill stretch;background-clip:padding-box;overflow:hidden}
 #bossBar i{display:block;height:100%;background:linear-gradient(90deg,#ff2a2a,#ffb03d);margin-left:auto;transition:width .15s}
 #combo{position:absolute;left:50%;top:24%;transform:translateX(-50%) rotate(-4deg);font-size:32px;font-family:'Bungee','Anton',Arial,sans-serif;color:#ffe14d;text-shadow:0 3px 0 #b3001b,0 0 12px #f80;opacity:0;transition:opacity .15s}
+#styleRank{position:absolute;left:50%;top:31%;transform:translateX(-50%) rotate(3deg);font-size:26px;font-family:'Bungee','Anton',Arial,sans-serif;color:#7af0ff;text-shadow:0 2px 0 #06283a,0 0 10px #0af;opacity:0;transition:opacity .15s}
+#lsEdge{position:fixed;inset:0;pointer-events:none;z-index:6;opacity:0;transition:opacity .3s;background:radial-gradient(ellipse at center,transparent 55%,rgba(255,42,42,.55) 100%)}
+.gearSlot,.charmDot{display:inline-block;min-width:64px;margin:4px;padding:6px 8px;background:#1c1433;border:2px solid #3a2c5a;border-radius:8px;color:#fff;font-family:Arial,sans-serif;font-size:11px;font-weight:700;text-align:center;cursor:pointer}
+.gearSlot.sel{border-color:#ffd166}.gearSlot .gt{font-size:9px;opacity:.7}
+.charmDot.sel{border-color:#7af0ff;background:#12283a}
+.storeCard{display:inline-block;min-width:120px;max-width:150px;margin:4px;padding:8px;background:#1c1433;border:2px solid #3a2c5a;border-radius:10px;color:#fff;font-family:Arial,sans-serif;font-size:11px;text-align:center}
+.storeCard .sn{font-weight:800;font-size:12px;color:#ffd166}.storeCard .st{font-size:9px;opacity:.7}.storeCard .sd{font-size:10px;opacity:.85;margin:4px 0}
+.storeTitle{width:100%;text-align:center;font-family:Arial,sans-serif;font-weight:800;font-size:14px;letter-spacing:2px;color:#ffd166;margin:6px 0}
+.circuitNode{display:inline-block;min-width:130px;margin:6px;padding:10px;background:#141026;border:2px solid #ff9df0;border-radius:12px;color:#fff;font-family:Arial,sans-serif;text-align:center;cursor:pointer}
+.circuitNode .cn{font-weight:800;font-size:13px}.circuitNode .cr{font-size:11px;color:#ffd166;margin-top:4px}
 .pop{position:absolute;transform:translate(-50%,-50%);font-size:26px;font-family:'Bungee','Anton',Arial,sans-serif;color:#fff;text-shadow:0 3px 0 #000;animation:pop .9s ease-out forwards;white-space:nowrap}
 .pop.big{font-size:34px;color:#7af0ff}.pop.bad{color:#ff4d4d}.pop.gold{color:#ffd166}.pop.spc{color:#ff4fd8;font-size:40px}
 @keyframes pop{0%{transform:translate(-50%,-50%) scale(.4)}15%{transform:translate(-50%,-50%) scale(1.25)}100%{transform:translate(-50%,-160%) scale(1);opacity:0}}
@@ -197,7 +207,7 @@ body.cine #cineSkip{display:block}
   <div id="cash"></div>
   <div id="spcWrap"><div id="spc"></div></div><div id="spcLbl">ENERGY</div>
   <div id="bossWrap"><div class="bn" id="bossName"></div><div id="bossBar"><i id="bossHp" style="width:100%"></i></div></div>
-  <div id="combo"></div><div id="warn">! COUNTER NOW !</div>
+  <div id="combo"></div><div id="styleRank"></div><div id="warn">! COUNTER NOW !</div>
   <div id="hint"><div class="ring"></div><b id="hintT">DRAG LEFT SIDE TO MOVE</b><small id="hintS">Tap right side to punch · dodge the <span style="color:#ff4d4d">!</span> or tap to counter</small></div>
   <div id="ko">K.O.</div>
 </div>
@@ -209,7 +219,7 @@ body.cine #cineSkip{display:block}
   <div class="abtn" id="btnSpc"><div class="ic"></div><div class="tx">SPC</div></div>
   <div class="abtn" id="btnJmp"><div class="tx">JMP</div></div>
 </div>
-<div id="flash"></div>
+<div id="flash"></div><div id="lsEdge"></div>
 <div id="lbTop"></div><div id="lbBot"></div><div id="nrgFlash"></div>
 <div id="cineCap"></div><div id="cineSkip">TAP TO SKIP ▸</div><div id="megaName"></div>
 <div id="title" class="screen hidden" style="justify-content:center;background:linear-gradient(to bottom,rgba(10,6,24,.15),rgba(10,6,24,.75))">
@@ -233,6 +243,8 @@ body.cine #cineSkip{display:block}
     <div id="cards"></div>
     <div id="skinsRow"><div class="cap">Skin (style only — no power)</div></div>
     <div id="texRow"><div class="cap">Texture (style only — no power)</div></div>
+    <div id="gearRow"><div class="cap">Gear — tap a slot to manage</div></div>
+    <div id="charmRow"><div class="cap">Charm — one per mission</div></div>
     <div id="shopRow"></div>
     <div id="metaLine"></div>
     <button class="bigBtn btn9" id="fightBtn">Missions</button>
@@ -255,6 +267,7 @@ body.cine #cineSkip{display:block}
   <div id="resStats"></div>
   <div id="cashLines"></div>
   <div id="blessRow" style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;justify-content:center"></div>
+  <div id="storeRow" style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;justify-content:center"></div>
   <div id="shopRow2" style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;justify-content:center"></div>
   <div id="metaLine2" style="margin-top:12px;font-family:Arial,sans-serif;font-weight:700;font-size:13px;text-transform:none;opacity:.85"></div>
   <button class="bigBtn btn9" id="nextBtn" style="display:none">NEXT →</button>
