@@ -376,7 +376,7 @@ const UPS = [
 const critCh = () => 0.03 + (save.up_crit || 0) * 0.04 + (blessFx().crit || 0);
 const luckMult = () => 1 + (save.up_luck || 0) * 0.08 + (blessFx().luck || 0);
 const dodgeRechargeMult = () => (1 - Math.min(0.6, (save.up_dodge || 0) * 0.08)) * (1 - (blessFx().dodgeCd || 0) - (blessFx().dodge || 0));
-const magnetR = () => 1.6 * (1 + (save.up_magnet || 0) * 0.2);
+const magnetR = () => 1.6 * (1 + (save.up_magnet || 0) * 0.2) * (1 + mascotMagnetBonus());
 const fighterDef = (id) => FIGHTERS.find((f) => f.id === (id || save.selected)) || scoutFighter(id || save.selected) || variantFighter(id) || FIGHTERS[0];
 // INFINITE UNLOCKS (owner 2026-10-06): titled challenger variants (e.g. kingpin_nightmare)
 // resolve dynamically by cloning the base fighter with boosted stats + title flair
@@ -1562,6 +1562,63 @@ function startSpray(s) {
   ev('spray', {});
 }
 
+// ---------- CORNER-CREW MASCOTS (Castle Crashers animal-orb-inspired) ----------
+// Unlockable street mascots that follow you and grant small perks. Pure charm layer — style, not power.
+// PIGEON: +30% pickup magnet radius. DOG: pickups glow brighter + bark when a tag spot is near.
+const MASCOTS = [
+  { id: 'm_pigeon', name: 'PIGEON', color: 0x9aa5b1, desc: '+30% pickup magnet radius', unlock: { type: 'missions', n: 10 } },
+  { id: 'm_dog', name: 'STRAY DOG', color: 0xc98d4b, desc: 'Pickups glow; barks near tag spots', unlock: { type: 'recruits', n: 5 } },
+];
+function mascotUnlocked(m) {
+  save.mascotsUnlocked = save.mascotsUnlocked || [];
+  if (save.mascotsUnlocked.includes(m.id)) return true;
+  const u = m.unlock || {};
+  if (u.type === 'missions' && (save.wins || 0) >= u.n) { save.mascotsUnlocked.push(m.id); writeSave(); return true; }
+  if (u.type === 'recruits') { const n = Object.values(save.scouts || {}).reduce((a, b) => a + b, 0); if (n >= u.n) { save.mascotsUnlocked.push(m.id); writeSave(); return true; } }
+  return false;
+}
+let mascotMesh = null, mascotId = null;
+function spawnMascot() {
+  if (mascotMesh) { streetGroup.remove(mascotMesh); mascotMesh = null; }
+  mascotId = save.mascot || null;
+  if (!mascotId) return;
+  const m = MASCOTS.find(x => x.id === mascotId);
+  if (!m || !mascotUnlocked(m)) { mascotId = null; return; }
+  const g = new THREE.Group();
+  const mat = new THREE.MeshStandardMaterial({ color: m.color, roughness: 0.7 });
+  if (m.id === 'm_pigeon') {
+    // little pigeon: body + head + beak
+    const body = new THREE.Mesh(new THREE.SphereGeometry(0.22, 8, 6), mat); body.position.y = 0.35; g.add(body);
+    const head = new THREE.Mesh(new THREE.SphereGeometry(0.13, 8, 6), mat); head.position.set(0.16, 0.52, 0); g.add(head);
+    const beak = new THREE.Mesh(new THREE.ConeGeometry(0.05, 0.12, 6), new THREE.MeshStandardMaterial({ color: 0xffb020 })); beak.rotation.z = -Math.PI / 2; beak.position.set(0.3, 0.52, 0); g.add(beak);
+  } else {
+    // stray dog: body + head + tail
+    const body = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.28, 0.24), mat); body.position.y = 0.32; g.add(body);
+    const head = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.24, 0.22), mat); head.position.set(0.32, 0.5, 0); g.add(head);
+    const tail = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.3, 6), mat); tail.rotation.z = 0.7; tail.position.set(-0.3, 0.5, 0); g.add(tail);
+  }
+  g.traverse((x) => { if (x.isMesh) x.castShadow = true; });
+  streetGroup.add(g);
+  mascotMesh = g;
+}
+function updateMascot(dt) {
+  if (!mascotMesh || !player || player.hp <= 0) return;
+  // follow the player with a lag (charming, not robotic)
+  const tx = player.px - (player.face || 1) * 1.6, tz = player.pz + 0.7;
+  const m = mascotMesh.position;
+  m.x += (tx - m.x) * Math.min(1, dt * 4);
+  m.z += (tz - m.z) * Math.min(1, dt * 4);
+  m.y = Math.abs(Math.sin(performance.now() * 0.006)) * 0.25; // hop
+  mascotMesh.rotation.y = (player.face || 1) > 0 ? 0 : Math.PI;
+  // DOG: bark when a tag spot is near
+  if (mascotId === 'm_dog' && Math.random() < dt * 0.5) {
+    const s = tagSpots.find(s => !s.done && Math.hypot(player.px - s.px, player.pz - s.pz) < 6);
+    if (s) { sfx('uiclick', 0.7, false, 1.8); sparkFX(m.x, 0.8, m.z, 0xc98d4b, 3); }
+  }
+}
+function mascotMagnetBonus() { return mascotId === 'm_pigeon' ? 0.3 : 0; } // +30% magnet radius
+function mascotGlowBonus() { return mascotId === 'm_dog' ? 1 : 0; } // pickups glow brighter
+
 // ---------- crowd (CONDITIONAL: only on missions flagged crowd:true — owner directive) ----------
 const crowdGroup = new THREE.Group(); scene.add(crowdGroup);
 let crowdMembers = [];
@@ -2081,6 +2138,19 @@ function renderCharms() {
     d.onclick = () => { save.charm = save.charm === c.id ? null : c.id; writeSave(); sfx('uiclick', 0.8); renderCharms(); };
     row.appendChild(d);
   }
+  renderMascots(); // CORNER-CREW MASCOTS: pick your ride-or-die
+}
+function renderMascots() {
+  const row = $('charmRow'); if (!row) return;
+  row.querySelectorAll('.mascotDot').forEach((d) => d.remove());
+  const avail = MASCOTS.filter((m) => mascotUnlocked(m));
+  if (!avail.length) return;
+  for (const m of avail) {
+    const d = el('div', 'mascotDot charmDot' + (save.mascot === m.id ? ' sel' : ''));
+    d.innerHTML = `<div>🐾 ${m.name}</div><div class="gt">${m.desc}</div>`;
+    d.onclick = () => { save.mascot = save.mascot === m.id ? null : m.id; writeSave(); sfx('uiclick', 0.8); renderCharms(); };
+    row.appendChild(d);
+  }
 }
 // CORNER STORE: between-mission gear shop (Brotato shop loop) — buy, reroll, recycle
 let storeStock = [];
@@ -2565,6 +2635,7 @@ function startMission(id, node) {
   buildStreet(mission.district, mission.len, R);
   spawnBreakables(mission.district, mission.len, R);
   spawnTagSpots(mission, R); // JET SET RADIO: graffiti tag spots — claim the block with style
+  spawnMascot(); // CORNER-CREW MASCOTS: your ride-or-die follows you in
   if (mission.crowd) spawnCrowd(R); // CONDITIONAL crowd only — owner directive
   setRain(hasMod('rain'));
   const fd = fighterDef();
@@ -4397,6 +4468,7 @@ function frame(dt, doRender = true) {
     }
     updatePickups(dt);
     updateTagSpots(dt); // JET SET RADIO: tag-spot glow + spray channel
+    updateMascot(dt); // CORNER-CREW MASCOTS: follow + perks
     updateRain(dt);
     updateProjs(dt);
     player.energy = Math.min(energyMax(), player.energy + 5 * dt); // energy trickles back
@@ -4563,6 +4635,12 @@ window.__cdtest = {
     state: typeof state !== 'undefined' ? state : '?'
   }),
   tagFastFwd: () => { if (player && player.sprayT > 0) { player.sprayT = 0.05; return { ok: 1 }; } return { ok: 0 }; },
+  mascotTest: (id) => {
+    save.mascotsUnlocked = save.mascotsUnlocked || [];
+    if (!save.mascotsUnlocked.includes(id)) save.mascotsUnlocked.push(id);
+    save.mascot = id; writeSave(); spawnMascot();
+    return { ok: 1, spawned: !!mascotMesh, id: mascotId };
+  },
   grappleTest: () => {
     const e = enemies.find(x => x.hp > 0 && !x.boss);
     if (!e) return { ok: 0, why: 'no-enemy' };
