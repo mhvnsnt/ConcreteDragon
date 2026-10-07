@@ -498,6 +498,16 @@ const BOSSES = [
     patterns: ['slam', 'flurry', 'summon'],
     sig: { id: 'bloodmoon', name: 'BLOOD MOON' },
     intro: 'THE VAMPIRE QUEEN' },
+  { id: 'foreman', name: 'THE FOREMAN', tint: 0xb08030, hp: 700, dmg: 1.55, scale: 1.5, spd: 1.35,
+    patterns: ['slam', 'charge', 'summon'],
+    unlockSkin: { fighter: 'sledge', id: 'foreman', name: 'Shop Foreman', tint: 0xb08030 },
+    sig: { id: 'overtime', name: 'OVERTIME' },
+    intro: 'THE SHIFT NEVER ENDS' },
+  { id: 'warden', name: 'THE WARDEN', tint: 0x5a6a7a, hp: 760, dmg: 1.6, scale: 1.4, spd: 1.5,
+    patterns: ['flurry', 'slam', 'summon'],
+    unlockSkin: { fighter: 'brick', id: 'warden', name: 'Cell Block', tint: 0x5a6a7a },
+    sig: { id: 'lockdown', name: 'LOCKDOWN' },
+    intro: 'NO ONE LEAVES' },
 ];
 
 // ---------- data: districts (per-district palettes — owner's art rule) ----------
@@ -514,6 +524,8 @@ const DISTRICTS = [
     moon: [0xc8b8ff, 1.1], rim: [0x9a4dff, 1.4], lampA: 0xff8c2a, lampB: 0x9a4dff, ground: 0x1a1a26, sw: ['#9a4dff', '#ff8c2a'] },
   { id: 'tunnels', name: 'THE UNDERGROUND', sky: 0x080a10, fog: [0x080a10, 6, 20], hemi: [0x6a8ab0, 0x080a10, 0.9],
     moon: [0x8ab8d8, 1.0], rim: [0x3a6a8a, 1.3], lampA: 0xffd166, lampB: 0x3a6a8a, ground: 0x16181e, sw: ['#ffd166', '#3a6a8a'] },
+  { id: 'factory', name: 'THE WORKS', sky: 0x140d08, fog: [0x140d08, 7, 24], hemi: [0xffb37a, 0x241008, 1.2],
+    moon: [0xffd9a0, 1.3], rim: [0xff6a00, 1.6], lampA: 0xff8c42, lampB: 0x6ab8d8, ground: 0x241c16, sw: ['#ff8c42', '#6ab8d8'] },
 ];
 const districtDef = (id) => DISTRICTS.find((d) => d.id === id) || DISTRICTS[0];
 
@@ -526,6 +538,8 @@ const ZONES = [
   { id: 'z3', name: 'ZONE 3 — THE MAZE', card: 'Dead ends, ambush pockets. The block fights back.', unlock: { type: 'mission', id: 'h3' } },
   { id: 'z4', name: 'ZONE 4 — HIGH RISE', card: 'Up is the only way through. Jump.', unlock: { type: 'mission', id: 'z1' } },
   { id: 'z5', name: 'ZONE 5 — THE UNDERGROUND', card: 'Below the streets, the tunnels remember everything.', unlock: { type: 'mission', id: 'p3' } },
+  { id: 'z6', name: 'ZONE 6 — THE WORKS', card: 'The factory never stopped. Neither do you.', unlock: { type: 'mission', id: 'u3' } },
+  { id: 'z7', name: 'ZONE 7 — STEEL CELL', card: 'Four walls, one way out. Through them.', unlock: { type: 'mission', id: 'w3' } },
   { id: 'zx', name: 'SIDE HUSTLES', card: 'Endless scraps, daily grinds, infinite road.', unlock: { type: 'start' } },
 ];
 const zoneDef = (id) => ZONES.find((z) => z.id === id) || ZONES[0];
@@ -548,7 +562,7 @@ function activeSeason() {
 }
 // WHAT'S NEW (soul law: community as co-designer) — patch notes live in-game
 const PATCH_NOTES = [
-  ['2026-10-07', 'Wave 5: HEAT finishers, RAGE meter, DESPERATION blasts, Zone 5 THE UNDERGROUND, infinite challenger variants, sports fighters (HOOP DREAM, STREET BALLER, DEAD BALLER)'],
+  ['2026-10-07', 'Wave 6: MIXTAPE stance system (double-tap TAUNT), Zone 6 THE WORKS + Zone 7 STEEL CELL, skyline/ring/plaza layouts, THE FOREMAN + THE WARDEN bosses with OVERTIME + LOCKDOWN signatures'],
   ['2026-10-06', 'Wave 4: BLITZ lunging strikes, WITCH TIME last-instant dodge, FOCUS absorb, BURST combo breaker, RADICAL MODE, RECRUIT crew system'],
   ['2026-10-05', 'Wave 3: 15 bosses with signatures, 5 districts, style meter, mission grades'],
 ];
@@ -635,6 +649,24 @@ const MISSIONS = [
   { id: 'u3', zone: 'z5', district: 'tunnels', name: 'TERMINUS', len: 110, crowd: false, layout: 'maze',
     spawns: [{ at: 12, fam: 'demon', n: 3 }, { at: 34, fam: 'spider', n: 3 }, { at: 58, fam: 'zombie', n: 4 }, { at: 82, fam: 'pumpkin', n: 3 }],
     card: 'End of the line. Something waits on the tracks.', boss: 'dragon', unlock: { type: 'mission', id: 'u2' }, reward: 'The Concrete Dragon stirs below' },
+  { id: 'w1', zone: 'z6', district: 'factory', name: 'CONVEYOR LINE', len: 100, crowd: false, layout: 'skyline',
+    spawns: [{ at: 12, fam: 'thug', n: 3 }, { at: 32, fam: 'heavyd', n: 2 }, { at: 54, fam: 'rico', n: 3 }, { at: 78, fam: 'jabber', n: 4 }],
+    card: 'The line never stops. Neither do the fists.', boss: null, unlock: { type: 'mission', id: 'u3' }, reward: 'Skyline layouts unlocked' },
+  { id: 'w2', zone: 'z6', district: 'factory', name: 'FURNACE FLOOR', len: 110, crowd: true, layout: 'plaza',
+    spawns: [{ at: 12, fam: 'stray', n: 3 }, { at: 34, fam: 'demon', n: 3 }, { at: 58, fam: 'heavyd', n: 3 }, { at: 84, fam: 'rico', n: 4 }],
+    card: 'The whole floor is watching. Give them a show.', boss: null, unlock: { type: 'mission', id: 'w1' }, reward: 'Plaza layouts unlocked' },
+  { id: 'w3', zone: 'z6', district: 'factory', name: 'SMOKESTACK', len: 120, crowd: false, layout: 'skyline',
+    spawns: [{ at: 14, fam: 'heavyd', n: 3 }, { at: 38, fam: 'zombie', n: 3 }, { at: 64, fam: 'rico', n: 4 }, { at: 92, fam: 'demon', n: 3 }],
+    card: 'Climb the smoke. He is waiting at the top.', boss: 'foreman', unlock: { type: 'mission', id: 'w2' }, reward: 'Unlocks FOREMAN skin' },
+  { id: 'c1', zone: 'z7', district: 'yards', name: 'CHAIN LINK', len: 80, crowd: true, layout: 'ring',
+    spawns: [{ at: 10, fam: 'jabber', n: 3 }, { at: 26, fam: 'thug', n: 3 }, { at: 46, fam: 'rico', n: 3 }, { at: 64, fam: 'jabber', n: 4 }],
+    card: 'Four walls. No ref. No excuses.', boss: null, unlock: { type: 'mission', id: 'w3' }, reward: 'Steel cell layouts unlocked' },
+  { id: 'c2', zone: 'z7', district: 'yards', name: 'LOCKDOWN', len: 95, crowd: true, layout: 'ring',
+    spawns: [{ at: 12, fam: 'rico', n: 3 }, { at: 32, fam: 'heavyd', n: 3 }, { at: 54, fam: 'zombie', n: 3 }, { at: 74, fam: 'rico', n: 4 }],
+    card: 'The gate is shut. Somebody is getting carried out.', boss: null, unlock: { type: 'mission', id: 'c1' }, reward: 'The cell holds' },
+  { id: 'c3', zone: 'z7', district: 'yards', name: 'TOP OF THE CELL', len: 110, crowd: true, layout: 'ring',
+    spawns: [{ at: 12, fam: 'heavyd', n: 3 }, { at: 36, fam: 'demon', n: 3 }, { at: 62, fam: 'rico', n: 4 }, { at: 88, fam: 'spider', n: 3 }],
+    card: 'He built the cell. Now fight him in it.', boss: 'warden', unlock: { type: 'mission', id: 'c2' }, reward: 'Unlocks WARDEN skin' },
   { id: 'endless', zone: 'zx', district: 'neon', name: 'ENDLESS SCRAP', len: Infinity, crowd: false, endless: true, card: 'How long can you hold the block?',
     spawns: [], boss: null, unlock: { type: 'mission', id: 'm1' }, reward: 'Survival ladder — how far can you walk?' },
   { id: 'daily', zone: 'zx', district: 'neon', name: 'DAILY SCRAP', len: 70, crowd: false, daily: true, card: 'One shot. One leaderboard.',
@@ -1035,6 +1067,52 @@ function buildLayout(kind, L, R, place, curb, K) {
         new THREE.MeshBasicMaterial({ color: 0xffcf2e }));
       edge.position.set(px, top + 0.02, pz); streetGroup.add(edge);
     }
+  } else if (kind === 'skyline') {
+    // ZONE 6: multi-tier catwalk staircases — chained jumps, gaps, loot on the high steel
+    let top = 0;
+    for (let px = 12; px < L - 12; px += rnd(7, 10)) {
+      top = Math.min(3.0, Math.max(0.9, top + (R() < 0.55 ? rnd(0.6, 1.0) : -rnd(0.4, 0.9))));
+      const pz = rnd(-1.2, 1.2), w = rnd(4, 6), d = rnd(2, 3);
+      const mat = new THREE.MeshStandardMaterial({ color: 0x4a3a28, roughness: 0.7, metalness: 0.35 });
+      const m = new THREE.Mesh(new THREE.BoxGeometry(w, top, d), mat);
+      m.position.set(px, top / 2 - 0.02, pz); m.castShadow = true; m.receiveShadow = true;
+      streetGroup.add(m);
+      platforms.push({ x: px, z: pz, w, d, top });
+      // railing posts — visual only
+      for (const ex of [-w / 2 + 0.3, w / 2 - 0.3]) {
+        const post = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.9, 0.12),
+          new THREE.MeshStandardMaterial({ color: 0x8a929e, roughness: 0.4, metalness: 0.7 }));
+        post.position.set(px + ex, top + 0.45, pz + d / 2 - 0.15); streetGroup.add(post);
+      }
+      if (R() < 0.55) spawnPickup(top > 1.8 ? (R() < 0.5 ? 'special' : 'health') : 'cash', px, pz);
+    }
+  } else if (kind === 'ring') {
+    // ZONE 7: steel cell — smashable dumpster walls box the fight in; break out or get broken
+    const cx0 = 18, cw = 20, ch = 9;
+    const wallTint = 0x8a929e; // bare steel
+    for (let wx = cx0 - cw / 2; wx <= cx0 + cw / 2; wx += 3.4) {
+      place('dumpster', wx, -ch / 2, 0, K, wallTint); place('dumpster', wx, ch / 2, 0, K, wallTint);
+    }
+    for (let wz = -ch / 2 + 3.4; wz <= ch / 2 - 3.4; wz += 3.4) {
+      place('dumpster', cx0 - cw / 2, wz, Math.PI / 2, K, wallTint); place('dumpster', cx0 + cw / 2, wz, Math.PI / 2, K, wallTint);
+    }
+    // corner spotlights
+    place('streetlight', cx0 - cw / 2 - 1, -ch / 2 - 1, 0, K); place('streetlight', cx0 + cw / 2 + 1, ch / 2 + 1, 0, K);
+    if (R() < 0.8) spawnPickup('health', cx0, 0);
+  } else if (kind === 'plaza') {
+    // open multidirectional plaza: central barricade cluster, four approach lanes, crowd ring
+    const cx0 = L * 0.55;
+    for (let i = 0; i < 6; i++) {
+      const a = (i / 6) * Math.PI * 2 + R() * 0.5, rr = rnd(1.5, 3.2);
+      const nm = i % 2 ? 'tnt_crate' : 'box_A';
+      place(nm, cx0 + Math.cos(a) * rr, Math.sin(a) * rr * 0.7, R() * 3, K);
+    }
+    place('dumpster', cx0, 0, R() * 3, K);
+    for (const sx of [-1, 1]) for (const sz of [-1, 1]) {
+      place('streetlight', cx0 + sx * 9, sz * 5, 0, K);
+      if (R() < 0.6) place('trash_A', cx0 + sx * rnd(4, 7), sz * rnd(3, 5), R() * 3, K);
+    }
+    if (R() < 0.7) spawnPickup('special', cx0 + 4, 0);
   }
 }
 function buildStreet(district, missionLen, seedFn) {
@@ -2978,6 +3056,22 @@ function execBossSig(e) {
     playAnim(e, 'Melee_Unarmed_Attack_Punch_A', { ts: 1.4 });
     sfx('hit3', 1, false, 0.7);
     for (let i = -1; i <= 1; i++) fireProj({ x: e.px + dir * 1.0, z: e.pz + i * 0.5, y: 1.4, vx: dir * 7.5, kind: 'orb', dmg: Math.round(base * 0.8), color: 0x8a1a2a, fromPlayer: false, life: 1.5, label: 'BLOOD MOON' });
+  } else if (id === 'overtime') { // FOREMAN: double-time — two shockwave slams, second one bigger
+    banner('OVERTIME');
+    playAnim(e, 'Melee_Unarmed_Attack_Kick', { ts: 1.1 });
+    for (let w = 0; w < 2; w++) setTimeout(() => {
+      if (!e || e.hp <= 0 || state !== 'fight' || missionOver || ended) return;
+      burst(bp.clone().add(new THREE.Vector3(0, 0.4, 0)), 26, 0xb08030, 6); shake = Math.max(shake, 0.5); sfx('hit3', 1, false, 0.65);
+      sigHitPlayer(e, 3.0 + w * 0.8, 1.8, Math.round(base * (w ? 1.5 : 1.0)), 'OVERTIME', 350, { burst: 0xb08030 });
+    }, 250 + w * 600);
+  } else if (id === 'lockdown') { // WARDEN: lockdown — ring of shock projectiles closes in
+    banner('LOCKDOWN');
+    playAnim(e, 'Melee_Unarmed_Attack_Punch_A', { ts: 1.2 });
+    sfx('hit3', 1, false, 0.7);
+    for (let i = 0; i < 6; i++) {
+      const a = (i / 6) * Math.PI * 2;
+      fireProj({ x: e.px + Math.cos(a) * 3.2, z: e.pz + Math.sin(a) * 2.2, y: 1.2, vx: -Math.cos(a) * 4.5, vz: -Math.sin(a) * 3.2, kind: 'orb', dmg: Math.round(base * 0.9), color: 0x5a6a7a, fromPlayer: false, life: 1.6, label: 'LOCKDOWN' });
+    }
   }
   e.ai = 'recover'; e.aiT = 1.4 / (e.aggro || 1);
 }
@@ -3622,6 +3716,8 @@ window.__cdtest = {
   spawnFam: (famId) => { if (player) return spawnEnemy(famId, 0, player.px + 3, 0); },
   sigChance: (v) => { window.__cdSigChance = v; },
   forceBossSig: () => { if (bossRef) { bossRef.pat = 'sig'; bossRef.ai = 'windup'; bossRef.windup = 0.01; } },
+  spawnBoss: (id, bx) => spawnBoss(id, bx == null ? (player ? player.px + 6 : 10) : bx),
+  layoutInfo: () => ({ platforms: platforms.length, destruct: destructibles.length, colliders: colliders.length }),
   forceFoeSig: () => { const e = enemies.find(x => x.hp > 0 && !x.boss); if (e) { e.ai = 'windup'; e.windup = 0.01; e.sigUse = !!e.sig; } },
   clearFoes: () => { for (const e of enemies.slice()) { removeFighter(e); const i = enemies.indexOf(e); if (i >= 0) enemies.splice(i, 1); } bossRef = null; },
   healPlayer: () => { if (player) { player.hp = player.maxHp || 100; setHud(); } },
