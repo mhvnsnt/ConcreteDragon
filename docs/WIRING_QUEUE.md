@@ -37,8 +37,10 @@ Wire in this order; playtest after each tier. Owner plays and vetoes — wire, d
 - A7 breakables ✅ evolved → full destructibles (HP + debris + pickups)
 
 ## TIER 4 — world (districts)
-16. **A5 district 2 (roads)** — `kenney_city-kit-roads.zip`: scrolling road/bridge/sidewalk
-    segments, own palette per owner art rule.
+16. **A5 district 2 (roads)** ✅ WIRED 2026-10-07 — `kenney_city-kit-roads.zip`: THE OVERPASS
+    district (mission m5 OVERPASS RUN, z1): road deck, pillars, guardrails, lamps, construction props,
+    hwy signs; own palette per owner art rule. BuildStreet routes overpass → buildRoads;
+    barrier/cone/dumpster breakables; 149 colliders; $750 purse bonus. Playtest-verified.
 17. **A5 district 3 (industrial)** — `kenney_city-kit-industrial.zip`: warehouse district.
 18. **A7 breakables** — crates/barrels with cash/health pickups (SoR apple/chicken model);
     break SFX from rpg-audio.
