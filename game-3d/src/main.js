@@ -578,7 +578,7 @@ function activeSeason() {
 }
 // WHAT'S NEW (soul law: community as co-designer) — patch notes live in-game
 const PATCH_NOTES = [
-  ['2026-10-07', 'Wave 6: ARENA DRESSING (8 Kenney CC0 props — smashable tables/chairs/cones/tires), STANCE FINISHERS (8), MIXTAPE stances, Zones 6-7, FOREMAN + WARDEN'],
+  ['2026-10-07', 'Wave 6: ENDLESS MUTATORS (SWARM/BRUTES/FEVER/SECOND WIND/GLASS JAW), deeper proc-bosses, ARENA DRESSING, STANCE FINISHERS, Zones 6-7'],
   ['2026-10-06', 'Wave 4: BLITZ lunging strikes, WITCH TIME last-instant dodge, FOCUS absorb, BURST combo breaker, RADICAL MODE, RECRUIT crew system'],
   ['2026-10-05', 'Wave 3: 15 bosses with signatures, 5 districts, style meter, mission grades'],
 ];
@@ -594,13 +594,17 @@ function renderPatchNotes() {
 const PB_TITLES = ['NIGHTMARE', 'IRON', 'BLOOD', 'RUSTED', 'HOWLING', 'VENOM', 'ASHEN', 'BRASS', 'HOLLOW', 'SAVAGE', 'CRIMSON', 'OBSIDIAN'];
 function procBoss(n) {
   const R = seedPRNG(n * 104729 + 7);
-  const bases = ['kingpin', 'sledge', 'viper', 'rust', 'dragon', 'pumpkinking'];
+  const bases = ['kingpin', 'sledge', 'viper', 'rust', 'dragon', 'pumpkinking', 'foreman', 'warden'];
   const b0 = BOSSES.find((x) => x.id === bases[Math.floor(R() * bases.length)]);
   const title = PB_TITLES[Math.floor(R() * PB_TITLES.length)];
+  const pool = ['slam', 'flurry', 'charge', 'summon', 'shoot'];
+  const pats = [];
+  while (pats.length < 3) { const q = pool[Math.floor(R() * pool.length)]; if (!pats.includes(q)) pats.push(q); }
   return Object.assign({}, b0, {
     id: 'pb' + n, name: title + ' ' + b0.name,
     hp: Math.round(b0.hp * (1 + n * 0.25)), dmg: b0.dmg + n * 0.05,
     scale: b0.scale * (1 + Math.min(0.3, n * 0.015)),
+    patterns: pats, // wave-6: shuffled kit — no two challengers fight alike
     proc: true, intro: 'ENDLESS CHALLENGER #' + (n + 1),
   });
 }
@@ -1971,10 +1975,11 @@ function showResults(win, mission, stats) {
 let player = null, enemies = [], mission = null, missionR = Math.random;
 let spawnQueue = [], bossSpawned = false, bossRef = null, missionOver = false, ended = false;
 let gameTime = 0, combo = 0, comboT = 0, maxCombo = 0, atkIdx = 0, dmgTaken = 0, missionMaxHp = 100;
-let cashRun = 0, kills = 0, distWalked = 0, endlessT = 3;
+let cashRun = 0, kills = 0, distWalked = 0, endlessT = 3, endlessTier = 0, endlessMuts = [];
 function hint(on) { $('hint').style.opacity = on ? 1 : 0; }
 function awardCash(base, pos, tag) {
-  const amount = Math.max(1, Math.round(base * hustleMult() * (1 + (blessFx().cash || 0)) * ((mission && mission.cashMult) || 1)));
+  const fever = (mission && mission.endless && (endlessMuts || []).includes('FEVER')) ? 2 : 1;
+  const amount = Math.max(1, Math.round(base * hustleMult() * (1 + (blessFx().cash || 0)) * ((mission && mission.cashMult) || 1) * fever));
   cashRun += amount;
   const txt = tag ? tag + ' +$' + amount : '+$' + amount;
   const sp = pos ? screenPos(pos) : { x: innerWidth / 2, y: innerHeight * 0.45 };
@@ -2060,7 +2065,7 @@ function startMission(id, node) {
   spawnQueue = mission.spawns.map((s) => Object.assign({}, s, { done: false })).sort((a, b) => a.at - b.at);
   bossSpawned = false; bossRef = null; missionOver = false; ended = false;
   gameTime = 0; combo = 0; comboT = 0; maxCombo = 0; atkIdx = 0; dmgTaken = 0; missionMaxHp = player.maxHp;
-  cashRun = 0; kills = 0; distWalked = 0; endlessT = 3;
+  cashRun = 0; kills = 0; distWalked = 0; endlessT = 3; endlessTier = 0; endlessMuts = [];
   camX = 2;
   state = 'fight'; ev('mission_start', { id: mission.id });
   showOnly(null);
@@ -2614,6 +2619,7 @@ function doDodge() {
   ev('dodge', {});
 }
 function landHit(e, dmg, label, hs, sh, launcher, counter) {
+  if (mission && mission.endless && (endlessMuts || []).includes('GLASS JAW')) dmg = Math.round(dmg * 1.5);
   if (!e || e.hp <= 0 || state !== 'fight') return;
   T.hits++; if (counter) T.counters++;
   // CRIT (gear/gym) + LAST STAND (Garou TOP-inspired): below 30% HP you hit 25% harder
@@ -2692,6 +2698,7 @@ function killEnemy(e) {
   setHud();
 }
 function hurtPlayer(dmg) {
+  if (mission && mission.endless && (endlessMuts || []).includes('GLASS JAW')) dmg = Math.round(dmg * 1.5);
   if (!player || player.hp <= 0 || missionOver || ended) return;
   // FOCUS (SFIV): absorb one hit while in focus stance — no damage, +15 energy
   if (player.focusT > 0 && !player.focusHit) {
@@ -3172,13 +3179,34 @@ function director(dt) {
   const mi = missionIndex(mission);
   if (mission.endless) {
     endlessT -= dt;
+    // ENDLESS MUTATORS (wave 6): every 30m the street fights dirtier — announced, escalating
+    const tier = Math.floor(distWalked / 30);
+    if (tier > (endlessTier || 0)) {
+      endlessTier = tier;
+      const MUT = ['SWARM', 'BRUTES', 'FEVER', 'SECOND WIND', 'GLASS JAW'];
+      const mut = MUT[(tier - 1) % MUT.length];
+      (endlessMuts = endlessMuts || []).push(mut);
+      banner(mut + '!', tier % 2 ? 'spc' : 'bad'); sfx('bell', 0.8, false, 0.7);
+      const sp = screenPos(player.root.position.clone().add(new THREE.Vector3(0, 2.4, 0)));
+      popText(['The pack grows', 'Heavies walk in', 'Double cash', 'Catch your breath', 'Hit harder, break easier'][(tier - 1) % MUT.length], 'gold', sp.x, sp.y);
+      ev('mutator', { mut, tier });
+    }
     if (endlessT <= 0) {
       endlessT = Math.max(1.6, 4 - distWalked * 0.006);
       if (enemies.length < 5) {
         const fams = ['thug', 'rico', 'jabber', 'heavyd'];
         const lv = Math.floor(distWalked / 25);
-        const n = Math.min(4, 1 + Math.floor(distWalked / 45));
-        for (let i = 0; i < n; i++) spawnEnemy(fams[Math.floor(missionR() * fams.length)], lv, player.px + 9 + i * 1.6, rnd(-1.2, 1.2));
+        let n = Math.min(4, 1 + Math.floor(distWalked / 45));
+        if ((endlessMuts || []).includes('SWARM')) n += 1;
+        for (let i = 0; i < n; i++) {
+          let fam = fams[Math.floor(missionR() * fams.length)];
+          if ((endlessMuts || []).includes('BRUTES') && fam === 'thug' && missionR() < 0.6) fam = 'heavyd';
+          spawnEnemy(fam, lv, player.px + 9 + i * 1.6, rnd(-1.2, 1.2));
+        }
+      }
+      // SECOND WIND: slow regen in deep endless
+      if ((endlessMuts || []).includes('SECOND WIND') && player.hp < player.maxHp) {
+        player.hp = Math.min(player.maxHp, player.hp + dt * 1.2); setHud();
       }
     }
   } else {
@@ -3863,6 +3891,9 @@ window.__cdtest = {
   spawnCreature: (cid) => { if (player) { const e = makeCreatureRaw(cid, 0xffffff, player.px + 3, -Math.PI / 2, 1); if (e) { e.maxHp = e.hp = 200; e.dmgMult = 1; e.spd = 1.5; e.px = player.px + 3; e.pz = 0; e.ai = 'walk'; e.aiT = 1; syncPos(e); playAnim(e, 'Running_A', { loop: true }); enemies.push(e); } return e; } },
   hurt: (n) => { if (player) hurtPlayer(n); },
   doJump, doPunch, doHeavy, doSpecial, doTaunt, doDesperation, doStance,
+  walkTo: (x) => { if (player) { player.px = x; } return true; },
+  procBossInfo: () => { try { const a = procBoss(3); return { ok: 1, name: a && a.name, pats: a && a.patterns, typeof_pb: typeof procBoss }; } catch (e) { return { ok: 0, err: String(e && e.message || e).slice(0, 120) }; } },
+  muts: () => ({ tier: endlessTier || 0, muts: (endlessMuts || []).slice() }),
   propKeys: () => Object.keys(streetParts).filter(k => k.startsWith('k_')),
   sfin: () => (window.__playable && window.__playable.sfin) || {},
   stanceInfo: () => player ? { stance: player.stance || 0, name: (player.stance && fighterDef().stance) ? fighterDef().stance.name : 'BALANCED', dmg: +player.dmgMult.toFixed(2), spd: +player.spd.toFixed(2) } : null,
