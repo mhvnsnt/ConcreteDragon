@@ -36,7 +36,7 @@ const save = {
   daily: { date: '', score: 0 }, boards: {}, seenHint: false,
   muted: false, quality: 'auto', difficulty: 'normal', circuitN: 0, blessings: [], rep: 0, goldCards: [],
   gearInv: {}, gearTier: {}, gearEq: {}, charm: null, charmsUnlocked: [],
-  assist: false, missionGrades: {},
+  assist: false, missionGrades: {}, scoutRoster: [], loadouts: {},
 };
 const TIP_URL = 'https://paypal.me/MarquisWhitacre';
 function loadSave() {
@@ -56,6 +56,8 @@ function loadSave() {
   if (!save.gearTier || typeof save.gearTier !== 'object') save.gearTier = {};
   if (!save.gearEq || typeof save.gearEq !== 'object') save.gearEq = {};
   if (!Array.isArray(save.charmsUnlocked)) save.charmsUnlocked = [];
+  if (!Array.isArray(save.scoutRoster)) save.scoutRoster = [];
+  if (!save.loadouts || typeof save.loadouts !== 'object') save.loadouts = {};
   if (!save.missionGrades || typeof save.missionGrades !== 'object') save.missionGrades = {};
   for (const k of ['up_dodge','up_magnet','up_revive','up_crit','up_regen','up_luck','up_energy','up_counter','up_speed'])
     if (typeof save[k] !== 'number') save[k] = 0;
@@ -346,7 +348,7 @@ const critCh = () => 0.03 + (save.up_crit || 0) * 0.04 + (blessFx().crit || 0);
 const luckMult = () => 1 + (save.up_luck || 0) * 0.08 + (blessFx().luck || 0);
 const dodgeRechargeMult = () => (1 - Math.min(0.6, (save.up_dodge || 0) * 0.08)) * (1 - (blessFx().dodgeCd || 0) - (blessFx().dodge || 0));
 const magnetR = () => 1.6 * (1 + (save.up_magnet || 0) * 0.2);
-const fighterDef = (id) => FIGHTERS.find((f) => f.id === (id || save.selected)) || variantFighter(id) || FIGHTERS[0];
+const fighterDef = (id) => FIGHTERS.find((f) => f.id === (id || save.selected)) || scoutFighter(id || save.selected) || variantFighter(id) || FIGHTERS[0];
 // INFINITE UNLOCKS (owner 2026-10-06): titled challenger variants (e.g. kingpin_nightmare)
 // resolve dynamically by cloning the base fighter with boosted stats + title flair
 const variantCache = {};
@@ -380,6 +382,7 @@ function moveListHTML(fid) {
 function unlockText(f) {
   if (f.unlock.type === 'start') return '';
   if (f.unlock.type === 'boss') { const b = bossDef(f.unlock.boss); return 'BEAT ' + (b ? b.name : 'THE BOSS') + ' TO UNLOCK'; }
+  if (f.unlock.type === 'scout') return 'SCOUTED — INFINITE CREW';
   return 'CLEAR MISSIONS TO UNLOCK';
 }
 
@@ -1445,6 +1448,291 @@ function attachHead(f, partId) {
   inst.position.set(0, PART_HEADS[partId].y || 0, 0);
   bone.add(inst);
 }
+// ---------- modular cosmetic parts (owner 2026-10-07): infinite character + customization ----------
+// LEGO color-blocked aesthetic: colors stay locked to character identity AND body area.
+// Parts are Three.js primitive builds parented to NAMED BONES (PART_HEADS pattern),
+// so they follow animation. STYLE-NOT-POWER (inviolable): cosmetics never touch stats.
+const PART_SLOTS = ['head', 'torso', 'arms', 'legs', 'boots', 'shoulders', 'back', 'accessory'];
+const PART_ZONES = ['skin', 'primary', 'secondary', 'accent', 'metal'];
+const ZONE_DEFAULTS = { skin: 0xd9a066, primary: 0x2e7dd1, secondary: 0xd1403c, accent: 0xffd166, metal: 0x9aa4b2 };
+// per-fighter LOCKED palettes: colors stick to identity + body area, never randomized
+const FIGHTER_PALETTES = {
+  kidblue: { skin: 0xd9a066, primary: 0x2e7dd1, secondary: 0xd1403c, accent: 0xffd166, metal: 0x9aa4b2 },
+  ghost:   { skin: 0xe8c39a, primary: 0x2b2b38, secondary: 0x4dff88, accent: 0x7af0ff, metal: 0x8a8f98 },
+  brick:   { skin: 0xc98a5a, primary: 0xff8c42, secondary: 0x5a3a22, accent: 0xffd166, metal: 0x7a7f88 },
+  kingpin: { skin: 0xb07a4a, primary: 0xffb03d, secondary: 0x2b1a3a, accent: 0xf0f0ff, metal: 0xc9a227 },
+  sledge:  { skin: 0xd9a066, primary: 0xb3541e, secondary: 0x2e2e2e, accent: 0xffd166, metal: 0x6a7078 },
+  viper:   { skin: 0xe8c39a, primary: 0x39d353, secondary: 0x1a2e1a, accent: 0xd8ff4d, metal: 0x9aa4b2 },
+  dust:    { skin: 0xc9a06a, primary: 0xb8b0a0, secondary: 0x6a625a, accent: 0xd8b56b, metal: 0x8a8f96 },
+  jack:    { skin: 0xd9a066, primary: 0xe07b1f, secondary: 0x2e1a0e, accent: 0xffd166, metal: 0x7a7f88 },
+};
+// locked street palettes for procedurally scouted fighters (seeded pick — never free-random)
+const SCOUT_PALETTES = [
+  { skin: 0xd9a066, primary: 0x8a2a3a, secondary: 0x2b2b38, accent: 0xffd166, metal: 0x7a7f88 },
+  { skin: 0xb07a4a, primary: 0x1a5a8a, secondary: 0xd1403c, accent: 0x4fd1ff, metal: 0x9aa4b2 },
+  { skin: 0xe8c39a, primary: 0x2e6b3a, secondary: 0x1a2e1a, accent: 0xd8ff4d, metal: 0x6a7078 },
+  { skin: 0xc98a5a, primary: 0x5a3a8a, secondary: 0x2b1a3a, accent: 0xff4fd8, metal: 0x8a8f98 },
+  { skin: 0xd9a066, primary: 0xb3541e, secondary: 0x3a2a1a, accent: 0xff8c42, metal: 0x7a7f88 },
+  { skin: 0xa06a3a, primary: 0x2b2b38, secondary: 0x5a5a6a, accent: 0x9a4dff, metal: 0xc9c9d9 },
+  { skin: 0xe8c39a, primary: 0x8a1a2a, secondary: 0x2b2b38, accent: 0xf0f0ff, metal: 0x9aa4b2 },
+  { skin: 0xc98a5a, primary: 0x1a6a5a, secondary: 0x0e2e2a, accent: 0x2affd5, metal: 0x6a7078 },
+  { skin: 0xd9a066, primary: 0x6a6a2e, secondary: 0x2e2e1a, accent: 0xd8b56b, metal: 0x8a8f96 },
+  { skin: 0xb07a4a, primary: 0x3a3a3a, secondary: 0x8a8a8a, accent: 0xffd166, metal: 0xc9c9d9 },
+  { skin: 0xe8c39a, primary: 0x0e4a8a, secondary: 0x4fd1ff, accent: 0xf0f0ff, metal: 0x7a7f88 },
+  { skin: 0xa06a3a, primary: 0x7a2e0e, secondary: 0xd1403c, accent: 0xffb03d, metal: 0x6a7078 },
+];
+function zoneMat(zones, zone) {
+  return new THREE.MeshStandardMaterial({ color: zones[zone], roughness: zone === 'metal' ? 0.32 : 0.65, metalness: zone === 'metal' ? 0.8 : 0.08 });
+}
+function pmesh(geo, mat, x, y, z, rx, ry, rz, sx, sy, sz) {
+  const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z);
+  if (rx || ry || rz) m.rotation.set(rx || 0, ry || 0, rz || 0);
+  if (sx || sy || sz) m.scale.set(sx || 1, sy || 1, sz || 1);
+  m.castShadow = true; return m;
+}
+// Each part: id, name, slot, bones (named bones, parented like PART_HEADS), off, build(g, M).
+const PART_DEFS = [
+  // ---- head ----
+  { id: 'headband', name: 'Headband', slot: 'head', bones: ['head'], build(g, M) { g.add(pmesh(new THREE.TorusGeometry(0.145, 0.032, 10, 24), M.accent, 0, 0.04, 0, Math.PI / 2)); } },
+  { id: 'beanie', name: 'Beanie', slot: 'head', bones: ['head'], build(g, M) { g.add(pmesh(new THREE.CylinderGeometry(0.145, 0.158, 0.12, 14), M.primary, 0, 0.12, 0)); g.add(pmesh(new THREE.SphereGeometry(0.06, 10, 8), M.accent, 0, 0.2, 0)); } },
+  { id: 'visor', name: 'Street Visor', slot: 'head', bones: ['head'], build(g, M) { g.add(pmesh(new THREE.BoxGeometry(0.26, 0.06, 0.14), M.secondary, 0, 0.07, 0.1)); g.add(pmesh(new THREE.BoxGeometry(0.28, 0.025, 0.16), M.secondary, 0, 0.045, 0.2)); } },
+  { id: 'goggles', name: 'Goggles', slot: 'head', bones: ['head'], build(g, M) { g.add(pmesh(new THREE.CylinderGeometry(0.055, 0.055, 0.04, 12), M.metal, -0.075, 0.03, 0.11, Math.PI / 2)); g.add(pmesh(new THREE.CylinderGeometry(0.055, 0.055, 0.04, 12), M.metal, 0.075, 0.03, 0.11, Math.PI / 2)); g.add(pmesh(new THREE.TorusGeometry(0.14, 0.015, 8, 20), M.accent, 0, 0.03, 0, Math.PI / 2)); } },
+  { id: 'topknot', name: 'Topknot', slot: 'head', bones: ['head'], build(g, M) { g.add(pmesh(new THREE.CylinderGeometry(0.04, 0.05, 0.14, 10), M.secondary, 0, 0.18, 0)); } },
+  { id: 'headphones', name: 'Headphones', slot: 'head', bones: ['head'], build(g, M) { g.add(pmesh(new THREE.TorusGeometry(0.16, 0.03, 8, 20, Math.PI), M.primary, 0, 0.02, 0)); g.add(pmesh(new THREE.CylinderGeometry(0.06, 0.06, 0.05, 10), M.accent, -0.16, 0, 0, 0, 0, Math.PI / 2)); g.add(pmesh(new THREE.CylinderGeometry(0.06, 0.06, 0.05, 10), M.accent, 0.16, 0, 0, 0, 0, Math.PI / 2)); } },
+  // ---- torso: Street Fighter clothing + Gundam armor ----
+  { id: 'givest', name: 'Gi Vest', slot: 'torso', bones: ['chest'], build(g, M) { g.add(pmesh(new THREE.BoxGeometry(0.5, 0.5, 0.34), M.primary, 0, -0.05, 0)); g.add(pmesh(new THREE.BoxGeometry(0.44, 0.08, 0.3), M.accent, 0, -0.3, 0)); } },
+  { id: 'jacket', name: 'Street Jacket', slot: 'torso', bones: ['chest'], build(g, M) { g.add(pmesh(new THREE.BoxGeometry(0.52, 0.55, 0.36), M.secondary, 0, -0.02, 0)); g.add(pmesh(new THREE.BoxGeometry(0.04, 0.5, 0.02), M.accent, 0, -0.02, 0.19)); } },
+  { id: 'chestplate', name: 'Gundam Chestplate', slot: 'torso', bones: ['chest'], build(g, M) { g.add(pmesh(new THREE.BoxGeometry(0.46, 0.4, 0.1), M.metal, 0, -0.02, 0.16)); g.add(pmesh(new THREE.BoxGeometry(0.3, 0.06, 0.12), M.accent, 0, -0.14, 0.16)); } },
+  { id: 'straps', name: 'Harness Straps', slot: 'torso', bones: ['chest'], build(g, M) { g.add(pmesh(new THREE.BoxGeometry(0.1, 0.55, 0.36), M.accent, -0.14, -0.02, 0)); g.add(pmesh(new THREE.BoxGeometry(0.1, 0.55, 0.36), M.accent, 0.14, -0.02, 0)); g.add(pmesh(new THREE.BoxGeometry(0.44, 0.1, 0.36), M.accent, 0, -0.25, 0)); } },
+  { id: 'chestchains', name: 'Chest Chains', slot: 'torso', bones: ['chest'], build(g, M) { g.add(pmesh(new THREE.BoxGeometry(0.5, 0.03, 0.02), M.metal, 0, -0.05, 0.18, 0, 0, 0.6)); g.add(pmesh(new THREE.BoxGeometry(0.5, 0.03, 0.02), M.metal, 0, -0.05, 0.18, 0, 0, -0.6)); } },
+  // ---- arms ----
+  { id: 'bracer', name: 'Bracers', slot: 'arms', bones: ['lowerarml', 'lowerarmr'], build(g, M) { g.add(pmesh(new THREE.CylinderGeometry(0.085, 0.095, 0.2, 10), M.secondary, 0, -0.02, 0)); } },
+  { id: 'elbowpad', name: 'Elbow Pads', slot: 'arms', bones: ['lowerarml', 'lowerarmr'], build(g, M) { g.add(pmesh(new THREE.SphereGeometry(0.1, 10, 8), M.primary, 0, 0.1, -0.02, 0, 0, 0, 1, 0.8, 1)); } },
+  { id: 'gauntlet', name: 'Gauntlet', slot: 'arms', bones: ['lowerarml', 'lowerarmr'], build(g, M) { g.add(pmesh(new THREE.BoxGeometry(0.17, 0.2, 0.17), M.metal, 0, -0.06, 0)); } },
+  { id: 'handtape', name: 'Hand Tape', slot: 'arms', bones: ['handl', 'handr'], build(g, M) { g.add(pmesh(new THREE.CylinderGeometry(0.075, 0.075, 0.12, 10), M.accent, 0, -0.04, 0)); } },
+  // ---- legs ----
+  { id: 'kneepad', name: 'Knee Pads', slot: 'legs', bones: ['lowerlegl', 'lowerlegr'], build(g, M) { g.add(pmesh(new THREE.SphereGeometry(0.105, 10, 8), M.primary, 0, 0.16, 0.03, 0, 0, 0, 1, 0.85, 0.7)); } },
+  { id: 'thighstrap', name: 'Thigh Straps', slot: 'legs', bones: ['upperlegl', 'upperlegr'], build(g, M) { g.add(pmesh(new THREE.TorusGeometry(0.115, 0.028, 8, 18), M.accent, 0, -0.1, 0, Math.PI / 2)); } },
+  { id: 'shinguard', name: 'Shin Guards', slot: 'legs', bones: ['lowerlegl', 'lowerlegr'], build(g, M) { g.add(pmesh(new THREE.CylinderGeometry(0.09, 0.1, 0.24, 10), M.metal, 0, -0.05, 0)); } },
+  { id: 'cargopad', name: 'Cargo Plates', slot: 'legs', bones: ['upperlegl', 'upperlegr'], build(g, M) { g.add(pmesh(new THREE.BoxGeometry(0.2, 0.24, 0.06), M.secondary, 0, -0.08, 0.12)); } },
+  // ---- boots ----
+  { id: 'toecap', name: 'Toe Caps', slot: 'boots', bones: ['footl', 'footr'], build(g, M) { g.add(pmesh(new THREE.BoxGeometry(0.17, 0.09, 0.12), M.metal, 0, -0.02, 0.1)); } },
+  { id: 'thicksole', name: 'Thick Soles', slot: 'boots', bones: ['footl', 'footr'], build(g, M) { g.add(pmesh(new THREE.BoxGeometry(0.18, 0.06, 0.26), M.secondary, 0, -0.09, 0.03)); } },
+  { id: 'hightop', name: 'High Tops', slot: 'boots', bones: ['footl', 'footr'], build(g, M) { g.add(pmesh(new THREE.CylinderGeometry(0.095, 0.105, 0.16, 10), M.primary, 0, 0.06, -0.02)); } },
+  { id: 'anklestrap', name: 'Ankle Straps', slot: 'boots', bones: ['footl', 'footr'], build(g, M) { g.add(pmesh(new THREE.TorusGeometry(0.1, 0.025, 8, 16), M.accent, 0, 0.05, 0, Math.PI / 2)); } },
+  // ---- shoulders: Gundam armor + vehicle parts ----
+  { id: 'pauldron', name: 'Pauldrons', slot: 'shoulders', bones: ['upperarml', 'upperarmr'], off: [0, 0.14, 0], build(g, M) { g.add(pmesh(new THREE.SphereGeometry(0.14, 12, 10), M.primary, 0, 0, 0, 0, 0, 0, 1.1, 0.75, 1.1)); } },
+  { id: 'spikepad', name: 'Spike Pads', slot: 'shoulders', bones: ['upperarml', 'upperarmr'], off: [0, 0.14, 0], build(g, M) { g.add(pmesh(new THREE.BoxGeometry(0.2, 0.06, 0.2), M.secondary, 0, -0.02, 0)); g.add(pmesh(new THREE.ConeGeometry(0.06, 0.14, 10), M.metal, 0, 0.08, 0)); } },
+  { id: 'shoulderfin', name: 'Gundam Fins', slot: 'shoulders', bones: ['upperarml', 'upperarmr'], off: [0, 0.14, 0], build(g, M) { g.add(pmesh(new THREE.BoxGeometry(0.03, 0.22, 0.12), M.accent, 0, 0.08, -0.04)); } },
+  { id: 'tirepad', name: 'Tire Pads', slot: 'shoulders', bones: ['upperarml', 'upperarmr'], off: [0, 0.14, 0], build(g, M) { g.add(pmesh(new THREE.TorusGeometry(0.11, 0.045, 10, 20), M.secondary, 0, 0, 0, Math.PI / 2)); } },
+  // ---- back: vehicle-inspired mechanical ----
+  { id: 'cape', name: 'Cape', slot: 'back', bones: ['chest'], off: [0, 0, -0.24], build(g, M) { const m = pmesh(new THREE.PlaneGeometry(0.55, 0.75), M.primary, 0, -0.55, -0.02, 0.12); m.material = m.material.clone(); m.material.side = THREE.DoubleSide; g.add(m); } },
+  { id: 'jetpack', name: 'Jetpack', slot: 'back', bones: ['chest'], off: [0, 0, -0.24], build(g, M) { g.add(pmesh(new THREE.BoxGeometry(0.42, 0.5, 0.2), M.metal, 0, -0.1, 0)); g.add(pmesh(new THREE.CylinderGeometry(0.07, 0.09, 0.18, 10), M.secondary, -0.12, -0.42, 0)); g.add(pmesh(new THREE.CylinderGeometry(0.07, 0.09, 0.18, 10), M.secondary, 0.12, -0.42, 0)); g.add(pmesh(new THREE.CylinderGeometry(0.05, 0.05, 0.04, 10), M.accent, -0.12, -0.52, 0)); g.add(pmesh(new THREE.CylinderGeometry(0.05, 0.05, 0.04, 10), M.accent, 0.12, -0.52, 0)); } },
+  { id: 'exhaustpipes', name: 'Exhaust Pipes', slot: 'back', bones: ['chest'], off: [0, 0, -0.26], build(g, M) { g.add(pmesh(new THREE.CylinderGeometry(0.05, 0.05, 0.4, 10), M.metal, -0.14, -0.05, 0, 0.3)); g.add(pmesh(new THREE.CylinderGeometry(0.05, 0.05, 0.4, 10), M.metal, 0.14, -0.05, 0, 0.3)); } },
+  { id: 'cratepack', name: 'Supply Crate', slot: 'back', bones: ['chest'], off: [0, 0, -0.28], build(g, M) { g.add(pmesh(new THREE.BoxGeometry(0.4, 0.34, 0.24), M.secondary, 0, -0.15, 0)); g.add(pmesh(new THREE.BoxGeometry(0.42, 0.05, 0.26), M.accent, 0, 0.04, 0)); } },
+  // ---- accessory ----
+  { id: 'neckchain', name: 'Neck Chain', slot: 'accessory', bones: ['chest'], build(g, M) { g.add(pmesh(new THREE.TorusGeometry(0.16, 0.022, 8, 22), M.metal, 0, -0.3, 0.12, 1.2)); } },
+  { id: 'medal', name: 'Street Medal', slot: 'accessory', bones: ['chest'], build(g, M) { g.add(pmesh(new THREE.BoxGeometry(0.08, 0.12, 0.02), M.secondary, 0, -0.26, 0.17)); g.add(pmesh(new THREE.CylinderGeometry(0.05, 0.05, 0.02, 12), M.accent, 0, -0.36, 0.17, Math.PI / 2)); } },
+  { id: 'shackle', name: 'Shackle', slot: 'accessory', bones: ['wristr'], build(g, M) { g.add(pmesh(new THREE.TorusGeometry(0.08, 0.025, 8, 18), M.metal, 0, 0, 0)); } },
+  { id: 'cornermic', name: 'Corner Mic', slot: 'accessory', bones: ['head'], build(g, M) { g.add(pmesh(new THREE.CylinderGeometry(0.012, 0.012, 0.14, 8), M.metal, 0.12, -0.04, 0.06, 0.4, 0, 0.5)); g.add(pmesh(new THREE.SphereGeometry(0.025, 8, 6), M.accent, 0.155, -0.1, 0.1)); } },
+];
+// swatch set for the customize color pickers (LEGO-blocked hues + metal tones)
+const ZONE_SWATCHES = [0xd1403c, 0xff5a5a, 0xff8c42, 0xffb03d, 0xffd166, 0xd8b56b, 0x4fd1ff, 0x2e7dd1, 0x39d353, 0x4dff88, 0x9a4dff, 0xff4fd8, 0x8a7f6a, 0x9aa4b2, 0x6a7078, 0x2b2b38, 0xf0f0ff, 0x0f0f14, 0xd9a066, 0xe8c39a];
+function fighterLoadout(fid) {
+  const lo = (save.loadouts && save.loadouts[fid]) || {};
+  return { parts: lo.parts || {}, zones: lo.zones || {} };
+}
+function fighterZones(fid) {
+  const lo = fighterLoadout(fid);
+  const s = (save.scoutRoster || []).find((x) => x.id === fid);
+  const base = s ? s.zones : (FIGHTER_PALETTES[fid] || ZONE_DEFAULTS);
+  const z = {};
+  for (const zn of PART_ZONES) z[zn] = (lo.zones[zn] != null) ? lo.zones[zn] : (base[zn] != null ? base[zn] : ZONE_DEFAULTS[zn]);
+  return z;
+}
+function bodyTint(fid) {
+  const lo = fighterLoadout(fid);
+  if (lo.zones.skin != null) return lo.zones.skin;
+  return skinTint(fid);
+}
+function attachPart(f, pid, M) {
+  const p = PART_DEFS.find((x) => x.id === pid); if (!p) return;
+  for (const bn of p.bones) {
+    const bone = f.root.getObjectByName(bn); if (!bone) continue;
+    const g = new THREE.Group(); g.name = 'cpart_' + pid;
+    if (p.off) g.position.set(p.off[0], p.off[1], p.off[2]);
+    p.build(g, M);
+    bone.add(g);
+  }
+}
+// Apply saved/customized cosmetics to a fighter instance (player or showcase).
+// Scout fighters use their seeded generated parts unless the player customized them.
+function applyFighterCosmetics(f, fid) {
+  if (!f || !f.root) return;
+  const lo = fighterLoadout(fid);
+  const zones = fighterZones(fid);
+  const M = {}; for (const zn of PART_ZONES) M[zn] = zoneMat(zones, zn);
+  const s = (save.scoutRoster || []).find((x) => x.id === fid);
+  const ids = [];
+  for (const slot of PART_SLOTS) {
+    let pid = lo.parts[slot];
+    if (!pid || pid === 'none') pid = (s && s.parts) ? s.parts[slot] : null;
+    if (!pid || pid === 'none') continue;
+    attachPart(f, pid, M); ids.push(pid);
+  }
+  f.partIds = ids;
+}
+
+// ---------- SCOUT system (owner 2026-10-07): infinite procedurally generated fighters ----------
+// Seeded (mulberry32) generation: parts from the catalog + a LOCKED palette + body scale.
+// STYLE-NOT-POWER: stats come from the family archetype only — never from parts/colors.
+// No canon/lore is invented: these are street-crew names in the game's existing style.
+const SCOUT_ARCHES = ['kidblue', 'ghost', 'brick', 'kingpin', 'sledge', 'viper', 'dust', 'jack'];
+const SCOUT_ADJ = ['IRON', 'STEEL', 'CONCRETE', 'BLOCK', 'PIER', 'ALLEY', 'ROOF', 'SEWER', 'YARD', 'DOCK', 'SUBWAY', 'RIVER', 'CROSS', 'MAIN', 'NEON', 'RUST', 'ASH', 'SMOKE', 'DIESEL', 'TURBO', 'GRIT', 'VOLT', 'BLAZE', 'EMBER', 'FROST', 'STORM', 'COBRA', 'WOLF', 'BULL', 'RAVEN', 'TIGER', 'SHARK', 'RAT', 'MULE', 'OX', 'RAM', 'BOAR', 'FALCON', 'HOUND', 'JACKAL', 'RED', 'BLACK', 'GREY', 'OLD', 'BIG', 'LITTLE', 'FAST', 'HEAVY', 'QUIET', 'LOUD', 'WILD', 'COLD', 'DARK'];
+const SCOUT_NOUN = ['KNUCKLE', 'FIST', 'ELBOW', 'JAW', 'TOOTH', 'HAMMER', 'WRENCH', 'CROWBAR', 'ANVIL', 'NAIL', 'SPIKE', 'CHAIN', 'BOLT', 'GEAR', 'PISTON', 'AXLE', 'REBAR', 'CRANE', 'FORKLIFT', 'MUFFLER', 'BUMPER', 'FENDER', 'GRILLE', 'EXHAUST', 'RIVET', 'TAR', 'GRAVEL', 'PAVEMENT', 'CURB', 'HYDRANT', 'DUMPSTER', 'PALLET', 'CRATE', 'BARREL', 'CONE', 'LADDER', 'SCAFFOLD', 'SLAB', 'STONE', 'CORNER', 'AVENUE', 'LANE', 'ROW', 'LOT', 'BASEMENT', 'TUNNEL', 'OVERPASS', 'BILLBOARD', 'MARQUEE', 'FARE', 'TOKEN', 'METER', 'BOUNCER', 'COOK', 'JANITOR', 'PORTER', 'DRIVER', 'MOVER', 'ROOFER', 'WELDER', 'PLUMBER', 'PAINTER', 'CARPENTER', 'MASON', 'FANG', 'CLAW', 'HORN', 'SLAM', 'CRASH', 'BASH', 'THUMP', 'JOLT', 'SURGE', 'REBEL', 'OUTLAW', 'DRIFTER', 'HUSTLER', 'BRAWLER', 'SLUGGER', 'SCRAPPER', 'FIXER', 'RUNNER', 'DIVER'];
+function scoutGenName(R) {
+  const r = R();
+  if (r < 0.45) return SCOUT_ADJ[Math.floor(R() * SCOUT_ADJ.length)] + ' ' + SCOUT_NOUN[Math.floor(R() * SCOUT_NOUN.length)];
+  if (r < 0.65) return 'CONCRETE ' + SCOUT_NOUN[Math.floor(R() * SCOUT_NOUN.length)];
+  if (r < 0.8) return SCOUT_NOUN[Math.floor(R() * SCOUT_NOUN.length)];
+  return ['BIG', 'LITTLE', 'OLD', 'YOUNG', 'FAST'][Math.floor(R() * 5)] + ' ' + SCOUT_NOUN[Math.floor(R() * SCOUT_NOUN.length)];
+}
+function scoutNameUnique(name) {
+  const taken = new Set(FIGHTERS.map((f) => f.name));
+  for (const s of save.scoutRoster || []) taken.add(s.name);
+  if (!taken.has(name)) return name;
+  for (const suf of [' II', ' III', ' IV', ' V', ' X']) if (!taken.has(name + suf)) return name + suf;
+  return name + ' ' + ((Math.random() * 900 + 100) | 0);
+}
+function genScout(seed) {
+  const R = seedPRNG(seed);
+  const arch = SCOUT_ARCHES[Math.floor(R() * SCOUT_ARCHES.length)];
+  const parts = {};
+  for (const slot of PART_SLOTS) {
+    const pool = PART_DEFS.filter((p) => p.slot === slot);
+    parts[slot] = (R() < 0.8 && pool.length) ? pool[Math.floor(R() * pool.length)].id : 'none';
+  }
+  // guarantee at least two visible parts so every scout reads as customized
+  const vis = PART_SLOTS.filter((s) => parts[s] !== 'none');
+  if (vis.length < 2) {
+    for (const slot of PART_SLOTS) {
+      if (parts[slot] !== 'none') continue;
+      const pool = PART_DEFS.filter((p) => p.slot === slot);
+      parts[slot] = pool[Math.floor(R() * pool.length)].id;
+      if (PART_SLOTS.filter((s) => parts[s] !== 'none').length >= 2) break;
+    }
+  }
+  const zones = Object.assign({}, SCOUT_PALETTES[Math.floor(R() * SCOUT_PALETTES.length)]);
+  return { arch, parts, zones, scale: +(0.92 + R() * 0.22).toFixed(2), name: scoutNameUnique(scoutGenName(R)) };
+}
+function scoutFighter(id) {
+  if (!id || !id.startsWith('scout_')) return null;
+  const s = (save.scoutRoster || []).find((x) => x.id === id);
+  if (!s) return null;
+  const arch = FIGHTERS.find((f) => f.id === s.arch) || FIGHTERS[0];
+  // stats copied from the family archetype only — style-not-power
+  return Object.assign({}, arch, {
+    id: s.id, name: s.name,
+    tag: 'Scouted crew. Fights ' + arch.name + '-style. (style only — no power)',
+    unlock: { type: 'scout' }, scout: true, scoutScale: s.scale, archId: arch.id,
+  });
+}
+function scoutTotalRecruits() { let n = 0; for (const k of Object.keys(save.scouts || {})) n += save.scouts[k] || 0; return n; }
+function scoutCost() {
+  const n = (save.scoutRoster || []).length;
+  let c = 400 + 250 * n;
+  if (scoutTotalRecruits() >= 10) c = Math.round(c / 2); // crew milestone: half price
+  return Math.round(c / 10) * 10;
+}
+function scoutNew() {
+  const seed = (Math.random() * 0xffffffff) >>> 0;
+  const g = genScout(seed);
+  const id = 'scout_' + seed.toString(16).padStart(8, '0');
+  const s = { id, seed, name: g.name, arch: g.arch, parts: g.parts, zones: g.zones, scale: g.scale };
+  save.scoutRoster.push(s);
+  if (!save.unlocked.includes(id)) save.unlocked.push(id);
+  save.scouts = save.scouts || {}; save.scouts['__crew'] = (save.scouts['__crew'] || 0) + 1; // wire into existing save.scouts
+  writeSave();
+  return s;
+}
+function doScout() {
+  const cost = scoutCost();
+  if (save.cash < cost) { banner('NOT ENOUGH CASH', 'gold'); sfx('deny', 0.8); return; }
+  save.cash -= cost;
+  const s = scoutNew();
+  save.selected = s.id; writeSave();
+  sfx('bell', 0.9); banner('SCOUTED: ' + s.name, 'spc');
+  ev('scout', { name: s.name, arch: s.arch });
+  refreshShowcase(); showSelectCards(); renderScoutRow(); renderMeta();
+}
+function renderScoutRow() {
+  const sr = $('scoutRow'); if (!sr) return; sr.innerHTML = '';
+  sr.appendChild(el('div', 'cap', 'Scouted crew — infinite (style only — no power)'));
+  for (const s of save.scoutRoster) {
+    const arch = FIGHTERS.find((f) => f.id === s.arch);
+    const c = el('div', 'card ' + (s.id === save.selected ? 'panel9g' : 'panel9'));
+    c.appendChild(el('div', 'nm', s.name));
+    c.appendChild(el('div', 'lk', 'Scouted — fights ' + (arch ? arch.name : '?') + '-style'));
+    c.onclick = () => { save.selected = s.id; writeSave(); sfx('click', 0.7); refreshShowcase(); showSelectCards(); renderScoutRow(); };
+    sr.appendChild(c);
+  }
+  const cost = scoutCost();
+  const b = el('button', 'scoutBtn', '🔍 SCOUT CREW — $' + cost);
+  b.title = 'Spend cash to scout a new procedurally generated fighter. Stats come from the crew archetype only — cosmetics never affect power.' + (scoutTotalRecruits() >= 10 ? ' Crew milestone reached: half price!' : '');
+  b.disabled = save.cash < cost;
+  b.onclick = () => doScout();
+  sr.appendChild(b);
+  sr.appendChild(el('div', 'scoutMeta', 'Recruited crew: ' + scoutTotalRecruits() + ' / 10 for half-price scouts'));
+}
+// ---------- CUSTOMIZE UI (owner 2026-10-07): part + color pickers on the live 3D turntable ----------
+let customizing = false;
+function openCustomize() { customizing = true; renderCustomize(); $('customOv').classList.remove('hidden'); }
+function closeCustomize() { customizing = false; $('customOv').classList.add('hidden'); }
+function setPart(fid, slot, pid) {
+  const lo = (save.loadouts[fid] = save.loadouts[fid] || {}); lo.parts = lo.parts || {};
+  lo.parts[slot] = pid; writeSave(); sfx('click', 0.7);
+  refreshShowcase(); renderCustomize();
+}
+function setZone(fid, zone, c) {
+  const lo = (save.loadouts[fid] = save.loadouts[fid] || {}); lo.zones = lo.zones || {};
+  lo.zones[zone] = c; writeSave(); sfx('click', 0.7);
+  refreshShowcase(); renderCustomize();
+}
+function renderCustomize() {
+  const fid = save.selected; const fd = fighterDef(fid);
+  const lo = fighterLoadout(fid); const zones = fighterZones(fid);
+  const b = $('customBody'); b.innerHTML = '';
+  b.appendChild(el('div', 'czTitle', 'CUSTOMIZE — ' + fd.name));
+  b.appendChild(el('div', 'czSub', 'Parts + colors on the live model. Style only — never power.'));
+  for (const slot of PART_SLOTS) {
+    const row = el('div', 'czRow');
+    row.appendChild(el('div', 'czLab', slot.toUpperCase()));
+    const cur = lo.parts[slot] || 'none';
+    const scoutD = (save.scoutRoster || []).find((x) => x.id === fid);
+    const genPid = scoutD && scoutD.parts ? scoutD.parts[slot] : null;
+    const mk = (pid, name, gen) => {
+      const btn = el('button', 'partBtn' + (cur === pid ? ' sel' : ''), (gen ? '★ ' : '') + name);
+      if (gen) btn.title = 'Seeded generated part';
+      btn.onclick = () => setPart(fid, slot, pid);
+      return btn;
+    };
+    row.appendChild(mk('none', 'NONE'));
+    for (const p of PART_DEFS.filter((x) => x.slot === slot)) row.appendChild(mk(p.id, p.name, genPid === p.id && cur === 'none'));
+    b.appendChild(row);
+  }
+  for (const zn of PART_ZONES) {
+    const row = el('div', 'czRow');
+    row.appendChild(el('div', 'czLab', zn.toUpperCase()));
+    for (const sw of ZONE_SWATCHES) {
+      const d = el('div', 'zoneSw' + (zones[zn] === sw ? ' sel' : ''));
+      d.style.background = hex(sw); d.title = zn + ' ' + hex(sw);
+      d.onclick = () => setZone(fid, zn, sw);
+      row.appendChild(d);
+    }
+    b.appendChild(row);
+  }
+}
+
 // ---------- species creatures: whole-body CC0 models as enemies/bosses ----------
 // Quaternius rigged+animated models. Enemy AI speaks mannequin clip names;
 // CREATURE_ANIMROLE translates them to each creature's own baked clips.
@@ -1703,7 +1991,8 @@ function shuffleSkin() {
 function refreshShowcase() {
   if (showcase) { removeFighter(showcase); showcase = null; }
   const fd = fighterDef();
-  showcase = makeFighterRaw(skinTint(fd.id), 0, 0, 1, texObj(fd.id));
+  showcase = makeFighterRaw(bodyTint(fd.id), 0, 0, fd.scoutScale || 1, texObj(fd.id));
+  applyFighterCosmetics(showcase, fd.id);
   playAnim(showcase, 'Melee_Unarmed_Idle', { loop: true });
   $('showName').textContent = fd.name;
   $('showTag').textContent = fd.tag;
@@ -1743,7 +2032,7 @@ function showSelect() {
   const cards = $('cards'); cards.innerHTML = '';
   // INFINITE UNLOCKS: unlocked challenger variants appear after their base fighter
   const allFighters = [...FIGHTERS];
-  for (const uid of save.unlocked) { const vf = variantFighter(uid); if (vf && !allFighters.find((f) => f.id === uid)) allFighters.push(vf); }
+  for (const uid of save.unlocked) { const vf = scoutFighter(uid) || variantFighter(uid); if (vf && !allFighters.find((f) => f.id === uid)) allFighters.push(vf); }
   for (const f of allFighters) {
     const locked = !isUnlocked(f);
     const c = el('div', 'card ' + (f.id === save.selected && !locked ? 'panel9g' : 'panel9') + (locked ? ' locked' : '') + ((save.goldCards || []).includes(f.id) ? ' goldcard' : ''));
@@ -1776,19 +2065,20 @@ function showSelect() {
       tr.appendChild(b);
     }
   }
+  renderScoutRow(); // SCOUT CREW (owner 2026-10-07): infinite procedural fighters for cash
   renderShop($('shopRow')); renderGear(); renderCharms(); renderMeta();
   showOnly('select');
 }
 function showSelectCards() { // re-render cards row only (after pick)
   const cards = $('cards'); cards.innerHTML = '';
   const allFighters = [...FIGHTERS];
-  for (const uid of save.unlocked) { const vf = variantFighter(uid); if (vf && !allFighters.find((f) => f.id === uid)) allFighters.push(vf); }
+  for (const uid of save.unlocked) { const vf = scoutFighter(uid) || variantFighter(uid); if (vf && !allFighters.find((f) => f.id === uid)) allFighters.push(vf); }
   for (const f of allFighters) {
     const locked = !isUnlocked(f);
     const c = el('div', 'card ' + (f.id === save.selected && !locked ? 'panel9g' : 'panel9') + (locked ? ' locked' : '') + ((save.goldCards || []).includes(f.id) ? ' goldcard' : ''));
     c.appendChild(el('div', 'nm', locked ? '???' : ((save.goldCards || []).includes(f.id) ? '★ ' : '') + f.name));
     c.appendChild(el('div', 'lk', locked ? unlockText(f) : f.tag));
-    if (!locked) c.onclick = () => { save.selected = f.id; writeSave(); sfx('click', 0.7); refreshShowcase(); showSelectCards(); };
+    if (!locked) c.onclick = () => { save.selected = f.id; writeSave(); sfx('click', 0.7); refreshShowcase(); showSelectCards(); renderScoutRow(); };
     cards.appendChild(c);
   }
 }
@@ -2111,8 +2401,9 @@ function startMission(id, node) {
   if (mission.crowd) spawnCrowd(R); // CONDITIONAL crowd only — owner directive
   setRain(hasMod('rain'));
   const fd = fighterDef();
-  player = makeFighterRaw(skinTint(fd.id), 0, Math.PI / 2, 1, texObj(fd.id));
+  player = makeFighterRaw(bodyTint(fd.id), 0, Math.PI / 2, fd.scoutScale || 1, texObj(fd.id));
   if (fd.head) attachHead(player, fd.head); // species head for playable fighters (JACK...)
+  applyFighterCosmetics(player, fd.id); // modular parts + color zones (style only — no power)
   player.isPlayer = true;
   player.maxHp = Math.round(fd.hp + toughBonus() + (blessFx().hp || 0));
   player.hp = player.maxHp;
@@ -2878,6 +3169,8 @@ function setupInput() {
   document.addEventListener('pointerup', up);
   document.addEventListener('pointercancel', () => { showcaseDragX = null; stickEnd(); });
   $('fightBtn').addEventListener('click', (e) => { e.stopPropagation(); unlockAudio(); sfx('uiclick', 0.8); showMission(); });
+  $('customizeBtn').addEventListener('click', (e) => { e.stopPropagation(); unlockAudio(); sfx('uiclick', 0.8); openCustomize(); });
+  $('customClose').addEventListener('click', (e) => { e.stopPropagation(); sfx('uiclick', 0.8); closeCustomize(); });
   $('againBtn').addEventListener('click', (e) => { e.stopPropagation(); unlockAudio(); sfx('uiclick', 0.8); showMission(); });
   $('rematchBtn').addEventListener('click', (e) => { e.stopPropagation(); unlockAudio(); sfx('uiclick', 0.8); if (mission) startMission(mission.id); }); // soul law: one-tap rematch
   $('backBtn').addEventListener('click', (e) => { e.stopPropagation(); sfx('uiclick', 0.8); showSelect(); });
@@ -3955,6 +4248,18 @@ window.__cdtest = {
   dbgBurst: () => { if (player) { player.jugN = 3; player.jugT = 2.5; player.energy = 100; player.busy = 0; stick.dy = -1; } return true; },
   dbgStickUp: (v) => { stick.dy = v ? -1 : 0; },
   dbgCrew: () => player ? { crew: player.crew || 0, scouts: save.scouts || {} } : null,
+  // infinite character + customization debug hooks (owner 2026-10-07)
+  dbgScout: () => { const s = scoutNew(); return { id: s.id, name: s.name, arch: s.arch, scale: s.scale, parts: Object.values(s.parts).filter((p) => p !== 'none'), zones: s.zones }; },
+  scoutInfo: () => (save.scoutRoster || []).map((s) => ({ id: s.id, name: s.name, arch: s.arch })),
+  scoutCost: () => scoutCost(),
+  dbgParts: () => player ? (player.partIds || []).slice() : null,
+  dbgShowcaseParts: () => showcase ? (showcase.partIds || []).slice() : null,
+  dbgCustomize: () => { openCustomize(); return customizing; },
+  dbgCloseCustomize: () => { closeCustomize(); return customizing; },
+  dbgSetPart: (slot, pid) => { setPart(save.selected, slot, pid); return (showcase ? showcase.partIds : []).slice(); },
+  dbgSetZone: (zone, c) => { setZone(save.selected, zone, c); return fighterZones(save.selected); },
+  dbgSetFighter: (id) => { const d = fighterDef(id); if (d && d.id === id) { save.selected = id; writeSave(); refreshShowcase(); } return fighterDef().id; },
+  dbgCash: (v) => { save.cash = v; writeSave(); renderMeta(); return save.cash; },
   dbgRep: (r) => { save.rep = r; writeSave(); const d = effDiff(); return { hpMul: +d.hpMul.toFixed(2), dmgMul: +d.dmgMul.toFixed(2), cash: +repMult().cash.toFixed(2) }; },
   spawnCreature: (cid) => { if (player) { const e = makeCreatureRaw(cid, 0xffffff, player.px + 3, -Math.PI / 2, 1); if (e) { e.maxHp = e.hp = 200; e.dmgMult = 1; e.spd = 1.5; e.px = player.px + 3; e.pz = 0; e.ai = 'walk'; e.aiT = 1; syncPos(e); playAnim(e, 'Running_A', { loop: true }); enemies.push(e); } return e; } },
   hurt: (n) => { if (player) hurtPlayer(n); },
@@ -3993,7 +4298,7 @@ window.__cdtest = {
   fin: () => fighterDef().fin,
   qcfName: () => fighterDef().qcf.name,
   megaName: () => fighterDef().mega.name,
-  setFighter: (id) => { if (FIGHTERS.some(f => f.id === id)) { save.selected = id; writeSave(); } },
+  setFighter: (id) => { const d = fighterDef(id); if (d && d.id === id) { save.selected = id; writeSave(); } },
   qcfKind: () => fighterDef().qcf.sigkind,
   texName: () => texVar(save.selected).id,
   setTex: (id) => { save.tex[save.selected] = id; writeSave(); refreshShowcase(); },
