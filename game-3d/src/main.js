@@ -706,6 +706,29 @@ function lastStandFx() { // Garou TOP: screen edges burn while you're dangerous
   const e = $('lsEdge'); if (e) e.style.opacity = '1';
   setTimeout(() => { const x = $('lsEdge'); if (x && (!player || player.hp >= player.maxHp * 0.3)) x.style.opacity = '0'; }, 600);
 }
+// SHRINE node: mid-mission blessing offer (Hades door-preview payoff)
+function offerMidBlessing() {
+  paused = true;
+  const ov = el('div', 'overlay');
+  ov.style.cssText = 'position:fixed;inset:0;background:rgba(10,6,24,.85);z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px';
+  ov.appendChild(el('div', 'storeTitle', '✦ SHRINE — CHOOSE A BLESSING ✦'));
+  const rarColor = { common: '#9a9a9a', rare: '#4fa3ff', epic: '#c77dff' };
+  for (const b of rollBlessings()) {
+    const c = el('div', 'blessCard panel9');
+    c.appendChild(el('div', 'bf', b.fname));
+    c.appendChild(el('div', 'bn', b.name));
+    c.appendChild(el('div', 'bd', b.desc));
+    c.appendChild(el('div', 'br', b.rar.toUpperCase()));
+    c.querySelector('.br').style.color = rarColor[b.rar] || '#fff';
+    c.onclick = (e) => {
+      e.stopPropagation(); save.blessings.push(b.id); writeSave();
+      sfx('bell', 0.9, true); document.body.removeChild(ov); paused = false;
+      const duo = blessDuo(); if (duo) banner('DUO: ' + duo.name);
+    };
+    ov.appendChild(c);
+  }
+  document.body.appendChild(ov);
+}
 // ---------- STREET CIRCUIT: infinite procedural missions (one card, endless series) ----------
 const PM_A = ['RUST', 'NEON', 'CONCRETE', 'MIDNIGHT', 'IRON', 'VELVET', 'CHROME', 'ASHEN', 'COPPER', 'JAGUAR', 'SMOKE', 'TAR'];
 const PM_B = ['ALLEY', 'BLOCK', 'STRIP', 'YARDS', 'CORNER', 'DIVE', 'ROW', 'MILE', 'SECTOR', 'WARD', 'DEAD END', 'OVERPASS'];
@@ -1470,6 +1493,11 @@ function showMission() {
       const go = el('button', 'go', 'GO');
       go.onclick = (e) => { e.stopPropagation(); unlockAudio(); sfx('uiclick', 0.8); startMission('circuit'); };
       card.appendChild(go);
+      const map = el('button', 'go', '🗺 MAP');
+      map.style.marginLeft = '6px';
+      map.title = 'Branching circuit map — choose your next fight and its reward';
+      map.onclick = (e) => { e.stopPropagation(); unlockAudio(); sfx('uiclick', 0.8); renderCircuitMap(list, n); };
+      card.appendChild(map);
     }
     list.appendChild(card);
   }
@@ -1559,8 +1587,8 @@ function showResults(win, mission, stats) {
     const grade = recordGrade(mission, stats);
     const gc = { S: '#ff5a5a', A: '#ffd166', B: '#80ed99', C: '#9ad1ff' }[grade];
     $('resStats').innerHTML += `<div class="stat">RANK <b style="color:${gc};font-size:22px">${grade}</b> ${grade === 'S' ? '— FLAWLESS' : ''}</div>`;
-    // gear drop: 45% chance, weighted to unowned
-    if (Math.random() < 0.45 * luckMult()) {
+    // gear drop: 45% chance, weighted to unowned — GUARANTEED on GEAR CACHE nodes
+    if (mission.nodeGear || Math.random() < 0.45 * luckMult()) {
       const unowned = GEAR.filter((g) => !((save.gearInv || {})[g.id] || 0) && (save.gearEq || {})[g.slot] !== g.id);
       const drop = (unowned.length ? unowned : GEAR)[Math.floor(Math.random() * (unowned.length ? unowned.length : GEAR.length))];
       grantGear(drop.id);
@@ -1613,7 +1641,7 @@ let gameTime = 0, combo = 0, comboT = 0, maxCombo = 0, atkIdx = 0, dmgTaken = 0,
 let cashRun = 0, kills = 0, distWalked = 0, endlessT = 3;
 function hint(on) { $('hint').style.opacity = on ? 1 : 0; }
 function awardCash(base, pos, tag) {
-  const amount = Math.max(1, Math.round(base * hustleMult() * (1 + (blessFx().cash || 0))));
+  const amount = Math.max(1, Math.round(base * hustleMult() * (1 + (blessFx().cash || 0)) * ((mission && mission.cashMult) || 1)));
   cashRun += amount;
   const txt = tag ? tag + ' +$' + amount : '+$' + amount;
   const sp = pos ? screenPos(pos) : { x: innerWidth / 2, y: innerHeight * 0.45 };
@@ -1625,8 +1653,49 @@ function genDailySpawns(R) {
   for (let at = 10; at < 62; at += 10 + R() * 5) sp.push({ at: Math.round(at), fam: fams[Math.floor(R() * fams.length)], n: 2 + Math.floor(R() * 2) });
   return sp;
 }
-function startMission(id) {
+// ---------- BRANCHING CIRCUIT MAP (Hades chamber-inspired): visible choices, visible rewards ----------
+// The next circuit mission is a choice of 3 nodes, each previewing its reward.
+const NODE_REWARDS = [
+  { id: 'gear', name: 'GEAR CACHE', icon: '⚙', desc: 'Guaranteed gear drop' },
+  { id: 'bless', name: 'SHRINE', icon: '✦', desc: 'Mid-mission blessing' },
+  { id: 'cash', name: 'PAYDAY', icon: '$', desc: '+50% cash' },
+  { id: 'boss', name: 'CHALLENGER', icon: '👑', desc: 'Boss fight, big bounty' },
+];
+function circuitNodeOptions(n) {
+  const R = seedPRNG(n * 331 + 7);
+  const pool = NODE_REWARDS.slice();
+  const out = [];
+  for (let i = 0; i < 3 && pool.length; i++) {
+    const r = pool.splice(Math.floor(R() * pool.length), 1)[0];
+    const preview = procMission(n);
+    out.push({ reward: r, name: preview.name, district: preview.district });
+  }
+  return out;
+}
+function renderCircuitMap(into, n) {
+  into.innerHTML = '';
+  into.appendChild(el('div', 'storeTitle', '🗺 CIRCUIT MAP — CHOOSE YOUR NEXT FIGHT'));
+  for (const opt of circuitNodeOptions(n)) {
+    const c = el('div', 'circuitNode panel9');
+    c.appendChild(el('div', 'cn', opt.reward.icon + ' ' + opt.reward.name));
+    c.appendChild(el('div', 'cr', opt.reward.desc));
+    c.appendChild(el('div', 'cr', '#' + (n + 1) + ' ' + opt.name));
+    c.onclick = (e) => { e.stopPropagation(); unlockAudio(); sfx('uiclick', 0.8); startMission('circuit', opt.reward.id); };
+    into.appendChild(c);
+  }
+  const back = el('button', 'ghostBtn', '← back');
+  back.onclick = (e) => { e.stopPropagation(); showMission(); };
+  into.appendChild(back);
+}
+function startMission(id, node) {
   mission = id === 'circuit' ? procMission(save.circuitN || 0) : missionDef(id);
+  if (node) { // branching circuit map choice
+    mission.node = node;
+    if (node === 'cash') mission.cashMult = 1.5;
+    if (node === 'boss' && !mission.boss) mission.boss = 'pb' + (save.circuitN || 0);
+    if (node === 'gear') mission.nodeGear = true;
+    if (node === 'bless') mission.nodeBless = true;
+  }
   let R = Math.random;
   if (mission.daily) {
     const s = [...todayStr()].reduce((a, c) => a + c.charCodeAt(0), 0);
@@ -2912,6 +2981,9 @@ function loop() {
       player.hp = Math.min(player.maxHp, player.hp + (save.up_regen * 0.5) * dt); // REGEN: +1 HP/2s/lvl
     }
     if (gameTime > 2 && !save.seenHint) hint(false);
+    if (mission.nodeBless && !mission.blessOffered && isFinite(mission.len) && player.px > mission.len * 0.5) {
+      mission.blessOffered = true; offerMidBlessing();
+    }
     updatePickups(dt);
     updateRain(dt);
     updateProjs(dt);
