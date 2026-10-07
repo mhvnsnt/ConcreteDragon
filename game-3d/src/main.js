@@ -3375,6 +3375,11 @@ function doDodge() {
   if (m > 0.25) { player.dodgeDx = stick.dx / m; player.dodgeDz = stick.dy / m; }
   else { const t = nearestEnemy(99); player.dodgeDx = t && t.px < player.px ? 1 : -1; player.dodgeDz = 0; }
   playAnim(player, 'Running_A', { ts: 2.6 });
+  // S3 DODGE SFX (TIER 2 item 5, owner 2026-10-07): dedicated dodge whoosh — light + fast, distinct
+  // from attack whooshes — plus a small dust kick so the i-frame dodge reads audibly AND visually.
+  sfx('whoosh', 0.4, false, 1.6);
+  burst(player.root.position.clone().add(new THREE.Vector3(0, 0.3, 0)), 8, 0xcfcfcf, 3);
+  T.dodgeSfx = (T.dodgeSfx || 0) + 1; // test hook
   ev('dodge', {});
 }
 function landHit(e, dmg, label, hs, sh, launcher, counter) {
@@ -4717,7 +4722,14 @@ window.__cdtest = {
   dbgRep: (r) => { save.rep = r; writeSave(); const d = effDiff(); return { hpMul: +d.hpMul.toFixed(2), dmgMul: +d.dmgMul.toFixed(2), cash: +repMult().cash.toFixed(2) }; },
   spawnCreature: (cid) => { if (player) { const e = makeCreatureRaw(cid, 0xffffff, player.px + 3, -Math.PI / 2, 1); if (e) { e.maxHp = e.hp = 200; e.dmgMult = 1; e.spd = 1.5; e.px = player.px + 3; e.pz = 0; e.ai = 'walk'; e.aiT = 1; syncPos(e); playAnim(e, 'Running_A', { loop: true }); enemies.push(e); } return e; } },
   hurt: (n) => { if (player) hurtPlayer(n); },
-  doJump, doPunch, doHeavy, doSpecial, doTaunt, doDesperation, doStance, doTech, doGrapple,
+  doJump, doPunch, doHeavy, doSpecial, doTaunt, doDesperation, doStance, doTech, doGrapple, doDodge,
+  dodgeTest: () => { // S3 dodge SFX tranche (owner 2026-10-07): verify dodge fires SFX hook + i-frames
+    if (!player || state !== 'fight') return { ok: 0, why: 'no-fight' };
+    player.dodgeCD = 0; player.busy = 0; lastDodgeTap = 0; // single tap: dodge, not double-tap desperation
+    const before = T.dodgeSfx || 0;
+    try { doDodge(); } catch (err) { return { ok: 0, why: 'doDodge-threw' }; }
+    return { ok: 1, sfxFired: (T.dodgeSfx || 0) > before, iFrames: player.dodgeT > 0 };
+  },
   antiInfTest: () => {
     const e = enemies.find(x => x.hp > 0 && !x.boss);
     if (!e) return { ok: 0, why: 'no-enemy' };
