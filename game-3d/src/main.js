@@ -74,6 +74,7 @@ const FIGHTERS = [
     bfname: 'STREET DASH', blitzname: 'DRAGON BLITZ', duname: 'SKY UPPER',
     mega: { name: "DRAGON'S JUDGMENT" },
     stance: { name: "RUSH STANCE", dmg: 0.85, spd: 1.25, desc: "All hands, no brakes. Faster, lighter hits." },
+    stanceFin: { name: "HUNDRED HAND SLAP", kind: 'flurry', color: 0xff7a2a, desc: 'Rapid open-palm flurry. Eats guards alive.' },
     fin: 'launch', finname: 'LAUNCHER', findesc: 'Pop-up finisher — juggle them in the air',
     moves: [
       ['STREET JAB', 'HIT', 'Quick jab. Chains into cross and kick.'],
@@ -82,6 +83,7 @@ const FIGHTERS = [
       ['DRAGON BACKFIST', '← + HIT', 'Step back, spinning backfist with knockback.'],
       ['DRAGON SWEEP', '↓ + HIT', 'Sweep the legs — launches for juggles.'],
       ['DRAGON HOOK', 'HVY', 'Slow, crushing hook. Big damage.'],
+      ['HUNDRED HAND SLAP', 'STANCE + HVY', 'Rapid open-palm flurry. Eats guards alive.'],
       ['DRAGON DROP', 'JUMP, then HIT', 'Aerial dive kick. Hits on the way down.'],
       ['DESPERATION', 'DDG ×2', '360° panic spin. Costs 10% HP.'],
       ['TAUNT', 'TAUNT btn / T', 'Talk trash, gain special meter.'],
@@ -94,6 +96,7 @@ const FIGHTERS = [
     bfname: 'PHASE STEP', blitzname: 'PHANTOM BLITZ', duname: 'WRAITH RISE',
     mega: { name: 'MIDNIGHT REQUIEM' },
     stance: { name: "WRAITH STANCE", dmg: 1.2, spd: 0.95, desc: "Blinks hit harder. Meaner, not faster." },
+    stanceFin: { name: "AFTERIMAGE ASSAULT", kind: 'blinkback', color: 0x9a7bff, desc: 'Blink through them — strike from behind.' },
     fin: 'blink', finname: 'BLINK STRIKE', findesc: 'Teleports behind — the unseen finisher',
     moves: [
       ['PHANTOM JAB', 'HIT', 'Fastest jab in the game. Chains into cross and kick.'],
@@ -102,6 +105,7 @@ const FIGHTERS = [
       ['WRAITH FADE', '← + HIT', 'Fade back, snapping backfist.'],
       ['ANKLE BITER', '↓ + HIT', 'Ankle sweep — launches for juggles.'],
       ['WRAITH HOOK', 'HVY', 'Charged hook. Big damage.'],
+      ['AFTERIMAGE ASSAULT', 'STANCE + HVY', 'Blink through them — strike from behind.'],
       ['GHOST DROP', 'JUMP, then HIT', 'Aerial dive kick.'],
       ['DESPERATION', 'DDG ×2', '360° panic spin. Costs 10% HP.'],
       ['TAUNT', 'TAUNT btn / T', 'Talk trash, gain special meter.'],
@@ -114,6 +118,7 @@ const FIGHTERS = [
     bfname: 'PAVEMENT RUSH', blitzname: 'BATTERING RAM', duname: 'HIGH-RISE',
     mega: { name: 'RENT DUE' },
     stance: { name: "PAYLOAD STANCE", dmg: 1.35, spd: 0.78, desc: "The wall walks forward." },
+    stanceFin: { name: "WRECKING BALL", kind: 'spin', color: 0xffb02e, desc: '360° wrecking spin. The whole circle pays.' },
     fin: 'slam', finname: 'CURB STOMP', findesc: 'AOE slam — shakes the whole block',
     moves: [
       ['CONCRETE JAB', 'HIT', 'Heavy jab. Chains into cross and kick.'],
@@ -122,6 +127,7 @@ const FIGHTERS = [
       ['WRECKING BACKFIST', '← + HIT', 'Step back, wrecking-ball backfist.'],
       ['TREE-TRUNK SWEEP', '↓ + HIT', 'Tree-trunk sweep — launches for juggles.'],
       ['RENT COLLECTOR', 'HVY', 'The rent collector. Huge damage.'],
+      ['WRECKING BALL', 'STANCE + HVY', '360° wrecking spin. The whole circle pays.'],
       ['CURB DROP', 'JUMP, then HIT', 'Aerial drop kick.'],
       ['DESPERATION', 'DDG ×2', '360° panic spin. Costs 10% HP.'],
       ['TAUNT', 'TAUNT btn / T', 'Talk trash, gain special meter.'],
@@ -134,6 +140,7 @@ const FIGHTERS = [
     bfname: 'HOSTILE MARCH', blitzname: 'ROYAL CHARGE', duname: 'THRONE RISE',
     mega: { name: 'HOSTILE TAKEOVER' },
     stance: { name: "IRON THRONE", dmg: 1.2, spd: 0.92, desc: "Every decree lands heavier." },
+    stanceFin: { name: "ROYAL EDICT", kind: 'pound', color: 0xffd166, desc: 'Decree from above: radial shockwave slam.' },
     fin: 'gavel', finname: 'GAVEL DROP', findesc: 'Heavy single hit — long hit-stop',
     moves: [
       ['BOSS JAB', 'HIT', 'Boss-grade jab. Chains into cross and kick.'],
@@ -142,6 +149,7 @@ const FIGHTERS = [
       ['ROYAL BACKHAND', '← + HIT', 'Step back, royal backhand.'],
       ['CANE SWEEP', '↓ + HIT', 'Cane sweep — launches for juggles.'],
       ['THE GAVEL', 'HVY', 'The gavel. Enormous damage.'],
+      ['ROYAL EDICT', 'STANCE + HVY', 'Decree from above: radial shockwave slam.'],
       ['THRONE STOMP', 'JUMP, then HIT', 'Aerial stomp kick.'],
       ['DESPERATION', 'DDG ×2', '360° panic spin. Costs 10% HP.'],
       ['TAUNT', 'TAUNT btn / T', 'Talk trash, gain special meter.'],
@@ -154,6 +162,7 @@ const FIGHTERS = [
     bfname: 'WRECKING RUSH', blitzname: 'SLEDGEHAMMER RUN', duname: 'CRANE UPPER',
     mega: { name: 'DEMOLITION DAY' },
     stance: { name: "DEMOLITION STANCE", dmg: 1.3, spd: 0.85, desc: "Swinging for the fences." },
+    stanceFin: { name: "SCRAP YARD", kind: 'smash', color: 0x8a929e, desc: 'Overhead crusher. Launches the whole pack.' },
     fin: 'demo', finname: 'DEMOLITION', findesc: 'Far knockback — total wreckage',
     moves: [
       ['SLEDGE JAB', 'HIT', 'Sledgehammer jab. Chains into cross and kick.'],
@@ -162,6 +171,7 @@ const FIGHTERS = [
       ['YARD SWING', '← + HIT', 'Step back, wrecking swing.'],
       ['DEMOLITION SWEEP', '↓ + HIT', 'Demolition sweep — launches for juggles.'],
       ['FULL SLEDGE', 'HVY', 'Full sledge. Devastating.'],
+      ['SCRAP YARD', 'STANCE + HVY', 'Overhead crusher. Launches the whole pack.'],
       ['WRECKING DROP', 'JUMP, then HIT', 'Aerial demolition kick.'],
       ['DESPERATION', 'DDG ×2', '360° panic spin. Costs 10% HP.'],
       ['TAUNT', 'TAUNT btn / T', 'Talk trash, gain special meter.'],
@@ -174,6 +184,7 @@ const FIGHTERS = [
     bfname: 'SERPENT DASH', blitzname: 'VIPER STRIKE', duname: 'COIL SPRING',
     mega: { name: "SERPENT'S COIL" },
     stance: { name: "COIL STANCE", dmg: 1.1, spd: 1.22, desc: "Strike from anywhere." },
+    stanceFin: { name: "SERPENT'S EMBRACE", kind: 'linedash', color: 0x4dff88, desc: 'Coil through the line — everything gets bit.' },
     fin: 'dot', finname: 'FANG BARB', findesc: 'Venom keeps chewing — damage over time',
     moves: [
       ['FANG FLICKER', 'HIT', 'Flicker jab. Chains into cross and kick.'],
@@ -182,6 +193,7 @@ const FIGHTERS = [
       ['SLITHER BACK', '← + HIT', 'Slither back, snapping strike.'],
       ['TAIL SWEEP', '↓ + HIT', 'Tail sweep — launches for juggles.'],
       ['THE FANG', 'HVY', 'The fang. Big damage.'],
+      ["SERPENT'S EMBRACE", 'STANCE + HVY', 'Coil through the line — everything gets bit.'],
       ['VIPER DROP', 'JUMP, then HIT', 'Aerial fang kick.'],
       ['DESPERATION', 'DDG ×2', '360° panic spin. Costs 10% HP.'],
       ['TAUNT', 'TAUNT btn / T', 'Talk trash, gain special meter.'],
@@ -194,6 +206,7 @@ const FIGHTERS = [
     bfname: 'DUST RUSH', blitzname: 'DUST DEVIL', duname: 'HABOOB RISE',
     mega: { name: 'DUST BOWL' },
     stance: { name: "STORM STANCE", dmg: 1.05, spd: 1.3, desc: "Become the weather." },
+    stanceFin: { name: "SANDSTORM", kind: 'storm', color: 0xd8b25a, desc: 'The storm closes in. Nowhere to stand.' },
     fin: 'cyclone', finname: 'CYCLONE LIFT', findesc: 'Extended air — juggle them longer',
     moves: [
       ['DUST JAB', 'HIT', 'Fastest hands on the block. Chains into cross and kick.'],
@@ -202,6 +215,7 @@ const FIGHTERS = [
       ['WHIP BACKFIST', '← + HIT', 'Slip back, whipping backfist.'],
       ['DUST-CLOUD SWEEP', '↓ + HIT', 'Dust-cloud sweep — launches for juggles.'],
       ['STORM BACKHAND', 'HVY', 'The backhand of the storm. Big damage.'],
+      ['SANDSTORM', 'STANCE + HVY', 'The storm closes in. Nowhere to stand.'],
       ['CYCLONE KICK', 'JUMP, then HIT', 'Aerial cyclone kick.'],
       ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
       ['DUST DEVIL', '↓ + SPC (50 meter)', 'Spinning AOE that travels through the pack.'],
@@ -213,6 +227,7 @@ const FIGHTERS = [
     bfname: 'PATCH SPRINT', blitzname: 'HARVEST RUSH', duname: 'SCARECROW RISE',
     mega: { name: 'GREAT PUMPKIN' },
     stance: { name: "HARVEST STANCE", dmg: 1.25, spd: 0.9, desc: "The patch feeds on pain." },
+    stanceFin: { name: "HARVEST MOON", kind: 'launcher', color: 0xff8c2a, desc: 'Rising gourd uppercut. Sends them skyward.' },
     fin: 'launch', finname: 'PORCH STOMP', findesc: 'Curb stomp with a burning grin',
     moves: [
       ['PATCH JAB', 'HIT', 'Quick vine jab. Chains into cross and kick.'],
@@ -221,6 +236,7 @@ const FIGHTERS = [
       ['HAYMAKER', '← + HIT', 'Step back, haymaker backfist with knockback.'],
       ['ROOT SWEEP', '↓ + HIT', 'Root sweep — launches for juggles.'],
       ['GOURD CRUSHER', 'HVY', 'Overhead gourd crusher. Big damage.'],
+      ['HARVEST MOON', 'STANCE + HVY', 'Rising gourd uppercut. Sends them skyward.'],
       ['HARVEST DROP', 'JUMP, then HIT', 'Aerial harvest drop kick.'],
       ['DESPERATION', 'DDG ×2', '360° panic spin. Costs 10% HP.'],
       ['TAUNT', 'TAUNT btn / T', 'Talk trash, gain special meter.'],
@@ -562,7 +578,7 @@ function activeSeason() {
 }
 // WHAT'S NEW (soul law: community as co-designer) — patch notes live in-game
 const PATCH_NOTES = [
-  ['2026-10-07', 'Wave 6: MIXTAPE stance system (double-tap TAUNT), Zone 6 THE WORKS + Zone 7 STEEL CELL, skyline/ring/plaza layouts, THE FOREMAN + THE WARDEN bosses with OVERTIME + LOCKDOWN signatures'],
+  ['2026-10-07', 'Wave 6: STANCE FINISHERS (8 — STANCE + HVY), MIXTAPE stance system, Zone 6 THE WORKS + Zone 7 STEEL CELL, skyline/ring/plaza layouts, THE FOREMAN (OVERTIME) + THE WARDEN (LOCKDOWN)'],
   ['2026-10-06', 'Wave 4: BLITZ lunging strikes, WITCH TIME last-instant dodge, FOCUS absorb, BURST combo breaker, RADICAL MODE, RECRUIT crew system'],
   ['2026-10-05', 'Wave 3: 15 bosses with signatures, 5 districts, style meter, mission grades'],
 ];
@@ -2355,6 +2371,60 @@ function doJumpAttack() {
   damageDestructibles(hitR);
   if (hitAny) { shake = Math.max(shake, 0.3); }
 }
+function doStanceFin(fd) {
+  // Stance-exclusive finisher: only available in stance mode (double-tap TAUNT). Style, not power: a tradeoff move.
+  const fin = fd.stanceFin; if (!fin) return;
+  T.sfin = T.sfin || {}; T.sfin[fin.kind] = (T.sfin[fin.kind] || 0) + 1; // test hook
+  player.busy = 0.8; unlockAudio(); T.taps++; hint(false);
+  playAnim(player, 'Melee_Unarmed_Attack_Kick', { ts: 1.6, fade: 0.05 });
+  banner(fin.name + '!', 'spc'); sfx('hit3', 1, false, 0.65); flash('#ffd166');
+  const dir = player.face || 1;
+  const hitAll = (r, zr, dmg, label, launcher) => {
+    for (const e of enemies.slice()) {
+      if (e.hp > 0 && Math.abs(e.px - player.px) < r && Math.abs(e.pz - player.pz) < zr)
+        landHit(e, Math.round(dmg * player.dmgMult), label, 0.1, 0.5, launcher, false);
+    }
+  };
+  if (fin.kind === 'flurry') { // KID BLUE: 5 rapid palm strikes in a cone
+    burst(player.root.position.clone().add(new THREE.Vector3(dir * 1.2, 1.2, 0)), 24, fin.color, 6);
+    for (let i = 0; i < 5; i++) setTimeout(() => {
+      if (state !== 'fight' || missionOver || ended) return;
+      const t = nearestEnemy(2.6);
+      if (t && Math.sign(t.px - player.px) === dir) { landHit(t, Math.round(11 * player.dmgMult), fin.name, 0.05, 0.25, false, false); sfx('hit2', 0.9, false, 0.7); }
+    }, i * 90);
+  } else if (fin.kind === 'blinkback') { // GHOST: blink through nearest, strike from behind
+    const t = nearestEnemy(6);
+    if (t) { player.px = t.px - dir * 1.4; burst(player.root.position.clone().add(new THREE.Vector3(0, 1.2, 0)), 26, fin.color, 7); landHit(t, Math.round(34 * player.dmgMult), fin.name, 0.1, 0.5, false, false); }
+    else popText('NO TARGET', '', innerWidth / 2, innerHeight * 0.4);
+  } else if (fin.kind === 'spin') { // BRICK: 360 wrecking spin
+    burst(player.root.position.clone().add(new THREE.Vector3(0, 1.0, 0)), 34, fin.color, 7); shake = 0.6;
+    hitAll(3.0, 2.0, 30, fin.name, false); damageDestructibles(3.0);
+  } else if (fin.kind === 'pound') { // KINGPIN: royal decree slam, radial shockwave
+    burst(player.root.position.clone().add(new THREE.Vector3(0, 0.4, 0)), 40, fin.color, 8); shake = 0.7;
+    hitAll(3.8, 2.2, 32, fin.name, true); damageDestructibles(3.8);
+  } else if (fin.kind === 'smash') { // SLEDGE: overhead crusher, launches pack
+    const t = nearestEnemy(3.0);
+    burst(player.root.position.clone().add(new THREE.Vector3(dir * 1.0, 1.4, 0)), 36, fin.color, 7); shake = 0.7;
+    hitAll(2.8, 1.8, 38, fin.name, true); damageDestructibles(2.8);
+  } else if (fin.kind === 'linedash') { // VIPER: coil through the line
+    const dist = 4.6;
+    player.px = clamp(player.px + dir * dist, 0.5, mission.len === Infinity ? 1e6 : mission.len - 1.5);
+    burst(player.root.position.clone().add(new THREE.Vector3(0, 1.0, 0)), 30, fin.color, 6);
+    for (const e of enemies.slice()) {
+      if (e.hp > 0 && Math.abs(e.px - (player.px - dir * dist / 2)) < dist / 2 + 0.8 && Math.abs(e.pz - player.pz) < 1.6)
+        landHit(e, Math.round(28 * player.dmgMult), fin.name, 0.08, 0.35, false, false);
+    }
+  } else if (fin.kind === 'storm') { // DUST: sandstorm closes in
+    burst(player.root.position.clone().add(new THREE.Vector3(0, 1.2, 0)), 44, fin.color, 8); shake = 0.55;
+    hitAll(3.4, 2.4, 26, fin.name, false); damageDestructibles(3.4);
+  } else if (fin.kind === 'launcher') { // JACK: rising gourd uppercut
+    const t = nearestEnemy(2.6);
+    burst(player.root.position.clone().add(new THREE.Vector3(0, 1.6, 0)), 30, fin.color, 7);
+    if (t) landHit(t, Math.round(36 * player.dmgMult), fin.name, 0.12, 0.7, true, false);
+    else popText('WHIFF', '', innerWidth / 2, innerHeight * 0.4);
+  }
+  setHud(); ev('stancefin', { kind: fin.kind });
+}
 function doHeavy() {
   if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.busy > 0) return;
   unlockAudio(); T.taps++; hint(false);
@@ -2373,6 +2443,9 @@ function doHeavy() {
     }, 250);
     ev('heat', {}); return;
   }
+  // STANCE FINISHER (wave 6): HVY while in stance fires your stance-exclusive move
+  const _fd0 = fighterDef();
+  if (player.stance === 1 && _fd0.stanceFin) { doStanceFin(_fd0); return; }
   player.busy = 0.5;
   playAnim(player, 'Melee_Unarmed_Attack_Kick', { ts: 1.25, fade: 0.05 });
   setTimeout(() => {
@@ -3715,6 +3788,9 @@ window.__cdtest = {
   spawnBoss: (id) => { if (player) return spawnBoss(id || 'kingpin', player.px + 6); },
   spawnFam: (famId) => { if (player) return spawnEnemy(famId, 0, player.px + 3, 0); },
   sigChance: (v) => { window.__cdSigChance = v; },
+  playerDbg: () => player ? { busy: +player.busy.toFixed(2), stance: player.stance||0, hp: Math.round(player.hp), state, fid: fighterDef().id, hasFin: !!fighterDef().stanceFin } : null,
+  fireStanceFin: (fid) => { const fd = FIGHTERS.find(f => f.id === fid); if (fd && fd.stanceFin && player) { player.stance = 1; doStanceFin(fd); return fd.stanceFin.kind; } return null; },
+  forceStance: () => { if (player && player.stance !== 1) doStance(); return true; },
   forceBossSig: () => { if (bossRef) { bossRef.pat = 'sig'; bossRef.ai = 'windup'; bossRef.windup = 0.01; } },
   spawnBoss: (id, bx) => spawnBoss(id, bx == null ? (player ? player.px + 6 : 10) : bx),
   layoutInfo: () => ({ platforms: platforms.length, destruct: destructibles.length, colliders: colliders.length }),
@@ -3750,6 +3826,7 @@ window.__cdtest = {
   spawnCreature: (cid) => { if (player) { const e = makeCreatureRaw(cid, 0xffffff, player.px + 3, -Math.PI / 2, 1); if (e) { e.maxHp = e.hp = 200; e.dmgMult = 1; e.spd = 1.5; e.px = player.px + 3; e.pz = 0; e.ai = 'walk'; e.aiT = 1; syncPos(e); playAnim(e, 'Running_A', { loop: true }); enemies.push(e); } return e; } },
   hurt: (n) => { if (player) hurtPlayer(n); },
   doJump, doPunch, doHeavy, doSpecial, doTaunt, doDesperation, doStance,
+  sfin: () => (window.__playable && window.__playable.sfin) || {},
   stanceInfo: () => player ? { stance: player.stance || 0, name: (player.stance && fighterDef().stance) ? fighterDef().stance.name : 'BALANCED', dmg: +player.dmgMult.toFixed(2), spd: +player.spd.toFixed(2) } : null,
   step: (dt) => { playerUpdate(dt || 1 / 60); }, // drive the real physics deterministically
   estep: (dt) => { for (const e of enemies.slice()) enemyAI(e, dt || 1 / 60); }, // drive enemy AI deterministically (test only)
