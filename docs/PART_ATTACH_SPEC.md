@@ -320,3 +320,67 @@ Owner: "more models and animations that fit our universe too." 382 models across
 - Crowbar - Game Ready Low Poly by Wonderful Optics Workshop (CC-BY): https://sketchfab.com/3d-models/crowbar-game-ready-low-poly-ec466870e57b4198b57b854bf9d37beb
 
 **Attribution debt (CC-BY):** dook, Google (Poly Pizza), JellyLion, Quaternius, Tulio Portela, mynameisRJ, VanHyfte_Clement, wesamtufail, Oliver Wobst, caz, Aaron Clifford, Ian MacGillivray, Zsky, Gohar.Munir (pending), Wonderful Optics Workshop (pending) — all on the in-game credits screen.
+
+## §14 — Wave 7: AshLane-targeted hunt (2026-10-07)
+
+Owner: "keep pulling things in for AshLane." 196 models across 21 source packs, all staged under `for-ashlane/` subdirs. Three parallel workers: 7a brawlers/crowd, 7b streets/arena-dressing, 7c weapons/creatures.
+
+### 7a — Animated brawlers / crowd NPCs (44 GLB + 1 OGA zip)
+
+| Pack | Models | License | Use |
+|---|---|---|---|
+| poly-pizza-quaternius | 28 GLB | CC0 x26 + CC-BY 3.0 x2 | Quaternius via PP mirror: 21/28 with combat clips (Punch_L/R, Kick_L/R, HitRecieve/HitReact, Death, Roll, Duck). Animated Base Character (CC-BY, 45 clips incl. Punch_Jab/Cross, Hit_Chest/Head, Death01) = richest single clip library |
+| poly-pizza-mastjie | 4 GLB | CC0 | Male Fighter / Female Fighter / 2x Warrior — static; crowd/background or retarget targets |
+| poly-pizza-misc | 11 GLB | CC0 + CC-BY 3.0 | Thug (static), Beserker Viking, crowd cluster (apelab), People Poses, Stylized Character (Zsky, 14 clips incl. Punch_L/R, Kick_L/R), Generic Male (5 clips) |
+| opengameart-xcvg-humanoid | 1 GLB | CC0 | XCVG Systems rigged/animated humanoid, FBX→GLB via Blender, all 18 clips preserved (Punch, CrouchPunch, Run, Walk, Swim…) |
+| opengameart-skeleton-outlaw | 1 zip | CC0 | staged NOT converted — FBX 6.1 ASCII (Blender 4.x/assimp can't import; needs Autodesk FBX Converter to binary first) |
+
+Style: Quaternius models are stylized low-poly (NOT chibi — proper humanoid proportions) = grunt/goon/crowd tier, not hero-fighter quality. No KayKit used (owner law). 3 Mixamo-derived models detected via `mixamorig` bones and DELETED before staging.
+
+### 7b — Street culture + arena dressing (111 GLB + 1 OBJ)
+
+| Pack | Models | License | Use |
+|---|---|---|---|
+| pp-neon-signs | 15 GLB | CC0 x6 + CC-BY 3.0 x9 | TOP GAP CLOSED: Quaternius "Cyberpunk Signs" neon board set (13, verified by eye), arrow/town/fire-exit/stop signs, street lamps x4 |
+| pp-market-dressing | 8 GLB | CC0 x6 + CC-BY x2 | market stalls x3, canopy/awning, paper/hanging/red/post lanterns — neon-market district |
+| pp-industrial-waterfront | 14 GLB | CC0 x5 + CC-BY x9 | vents, shipping container, pallet, oil barrels, dumpster, scaffolding, manhole, hydrant, bus stop, **chain-link fence (verified by eye)** |
+| pp-interiors-gym-bar | 8 GLB | CC0 x2 + CC-BY x6 | dumbbell, barbell, treadmill, elliptical, liquor shelf, **bar counter + stool (by eye)**, bar-building diorama w/ BAR rooftop sign |
+| kenney-fantasy-town-kit | 20 GLB | CC0 | stalls, carts, banners, lantern, awnings, fences, chimneys — neon-market dressing |
+| kenney-graveyard-kit | 16 GLB | CC0 | lightposts, lanterns, iron fences — night streets |
+| kenney-pirate-kit | 6 GLB | CC0 | wooden docks, masts, crates, barrels — waterfront |
+| kenney-mini-market | 11 GLB | CC0 | registers, shelves, freezers, carts/baskets, bottle-return — shop interiors |
+| oga-neon-town | 12 GLB | CC0 (leonkin) | neon-lit storefronts: bar, billboard, pharmacy, police, restaurant, store, lamp, fence, traffic light, trash container, table, chair |
+| oga-neon-sign-2 | 1 GLB + OBJ | CC0 (plaggy) | music-note neon sign, OBJ→GLB converted in Blender |
+
+Key-art match: neon-market (lanterns, stalls, neon boards, storefronts), industrial (vents/fences/dumpsters/scaffolding), waterfront (docks/containers/ropes), interiors (bar + gym props).
+
+### 7c — Weapons + creatures (41 GLB + 3 zips, ALL CC0)
+
+| Pack | Models | License | Use |
+|---|---|---|---|
+| 3dassets-melee-weapons | 14 GLB | CC0 1.0 | crowbar, nailed bat, baseball bat, machete, fire axe, sledgehammer, telescopic baton, combat/bowie/kitchen knives, wrench, tomahawk, metal trash can, chainsaw. KEY: `metal-trash-can.glb` has separate `bin-lid` node + open/close clips — lid detaches as wieldable weapon |
+| 3dassets-halloween-props | 27 GLB | CC0 1.0 | 4 jack-o-lanterns, 3 pumpkins + totem, 2 sheet ghosts, witch hat/broom/cauldron, bat ornament, black cat, 2 scarecrows, 4 tombstones, coffin, skull, cellar spider, raven, hockey mask, skeleton yard prop, **skeleton-warrior.glb with idle/head-turn/arm-swing/weapon-raise clips** |
+| oga-crowbar | 1 zip | CC0 (Clint Bellanger) | .blend — needs Blender→GLB |
+| quaternius-animated-monsters | 1 zip | CC0 | Bat/Dragon/Skeleton/Slime FBX+Blend+OBJ; page lists punch/attack/jump/flying/walk clips (log clip names at conversion) |
+| quaternius-cute-monsters | 21 animated | CC0 | Demon, GreenDemon, Ghost, Bat, Cthulhu, Cyclops, Yeti + 14 more |
+
+**New source unlocked:** 3dassets.dev public API — no key, CC0 GLB CDN, per-asset license JSON. Query: `https://3dassets.dev/api/v1/assets?q=<term>&limit=N`, pack manifests at `/api/v1/packs/<slug>`.
+
+### Browser-pull lists (all need a live browser session; licenses verified at find-time, MUST re-verify at pull)
+- **7a:** Sketchfab CC-BY — Animated humanoid robot (pinguinoconpulgares), Mesh Humanoid (FennGaming264), Character (sayapin.gongulus), Cute Human Creature (pravees_3d); REJECTED: all Street Fighter 6/4 rips (copyright risk). URLs in `w7a-ashlane-brawlers/for-ashlane/BROWSER_PULL.md`.
+- **7b:** Sketchfab CC-BY neon — "Small neon sign." (Brendan Wood), "Neon Signs Billboard Japanese Vaporwave Shibuya" (freshlybaked — best neon-market match), "Love neon sign - wall" (daysena), "neon sign board Pixel Cake" (alina_dreiman), "Neon Sign Pizza." (Kirkieb); itch.io CyberThreat Retro 3D Urban Props #1 (CC BY 4.0); Quaternius CC0 MegaKits x7 (Downtown City, Cyberpunk Game Kit, Modular Streets, Sushi Restaurant, Ultimate Food, Ships, Ultimate Furniture). URLs in `w7b-ashlane-streets/BROWSER_PULL.md`.
+- **7c:** Poly Pizza — `static.poly.pizza` returns HTTP 403 for ALL requests from the VM (13 creature models identified, needs browser); Quaternius.com CC0 packs (Animated Zombie, Easy Enemy, Animated Alien, Bestiary Dungeon Monsters Kit); Kenney Animated Characters 3 (zombie+survivor, CC0); Sketchfab shinai/jack-o-lantern (CC-BY). URLs in `w7c-ashlane-weapons-creatures/BROWSER_PULL.md`.
+
+### Logged gaps — wave 7 (honest)
+- **Quaternius Ultimate Animated Character Pack (52 chars, CC0):** Google Drive "Quota exceeded" on all 52 files 2026-10-07 — retry later (file-ID map in `w7a-ashlane-brawlers/for-ashlane/quaternius-ultimate-animated-pack/RETRY_NOTE.md`).
+- **Quaternius Universal Animation Library (250+ clips, CC0):** no direct download link on the pack page (Patreon-gated?) — strong follow-up.
+- **Kendo stick/shinai, 2x4, tire iron:** no CC0/CC-BY downloadable model found.
+- **Animated pumpkin-headed fighter / vampire fighter / werewolf / mummy / frankenstein:** not found as animated CC0; static pumpkin heads staged (re-head onto brawler rigs).
+- **Realistic-proportion animated brawlers:** everything usable under CC0/CC-BY is stylized low-poly; remains an open hunt.
+- **Grapples:** no grapple animations in any pack this wave; taunts limited to Wave/No/Yes emotes.
+- **Barbershop props** (barber pole/chair): none found CC0/CC-BY.
+- **English worded tube-neon signs** (BAR/LIQUOR/OPEN): not downloadable CC0/CC-BY; Sketchfab CC-BY ones queued for browser pull.
+- Skipped per license law: OGA CC-BY-SA "Big gate with neon sign", Sketchfab Starcourt/Hotel neon (CC-BY-SA / CC-BY-NC-SA), OGA GDQuest (mixed/GPL mentions), Kenney Blocky Characters 2.0 (CC0 but chibi-adjacent — owner taste, flagged as optional crowd filler), Sketchfab Street Fighter rips (game rips).
+- Note: `/tmp` hit 100% full on the VM during 7b — workers used `~/workspace/.tmp/w7b-dl/`; monitor disk in future waves.
+
+**Attribution debt (CC-BY, new this wave):** Quaternius (Animated Base Character, Animated Wizard), David K, blaeksprut, Stephen Graybill, apelab, Don Carson, J-Toastie, Yogoshimo 2.0, AroniaStudios, Zsky, Семён Хазам + per-pack LICENSE.md authors in the 7b packs — all must land on the in-game credits screen.

@@ -120,3 +120,48 @@ Per-pack LICENSE.md files in each parts/<pack>/ dir. All GLBs verified (valid gl
 - **Kenney graveyard-pack / modular-dungeon-pack:** slugs don't exist on kenney.nl (closest: mini-dungeon, modular-cave-kit); graveyard covered by kaykit-halloween-bits (wave 3).
 - **Sketchfab MelonMan sledgehammer:** Standard license, no download — skipped per CC-only rule (browser task verified).
 - **KayKit itch.io animations:** JS-driven download uncapturable — SOLVED via GitHub CC0 repos (identical clips).
+
+## Wave 7 — AshLane-targeted hunt (2026-10-07, owner: "keep pulling things in for AshLane")
+
+196 models across 21 source packs, all staged under `for-ashlane/` subdirs (git-ignored). Per-pack LICENSE.md in every pack dir.
+
+| Pack | Source | License | Contents → use |
+|------|--------|---------|----------------|
+| w7a: poly-pizza-quaternius (28 GLB) | Poly Pizza model pages (Quaternius mirror) | CC0 ×26 + CC-BY 3.0 ×2 | 21/28 with combat clips (Punch_L/R, Kick_L/R, HitRecieve/HitReact, Death, Roll, Duck); Animated Base Character (45 clips) = richest clip library |
+| w7a: poly-pizza-mastjie (4 GLB) | Poly Pizza model pages | CC0 | Male/Female Fighter, 2× Warrior — static crowd/retarget targets |
+| w7a: poly-pizza-misc (11 GLB) | Poly Pizza model pages | CC0 + CC-BY 3.0 | Thug, Beserker Viking, crowd cluster, People Poses, Stylized Character (14 clips), Generic Male (5 clips) |
+| w7a: opengameart-xcvg-humanoid (1 GLB) | OpenGameArt (XCVG Systems) | CC0 | rigged/animated humanoid, 18 clips preserved via Blender FBX→GLB |
+| w7a: opengameart-skeleton-outlaw (1 zip) | OpenGameArt | CC0 | staged NOT converted — FBX 6.1 ASCII needs Autodesk FBX Converter first |
+| w7b: pp-neon-signs (15 GLB) | Poly Pizza model pages | CC0 ×6 + CC-BY ×9 | Cyberpunk neon board set (13, verified by eye) + street/sign lamps — the neon gap closed |
+| w7b: pp-market-dressing (8 GLB) | Poly Pizza model pages | CC0 ×6 + CC-BY ×2 | market stalls, awnings, lanterns — neon-market district |
+| w7b: pp-industrial-waterfront (14 GLB) | Poly Pizza model pages | CC0 ×5 + CC-BY ×9 | vents, container, barrels, dumpster, scaffolding, chain-link fence — industrial |
+| w7b: pp-interiors-gym-bar (8 GLB) | Poly Pizza model pages | CC0 ×2 + CC-BY ×6 | gym equipment, bar counter/stool, bar-building w/ BAR rooftop sign |
+| w7b: kenney-fantasy-town-kit (20 GLB) | https://kenney.nl/assets/fantasy-town-kit | CC0 | stalls, carts, banners, lanterns, awnings — neon-market dressing |
+| w7b: kenney-graveyard-kit (16 GLB) | https://kenney.nl/assets/graveyard-kit | CC0 | lightposts, lanterns, iron fences — night streets |
+| w7b: kenney-pirate-kit (6 GLB) | https://kenney.nl/assets/pirate-kit | CC0 | docks, masts, crates, barrels — waterfront |
+| w7b: kenney-mini-market (11 GLB) | https://kenney.nl/assets/mini-market | CC0 | registers, shelves, freezers, carts — shop interiors |
+| w7b: oga-neon-town (12 GLB) | OpenGameArt (leonkin) | CC0 | neon-lit storefronts (bar, pharmacy, police, restaurant…) |
+| w7b: oga-neon-sign-2 (1 GLB) | OpenGameArt (plaggy) | CC0 | music-note neon sign |
+| w7c: 3dassets-melee-weapons (14 GLB) | 3dassets.dev API | CC0 1.0 | crowbar, nailed bat, machete, fire axe, sledgehammer, baton, knives, wrench, tomahawk, trash can (detachable lid = weapon), chainsaw |
+| w7c: 3dassets-halloween-props (27 GLB) | 3dassets.dev API | CC0 1.0 | jack-o-lanterns, pumpkins, ghosts, witch gear, scarecrows, tombstones, skeleton-warrior (animated) |
+| w7c: oga-crowbar (1 zip) | OpenGameArt (Clint Bellanger) | CC0 | .blend — needs Blender→GLB |
+| w7c: quaternius-animated-monsters (1 zip) | OpenGameArt (Quaternius upload) | CC0 | Bat/Dragon/Skeleton/Slime FBX+Blend+OBJ |
+| w7c: quaternius-cute-monsters (21 anim) | OpenGameArt (Quaternius upload) | CC0 | Demon, GreenDemon, Ghost, Bat, Cthulhu, Cyclops, Yeti + 14 more |
+
+New source: 3dassets.dev public API (no key, CC0 GLB CDN, per-asset license JSON). 3 Mixamo-derived models deleted pre-staging (license law).
+
+### Browser-pull lists — wave 7 (Sketchfab session signed in as MHVNSNT; re-verify licenses at pull time)
+- 7a: Animated humanoid robot / Mesh Humanoid / Character / Cute Human Creature (CC-BY) — see w7a BROWSER_PULL.md
+- 7b: 5 Sketchfab CC-BY neon signs (freshlybaked Vaporwave Shibuya = best neon-market match) + itch.io CyberThreat Urban Props + 7 Quaternius MegaKits — see w7b BROWSER_PULL.md
+- 7c: 13 Poly Pizza creatures (static.poly.pizza 403s from VM) + 4 Quaternius.com packs + Kenney Animated Characters 3 + Sketchfab shinai/jack-o-lantern — see w7c BROWSER_PULL.md
+
+### Logged gaps — wave 7 (honest)
+- Quaternius Ultimate Animated Character Pack (52 chars): Drive quota exceeded — retry later (file-ID map saved).
+- Quaternius Universal Animation Library (250+ clips): Patreon-gated? — follow-up.
+- Kendo stick/shinai, 2x4, tire iron, barber pole/chair: no CC0/CC-BY downloads found.
+- Animated pumpkin-headed fighter / vampire / werewolf / mummy / frankenstein: not found animated; static heads staged for re-heading.
+- Realistic-proportion animated brawlers: open hunt continues (stylized low-poly only under CC0/CC-BY).
+- Grapples: none found; taunts limited to emotes.
+- English worded tube-neon signs: Sketchfab CC-BY queued for browser pull.
+- Skipped per license law: CC-BY-SA / CC-BY-NC-SA items, OGA GDQuest (mixed/GPL), Sketchfab Street Fighter rips (game rips), Kenney Blocky 2.0 (chibi-adjacent, flagged optional).
+- VM /tmp hit 100% during 7b — used ~/workspace/.tmp/w7b-dl/; monitor disk in future waves.
