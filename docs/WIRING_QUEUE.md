@@ -53,7 +53,16 @@ Wire in this order; playtest after each tier. Owner plays and vetoes — wire, d
     shots in `game-3d/shots-swingwhoosh/` (eyes-on verified). Decision doc
     `docs/TRANCHE_WAVE10_SWINGWHOOSH.md`.
 11. **S8 footsteps** — footstep00-07 OGGs, surface-appropriate.
-12. **S5 counter SFX** — distinct crack/chime on counter (currently silent).
+12. **S5 counter SFX** ✅ WIRED 2026-10-08 (tranche wave 12): `counter.mp3` (Kenney RPG Audio
+    `metalPot3.ogg`, OGG→MP3 @96k, CC0) — sharp metallic "TING" chosen for fast attack + quick
+    decay, distinct from hit1-3 thuds, crack.mp3 wall-thud, and swing1-3 whooshes. Registered in
+    `build/asset-manifest.json`, credited in `ASSETS_CREDITS.md`, preloaded in `unlockAudio()`.
+    New `sfxCounter()` (±6% pitch, `T.counterSfx` hook); `landHit()` plays it ONLY on counter
+    resolution (normal hits/parries untouched). Test hooks `counterDbg`/`counterClear`/
+    `forceCounterWindup`. Playtest `qa/playtest-countersfx.mjs` 16/16 PASS, zero errors:
+    normal hit fired no counter SFX (`counterSfx=0`), real counter fired it (`counterSfx=1`),
+    `counter.mp3` decoded to AudioBuffer; shots in `game-3d/shots-countersfx/` (eyes-on verified).
+    Decision doc `docs/TRANCHE_WAVE12_COUNTERSFX.md`.
 13. **S6/S7 UI + pickup** — `kenney_ui-audio.zip` clicks; pickup chime on cash.
 14. **S1 layering** — layer rpg-audio impacts under existing synth hits (±5% pitch).
 15. **S15 mixing** — music/sfx buses; music ducks under big hits.
