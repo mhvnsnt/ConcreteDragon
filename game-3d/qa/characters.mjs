@@ -3,7 +3,7 @@
 // Usage: node qa/characters.mjs
 import puppeteer from 'puppeteer-core';
 import fs from 'node:fs';
-const CHROME = '/home/hatch/.cache/puppeteer/chrome/linux-154.0.8037.57/chrome-linux64/chrome';
+const CHROME = process.env.CHROME_PATH || '/home/hatch/.cache/ms-playwright/chromium-1194/chrome-linux/chrome';
 const DIST = 'http://127.0.0.1:8931/concrete-dragon.html'; // served over http (file:// breaks texture CORS, unlike real Pages hosting)
 const SHOTS = '/tmp/cd-qa-shots';
 fs.mkdirSync(SHOTS, { recursive: true });
