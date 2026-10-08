@@ -14,6 +14,7 @@ Every asset in `game-3d/build/assets/` is **CC0 1.0 (public domain)**. No royalt
 | `whoosh.mp3`, `step.mp3`, `crack.mp3`, `coin.mp3` | Kenney — RPG Audio (CC0 1.0) |
 | `swing1.mp3` (knifeSlice), `swing2.mp3` (knifeSlice2), `swing3.mp3` (chop) | Kenney — RPG Audio (CC0 1.0) |
 | `uiclick.mp3` | Kenney — UI Audio (CC0 1.0) |
+| `hitlayer1.mp3` (metalPot2), `hitlayer2.mp3` (dropLeather), `hitlayer3.mp3` (doorClose_2) | Kenney — RPG Audio (CC0 1.0) |
 
 ## UI kit (embedded in `src/template.html` as data URIs — no external files)
 

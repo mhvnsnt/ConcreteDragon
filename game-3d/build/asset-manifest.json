@@ -100,6 +100,18 @@
   "source": "Kenney RPG Audio (CC0 1.0) [chop.ogg]"
  },
  {
+  "file": "hitlayer1.mp3",
+  "source": "Kenney RPG Audio (CC0 1.0) [metalPot2.ogg]"
+ },
+ {
+  "file": "hitlayer2.mp3",
+  "source": "Kenney RPG Audio (CC0 1.0) [dropLeather.ogg]"
+ },
+ {
+  "file": "hitlayer3.mp3",
+  "source": "Kenney RPG Audio (CC0 1.0) [doorClose_2.ogg]"
+ },
+ {
   "file": "tex-patchwork.png",
   "source": "Orion Enterprises LLC painted patchwork (CC0 1.0)"
  },
