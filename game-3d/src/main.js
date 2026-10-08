@@ -978,7 +978,7 @@ async function unlockAudio() {
   if (actx) return;
   try {
     actx = new (window.AudioContext || window.webkitAudioContext)();
-    await Promise.all(['hit1', 'hit2', 'hit3', 'bell', 'crowd', 'music', 'click', 'whoosh', 'step', 'crack', 'coin', 'uiclick', 'swing1', 'swing2', 'swing3'].map(async (k) => { sbuf[k] = await actx.decodeAudioData(b64ToBuf(A[k + '.mp3'])); }));
+    await Promise.all(['hit1', 'hit2', 'hit3', 'bell', 'crowd', 'music', 'click', 'whoosh', 'step', 'crack', 'coin', 'uiclick', 'swing1', 'swing2', 'swing3', 'counter'].map(async (k) => { sbuf[k] = await actx.decodeAudioData(b64ToBuf(A[k + '.mp3'])); }));
     sfx('music', 0.32, true); sfx('crowd', 0.25, true);
   } catch (e) { T.errors.push('audio:' + e); }
 }
@@ -996,6 +996,13 @@ function sfxSwing(vol = 0.5, whiff = false) {
   T.swingSfx = (T.swingSfx || 0) + 1;
   if (whiff) T.whiffSfx = (T.whiffSfx || 0) + 1;
   sfx(k, vol, false, 1 + (Math.random() * 0.16 - 0.08));
+}
+// S5 COUNTER SFX (TIER 3 item 12, owner 2026-10-07): dedicated counter crack/chime — Kenney RPG
+// Audio (CC0 1.0) metalPot3.ogg. Plays ONLY when a counter resolution fires in landHit
+// (never on normal hits, never on parries), so counters read audibly. T.counterSfx is the playtest hook.
+function sfxCounter(vol = 0.85) {
+  T.counterSfx = (T.counterSfx || 0) + 1;
+  sfx('counter', vol, false, 1 + (Math.random() * 0.12 - 0.06));
 }
 let paused = false, pushT = 0;
 const pushPos = new THREE.Vector3();
@@ -3447,7 +3454,8 @@ function landHit(e, dmg, label, hs, sh, launcher, counter) {
   const head = e.root.position.clone().add(new THREE.Vector3(0, fighterHeight * 0.78 * e.sc, 0.15));
   burst(head, counter ? 30 : 16, counter ? 0x7af0ff : 0xffd27a, counter ? 6 : 4);
   shake = sh; hitstop = hs; // snappy: tiny freeze on light hits, bigger only for counter/heavy/special/KO
-  sfx(['hit1', 'hit2', 'hit3'][Math.floor(Math.random() * 3)], 0.9, false, 0.9 + Math.random() * 0.2);
+  if (counter) sfxCounter(0.85); // S5: counters get their own crack/chime, not the generic hit thud
+  else sfx(['hit1', 'hit2', 'hit3'][Math.floor(Math.random() * 3)], 0.9, false, 0.9 + Math.random() * 0.2);
   const sp = screenPos(head); popText((critOn ? 'CRIT ' : '') + (lsOn ? 'LAST STAND ' : '') + (counter ? 'COUNTER! -' : '-') + dealt, counter ? 'big' : '', sp.x, sp.y - 30);
   if (counter) flash('#7af0ff');
   if (launcher && !e.boss) {
@@ -4812,6 +4820,15 @@ window.__cdtest = {
   doJump, doPunch, doHeavy, doSpecial, doTaunt, doDesperation, doStance, doTech, doGrapple, doDodge,
   swingDbg: () => ({ swing: T.swingSfx || 0, whiff: T.whiffSfx || 0 }), // S2 swing-whoosh tranche (owner 2026-10-07)
   swingClear: () => { T.swingSfx = 0; T.whiffSfx = 0; },
+  counterDbg: () => ({ counterSfx: T.counterSfx || 0, counters: T.counters || 0, hits: T.hits || 0 }), // S5 counter-SFX tranche (owner 2026-10-07)
+  counterClear: () => { T.counterSfx = 0; T.counters = 0; },
+  forceCounterWindup: () => { // S5 playtest: stage a foe mid-windup in counter range, neutral stick
+    const e = enemies.find(x => x.hp > 0 && !x.boss);
+    if (!e || !player) return false;
+    e.px = player.px + 1.5; e.pz = player.pz; e.ai = 'windup'; e.windup = 2.0; syncPos(e);
+    stick.dx = 0; stick.dy = 0; // neutral stick: doPunch resolves as COUNTER (not parry)
+    return true;
+  },
   audioDbg: (ks) => (ks || []).map(k => ({ k, ok: !!(sbuf[k] && sbuf[k] instanceof AudioBuffer) })), // S2: prove swing SFX decoded
   dodgeTest: () => { // S3 dodge SFX tranche (owner 2026-10-07): verify dodge fires SFX hook + i-frames
     if (!player || state !== 'fight') return { ok: 0, why: 'no-fight' };
