@@ -54,7 +54,7 @@ Wire in this order; playtest after each tier. Owner plays and vetoes — wire, d
     `docs/TRANCHE_WAVE10_SWINGWHOOSH.md`.
 11. **S8 footsteps** — footstep00-07 OGGs, surface-appropriate.
 12. **S5 counter SFX** — distinct crack/chime on counter (currently silent).
-13. **S6/S7 UI + pickup** ✅ WIRED 2026-10-08 (tranche wave 13, PR #[PENDING]):
+13. **S6/S7 UI + pickup** ✅ WIRED 2026-10-08 (tranche wave 13, PR #3):
     `uiclick.mp3` (click2, pre-existing) + `pickup.mp3` (mouseclick1, OGG→MP3 96k)
     from `kenney_ui-audio.zip`, both registered in `build/asset-manifest.json` +
     credited in `ASSETS_CREDITS.md` + preloaded in `unlockAudio()`. New

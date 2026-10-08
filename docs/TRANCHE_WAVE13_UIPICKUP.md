@@ -1,6 +1,6 @@
 # TRANCHE WAVE 13 — S6/S7 UI click + pickup chime (TIER 3 item 13)
 
-Date: 2026-10-08. Branch: `wave13-uipickup` (from `origin/main`).
+Date: 2026-10-08. Branch: `wave13-uipickup` (from `origin/main`). PR: #3.
 Resumed from parent-side checkpoint after attempt-1 worker was killed by a daemon
 restart mid-wiring — commit 1 (pickup.mp3) + partial `main.js` wiring survived.
 
