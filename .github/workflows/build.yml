@@ -1,0 +1,124 @@
+# Street Brawl CI/CD — every push to main rebuilds the app.
+#
+# What it does:
+#   1. Exports the Godot project in game/ to Web + Android APK.
+#   2. Version code auto-bumps from the run number (Google Play requires it
+#      to always increase).
+#   3. Uploads the APK + Web build as run artifacts.
+#   4. Deploys the Web build to GitHub Pages -> always-playable latest build.
+#   5. If the PLAY_SERVICE_ACCOUNT_JSON secret exists, uploads the APK to the
+#      Google Play internal testing track (see docs/PUBLISHING.md).
+#
+# The game build owns game/ — this pipeline builds whatever lands there.
+
+name: Build Street Brawl
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'game/**'
+      - '.github/workflows/build.yml'
+      - '.github/scripts/**'
+  workflow_dispatch:
+
+concurrency:
+  group: street-brawl-build
+  cancel-in-progress: false
+
+env:
+  GODOT_VERSION: "4.4"
+  PACKAGE_NAME: com.orionenterprises.streetbrawl
+
+jobs:
+  export:
+    name: Export Web + Android
+    runs-on: ubuntu-latest
+    container:
+      image: barichello/godot-ci:4.4
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Generate debug keystore
+        run: |
+          keytool -genkeypair -keystore /tmp/debug.keystore -alias androiddebugkey \
+            -storepass android -keypass android -keyalg RSA -keysize 2048 -validity 10950 \
+            -dname "CN=Android Debug,O=Android,C=US"
+
+      - name: Bump version + wire keystore
+        run: |
+          python3 .github/scripts/bump_version.py \
+            --run-number "${GITHUB_RUN_NUMBER}" \
+            --keystore /tmp/debug.keystore
+
+      - name: Import project resources
+        run: godot --headless --path game --import
+
+      - name: Export Web
+        run: |
+          mkdir -p /tmp/artifacts/web
+          godot --headless --path game --export-release "Web" /tmp/artifacts/web/index.html
+          ls -la /tmp/artifacts/web
+
+      - name: Export Android APK
+        run: |
+          mkdir -p /tmp/artifacts/apk
+          godot --headless --path game --export-release "Android" \
+            "/tmp/artifacts/apk/street-brawl-0.1.${GITHUB_RUN_NUMBER}.apk"
+          ls -la /tmp/artifacts/apk
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: street-brawl-apk-0.1.${{ github.run_number }}
+          path: /tmp/artifacts/apk/*.apk
+          retention-days: 90
+
+      - name: Upload Web build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: street-brawl-web-0.1.${{ github.run_number }}
+          path: /tmp/artifacts/web
+          retention-days: 90
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: /tmp/artifacts/web
+
+  deploy-pages:
+    name: Deploy Web to GitHub Pages
+    needs: export
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+  play-upload:
+    name: Upload APK to Google Play (internal track)
+    needs: export
+    if: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON != '' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download APK artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: street-brawl-apk-0.1.${{ github.run_number }}
+          path: /tmp/apk
+
+      - name: Upload to Play Console internal track
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: com.orionenterprises.streetbrawl
+          releaseFiles: /tmp/apk/*.apk
+          track: internal
+          status: completed
