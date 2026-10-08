@@ -52,7 +52,20 @@ Wire in this order; playtest after each tier. Owner plays and vetoes — wire, d
     fanfares / specials. Playtest `qa/playtest-swingwhoosh.mjs` 16/16 PASS, zero errors,
     shots in `game-3d/shots-swingwhoosh/` (eyes-on verified). Decision doc
     `docs/TRANCHE_WAVE10_SWINGWHOOSH.md`.
-11. **S8 footsteps** — footstep00-07 OGGs, surface-appropriate.
+11. **S8 footsteps** ✅ WIRED 2026-10-08 (tranche wave 11): 5-step bank (`step1.mp3`
+    ← footstep03 bright, `step2` ← footstep00 mid, `step3` ← footstep08 loud,
+    `step4` ← footstep06 mid-dark, `step5` ← footstep09 dark/gravelly — picked by
+    spectral spread, loudness-normalized) from `kenney_rpg-audio.zip`, OGG→MP3 into
+    `game-3d/build/assets/`, registered in `build/asset-manifest.json` (build only embeds
+    manifest-listed files), credited in `ASSETS_CREDITS.md`. `sfxFootstep()` random-picks
+    with ±6% pitch jitter @ 0.28 vol + per-district pitch (overpass 1.08, industrial
+    0.88, yards/docks 0.94). Player: stride-tracked (1.9 u/stride) on ACTUAL ground
+    covered, `wantRun` only — idle silent, no foot-skate against walls. Enemies: walk
+    branch only, silent beyond 10 units, 380ms global voice cap (no stampede).
+    `T.stepSfx`/`T.stepEnemy` counters + `__cdtest` stepDbg()/stepClear()/estepN().
+    Playtest `qa/playtest-footsteps.mjs` 11/11 PASS, zero errors, shots in
+    `game-3d/shots-footsteps/` (eyes-on verified). Decision doc
+    `docs/TRANCHE_WAVE11_FOOTSTEPS.md`.
 12. **S5 counter SFX** — distinct crack/chime on counter (currently silent).
 13. **S6/S7 UI + pickup** — `kenney_ui-audio.zip` clicks; pickup chime on cash.
 14. **S1 layering** — layer rpg-audio impacts under existing synth hits (±5% pitch).
