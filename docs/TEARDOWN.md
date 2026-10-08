@@ -1,4 +1,4 @@
-# Street Brawl — Mobile Teardown Research (2026-10-06)
+# Concrete Dragon — Mobile Teardown Research (2026-10-06)
 
 Sources: public guides, wikis, press. All mechanics described in own words.
 
@@ -41,7 +41,7 @@ Sources: public guides, wikis, press. All mechanics described in own words.
 - **Ads**: rewarded video (opt-in, 2x rewards) + interstitials (careful); MRAID playable ads for acquisition.
 - **Update cadence**: seasons every 8-12 weeks; balance patches; new fighter/skin drops mid-season.
 
-## What Street Brawl steals (and what it avoids)
+## What Concrete Dragon steals (and what it avoids)
 - Steal: 3-min sessions, deterministic progression, pass-as-anchor, cosmetics-first, equipment-style moves, daily events, transparent rates.
 - Avoid: SF3's grind-or-pay difficulty walls, loot-box controversy (deterministic like Brawl Stars), pay-to-win PvP.
 
@@ -57,7 +57,7 @@ Sources: public press, Sensor Tower/AppMagic estimates via pocketgamer/mobilegam
 - **Mechanic 2 — Party play + ranked ladder**: team queue with friends, visible rank tiers, seasonal rank resets. Losing rank at season end and re-climbing is a built-in retention loop — the ladder IS the content.
 - **Mechanic 3 — Relentless event cadence**: festivals, limited modes, and skin series run back-to-back; every event is a spending occasion disguised as a celebration.
 - **Neurochemical hooks**: serotonin (rank = visible status; rare skins = prestige among peers), oxytocin (party queue with friends — you don't quit a game your squad plays).
-- **Steal for Street Brawl**: skins-as-the-business with zero power sold; seasonal rank resets on the Rivals ladder; back-to-back limited events each with a cosmetic chase. **Avoid**: HoK's China-specific social graph depth — we can't replicate WeChat, so lean on crews + shareable clips instead.
+- **Steal for Concrete Dragon**: skins-as-the-business with zero power sold; seasonal rank resets on the Rivals ladder; back-to-back limited events each with a cosmetic chase. **Avoid**: HoK's China-specific social graph depth — we can't replicate WeChat, so lean on crews + shareable clips instead.
 
 ## Genshin Impact (HoYoverse) — the gacha masterclass
 - **Scale**: players routinely spend $1,000–$90,000 on characters (Kotaku, verified receipts); a maxed C6R5 character+weapon runs $5,000+.
@@ -66,7 +66,7 @@ Sources: public press, Sensor Tower/AppMagic estimates via pocketgamer/mobilegam
 - **Mechanic 3 — Battle pass + monthly card**: low-ticket recurring spend ($5–10) that normalizes paying; the monthly card pays out daily, creating a login habit welded to a purchase.
 - **Why players spend thousands without pay-to-win PvP**: there's no competitive advantage to buy — spending buys *identity* (favorite character, maxed constellations) and *collection completion*. The spend is emotional, not strategic.
 - **Neurochemical hooks**: dopamine (variable-ratio pulls with a guaranteed ceiling — the safest-feeling slot machine ever built), serotonin (showcasing a C6 character = ultimate status), endorphin (the pull animation ritual itself is engineered spectacle).
-- **Steal for Street Brawl**: pity-style guarantees on ANY random reward (if we ever do randomized drops: visible counter, carry-over, published rates); limited-time fighter/skin banners with countdowns; a cheap monthly card that drips Gold daily. **Avoid**: true gacha for gameplay power — our owner rule is deterministic progression; use Genshin's *presentation* (pity counters, banner events, pull ritual) on cosmetic-only drops.
+- **Steal for Concrete Dragon**: pity-style guarantees on ANY random reward (if we ever do randomized drops: visible counter, carry-over, published rates); limited-time fighter/skin banners with countdowns; a cheap monthly card that drips Gold daily. **Avoid**: true gacha for gameplay power — our owner rule is deterministic progression; use Genshin's *presentation* (pity counters, banner events, pull ritual) on cosmetic-only drops.
 
 ## Candy Crush Saga (King) — the compulsion-loop blueprint
 - **Scale**: ~64M monthly active users in the US as of 2022; players log a collective ~1.6B hours/year; still top-5 grossing in 2026 (Candy Cup 2026, Music Season events).
@@ -74,7 +74,7 @@ Sources: public press, Sensor Tower/AppMagic estimates via pocketgamer/mobilegam
 - **Mechanic 2 — Lives/energy gating as habit design**: 5 lives, 30 min per regen. A designer's own words: "they'd rather you play four times a day for ten minutes than 40 minutes straight" — the wait converts frustration into *anticipation* and builds a daily routine with multiple touchpoints.
 - **Mechanic 3 — Generous start, tightening screws**: early levels are easy and generous (build ownership, accumulate progress); difficulty ramps until players fail repeatedly at the exact moment they're most invested — that's when the $0.99 life offer appears, at peak emotional vulnerability.
 - **Neurochemical hooks**: dopamine (near-misses fire the reward system almost like wins — the Zeigarnik effect: interrupted tasks are remembered more vividly), endorphin (cascade/sugar-rush feedback spectacle).
-- **Steal for Street Brawl**: engineer near-miss moments — boss fights tuned so the player wins with a sliver of HP, "SO CLOSE!" end cards on losses with one-tap rematch; generous early game (first 20 fights easy, shower Cash), difficulty ramps on Street Ladder; energy only on *bonus* modes, never gating the core tap loop (owner: the loop is sacred). **Avoid**: hard-gating the core loop behind lives — Candy Crush can do it because sessions are 2 minutes; our fights are the product, not the toll booth.
+- **Steal for Concrete Dragon**: engineer near-miss moments — boss fights tuned so the player wins with a sliver of HP, "SO CLOSE!" end cards on losses with one-tap rematch; generous early game (first 20 fights easy, shower Cash), difficulty ramps on Street Ladder; energy only on *bonus* modes, never gating the core tap loop (owner: the loop is sacred). **Avoid**: hard-gating the core loop behind lives — Candy Crush can do it because sessions are 2 minutes; our fights are the product, not the toll booth.
 
 ## Clash Royale (Supercell) — timers, ladder anxiety, social glue
 - **Scale**: still a top-10 grosser a decade in; its systems have been copied by an entire genre.
@@ -82,7 +82,7 @@ Sources: public press, Sensor Tower/AppMagic estimates via pocketgamer/mobilegam
 - **Mechanic 2 — Ladder anxiety + trophy pushing**: visible trophies, arena tiers; losing streaks cost rank, which makes every match feel consequential. Players describe playing "efficiently" around reward windows rather than freely.
 - **Mechanic 3 — Emotes and clan social**: emotes as psychological warfare (toxic-positivity: crying-laugh at your opponent), clans for card donations/requests — giving cards to clanmates creates reciprocity debt (oxytocin) that retains better than any reward.
 - **Neurochemical hooks**: dopamine (chest opening ritual — the original loot-box theater), cortisol-then-relief (ladder anxiety resolved by wins), oxytocin (clan donations, shared wars).
-- **Steal for Street Brawl**: emote/taunt system in PvP (pre-fight and KO emotes — BM is engagement); crew donation/request systems for Parts; trophy-style visible ladder with season resets. **Avoid**: chest timers / hard reward gating — Supercell itself killed them in 2025; use instant rewards with *bonus* windows (first 3 wins/day = Lucky-Drop-style bonus) instead.
+- **Steal for Concrete Dragon**: emote/taunt system in PvP (pre-fight and KO emotes — BM is engagement); crew donation/request systems for Parts; trophy-style visible ladder with season resets. **Avoid**: chest timers / hard reward gating — Supercell itself killed them in 2025; use instant rewards with *bonus* windows (first 3 wins/day = Lucky-Drop-style bonus) instead.
 
 ## Pokémon GO (Niantic) — events as revenue volcanoes
 - **Scale**: $9B+ lifetime revenue; Go Fest 2026: Global did $28.8M in a single weekend ($15.1M Saturday — second-best day ever); July 2026 hit $141.5M, a four-year high.
@@ -90,7 +90,7 @@ Sources: public press, Sensor Tower/AppMagic estimates via pocketgamer/mobilegam
 - **Mechanic 2 — Collection psychology**: "the most diverse variety of species ever" + shiny hunting with boosted odds. Completionists spend on storage, balls, and raid passes *to avoid missing* — the spend is defensive (FOMO), not aspirational.
 - **Mechanic 3 — Free event, paid participation depth**: Go Fest 2026 was free to enter — and made MORE money, because volume of engaged players buying raid passes/storage/bundles beat ticket revenue. Lower the gate, monetize the intensity.
 - **Neurochemical hooks**: dopamine (shiny encounters = true variable-ratio jackpot), oxytocin (raids require groups — strangers become raid buddies; community days are social rituals), serotonin (rare shiny flex in the community).
-- **Steal for Street Brawl**: monthly 3-hour "Block Party" events — boosted drop rates, exclusive skin, whole crew online at once; free entry, monetize intensity (event-only bundles, extra attempts); collection log for fighters/skins with visible completion %. **Avoid**: location dependence — our "community" is the crew + leaderboard, not GPS.
+- **Steal for Concrete Dragon**: monthly 3-hour "Block Party" events — boosted drop rates, exclusive skin, whole crew online at once; free entry, monetize intensity (event-only bundles, extra attempts); collection log for fighters/skins with visible completion %. **Avoid**: location dependence — our "community" is the crew + leaderboard, not GPS.
 
 ## Roblox — the UGC flywheel and identity economy
 - **Scale**: $6.8B bookings FY2025; $1.5B paid to creators in 2025; ~85M daily active users; 274M avatar updates *per day*.
@@ -98,11 +98,11 @@ Sources: public press, Sensor Tower/AppMagic estimates via pocketgamer/mobilegam
 - **Mechanic 2 — UGC flywheel**: creators make items/games → attract players → players buy/spend → creators earn ($1.5B in 2025) → creators make more. Roblox keeps ~every layer's transaction fee. Content supply scales without headcount.
 - **Mechanic 3 — Retention-first algorithm**: Roblox's 2026 shareholder letter admits it *deliberately* shifted recommendations toward highly retentive games at the expense of near-term monetization — "longer retention should overcome a reduction in hourly monetisation." Retention compounds; extraction doesn't.
 - **Neurochemical hooks**: serotonin (unique avatar = status among millions), oxytocin (playing *with* friends in shared spaces; creator communities), dopamine (constant new UGC = infinite novelty).
-- **Steal for Street Brawl**: avatar/fighter identity depth — deep cosmetic customization (274M daily avatar updates is the benchmark for how much people care); long-term: community skin contests (UGC-lite: player-designed skins voted into the shop, designer gets a cut — the flywheel at our scale); retention-over-extraction as company doctrine. **Avoid**: building a UGC platform day one — start with curated cosmetics, open the contest pipeline in Season 2+.
+- **Steal for Concrete Dragon**: avatar/fighter identity depth — deep cosmetic customization (274M daily avatar updates is the benchmark for how much people care); long-term: community skin contests (UGC-lite: player-designed skins voted into the shop, designer gets a cut — the flywheel at our scale); retention-over-extraction as company doctrine. **Avoid**: building a UGC platform day one — start with curated cosmetics, open the contest pipeline in Season 2+.
 
 ---
 
-## Cross-game patterns → Street Brawl action list
+## Cross-game patterns → Concrete Dragon action list
 
 **The 7 portable laws:**
 1. **Never sell power** (Honor of Kings, Brawl Stars, Genshin): cosmetics + convenience + content. Power sales create "hobbled by greed" backlash and regulatory risk.
@@ -122,3 +122,37 @@ Sources: public press, Sensor Tower/AppMagic estimates via pocketgamer/mobilegam
 | Clash Royale | Emotes/BM, crew reciprocity, season ladder | Chest timers (Supercell retired them) |
 | Pokémon GO | 3-hour community events, collection log, free-entry monetize-intensity | Location-dependent mechanics |
 | Roblox | Identity cosmetics, UGC skin contests (S2+), retention-first doctrine | Building a UGC platform on day one |
+
+---
+
+## Free Fire (Garena / 111 Dots) — the low-end-device empire
+
+**Date:** 2026-10-06 · **Why it matters:** 1.5B+ downloads; runs on 1–2GB RAM
+phones; the reference for reaching players who don't own flagships.
+([Medium overview](https://medium.com/@sampara.official01/garena-free-fire-the-ultimate-mobile-battle-royale-in-2025-71f4ea3bbb91),
+[MMOCulture 2026 review](https://backend.mmoculture.com/2026/09/free-fire-review/))
+
+Why it works:
+- **Accessibility IS the product** — lightweight client (~1.5GB), 10-minute
+  matches, smooth on budget hardware; a separate Free Fire MAX serves premium
+  devices with shared progression (Firelink) — nobody is punished for their phone.
+- **Session length fits real life** — 10–12 min matches; Clash Squad 4v4 rounds
+  are even faster. Students/workers can grind ranks in stolen minutes.
+- **Character abilities as depth** — heroes like Alok (heal aura) / Hayato (armor
+  pen) create playstyle identity without complicating controls.
+- **Ranked chase** — Bronze→Grandmaster ladder in both BR and Clash Squad gives
+  every session a number to move.
+- **Creator ecosystem** — massive YouTube/creator community in its core markets
+  (India, Brazil, SEA) does the marketing.
+
+**What Concrete Dragon steals:**
+1. **Our no-store distribution IS the Free Fire play** — sideload APK + web build
+   must run on weak hardware. Steal the tiering: a "lite" graphics toggle and a
+   hard install-size budget (single-file HTML stays the flagship; keep it lean).
+2. **Session-length discipline:** endless waves already fit; keep a full run
+   satisfiable in ~10 minutes (KINGPIN every 5th wave is the natural session
+   cap) and make the daily seeded run explicitly ~10 min.
+3. **Local leaderboards = our ranked chase** (already approved feature): show
+   rank movement on the result screen, VS-style "here's what you unlocked."
+4. **Avoid:** character-ability gacha pressure; our roster unlocks stay
+   gameplay-earned (beat boss → unlock as playable).

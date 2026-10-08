@@ -1,124 +1,200 @@
-# Street Brawl CI/CD — every push to main rebuilds the app.
+# Concrete Dragon CI — every push to main rebuilds everything.
 #
-# What it does:
-#   1. Exports the Godot project in game/ to Web + Android APK.
-#   2. Version code auto-bumps from the run number (Google Play requires it
-#      to always increase).
-#   3. Uploads the APK + Web build as run artifacts.
-#   4. Deploys the Web build to GitHub Pages -> always-playable latest build.
-#   5. If the PLAY_SERVICE_ACCOUNT_JSON secret exists, uploads the APK to the
-#      Google Play internal testing track (see docs/PUBLISHING.md).
+# Produces:
+#   - dist/concrete-dragon.html -> THE GAME. Deployed to GitHub Pages
+#     (Three.js single-HTML 3D build from game-3d/). The Pages site MUST
+#     serve this 3D game.
+#   - dist/godot-2d-web/        -> parked 2D Godot web export (kept as a
+#     build artifact only, NOT deployed). Owner rejected the 2D paper-doll
+#     direction as the shipped game (2026-10-06); its systems live on as the
+#     design spec ported into the 3D build.
+#   - dist/street-brawl.apk     -> sideload onto any Android phone
+#     (no-store strategy: no $25 Play fee, so APK sideload is the mobile path)
+#   - dist/street-brawl.aab     -> kept for any future store move
 #
-# The game build owns game/ — this pipeline builds whatever lands there.
+# Version code auto-bumps from the GitHub run number (always increasing,
+# which app stores require if we ever ship to one). Version name = version.txt + run number.
 
-name: Build Street Brawl
+name: Build Concrete Dragon
 
 on:
   push:
     branches: [main]
     paths:
-      - 'game/**'
-      - '.github/workflows/build.yml'
-      - '.github/scripts/**'
+      - "game/**"
+      - "game-3d/**"
+      - "tools/ci/**"
+      - ".github/workflows/build.yml"
   workflow_dispatch:
 
-concurrency:
-  group: street-brawl-build
-  cancel-in-progress: false
-
 env:
-  GODOT_VERSION: "4.4"
-  PACKAGE_NAME: com.orionenterprises.streetbrawl
+  GODOT_VERSION: 4.7.2
 
 jobs:
-  export:
-    name: Export Web + Android
+  build:
     runs-on: ubuntu-latest
     container:
-      image: barichello/godot-ci:4.4
+      image: barichello/godot-ci:4.7.2
+    defaults:
+      run:
+        working-directory: game
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Generate debug keystore
-        run: |
-          keytool -genkeypair -keystore /tmp/debug.keystore -alias androiddebugkey \
-            -storepass android -keypass android -keyalg RSA -keysize 2048 -validity 10950 \
-            -dname "CN=Android Debug,O=Android,C=US"
+      - name: Import project
+        run: godot --headless --import --path . 2>&1 | tail -5
 
-      - name: Bump version + wire keystore
+      - name: Keystore setup
         run: |
-          python3 .github/scripts/bump_version.py \
-            --run-number "${GITHUB_RUN_NUMBER}" \
-            --keystore /tmp/debug.keystore
+          mkdir -p ~/.android
+          if [ -n "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" ]; then
+            echo "Using release keystore from secrets"
+            echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > ~/.android/release.keystore
+            echo "SB_KEYSTORE=$HOME/.android/release.keystore" >> $GITHUB_ENV
+            echo "SB_ALIAS=${{ secrets.ANDROID_KEYSTORE_ALIAS }}" >> $GITHUB_ENV
+            echo "SB_PASS=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" >> $GITHUB_ENV
+          else
+            echo "No release keystore secret — signing with debug key (fine for internal testing)"
+            if [ ! -f ~/.android/debug.keystore ]; then
+              keytool -genkeypair -keystore ~/.android/debug.keystore \
+                -alias androiddebugkey -storepass android -keypass android \
+                -keyalg RSA -keysize 2048 -validity 10950 \
+                -dname "CN=Android Debug,O=Orion Enterprises LLC,C=US"
+            fi
+            echo "SB_KEYSTORE=$HOME/.android/debug.keystore" >> $GITHUB_ENV
+            echo "SB_ALIAS=androiddebugkey" >> $GITHUB_ENV
+            echo "SB_PASS=android" >> $GITHUB_ENV
+          fi
 
-      - name: Import project resources
-        run: godot --headless --path game --import
-
-      - name: Export Web
+      - name: Install python3
         run: |
-          mkdir -p /tmp/artifacts/web
-          godot --headless --path game --export-release "Web" /tmp/artifacts/web/index.html
-          ls -la /tmp/artifacts/web
+          (command -v python3 >/dev/null) || (apt-get update -qq && apt-get install -y -qq python3)
+
+      - name: Install export templates
+        run: |
+          (command -v curl >/dev/null && command -v unzip >/dev/null) || (apt-get update -qq && apt-get install -y -qq curl unzip)
+          TDIR="$HOME/.local/share/godot/export_templates/${GODOT_VERSION}.stable"
+          mkdir -p "$TDIR"
+          if [ ! -f "$TDIR/web_nothreads_release.zip" ]; then
+            echo "Downloading export templates for Godot ${GODOT_VERSION}..."
+            curl -sSL -o /tmp/templates.tpz \
+              "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_export_templates.tpz"
+            unzip -q -o /tmp/templates.tpz -d "$TDIR"
+            mv "$TDIR/templates/"* "$TDIR/" && rmdir "$TDIR/templates"
+            rm -f /tmp/templates.tpz
+          fi
+          ls "$TDIR" | head -20
+
+      - name: Set version
+        run: |
+          VERSION_NAME="$(cat version.txt).${{ github.run_number }}"
+          VERSION_CODE=$(( 1000 + ${{ github.run_number }} ))
+          python3 ../tools/ci/set_version.py \
+            --version-code "$VERSION_CODE" \
+            --version-name "$VERSION_NAME" \
+            --keystore "$SB_KEYSTORE" --alias "$SB_ALIAS" --password "$SB_PASS"
+          echo "VERSION_NAME=$VERSION_NAME" >> $GITHUB_ENV
+          echo "VERSION_CODE=$VERSION_CODE" >> $GITHUB_ENV
+
+      - name: Configure Java SDK path
+        run: |
+          (command -v java >/dev/null) || (apt-get update -qq && apt-get install -y -qq default-jdk-headless)
+          JH="$(dirname "$(dirname "$(readlink -f "$(command -v java)")")")"
+          echo "Found JDK at $JH"
+          echo "JAVA_HOME=$JH" >> $GITHUB_ENV
+          mkdir -p ~/.config/godot
+          # Godot 4.7 reads editor_settings-<major>.<minor>.tres
+          SETTINGS_FILE=~/.config/godot/editor_settings-4.7.tres
+          printf '[gd_resource type="EditorSettings" format=3]\n\n[resource]\nexport/android/java_sdk_path = "%s"\n' "$JH" > "$SETTINGS_FILE"
+          cat "$SETTINGS_FILE"
+
+      - name: Install Android build template
+        run: |
+          TDIR="$HOME/.local/share/godot/export_templates/${GODOT_VERSION}.stable"
+          if [ ! -f "android/build/build.gradle" ]; then
+            echo "Installing Android build template from android_source.zip..."
+            mkdir -p android/build
+            unzip -q -o "$TDIR/android_source.zip" -d android/build
+            touch android/build/.gdignore
+            echo "${GODOT_VERSION}.stable" > android/.build_version
+          fi
+          ls android/build | head -8
+
+      - name: Export Web (2D Godot — parked, not deployed)
+        run: |
+          mkdir -p ../dist/godot-2d-web
+          godot --headless --path . --export-release "Web" ../dist/godot-2d-web/index.html
 
       - name: Export Android APK
         run: |
-          mkdir -p /tmp/artifacts/apk
-          godot --headless --path game --export-release "Android" \
-            "/tmp/artifacts/apk/street-brawl-0.1.${GITHUB_RUN_NUMBER}.apk"
-          ls -la /tmp/artifacts/apk
+          mkdir -p ../dist
+          godot --headless --path . --export-release "Android APK" ../dist/street-brawl.apk
 
-      - name: Upload APK artifact
+      - name: Export Android AAB
+        run: |
+          godot --headless --path . --export-release "Android AAB" ../dist/street-brawl.aab
+
+      - name: Upload parked 2D web build
         uses: actions/upload-artifact@v4
         with:
-          name: street-brawl-apk-0.1.${{ github.run_number }}
-          path: /tmp/artifacts/apk/*.apk
-          retention-days: 90
+          name: godot-2d-web-parked
+          path: dist/godot-2d-web
 
-      - name: Upload Web build artifact
+      - name: Upload Android builds
         uses: actions/upload-artifact@v4
         with:
-          name: street-brawl-web-0.1.${{ github.run_number }}
-          path: /tmp/artifacts/web
-          retention-days: 90
+          name: street-brawl-android
+          path: |
+            dist/street-brawl.apk
+            dist/street-brawl.aab
 
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
+  build-3d:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
-          path: /tmp/artifacts/web
+          node-version: 24
+          cache: npm
+          cache-dependency-path: game-3d/package-lock.json
 
-  deploy-pages:
-    name: Deploy Web to GitHub Pages
-    needs: export
+      - name: Build Concrete Dragon 3D (Three.js single HTML)
+        run: |
+          cd game-3d
+          npm ci
+          node build.mjs
+          ls -la dist/concrete-dragon.html
+
+      - name: Upload 3D web build
+        uses: actions/upload-artifact@v4
+        with:
+          name: concrete-dragon-3d
+          path: game-3d/dist/concrete-dragon.html
+
+  deploy-web:
+    needs: [build, build-3d]
     runs-on: ubuntu-latest
     permissions:
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      contents: write
     steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
-
-  play-upload:
-    name: Upload APK to Google Play (internal track)
-    needs: export
-    if: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON != '' }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download APK artifact
+      - name: Download 3D web build
         uses: actions/download-artifact@v4
         with:
-          name: street-brawl-apk-0.1.${{ github.run_number }}
-          path: /tmp/apk
+          name: concrete-dragon-3d
+          path: web
 
-      - name: Upload to Play Console internal track
-        uses: r0adkll/upload-google-play@v1
+      - name: Publish as index.html
+        run: |
+          mv web/concrete-dragon.html web/index.html
+          ls -la web/
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
         with:
-          serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
-          packageName: com.orionenterprises.streetbrawl
-          releaseFiles: /tmp/apk/*.apk
-          track: internal
-          status: completed
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./web
+          # .nojekyll is created automatically (Jekyll stays off)

@@ -1,0 +1,7 @@
+asset: kenney_city-kit-commercial_2.1.zip (219 files: FBX/GLB/OBJ models + PNG textures, street shops/buildings/props)
+license: CC0-1.0 (all kenney.nl assets are CC0 site-wide; pack ships its own License.txt)
+source: https://kenney.nl/assets/city-kit-commercial
+fetched: 2026-10-06T20:14:54Z
+usage: street props / storefront dressing for the 3D stage pipeline. M1 (2D-cute)
+  does not consume these yet — they land here so the stage-V2 build pulls them
+  with zero art cost and full license receipts for the pre-ship audit.

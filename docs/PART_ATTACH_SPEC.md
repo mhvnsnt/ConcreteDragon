@@ -1,0 +1,386 @@
+# PART ATTACH SPEC — Concrete Dragon character parts, species & environments
+
+Owner directives 2026-10-06. Staged under `game/assets/staging/parts/` (character)
+and `game/assets/staging/env/` (environments). **staging/ is gitignored by repo
+convention** — this doc is the committed record. All packs CC0 (verified below).
+
+## 1. THE LOOK LAW (binding)
+
+`fighter.glb` = ONE rigged mannequin, ONE material `Character_Material` WITH a
+painted texture map. Per-fighter tint MULTIPLIES over the texture (`color × map`
+in three.js) — that's why fighters read as multi-colored pieces (green torso,
+purple arm, etc.) shifted toward their signature color, never one flat color.
+
+**Every part/accessory wired into the game MUST carry its own painted
+multi-piece texture in the same style.** The per-fighter tint multiply then
+keeps working on it. Flat untextured parts are BANNED unless they go through a
+texture paint pass first. Packs below are marked ✓ (painted/textured, ready) or
+⚠ (needs texture pass).
+
+## 2. BONE ATTACHMENT POINTS (from fighter.glb — 28 nodes)
+
+Rigify-style skeleton. Attach accessories to these bone names:
+
+| Slot | Bone | Parts |
+|---|---|---|
+| Head | `head` (node 8) | hats, helmets, masks, horns, animal heads, crowns |
+| Torso | `spine` (14), `chest` (13) | vests, jackets, armor, backpacks, capes |
+| Shoulders | `upperarm.l` (12), `upperarm.r` (7) | shoulder pads, pauldrons |
+| Hands | `hand.l` (9), `hand.r` (4) | gloves, gauntlets, claws, held weapons |
+| Hips | `hips` (19) | belts, chains, skirts, tails |
+| Feet | `foot.l` (1), `foot.r` (16) | boots, greaves |
+| Full-body | `root` (20) | species replacements (skeleton, beast, demon bodies) |
+
+Scale: fighter is normalized to 1.8 m at boot (`fighterHeight`). Model parts at
+real-world scale; multiply by `fighter.scale` when attaching. Orientation: bones
+are Y-up, character faces +Z in bind pose — verify per part in the preview
+window before shipping (owner's eyes-on-everything rule).
+
+Attachment method: `bone.add(partMesh)` after `skeleton.getBoneByName()`,
+or bake the part into a cloned skin. Either way, parts inherit the fighter's
+animation automatically.
+
+## 3. PACK INVENTORY (all CC0, license verified from source)
+
+### Character parts — 3D, ready to attach
+| Pack | Files | License | Texture | Use |
+|---|---|---|---|---|
+| kaykit-adventurers | 72 (gltf) | CC0 — LICENSE.txt in repo, kaykit.com | ✓ painted atlas | 25+ weapons/accessories, 4 rigged characters |
+| kaykit-skeletons | 34 (gltf) | CC0 — LICENSE.txt in repo | ✓ painted atlas | undead species variants, bones |
+| kaykit-halloween | 270 (glb/gltf) | CC0 — LICENSE.txt in repo | ✓ painted atlas | horns, spooky accessories, possessed flavor |
+| kenney-animated-characters-protagonists | 16 (fbx) | CC0 — License.txt | ✓ painted PNG skins | street-style skins (criminal, skater, cyborg) |
+| kenney-animated-characters-retro | 12 (fbx) | CC0 — License.txt | ✓ painted PNG skins | retro fighter variants |
+| kenney-animated-characters-survivors | 17 (fbx) | CC0 — License.txt | ✓ painted PNG skins | survivor/tough variants |
+| kenney-blocky-characters | 150 (fbx) | CC0 — License.txt | ⚠ flat-shaded — texture pass needed | blocky body variants |
+| kenney-mini-characters | 139 (glb/obj) | CC0 — License.txt | ⚠ flat-shaded — texture pass needed | chibi/small species |
+| quaternius-rpg-characters | 60 (blend) | CC0 — License.txt | ⚠ .blend needs Blender→GLB export + texture check | fantasy classes, weapons |
+| **kenney-cube-pets** (wave 2) | 24 (glb) | CC0 — License.txt + LICENSE.md | ✓ painted colormap | tiger/lion/bear/fox/dog/monkey heads → animal-head masks; full bodies → beast enemies |
+| **quaternius-animated-animals** (wave 2) | 1 (glb) | CC0 — LICENSE.md | ✓ painted | wolf (rigged+animated) — werewolf/beast head mask + beast body |
+| **quaternius-monsters** (wave 2) | 9 (glb) | CC0 — LICENSE.md | ✓ painted | dino, dragon-evolved, yeti, zombie, demon, blue-demon, ghost, orc, ghost-skull — species roster + bosses |
+| **quaternius-humanoids** (wave 2) | 4 (glb) | CC0 — LICENSE.md | ✓ painted | man/ninja/adventurer/king — street civilians, crowd NPCs, outfit variants |
+| **oga-carmilla-vampire** (wave 4) | 1 (blend + texture) | **CC-BY 4.0** — LICENSE.md (attribution: JellyLion) | ✓ painted texture (verify after GLB export) | **real 3D vampire character** — vampire boss/unlockable; ⚠ needs Blender→GLB export |
+| **oga-jellylion-halloween** (wave 4) | 3 (blend + textures) | CC0 — LICENSE.md | verify after GLB export | skull-with-coat character; happy + sad ghosts — ghost enemies, skull NPC; ⚠ needs Blender→GLB export |
+| **quaternius-witch** (wave 4) | 1 animated GLB (24 anims) | CC-BY — LICENSE.md (attribution: Quaternius) | ✓ vertex colors | **real 3D witch** — witch enemy/boss |
+
+### Species / creature sources
+- **kaykit-skeletons** — full undead bodies (possessed/undead roster tier)
+- **quaternius-monsters** (wave 2, 3D ✓) — **dino** (dinosaur anthropomorph
+  fighter/boss), **dragon-evolved** (dragon tier — the namesake boss),
+  **yeti** (beast boss), **zombie** (undead variety), **demon / blue-demon**
+  (possessed/demon fighters), **ghost / ghost-skull** (spectral enemies),
+  **orc** (brute variant). All rigged + animated, painted, CC0.
+- **kenney-cube-pets** (wave 2, 3D ✓) — 24 animated animals; tiger/lion/polar/
+  fox/dog/monkey heads harvest as wearable animal-head masks (see §8);
+  full bodies as beast enemies.
+- **quaternius-animated-animals** (wave 2, 3D ✓) — rigged animated **wolf**
+  (werewolf/beast archetype).
+- **kenney-monster-builder-pack** (367 files) — 2D PNG ONLY, not 3D-attachable.
+  Keep as concept reference for monster part design, do not wire as 3D.
+- **kenney-animal-pack** (124 files) — 2D PNG ONLY. Same: reference only.
+- **Dragon lead (additional source, verified):** TactileDream's CC0 collection on
+  OpenGameArt (https://opengameart.org/node/143343) contains **Mazo Dragon
+  (.blend, CC0)**, **Anthro Dragon-like Char (.obj, CC0)**, **Daemon with
+  rig + animations (CC0)** — backup source for dragon/demon tier if more
+  variety is needed beyond dragon-evolved.
+
+### Environments — 3D, textured, CC0 (all KayKit, single-atlas look matches game)
+| Pack | Files | Zone use |
+|---|---|---|
+| kaykit-city-builder | 208 | urban street zones (beat-em-up home turf) |
+| kaykit-dungeon-remastered | 622 | interiors, hideouts, boss arenas |
+| kaykit-furniture | 216 | interior dressing |
+| kaykit-restaurant | 592 | interior zone (diner/gang hangout mission) |
+| kaykit-medieval-hex | 996 | modular zone tiles, maze-like layouts |
+| kaykit-prototype | 302 | greybox platforms — evolving 3D platforming levels |
+| kaykit-space-base | 264 | sci-fi district (late-game wild zone) |
+
+### 2D-only packs (do NOT wire as 3D — reference/concept only)
+kenney-platformer-characters, kenney-robot-pack, kenney-shape-characters,
+kenney-toon-characters — PNG sprite sheets. Useful as silhouette/concept
+reference for new part designs, never as in-game 3D.
+Wave-4 2D finds (logged, not staged): mummy-enemies (CC0 sprites),
+Boss-Mummy.zip (CC0 sprites), mummy-1.2.zip (CC-BY sprites), basketball-player
+(2D pixel art), football-pack / baseball-pack (CC0 2D equipment sprites — gloves,
+balls; usable as 2D props only), robot-football-player (SVG).
+
+## 4. ACCESSORY-UNLOCK PROGRESSION
+
+- **Early (missions 1–10):** tint + scale variety only (current game). Parts:
+  hats, masks, gloves from kaykit-adventurers.
+- **Mid (bosses 1–3 beaten):** shoulder pads, vests, belts, boots. Unlock with
+  each boss; boss's signature part becomes wearable.
+- **Late (zone 2+):** species variants unlock — skeleton (kaykit-skeletons),
+  possessed (halloween horns + dark tints), cyborg (kenney protagonists skins).
+- **Endgame / infinite:** dragon tier (Mazo Dragon pull) — wings, tail, horns
+  as ultimate unlocks; procedural part combinations for infinite bosses.
+
+Rule: every boss drops their signature visual part. Beating = unlocking the
+look, not just the character.
+
+## 5. SPECIES-VARIANT PLAN
+
+Not all fighters stay humanoid (owner: Street Fighter/KoF/Tekken variety —
+demons, possessed, animal heads, literal bears):
+1. **Undead** — kaykit-skeletons full-body swap (wired to same Rigify bones
+   where possible, else standalone rig).
+2. **Possessed/demon** — humanoid + halloween horns, glowing tint treatment,
+   daemon pull from TactileDream CC0 set.
+3. **Beast** — animal-head attachments (model new heads in the painted-texture
+   style; kenney-animal-pack 2D as silhouette reference).
+4. **Dragon** — Mazo Dragon / Anthro Dragon pull for the Concrete Dragon boss
+   tier. This is the game's namesake — highest priority species pull.
+
+## 6. ENVIRONMENT / ZONE PLAN (old-school beat-em-up structure)
+
+Zone = 4–6 missions → boss → next zone. Districts evolve as you progress:
+1. **Zone 1 — The Block** (kaykit-city-builder): pure side-scroll, back/forward.
+2. **Zone 2 — Hideouts** (dungeon + furniture + restaurant): interiors, first
+   verticality (stairs, platforms from prototype kit).
+3. **Zone 3 — The Maze** (medieval-hex tiles): maze-like layouts, branching
+   paths, up/down movement.
+4. **Zone 4 — Neon/Space** (space-base): full 3D movement, platforms, wild
+   modifiers.
+Each zone reuses the beat-em-up loop (walk, fight, smash, boss) with new
+geometry, palettes, and gimmicks — familiar rhythm, "oh damn, what's next?"
+escalation. Crowd only in designated arena missions per owner rule.
+
+## 7. WIRING ORDER FOR BUILD WORKER
+1. kaykit-adventurers accessories (hats/weapons) — smallest, immediate win
+2. kenney animated-character PNG skins as alt skins (look-law ✓)
+3. Boss signature parts (mid-tier unlocks)
+4. kaykit-city-builder street dressing in Zone 1
+5. Species variants (skeleton → possessed → dragon pull)
+6. Zone 2–4 environment rollout with platforming pieces
+7. **(wave 2)** Animal-head masks on `head` bone (tiger/lion/wolf) — beast-fighter
+   unlocks; quaternius-monsters as species-variant bosses/enemies;
+   quaternius-humanoids as crowd/civilian variety
+8. **(wave 2)** Sports jersey texture variants (see §8) + beast/demon roster
+   expansion in later zones
+
+## 8. WAVE 2 NOTES — MASKS, SPORTS, IP (owner 2026-10-06)
+
+**Animal-head masks:** no clean CC0 "wearable mask" 3D pack exists (market is
+3D-print STLs with restrictive licenses — rejected). Approach: harvest HEADS
+from kenney-cube-pets (tiger, lion, polar, fox, dog, monkey) and
+quaternius-animated-animals (wolf) and parent the head mesh to the fighter's
+`head` bone, scaled to sit over the mannequin head like a mask/helmet. The
+painted colormap keeps the look law. Lizard/reptile: quaternius-monsters
+**dino** head serves the same role (dinosaur anthropomorph = full-body
+alternative).
+
+**Sports outfits:** no CC0 3D sports-character pack found (all paid/restrictive/
+print-licensed — rejected). Approach per owner's texture-customization
+directive: sports uniforms are PAINTED TEXTURE VARIANTS (football jersey,
+boxing robe, baseball uniform, basketball kit) authored in the patchwork style
+and equipped via the texture-variant system + tint. Sports props (balls,
+gloves, bats) to be pulled if a CC0 source surfaces; until then, texture does
+the work — boxing gloves can also be modeled as simple painted hand
+attachments on `hand.l/r`.
+
+**Vampires/werewolves:** vampire = quaternius-monsters **demon/blue-demon**
+with pale tint + kaykit-halloween accessories; werewolf = **wolf** head mask +
+beast body, full-moon zone modifier. Zombie variety: **zombie** + kaykit-
+skeletons + tint shifts.
+
+**IP RULE (binding):** inspired-by archetypes only. A Blanka-style green
+beast-person is FINE; Blanka himself (name, exact look, backstory) is NEVER
+used. Same for all franchise characters — archetypes in, names/likenesses
+out. Builder-invented names need owner approval per standing rule.
+
+## 9. WAVE 3 NOTES — HALLOWEEN/MONSTERS (owner 2026-10-06)
+
+**Staged packs (all CC0-verified, per-pack LICENSE.md):**
+
+| pack | models | license | use |
+|---|---|---|---|
+| kaykit-halloween-bits | 63 glTF | CC0 (Kay Lousberg) | graveyard env: graves, coffins, crypt, fences, dead trees, skulls, candles, lanterns; **pumpkin_orange_jackolantern.gltf = pumpkin-head harvest** |
+| gobkit-animals | 38 GLB (rigged+animated, baked idle/attack/dead/walk) | CC0 1.0 | Bat → vampire bats; Shark/Anglerfish/Jellyfish/Whale → sea monsters (scale up); **Plesiosaurus → sea serpent**; Rat → giant rat; Owl/Fugu → ambient; minions A–D → Halloween grunt enemies; dinos → boss tier |
+| oga-vampire-bat | 1 (.blend — NEEDS Blender→GLB conversion) | CC0 (rubberduck, OGA node 86190) | animated vampire bat, frost variant included |
+| quaternius-spider | 1 animated GLB | CC0 (Quaternius via Poly Pizza) | giant spider enemy — scale up |
+
+**Sea monster coverage:** Whale (scaled 3–4x) = leviathan boss; Plesiosaurus = sea serpent; Anglerfish/Jellyfish/Shark = deep-sea pack. No dedicated kraken found CC0-clean — paid/print-licensed options rejected.
+
+**Humanoid gap — composition recipes (no clean CC0 3D vampire/witch/mummy found; web hunt exhausted OGA + Poly Pizza):**
+- **Pumpkin-head guy (priority):** mount `pumpkin_orange_jackolantern.gltf` head on fighter `head` bone (mask approach, §8) + autumn-orange painted body texture. Unlockable Halloween character.
+- **Tall thin suited figure (priority, original design — never a named character):** KayKit `Rogue_Hooded.glb` scaled (0.9, 1.25, 0.9) + near-black suit painted texture + pale blank head tint. Faceless by texture (no face paint on head zone).
+- **Vampire:** `Rogue_Hooded.glb` or quaternius `man` + pale skin tint + dark cape tones + red-eye head-zone paint. Vampire bats (above) as companions/summons.
+- **Witch:** KayKit `Mage.glb` (rigged + animated) + cone-hat attachment (primitive, painted) + dark dress texture variant. Broom = weapon attachment on `hand.r`.
+- **Mummy:** quaternius `man`/KayKit body + full-body bandage painted texture (wrap pattern in patchwork style) + dusty tint.
+- **Scarecrow:** jack-o-lantern head + straw-textured body (painted) — optional stretch.
+
+**Env:** halloween-bits props → haunted-house/graveyard zone dressing; fog = shader/atmosphere (build-side). Seasonal event system (Halloween missions + unlocks) is build-worker scope.
+
+## 10. WAVE 4 NOTES — DEEP HUNT: VAMPIRES / MUMMIES / SPORTS (owner 2026-10-06)
+
+Owner pushed back on wave-3's "no free vampires/sports exist" claim — this wave dug deeper. **He was half right: a real 3D vampire WAS found.**
+
+**Staged packs:**
+
+| pack | models | license | use |
+|---|---|---|---|
+| oga-carmilla-vampire | 1 (.blend + painted texture — NEEDS Blender→GLB conversion) | **CC-BY 4.0** (JellyLion, OGA node carmilla-vampire; attribution required) | **real 3D vampire character** — the owner's lead. Original character named "Carmilla" (public-domain 1872 Le Fanu novella name; author states NOT modeled on any franchise character). Vampire boss/unlockable. |
+| oga-jellylion-halloween | 3 (.blend — NEEDS Blender→GLB conversion) | CC0 (JellyLion) | cute skull-with-coat character (`cute_skull.blend`); happy + sad ghosts (`Ghosts2.blend`, `Ghosts4 sad ghost only.blend` + textures). Ghost enemies, skull NPC. |
+| quaternius-witch | 1 animated GLB (24 anims: idle/walk/run/punch/kick/sword/death) | CC-BY (Quaternius via Poly Pizza; attribution required) | **real 3D witch** — staged by prior wave-4 attempt. Witch enemy/boss. |
+
+**Mummies — honest gap (deep search, nothing CC0/CC-BY 3D found):**
+Searched: OGA keywords (mummy, mummies, pharaoh, sarcophagus — paginated), Poly Pizza, Quaternius full catalog (80+ packs), Kenney full catalog. Results: `mummy-enemies` (CC0, 2D sprites), `Boss-Mummy.zip` (CC0, 2D PNG), `mummy-1.2.zip` (CC-BY, 2D PNG sprites), `little-mummy` (CC-BY-SA 4.0 — **excluded**, SA not allowed). No free 3D mummy exists. Fallback stays the wave-3 recipe: quaternius `man` + bandage painted texture.
+
+**Sports characters — honest gap with one actionable lead:**
+Searched: OGA (football/basketball/baseball player, sports character, jersey, cheerleader, referee), Poly Pizza, Kenney (Sports Pack = 2D top-down tiles only), Quaternius full catalog (no sports pack), itch.io (games only, no asset packs), Buildbox (signup + proprietary license — rejected), ArtStation ($49 — rejected). OGA hits were all 2D: `basketball-player` (2D pixel art, real-person likeness), `football-pack`/`baseball-pack` (CC0 2D equipment sprites — gloves/balls, useful as props), `robot-football-player` (SVG). Poly Pizza "AmericanFootball" verified as just a ball (thumbnail inspected).
+**Actionable lead:** Sketchfab HAS downloadable CC-BY 3D players — "v0 Team Player Basketball Stylized Character" + "male_character_Basketball_Player" (by Tulio Portela), "Dead Baseball Player" — but Sketchfab downloads require an authenticated login, which the asset-hunt worker cannot do. **Build worker / owner: download these with a Sketchfab login and stage them.** No free American-football player found anywhere (only balls/fields).
+Fallback stays the wave-3 recipe: sports via painted jersey textures on humanoid bodies + equipment props (balls, bats from CC0 packs).
+
+**2D-only, logged not staged:** mummy-enemies, Boss-Mummy.zip sprites, mummy-1.2.zip sprites, basketball-player pixel art, football-pack/baseball-pack equipment sprites, robot-football-player SVG.
+
+## §11 — Sketchfab sports pull RESOLVED (2026-10-07)
+
+The wave-4 actionable lead is closed: owner created a Sketchfab account (signed in with Epic Games) and the three models were downloaded via browser task.
+
+**Staged packs:**
+
+| pack | models | license | use |
+|---|---|---|---|
+| sketchfab-basketball-tulio | 1 GLB (28MB→19MB, 1 mesh, painted texture, static) | **CC-BY 4.0** (Tulio Portela; attribution required) | HOOP DREAM enemy family (DUNK SHOT sig). Wired in main.js. |
+| sketchfab-basketball-rj | 1 GLB (14MB, 5 meshes, 13 textures, static; glTF→GLB via Blender 4.5.3) | **CC-BY 4.0** (Raj_Kumar_Jadhav/mynameisRJ; attribution required, credit line in LICENSE.md) | STREET BALLER enemy family (CROSSOVER sig). Wired in main.js. |
+| sketchfab-baseball-skeleton | 1 GLB (7 meshes, albedo texture manually assigned in Blender — DAE shipped no texture bindings; static) | **CC-BY 4.0** (VanHyfte_Clement; attribution required) | DEAD BALLER enemy family (CURVEBALL sig). Skeleton in baseball uniform — doubles as Halloween seasonal content. Wired in main.js. |
+
+All three authors credited on the in-game credits screen. All static (no rigs/anims) — they use the game's procedural enemy animation + baked poses, same as Carmilla/ghosts.
+No free American-football player exists anywhere — that gap stands.
+
+## §12 — Wave 5: weapons research + arenas/humans/environments (2026-10-07)
+
+### Weapons research (RESEARCH ONLY — in-game items use ORIGINAL names, never franchise names)
+
+**WWE 2K24 weapon set** (14, from public game guides): Baseball Bat,
+Chair, Chancla, Guitar, Hockey Stick, Kendo Stick, Ladder, Microphone,
+Shovel, Sledgehammer, Slim Jim, Stop Sign, Table, Trashcan (+ detachable
+turnbuckle). Weapons have durability; tables/ladders break after use.
+
+**Urban Reign** (Capcom, PS2 — key AshLane reference): 30+ street weapons —
+baseball bats, lead pipes, knives, bottles, shovels, swords, golf clubs,
+tables, axes, spiky clubs, broken bottles, blades. Durability meters;
+most are throwable. Environmental kills (walls, rails, cars).
+
+**Tekken:** mostly weaponless (Kunimitsu kunai/knives, Yoshimitsu katana);
+"item moves" are joke/cosmetic and tournament-banned. No weapon system
+to harvest.
+
+**Sleeping Dogs:** Crowbar, Kitchen Knife, Tyre Iron, Cleaver, Baton,
+Machete, Cooking Wok, Umbrella, Purse, Grocery Bag, Fish, Hand-Grinder +
+environmental kills (phone booths, dumpsters, AC units).
+
+**Generic equivalents staged this wave** (no trademarked 1:1 copies):
+baseball bats (×2), chairs/tables/ladders (Kenney furniture kit),
+trash cans (Kenney city roads), pipes/chains/bricks via primitives.
+Sledgehammers + MMA octagon + extra trashcans on the Sketchfab
+browser-pull list (CC-BY, account exists).
+
+**IP law:** "Hell in a Cell" is a WWE trademark — researched, never used
+in-game. In-game name: "steel cell". Same for all WWE-named items.
+
+### Wave 5 staged packs (334 models total)
+
+| pack | models | license | use |
+|---|---|---|---|
+| kenney-car-kit | 50 GLB | CC0 | cars, cones, barriers, car debris (thrown/breakable weapons) |
+| kenney-city-kit-commercial | 41 GLB | CC0 | commercial buildings, storefronts, rooftops |
+| kenney-city-kit-roads | 95 GLB | CC0 | roads, lamps, hydrants, fences, barriers (environmental weapons) |
+| kenney-furniture-kit | 140 GLB | CC0 | tables, chairs, sofas, shelves — THROWABLE/SMASHABLE (WWE-style) |
+| pp-arenas-weapons | 4 GLB | CC-BY (×3) + CC0 (×1) | wrestling ring, boxing ring, 2 baseball bats |
+| pp-quaternius-brawlers (for-ashlane/) | 4 GLB | CC0 | Farmer/Worker/Adventurer/Casual — 62-joint rig, 24 clips incl. Punch_L/R, Kick_L/R, HitRecieve, Death. **AshLane repo, not Concrete Dragon.** |
+
+**Per-category counts:** environments 281 (cars 50 + buildings 41 + roads/props 95 + furniture 140, minus overlap) · arenas 2 · weapons 6+ (2 bats + furniture as weapons) · humans 4 (AshLane).
+
+**Gaps logged:** MMA octagon (free CC only on Sketchfab — browser pull);
+steel cage/cell structure (build from Kenney fence/barrier parts or
+browser-pull); 5 more Kenney packs rate-limited (retry later);
+Quaternius Drive quota-blocked (used Poly Pizza mirrors);
+KayKit character animations need browser session (itch.io free tier);
+Sketchfab sledgehammers/trashcans need browser session.
+
+## §13 — Wave 6: universe models + animations (2026-10-07)
+
+Owner: "more models and animations that fit our universe too." 382 models across 8 packs.
+
+| Pack | Models | License | Use |
+|---|---|---|---|
+| kenney-city-kit-industrial | 37 GLB | CC0 | industrial buildings, warehouses, smokestacks — industrial districts |
+| kenney-factory-kit | 143 GLB | CC0 | machinery, conveyors, pipes, containers — factory arenas, smashables |
+| kenney-fantasy-town-kit | 167 GLB | CC0 | town buildings, market stalls, towers — varied district backdrops |
+| kaykit-adventures-anims | 5 GLB | CC0 | Knight/Barbarian/Mage/Rogue/Rogue_Hooded, ~75 clips each incl. Unarmed Punch_A/B, Kick, Dodge x4, Hit_A/B, Death — THE fight-animation library |
+| pp-street-culture | 15 GLB | CC-BY x12 + CC0 x3 | boomboxes, graffiti walls, basketball hoops, fire escapes, subway cars, food carts, lowriders |
+| pp-animated-fighters | 6 GLB | CC0 x4 + CC-BY x2 | skeleton (15 clips), zombie (16 clips), robot-enemy (7 clips), enemy-small (8 clips incl. Punch), knight, female-fighter |
+| pp-street-weapons | 5 GLB | CC0 x1 + CC-BY x4 | chain, pipe, duct-pipe, beer bottle, water bottle — street plunder |
+| pp-more-creatures | 4 GLB | CC0 x1 + CC-BY x3 | scarecrow, goblin, frog (ANIMATED), giant squid (sea-monster boss tier) |
+
+**KayKit animation retrieval — SOLVED:** the itch.io "KayKit Character Animations" free download is JS-driven and uncapturable by automation; the identical clips ship embedded in the GitHub CC0 repos (KayKit-Game-Assets/KayKit-Character-Pack-Adventures-1.0). Retarget these clips onto game fighters.
+
+**Sketchfab browser-pull candidates (CC verified from search, session signed in as MHVNSNT):**
+- Boxing Gloves - Right Handed by Gohar.Munir (CC-BY, game-ready LODs): https://sketchfab.com/3d-models/boxing-gloves-right-handed-1ae09e8e4959418b9c4274f9515c5d29
+- Crowbar - Game Ready Low Poly by Wonderful Optics Workshop (CC-BY): https://sketchfab.com/3d-models/crowbar-game-ready-low-poly-ec466870e57b4198b57b854bf9d37beb
+
+**Attribution debt (CC-BY):** dook, Google (Poly Pizza), JellyLion, Quaternius, Tulio Portela, mynameisRJ, VanHyfte_Clement, wesamtufail, Oliver Wobst, caz, Aaron Clifford, Ian MacGillivray, Zsky, Gohar.Munir (pending), Wonderful Optics Workshop (pending) — all on the in-game credits screen.
+
+## §14 — Wave 7: AshLane-targeted hunt (2026-10-07)
+
+Owner: "keep pulling things in for AshLane." 196 models across 21 source packs, all staged under `for-ashlane/` subdirs. Three parallel workers: 7a brawlers/crowd, 7b streets/arena-dressing, 7c weapons/creatures.
+
+### 7a — Animated brawlers / crowd NPCs (44 GLB + 1 OGA zip)
+
+| Pack | Models | License | Use |
+|---|---|---|---|
+| poly-pizza-quaternius | 28 GLB | CC0 x26 + CC-BY 3.0 x2 | Quaternius via PP mirror: 21/28 with combat clips (Punch_L/R, Kick_L/R, HitRecieve/HitReact, Death, Roll, Duck). Animated Base Character (CC-BY, 45 clips incl. Punch_Jab/Cross, Hit_Chest/Head, Death01) = richest single clip library |
+| poly-pizza-mastjie | 4 GLB | CC0 | Male Fighter / Female Fighter / 2x Warrior — static; crowd/background or retarget targets |
+| poly-pizza-misc | 11 GLB | CC0 + CC-BY 3.0 | Thug (static), Beserker Viking, crowd cluster (apelab), People Poses, Stylized Character (Zsky, 14 clips incl. Punch_L/R, Kick_L/R), Generic Male (5 clips) |
+| opengameart-xcvg-humanoid | 1 GLB | CC0 | XCVG Systems rigged/animated humanoid, FBX→GLB via Blender, all 18 clips preserved (Punch, CrouchPunch, Run, Walk, Swim…) |
+| opengameart-skeleton-outlaw | 1 zip | CC0 | staged NOT converted — FBX 6.1 ASCII (Blender 4.x/assimp can't import; needs Autodesk FBX Converter to binary first) |
+
+Style: Quaternius models are stylized low-poly (NOT chibi — proper humanoid proportions) = grunt/goon/crowd tier, not hero-fighter quality. No KayKit used (owner law). 3 Mixamo-derived models detected via `mixamorig` bones and DELETED before staging.
+
+### 7b — Street culture + arena dressing (111 GLB + 1 OBJ)
+
+| Pack | Models | License | Use |
+|---|---|---|---|
+| pp-neon-signs | 15 GLB | CC0 x6 + CC-BY 3.0 x9 | TOP GAP CLOSED: Quaternius "Cyberpunk Signs" neon board set (13, verified by eye), arrow/town/fire-exit/stop signs, street lamps x4 |
+| pp-market-dressing | 8 GLB | CC0 x6 + CC-BY x2 | market stalls x3, canopy/awning, paper/hanging/red/post lanterns — neon-market district |
+| pp-industrial-waterfront | 14 GLB | CC0 x5 + CC-BY x9 | vents, shipping container, pallet, oil barrels, dumpster, scaffolding, manhole, hydrant, bus stop, **chain-link fence (verified by eye)** |
+| pp-interiors-gym-bar | 8 GLB | CC0 x2 + CC-BY x6 | dumbbell, barbell, treadmill, elliptical, liquor shelf, **bar counter + stool (by eye)**, bar-building diorama w/ BAR rooftop sign |
+| kenney-fantasy-town-kit | 20 GLB | CC0 | stalls, carts, banners, lantern, awnings, fences, chimneys — neon-market dressing |
+| kenney-graveyard-kit | 16 GLB | CC0 | lightposts, lanterns, iron fences — night streets |
+| kenney-pirate-kit | 6 GLB | CC0 | wooden docks, masts, crates, barrels — waterfront |
+| kenney-mini-market | 11 GLB | CC0 | registers, shelves, freezers, carts/baskets, bottle-return — shop interiors |
+| oga-neon-town | 12 GLB | CC0 (leonkin) | neon-lit storefronts: bar, billboard, pharmacy, police, restaurant, store, lamp, fence, traffic light, trash container, table, chair |
+| oga-neon-sign-2 | 1 GLB + OBJ | CC0 (plaggy) | music-note neon sign, OBJ→GLB converted in Blender |
+
+Key-art match: neon-market (lanterns, stalls, neon boards, storefronts), industrial (vents/fences/dumpsters/scaffolding), waterfront (docks/containers/ropes), interiors (bar + gym props).
+
+### 7c — Weapons + creatures (41 GLB + 3 zips, ALL CC0)
+
+| Pack | Models | License | Use |
+|---|---|---|---|
+| 3dassets-melee-weapons | 14 GLB | CC0 1.0 | crowbar, nailed bat, baseball bat, machete, fire axe, sledgehammer, telescopic baton, combat/bowie/kitchen knives, wrench, tomahawk, metal trash can, chainsaw. KEY: `metal-trash-can.glb` has separate `bin-lid` node + open/close clips — lid detaches as wieldable weapon |
+| 3dassets-halloween-props | 27 GLB | CC0 1.0 | 4 jack-o-lanterns, 3 pumpkins + totem, 2 sheet ghosts, witch hat/broom/cauldron, bat ornament, black cat, 2 scarecrows, 4 tombstones, coffin, skull, cellar spider, raven, hockey mask, skeleton yard prop, **skeleton-warrior.glb with idle/head-turn/arm-swing/weapon-raise clips** |
+| oga-crowbar | 1 zip | CC0 (Clint Bellanger) | .blend — needs Blender→GLB |
+| quaternius-animated-monsters | 1 zip | CC0 | Bat/Dragon/Skeleton/Slime FBX+Blend+OBJ; page lists punch/attack/jump/flying/walk clips (log clip names at conversion) |
+| quaternius-cute-monsters | 21 animated | CC0 | Demon, GreenDemon, Ghost, Bat, Cthulhu, Cyclops, Yeti + 14 more |
+
+**New source unlocked:** 3dassets.dev public API — no key, CC0 GLB CDN, per-asset license JSON. Query: `https://3dassets.dev/api/v1/assets?q=<term>&limit=N`, pack manifests at `/api/v1/packs/<slug>`.
+
+### Browser-pull lists (all need a live browser session; licenses verified at find-time, MUST re-verify at pull)
+- **7a:** Sketchfab CC-BY — Animated humanoid robot (pinguinoconpulgares), Mesh Humanoid (FennGaming264), Character (sayapin.gongulus), Cute Human Creature (pravees_3d); REJECTED: all Street Fighter 6/4 rips (copyright risk). URLs in `w7a-ashlane-brawlers/for-ashlane/BROWSER_PULL.md`.
+- **7b:** Sketchfab CC-BY neon — "Small neon sign." (Brendan Wood), "Neon Signs Billboard Japanese Vaporwave Shibuya" (freshlybaked — best neon-market match), "Love neon sign - wall" (daysena), "neon sign board Pixel Cake" (alina_dreiman), "Neon Sign Pizza." (Kirkieb); itch.io CyberThreat Retro 3D Urban Props #1 (CC BY 4.0); Quaternius CC0 MegaKits x7 (Downtown City, Cyberpunk Game Kit, Modular Streets, Sushi Restaurant, Ultimate Food, Ships, Ultimate Furniture). URLs in `w7b-ashlane-streets/BROWSER_PULL.md`.
+- **7c:** Poly Pizza — `static.poly.pizza` returns HTTP 403 for ALL requests from the VM (13 creature models identified, needs browser); Quaternius.com CC0 packs (Animated Zombie, Easy Enemy, Animated Alien, Bestiary Dungeon Monsters Kit); Kenney Animated Characters 3 (zombie+survivor, CC0); Sketchfab shinai/jack-o-lantern (CC-BY). URLs in `w7c-ashlane-weapons-creatures/BROWSER_PULL.md`.
+
+### Logged gaps — wave 7 (honest)
+- **Quaternius Ultimate Animated Character Pack (52 chars, CC0):** Google Drive "Quota exceeded" on all 52 files 2026-10-07 — retry later (file-ID map in `w7a-ashlane-brawlers/for-ashlane/quaternius-ultimate-animated-pack/RETRY_NOTE.md`).
+- **Quaternius Universal Animation Library (250+ clips, CC0):** no direct download link on the pack page (Patreon-gated?) — strong follow-up.
+- **Kendo stick/shinai, 2x4, tire iron:** no CC0/CC-BY downloadable model found.
+- **Animated pumpkin-headed fighter / vampire fighter / werewolf / mummy / frankenstein:** not found as animated CC0; static pumpkin heads staged (re-head onto brawler rigs).
+- **Realistic-proportion animated brawlers:** everything usable under CC0/CC-BY is stylized low-poly; remains an open hunt.
+- **Grapples:** no grapple animations in any pack this wave; taunts limited to Wave/No/Yes emotes.
+- **Barbershop props** (barber pole/chair): none found CC0/CC-BY.
+- **English worded tube-neon signs** (BAR/LIQUOR/OPEN): not downloadable CC0/CC-BY; Sketchfab CC-BY ones queued for browser pull.
+- Skipped per license law: OGA CC-BY-SA "Big gate with neon sign", Sketchfab Starcourt/Hotel neon (CC-BY-SA / CC-BY-NC-SA), OGA GDQuest (mixed/GPL mentions), Kenney Blocky Characters 2.0 (CC0 but chibi-adjacent — owner taste, flagged as optional crowd filler), Sketchfab Street Fighter rips (game rips).
+- Note: `/tmp` hit 100% full on the VM during 7b — workers used `~/workspace/.tmp/w7b-dl/`; monitor disk in future waves.
+
+**Attribution debt (CC-BY, new this wave):** Quaternius (Animated Base Character, Animated Wizard), David K, blaeksprut, Stephen Graybill, apelab, Don Carson, J-Toastie, Yogoshimo 2.0, AroniaStudios, Zsky, Семён Хазам + per-pack LICENSE.md authors in the 7b packs — all must land on the in-game credits screen.

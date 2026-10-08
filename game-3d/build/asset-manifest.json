@@ -1,0 +1,182 @@
+[
+ {
+  "file": "fighter.glb",
+  "source": "KayKit Character Animations 1.1 (CC0 1.0)"
+ },
+ {
+  "file": "anim_melee.glb",
+  "source": "KayKit Character Animations 1.1 (CC0 1.0)"
+ },
+ {
+  "file": "anim_general.glb",
+  "source": "KayKit Character Animations 1.1 (CC0 1.0)"
+ },
+ {
+  "file": "anim_move.glb",
+  "source": "KayKit Character Animations 1.1 (CC0 1.0)"
+ },
+ {
+  "file": "street.glb",
+  "source": "KayKit City Builder Bits 1.0 (CC0 1.0)"
+ },
+ {
+  "file": "parts/pumpkin-head.glb",
+  "source": "KayKit Halloween Bits 1.0 (CC0 1.0)"
+ },
+ {
+  "file": "parts/dragon-evolved.glb",
+  "source": "Quaternius Animated Monsters (CC0 1.0)"
+ },
+ {
+  "file": "parts/zombie.glb",
+  "source": "Quaternius Animated Monsters (CC0 1.0)"
+ },
+ {
+  "file": "parts/demon.glb",
+  "source": "Quaternius Animated Monsters (CC0 1.0)"
+ },
+ {
+  "file": "parts/spider.glb",
+  "source": "Quaternius Animated Spider (CC0 1.0)"
+ },
+ {
+  "file": "hit1.mp3",
+  "source": "Kenney Impact Sounds (CC0 1.0)"
+ },
+ {
+  "file": "hit2.mp3",
+  "source": "Kenney Impact Sounds (CC0 1.0)"
+ },
+ {
+  "file": "hit3.mp3",
+  "source": "Kenney Impact Sounds (CC0 1.0)"
+ },
+ {
+  "file": "bell.mp3",
+  "source": "OpenGameArt Boxing ring (CC0)"
+ },
+ {
+  "file": "crowd.mp3",
+  "source": "OpenGameArt Boxing ring (CC0)"
+ },
+ {
+  "file": "music.mp3",
+  "source": "OpenGameArt Fast fight battle music by bonsaiheldin (CC0)"
+ },
+ {
+  "file": "click.mp3",
+  "source": "Kenney Interface Sounds (CC0 1.0)"
+ },
+ {
+  "file": "whoosh.mp3",
+  "source": "Kenney RPG Audio (CC0 1.0)"
+ },
+ {
+  "file": "step.mp3",
+  "source": "Kenney RPG Audio (CC0 1.0)"
+ },
+ {
+  "file": "crack.mp3",
+  "source": "Kenney RPG Audio (CC0 1.0)"
+ },
+ {
+  "file": "coin.mp3",
+  "source": "Kenney RPG Audio (CC0 1.0)"
+ },
+ {
+  "file": "uiclick.mp3",
+  "source": "Kenney UI Audio (CC0 1.0)"
+ },
+ {
+  "file": "swing1.mp3",
+  "source": "Kenney RPG Audio (CC0 1.0) [knifeSlice.ogg]"
+ },
+ {
+  "file": "swing2.mp3",
+  "source": "Kenney RPG Audio (CC0 1.0) [knifeSlice2.ogg]"
+ },
+ {
+  "file": "swing3.mp3",
+  "source": "Kenney RPG Audio (CC0 1.0) [chop.ogg]"
+ },
+ {
+  "file": "tex-patchwork.png",
+  "source": "Orion Enterprises LLC painted patchwork (CC0 1.0)"
+ },
+ {
+  "file": "parts/witch.glb",
+  "source": "Quaternius (CC-BY 4.0) \u2014 attribution: Quaternius"
+ },
+ {
+  "file": "parts/vampire-bat.glb",
+  "source": "rubberduck via OpenGameArt (CC0 1.0)"
+ },
+ {
+  "file": "parts/carmilla.glb",
+  "source": "JellyLion via OpenGameArt (CC-BY 4.0) \u2014 attribution: JellyLion"
+ },
+ {
+  "file": "parts/ghost-happy.glb",
+  "source": "JellyLion via OpenGameArt (CC-BY 4.0) \u2014 attribution: JellyLion"
+ },
+ {
+  "file": "parts/ghost-sad.glb",
+  "source": "JellyLion via OpenGameArt (CC-BY 4.0) \u2014 attribution: JellyLion"
+ },
+ {
+  "file": "parts/skull.glb",
+  "source": "JellyLion via OpenGameArt (CC-BY 4.0) \u2014 attribution: JellyLion"
+ },
+ {
+  "file": "parts/basketball-tulio.glb",
+  "source": "Tulio Portela via Sketchfab (CC-BY 4.0)"
+ },
+ {
+  "file": "parts/basketball-rj.glb",
+  "source": "Raj_Kumar_Jadhav via Sketchfab (CC-BY 4.0)"
+ },
+ {
+  "file": "parts/baseball-skeleton.glb",
+  "source": "VanHyfte_Clement via Sketchfab (CC-BY 4.0)"
+ },
+ {
+  "file": "props/k_cone.glb",
+  "source": "Kenney City Kit Roads (CC0 1.0) \u2014 kenney.nl"
+ },
+ {
+  "file": "props/k_barrier.glb",
+  "source": "Kenney City Kit Roads (CC0 1.0) \u2014 kenney.nl"
+ },
+ {
+  "file": "props/k_fence.glb",
+  "source": "Kenney City Kit Roads (CC0 1.0) \u2014 kenney.nl"
+ },
+ {
+  "file": "props/k_lamppost.glb",
+  "source": "Kenney City Kit Roads (CC0 1.0) \u2014 kenney.nl"
+ },
+ {
+  "file": "props/k_chair.glb",
+  "source": "Kenney Furniture Kit (CC0 1.0) \u2014 kenney.nl"
+ },
+ {
+  "file": "props/k_table.glb",
+  "source": "Kenney Furniture Kit (CC0 1.0) \u2014 kenney.nl"
+ },
+ {
+  "file": "props/k_trafficone.glb",
+  "source": "Kenney Car Kit (CC0 1.0) \u2014 kenney.nl"
+ },
+ {
+  "file": "props/k_tire.glb",
+  "source": "Kenney Car Kit (CC0 1.0) \u2014 kenney.nl"
+ },
+{
+    "file": "roads.glb",
+    "source": "Kenney city-kit-roads (CC0 1.0) \u2014 overpass district props"
+  },
+{
+    "file": "industrial.glb",
+    "source": "Kenney city-kit-industrial (CC0 1.0) \u2014 factory district props"
+  }
+]
