@@ -4849,7 +4849,9 @@ window.__cdtest = {
   doJump, doPunch, doHeavy, doSpecial, doTaunt, doDesperation, doStance, doTech, doGrapple, doDodge,
   swingDbg: () => ({ swing: T.swingSfx || 0, whiff: T.whiffSfx || 0 }), // S2 swing-whoosh tranche (owner 2026-10-07)
   swingClear: () => { T.swingSfx = 0; T.whiffSfx = 0; },
-  stepDbg: () => ({ step: T.stepSfx || 0, enemy: T.stepEnemy || 0 }), // S8 footsteps tranche (owner 2026-10-07)
+  stepDbg: () => ({ step: T.stepSfx || 0, enemy: T.stepEnemy || 0, // S8 footsteps tranche (owner 2026-10-07)
+    district: (mission && mission.district) || 'none',
+    rate: (STEP_DISTRICT_RATE[(mission && mission.district) || 'neon'] || 1) }),
   stepClear: () => { T.stepSfx = 0; T.stepEnemy = 0; },
   audioDbg: (ks) => (ks || []).map(k => ({ k, ok: !!(sbuf[k] && sbuf[k] instanceof AudioBuffer) })), // S2: prove swing SFX decoded
   dodgeTest: () => { // S3 dodge SFX tranche (owner 2026-10-07): verify dodge fires SFX hook + i-frames
