@@ -978,7 +978,7 @@ async function unlockAudio() {
   if (actx) return;
   try {
     actx = new (window.AudioContext || window.webkitAudioContext)();
-    await Promise.all(['hit1', 'hit2', 'hit3', 'bell', 'crowd', 'music', 'click', 'whoosh', 'step', 'crack', 'coin', 'uiclick'].map(async (k) => { sbuf[k] = await actx.decodeAudioData(b64ToBuf(A[k + '.mp3'])); }));
+    await Promise.all(['hit1', 'hit2', 'hit3', 'bell', 'crowd', 'music', 'click', 'whoosh', 'step', 'crack', 'coin', 'uiclick', 'swing1', 'swing2', 'swing3'].map(async (k) => { sbuf[k] = await actx.decodeAudioData(b64ToBuf(A[k + '.mp3'])); }));
     sfx('music', 0.32, true); sfx('crowd', 0.25, true);
   } catch (e) { T.errors.push('audio:' + e); }
 }
@@ -986,6 +986,16 @@ function sfx(k, vol = 1, loop = false, rate = 1) {
   if (!actx || !sbuf[k] || muted) return null;
   const s = actx.createBufferSource(); s.buffer = sbuf[k]; s.loop = loop; s.playbackRate.value = rate;
   const g = actx.createGain(); g.gain.value = vol; s.connect(g).connect(actx.destination); s.start(); return s;
+}
+// S2 swing whooshes (TIER 3 item 10, owner 2026-10-07): dedicated attack-swing SFX from Kenney RPG
+// Audio (CC0 1.0) — swing1/knifeSlice, swing2/knifeSlice2, swing3/chop — distinct from the generic
+// whoosh.mp3 (kept for dodge S3, fanfares, specials). whiff=true marks a MISSED attack (no enemy
+// hit): played louder so whiffs read. T.swingSfx / T.whiffSfx are playtest counters.
+function sfxSwing(vol = 0.5, whiff = false) {
+  const k = ['swing1', 'swing2', 'swing3'][Math.floor(Math.random() * 3)];
+  T.swingSfx = (T.swingSfx || 0) + 1;
+  if (whiff) T.whiffSfx = (T.whiffSfx || 0) + 1;
+  sfx(k, vol, false, 1 + (Math.random() * 0.16 - 0.08));
 }
 let paused = false, pushT = 0;
 const pushPos = new THREE.Vector3();
@@ -2951,7 +2961,7 @@ function doPunch() {
   if (retreat) player.px = clamp(player.px - retreat, 0.5, mission.len === Infinity ? 1e6 : mission.len - 1.5);
   player.busy = delay + 0.12;
   playAnim(player, clip, { ts: ts * (player.spd || 1), fade: 0.05 });
-  sfx('whoosh', 0.45, false, 1.1 + Math.random() * 0.2);
+  sfxSwing(0.5); // S2: dedicated swing whoosh on the swing
   setTimeout(() => {
     if (state !== 'fight' || missionOver || ended) return;
     if (ce && ce.hp > 0) {
@@ -2978,7 +2988,7 @@ function doPunch() {
       if (t.airborne) { t.vy = Math.max(t.vy, 2.2); landHit(t, Math.round(dmg * player.dmgMult * 0.6), 'JUGGLE', 0.03, 0.12, false, false); }
       else if (launcher) doFinisher(t);
       else landHit(t, Math.round(dmg * player.dmgMult * (1 + (blessFx().punchDmg || 0))), label, hs, sh, false, false);
-    }
+    } else sfxSwing(0.8, true); // S2: whiff — the attack missed, make the miss read
     damageDestructibles(1.7);
     damageDestructibles(range);
   }, delay * 1000);
@@ -2994,7 +3004,7 @@ function doBlitz() {
   player.px = clamp(player.px + lunge, 0.5, mission.len === Infinity ? 1e6 : mission.len - 1.5);
   player.blitzX0 = x0; player.blitzX1 = player.px;
   playAnim(player, 'Melee_Unarmed_Attack_Punch_A', { ts: 2.6 * (player.spd || 1), fade: 0.05 });
-  sfx('whoosh', 0.7, false, 0.9);
+  sfxSwing(0.6); // S2: dedicated swing whoosh
   sparkFX(player.px + face * 0.6, 1.1, player.pz, 0xffd166, 10);
   ev('blitz', {});
   setTimeout(() => {
@@ -3002,11 +3012,15 @@ function doBlitz() {
     const bfx = blessFx();
     const xa = Math.min(player.blitzX0 ?? player.px, player.blitzX1 ?? player.px) - 1.1;
     const xb = Math.max(player.blitzX0 ?? player.px, player.blitzX1 ?? player.px) + 1.1;
+    let blitzHit = false;
     for (const e of enemies) {
       if (e.hp <= 0 || e.dead) continue;
-      if (e.px > xa && e.px < xb && Math.abs(e.pz - player.pz) < 1.25)
+      if (e.px > xa && e.px < xb && Math.abs(e.pz - player.pz) < 1.25) {
         landHit(e, Math.round(24 * player.dmgMult * (1 + (bfx.punchDmg || 0))), (fd.blitzname || 'BLITZ'), 0.08, 0.35, false, false);
+        blitzHit = true;
+      }
     }
+    if (!blitzHit) sfxSwing(0.8, true); // S2: whiff
     damageDestructibles(2.4);
   }, 140);
 }
@@ -3015,14 +3029,14 @@ function releaseFocus() {
   if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0) return;
   player.focusT = 0; player.busy = 0.5;
   playAnim(player, 'Melee_Unarmed_Attack_Kick', { ts: 1.6, fade: 0.05 });
-  sfx('whoosh', 0.8, false, 0.8);
+  sfxSwing(0.6); // S2: dedicated swing whoosh
   setTimeout(() => {
     if (state !== 'fight' || missionOver || ended) return;
     const t = nearestEnemy(2.4);
     if (t) {
       landHit(t, Math.round(34 * player.dmgMult), 'FOCUS', 0.1, 0.4, false, false);
       if (!t.boss && t.hp > 0) { t.ai = 'recover'; t.aiT = 2.4; playAnim(t, 'Hit_A', {}); } // crumple
-    }
+    } else sfxSwing(0.8, true); // S2: whiff
     damageDestructibles(2);
   }, 200);
   ev('focusrelease', {});
@@ -3133,7 +3147,7 @@ function doJumpAttack() {
   player.busy = 0.35;
   playAnim(player, 'Melee_Unarmed_Attack_Kick', { ts: 2.4, fade: 0.03 });
   player.vy = Math.min(player.vy, -2); // fast fall into the kick
-  sfx('whoosh', 0.55, false, 0.9);
+  sfxSwing(0.55); // S2: dedicated swing whoosh
   const hitR = 2.3;
   let hitAny = false;
   for (const e of enemies.slice()) {
@@ -3143,7 +3157,7 @@ function doJumpAttack() {
     }
   }
   damageDestructibles(hitR);
-  if (hitAny) { shake = Math.max(shake, 0.3); }
+  if (hitAny) { shake = Math.max(shake, 0.3); } else sfxSwing(0.8, true); // S2: whiff
 }
 function doStanceFin(fd) {
   // Stance-exclusive finisher: only available in stance mode (double-tap TAUNT). Style, not power: a tradeoff move.
@@ -3208,7 +3222,7 @@ function doHeavy() {
   if (typeof stick !== 'undefined' && stick.dy > 0) {
     player.busy = 0.55;
     playAnim(player, 'Melee_Unarmed_Attack_Kick', { ts: 1.5, fade: 0.05 });
-    sfx('whoosh', 0.7, false, 0.8);
+    sfxSwing(0.6); // S2: dedicated swing whoosh
     setTimeout(() => {
       if (state !== 'fight' || missionOver || ended) return;
       const t = nearestEnemy(2.4);
@@ -3218,7 +3232,7 @@ function doHeavy() {
         popText('DUST LAUNCHER!', 'spc', sp.x, sp.y);
       } else if (t) {
         landHit(t, Math.round(20 * player.dmgMult), 'DUST LAUNCHER', 0.09, 0.5, false, false);
-      }
+      } else sfxSwing(0.8, true); // S2: whiff
       damageDestructibles(2.0);
     }, 200);
     T.dustlaunch = (T.dustlaunch || 0) + 1; ev('dustlauncher', {});
@@ -3244,10 +3258,12 @@ function doHeavy() {
   if (player.stance === 1 && _fd0.stanceFin) { doStanceFin(_fd0); return; }
   player.busy = 0.5;
   playAnim(player, 'Melee_Unarmed_Attack_Kick', { ts: 1.25, fade: 0.05 });
+  sfxSwing(0.55); // S2: dedicated swing whoosh (heavy had none)
   setTimeout(() => {
     if (state !== 'fight' || missionOver || ended) return;
     const t = nearestEnemy(2.2);
     if (t) landHit(t, Math.round(24 * player.dmgMult), 'HEAVY', 0.09, 0.4, false, false);
+    else sfxSwing(0.8, true); // S2: whiff
     damageDestructibles(1.9);
   }, 230);
 }
@@ -4794,6 +4810,9 @@ window.__cdtest = {
   spawnCreature: (cid) => { if (player) { const e = makeCreatureRaw(cid, 0xffffff, player.px + 3, -Math.PI / 2, 1); if (e) { e.maxHp = e.hp = 200; e.dmgMult = 1; e.spd = 1.5; e.px = player.px + 3; e.pz = 0; e.ai = 'walk'; e.aiT = 1; syncPos(e); playAnim(e, 'Running_A', { loop: true }); enemies.push(e); } return e; } },
   hurt: (n) => { if (player) hurtPlayer(n); },
   doJump, doPunch, doHeavy, doSpecial, doTaunt, doDesperation, doStance, doTech, doGrapple, doDodge,
+  swingDbg: () => ({ swing: T.swingSfx || 0, whiff: T.whiffSfx || 0 }), // S2 swing-whoosh tranche (owner 2026-10-07)
+  swingClear: () => { T.swingSfx = 0; T.whiffSfx = 0; },
+  audioDbg: (ks) => (ks || []).map(k => ({ k, ok: !!(sbuf[k] && sbuf[k] instanceof AudioBuffer) })), // S2: prove swing SFX decoded
   dodgeTest: () => { // S3 dodge SFX tranche (owner 2026-10-07): verify dodge fires SFX hook + i-frames
     if (!player || state !== 'fight') return { ok: 0, why: 'no-fight' };
     player.dodgeCD = 0; player.busy = 0; lastDodgeTap = 0; // single tap: dodge, not double-tap desperation

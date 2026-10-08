@@ -42,7 +42,16 @@ Wire in this order; playtest after each tier. Owner plays and vetoes — wire, d
    not a mechanic gap.
 
 ## TIER 3 — audio gaps (all CC0, staged)
-10. **S2 whooshes** — `kenney_rpg-audio.zip` swing/whoosh OGGs on missed attacks.
+10. **S2 whooshes** ✅ WIRED 2026-10-07 (tranche wave 10): `swing1.mp3` (knifeSlice),
+    `swing2.mp3` (knifeSlice2), `swing3.mp3` (chop) from `kenney_rpg-audio.zip`, OGG→MP3 into
+    `game-3d/build/assets/`, registered in `build/asset-manifest.json` (build only embeds
+    manifest-listed files), credited in `ASSETS_CREDITS.md`. `sfxSwing(vol, whiff)` plays a
+    random swing whoosh (±8% pitch) on every player attack swing (doPunch, doHeavy both
+    branches, doJumpAttack, doBlitz, releaseFocus); when the resolution hits NO enemy a
+    louder whiff whoosh fires so misses read. Generic `whoosh.mp3` kept for dodge S3 /
+    fanfares / specials. Playtest `qa/playtest-swingwhoosh.mjs` 16/16 PASS, zero errors,
+    shots in `game-3d/shots-swingwhoosh/` (eyes-on verified). Decision doc
+    `docs/TRANCHE_WAVE10_SWINGWHOOSH.md`.
 11. **S8 footsteps** — footstep00-07 OGGs, surface-appropriate.
 12. **S5 counter SFX** — distinct crack/chime on counter (currently silent).
 13. **S6/S7 UI + pickup** — `kenney_ui-audio.zip` clicks; pickup chime on cash.
