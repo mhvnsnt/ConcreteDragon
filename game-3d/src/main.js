@@ -4833,6 +4833,7 @@ window.__cdtest = {
   swingClear: () => { T.swingSfx = 0; T.whiffSfx = 0; },
   hitLayerDbg: () => ({ layer: T.hitLayerSfx || 0, synth: T.synthHitSfx || 0 }), // S1 hit-layer tranche (owner 2026-10-08): layer fires AND synth hits still resolve
   hitLayerClear: () => { T.hitLayerSfx = 0; T.synthHitSfx = 0; },
+  dbgFoePassive: () => { let n = 0; for (const e of enemies) if (!e.boss && e.hp > 0) { e.ai = 'recover'; e.aiT = 999; n++; } return n; }, // S1 hit-layer playtest: passive punching bag (still a real enemy, takes real hits)
   audioDbg: (ks) => (ks || []).map(k => ({ k, ok: !!(sbuf[k] && sbuf[k] instanceof AudioBuffer) })), // S2: prove swing SFX decoded
   dodgeTest: () => { // S3 dodge SFX tranche (owner 2026-10-07): verify dodge fires SFX hook + i-frames
     if (!player || state !== 'fight') return { ok: 0, why: 'no-fight' };
