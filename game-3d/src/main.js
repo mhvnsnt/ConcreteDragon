@@ -5376,6 +5376,8 @@ function sweptBodyContact(attacker, defender, x0, x1) {
 function resolveStrikeContact(attacker, defender, contact, opts = {}) {
   const w = defender.boss ? 0.65 : 1; // bosses are heavy
   const push = ((contact && contact.pen) || 0) + 0.07;
+  T.lastContactPen = (contact && contact.pen) || 0; // test hook: penetration at strike detection
+  T.strikeContacts = (T.strikeContacts || 0) + 1; // test hook: count of contact resolutions
   if (contact && (contact.nx !== undefined)) {
     defender.px -= contact.nx * push * w;
     defender.pz = (defender.pz || 0) - contact.nz * push * w;
@@ -5403,6 +5405,7 @@ function separateHurtboxes(a, b) {
     if (d >= min) return;
     if (d < 1e-4) { dx = 1; dy = 0; dz = 0; d = 1; }
     const push = min - d, nx = dx / d, nz = dz / d;
+    T.maxHurtPen = Math.max(T.maxHurtPen || 0, push); // test hook: deepest corrected penetration
     // separate on the ground plane (heads bob; keep y out of it)
     a.px -= nx * push * (mb / tw); a.pz = (a.pz || 0) - nz * push * (mb / tw);
     b.px += nx * push * (ma / tw); b.pz = (b.pz || 0) + nz * push * (ma / tw);
@@ -5633,6 +5636,9 @@ window.__cdtest = {
   spawnCreature: (cid) => { if (player) { const e = makeCreatureRaw(cid, 0xffffff, player.px + 3, -Math.PI / 2, 1); if (e) { e.maxHp = e.hp = 200; e.dmgMult = 1; e.spd = 1.5; e.px = player.px + 3; e.pz = 0; e.ai = 'walk'; e.aiT = 1; syncPos(e); playAnim(e, 'Running_A', { loop: true }); enemies.push(e); } return e; } },
   hurt: (n) => { if (player) hurtPlayer(n); },
   doJump, doPunch, doHeavy, doSpecial, doTaunt, doDesperation, doStance, doTech, doGrapple, doDodge,
+  // CONTACT COLLISION test hooks: hurtbox interpenetration stats
+  contactStats: () => ({ maxPen: +((T.maxHurtPen || 0).toFixed(3)), lastStrike: +((T.lastContactPen || 0).toFixed(3)), strikes: T.strikeContacts || 0 }),
+  resetContactStats: () => { T.maxHurtPen = 0; T.lastContactPen = 0; T.strikeContacts = 0; return true; },
   swingDbg: () => ({ swing: T.swingSfx || 0, whiff: T.whiffSfx || 0 }), // S2 swing-whoosh tranche (owner 2026-10-07)
   energySegDbg: () => T.energySeg || 0, // TIER 2 item 9 segmented energy bar (wave 18, owner 2026-10-09)
   swingClear: () => { T.swingSfx = 0; T.whiffSfx = 0; },
