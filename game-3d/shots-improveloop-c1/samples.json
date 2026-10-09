@@ -1,0 +1,371 @@
+[
+ {
+  "t": 0,
+  "p": {
+   "busy": 0,
+   "stance": 0,
+   "hp": 100,
+   "state": "fight",
+   "fid": "kidblue",
+   "hasFin": true,
+   "face": 1,
+   "animMove": false,
+   "animTs": 1,
+   "px": 2
+  },
+  "foes": [
+   {
+    "hp": 70,
+    "px": 10.9,
+    "wu": 0
+   },
+   {
+    "hp": 70,
+    "px": 12.5,
+    "wu": 0
+   }
+  ],
+  "st": "fight",
+  "fps": 0
+ },
+ {
+  "t": 5.4,
+  "p": {
+   "busy": 0,
+   "stance": 0,
+   "hp": 100,
+   "state": "fight",
+   "fid": "kidblue",
+   "hasFin": true,
+   "face": 1,
+   "animMove": true,
+   "animTs": 1,
+   "px": 3.54
+  },
+  "foes": [
+   {
+    "hp": 70,
+    "px": 10.4,
+    "wu": 0
+   },
+   {
+    "hp": 70,
+    "px": 12,
+    "wu": 0
+   }
+  ],
+  "st": "fight",
+  "fps": 0
+ },
+ {
+  "t": 11.6,
+  "p": {
+   "busy": 0,
+   "stance": 0,
+   "hp": 100,
+   "state": "fight",
+   "fid": "kidblue",
+   "hasFin": true,
+   "face": 1,
+   "animMove": true,
+   "animTs": 1,
+   "px": 4.86
+  },
+  "foes": [
+   {
+    "hp": 70,
+    "px": 9.9,
+    "wu": 0
+   },
+   {
+    "hp": 70,
+    "px": 11.5,
+    "wu": 0
+   }
+  ],
+  "st": "fight",
+  "fps": 0
+ },
+ {
+  "t": 18.3,
+  "p": {
+   "busy": 0,
+   "stance": 0,
+   "hp": 100,
+   "state": "fight",
+   "fid": "kidblue",
+   "hasFin": true,
+   "face": 1,
+   "animMove": true,
+   "animTs": 1,
+   "px": 6.18
+  },
+  "foes": [
+   {
+    "hp": 70,
+    "px": 9.4,
+    "wu": 0
+   },
+   {
+    "hp": 70,
+    "px": 11,
+    "wu": 0
+   }
+  ],
+  "st": "fight",
+  "fps": 0
+ },
+ {
+  "t": 25.1,
+  "p": {
+   "busy": 0,
+   "stance": 0,
+   "hp": 100,
+   "state": "fight",
+   "fid": "kidblue",
+   "hasFin": true,
+   "face": 1,
+   "animMove": true,
+   "animTs": 1,
+   "px": 7.5
+  },
+  "foes": [
+   {
+    "hp": 70,
+    "px": 8.9,
+    "wu": 0
+   },
+   {
+    "hp": 70,
+    "px": 10.5,
+    "wu": 0
+   }
+  ],
+  "st": "fight",
+  "fps": 0
+ },
+ {
+  "t": 34.2,
+  "p": {
+   "busy": 0.14,
+   "stance": 0,
+   "hp": 100,
+   "state": "fight",
+   "fid": "kidblue",
+   "hasFin": true,
+   "face": -1,
+   "animMove": false,
+   "animTs": 2.6,
+   "px": 10.97
+  },
+  "foes": [
+   {
+    "hp": 46,
+    "px": 8.9,
+    "wu": 0.7
+   },
+   {
+    "hp": 46,
+    "px": 10.5,
+    "wu": 0.6
+   }
+  ],
+  "st": "fight",
+  "fps": 0
+ },
+ {
+  "t": 41.6,
+  "p": {
+   "busy": -0.01,
+   "stance": 0,
+   "hp": 100,
+   "state": "fight",
+   "fid": "kidblue",
+   "hasFin": true,
+   "face": -1,
+   "animMove": false,
+   "animTs": 2.6,
+   "px": 13.45
+  },
+  "foes": [
+   {
+    "hp": 46,
+    "px": 8.9,
+    "wu": 0.5
+   },
+   {
+    "hp": 17,
+    "px": 10.5,
+    "wu": 0.3
+   },
+   {
+    "hp": 70,
+    "px": 20.1,
+    "wu": 0
+   },
+   {
+    "hp": 70,
+    "px": 21.7,
+    "wu": 0
+   }
+  ],
+  "st": "fight",
+  "fps": 0
+ },
+ {
+  "t": 49.8,
+  "p": {
+   "busy": -0.01,
+   "stance": 0,
+   "hp": 100,
+   "state": "fight",
+   "fid": "kidblue",
+   "hasFin": true,
+   "face": 1,
+   "animMove": true,
+   "animTs": 1,
+   "px": 15.04
+  },
+  "foes": [
+   {
+    "hp": 46,
+    "px": 8.9,
+    "wu": 0.1
+   },
+   {
+    "hp": 17,
+    "px": 10.5,
+    "wu": 0
+   },
+   {
+    "hp": 70,
+    "px": 19.6,
+    "wu": 0
+   },
+   {
+    "hp": 70,
+    "px": 21.2,
+    "wu": 0
+   }
+  ],
+  "st": "fight",
+  "fps": 0
+ },
+ {
+  "t": 56.9,
+  "p": {
+   "busy": -0.01,
+   "stance": 0,
+   "hp": 100,
+   "state": "fight",
+   "fid": "kidblue",
+   "hasFin": true,
+   "face": 1,
+   "animMove": true,
+   "animTs": 1,
+   "px": 16.36
+  },
+  "foes": [
+   {
+    "hp": 46,
+    "px": 8.9,
+    "wu": -0.1
+   },
+   {
+    "hp": 17,
+    "px": 10.5,
+    "wu": -0.1
+   },
+   {
+    "hp": 70,
+    "px": 19.1,
+    "wu": 0
+   },
+   {
+    "hp": 70,
+    "px": 20.7,
+    "wu": 0
+   }
+  ],
+  "st": "fight",
+  "fps": 0
+ },
+ {
+  "t": 65,
+  "p": {
+   "busy": -0.01,
+   "stance": 0,
+   "hp": 100,
+   "state": "fight",
+   "fid": "kidblue",
+   "hasFin": true,
+   "face": 1,
+   "animMove": true,
+   "animTs": 1,
+   "px": 17.68
+  },
+  "foes": [
+   {
+    "hp": 46,
+    "px": 8.9,
+    "wu": -0.1
+   },
+   {
+    "hp": 17,
+    "px": 10.5,
+    "wu": -0.1
+   },
+   {
+    "hp": 70,
+    "px": 18.7,
+    "wu": 0.7
+   },
+   {
+    "hp": 70,
+    "px": 20.2,
+    "wu": 0
+   }
+  ],
+  "st": "fight",
+  "fps": 2
+ },
+ {
+  "t": 70.7,
+  "p": {
+   "busy": -0.01,
+   "stance": 0,
+   "hp": 100,
+   "state": "fight",
+   "fid": "kidblue",
+   "hasFin": true,
+   "face": 1,
+   "animMove": true,
+   "animTs": 1,
+   "px": 20.56
+  },
+  "foes": [
+   {
+    "hp": 46,
+    "px": 8.9,
+    "wu": -0.1
+   },
+   {
+    "hp": 17,
+    "px": 10.6,
+    "wu": -0.1
+   },
+   {
+    "hp": 52,
+    "px": 18.7,
+    "wu": 0.3
+   },
+   {
+    "hp": 70,
+    "px": 19.8,
+    "wu": 0.6
+   }
+  ],
+  "st": "fight",
+  "fps": 2
+ }
+]
