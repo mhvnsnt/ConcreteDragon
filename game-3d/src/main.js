@@ -13,6 +13,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { clone as skClone } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import seedrandom from './vendor/seedrandom.js'; // Y8 daily seeded run (wave 16, TIER 5 item 21): MIT © 2019 David Bau — see ASSETS_CREDITS.md
+import { cdApplyAll, renderCDSection } from './cosmetics.js'; // Phase 2 suite (Track 2): district-flavored cosmetics, ink-painted parts
 
 const $ = (id) => document.getElementById(id);
 const b64ToBuf = (b64) => { const bin = atob(b64); const u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return u.buffer; };
@@ -2053,6 +2054,8 @@ function applyFighterCosmetics(f, fid) {
     attachPart(f, pid, M); ids.push(pid);
   }
   f.partIds = ids;
+  // Phase 2 suite (Track 2): CD catalog parts + face paint + eyes (style only — never power).
+  cdApplyAll(f, fid, { save, writeSave, activeSeason });
 }
 
 // ---------- SCOUT system (owner 2026-10-07): infinite procedurally generated fighters ----------
@@ -2203,6 +2206,8 @@ function renderCustomize() {
     }
     b.appendChild(row);
   }
+  // Phase 2 suite (Track 2): district-flavored unlockable cosmetics.
+  renderCDSection({ el, save, writeSave, sfx: sfxUiClick, refreshShowcase, rerender: renderCustomize, activeSeason }, b, fid);
 }
 
 // ---------- species creatures: whole-body CC0 models as enemies/bosses ----------
@@ -2270,14 +2275,22 @@ function makeFighterRaw(tint, x, face, scale = 1, tex = null) {
   mixer.addEventListener('finished', (e) => { if (e.action === f.cur && f.onDone) { const d = f.onDone; f.onDone = null; d(); } });
   fighters.push(f); return f;
 }
-function playAnim(f, name, { loop = false, fade = 0.08, ts = 1, done = null, clamp = false } = {}) {
+// Combat fix 2026-10-09: these clip names are referenced by combat code but DON'T EXIST in the
+// shipped KayKit GLBs (anim_melee/general/move only carry 9 clips). Without an alias the attack
+// fires with NO animation — the fighter visibly freezes while damage applies.
+const CLIP_FALLBACK = {
+  'Melee_Unarmed_Attack_Punch_B': 'Melee_Unarmed_Attack_Punch_A',
+  'Melee_Unarmed_Attack_Kick_A': 'Melee_Unarmed_Attack_Kick',
+};
+function playAnim(f, name, { loop = false, fade = 0.12, ts = 1, done = null, clamp = false } = {}) {
+  if (CLIP_FALLBACK[name]) name = CLIP_FALLBACK[name];
   let clip = null;
   if (f.creature) { // translate mannequin clip names to the creature's baked clips
     const role = CREATURE_ANIMROLE[name];
     const cname = role && f.creatureDef.clips[role];
     clip = (cname && f.creatureClips[cname]) || f.creatureClips[f.creatureDef.clips.idle] || null;
   } else clip = clips[name];
-  if (!clip) return;
+  if (!clip) { T.missingClip = (T.missingClip || 0) + 1; return; }
   const a = f.mixer.clipAction(clip);
   a.reset(); a.setLoop(loop ? THREE.LoopRepeat : THREE.LoopOnce, Infinity); a.clampWhenFinished = clamp || !loop; a.timeScale = ts;
   if (f.cur && f.cur !== a) a.crossFadeFrom(f.cur, fade, false);
@@ -3072,6 +3085,22 @@ function startMission(id, node) {
   setHud();
 }
 function syncPos(f) { f.root.position.x = f.px; f.root.position.z = f.pz; f.root.position.y = f.py || 0; }
+// ROOT MOTION (combat fix 2026-10-09): lunges/dashes used to set player.px INSTANTLY — a visible
+// teleport of 1.3–2.6 units with no travel. startTravel moves the root over time (integrated in
+// playerUpdate) so lunges read as lunges. Signature teleports (GHOST blink, linedash) stay instant
+// on purpose — they're the character, with burst FX to sell it.
+function startTravel(p, dist, dur) {
+  const maxX = mission.len === Infinity ? 1e6 : mission.len - 1.5;
+  p.travel = { from: p.px, to: clamp(p.px + dist, 0.5, maxX), t: 0, dur: Math.max(0.05, dur) };
+}
+// Smooth facing: turn toward the target angle at a capped rate instead of snapping rotation.y
+// instantly. Fast enough to aim before the impact delay lands, slow enough to see.
+function faceToward(f, want, dt, rate) {
+  let d = want - f.root.rotation.y;
+  while (d > Math.PI) d -= 2 * Math.PI;
+  while (d < -Math.PI) d += 2 * Math.PI;
+  f.root.rotation.y += THREE.MathUtils.clamp(d, -rate * dt, rate * dt);
+}
 function nearestEnemy(range) {
   let best = null, bd = range;
   for (const e of enemies) {
@@ -3081,15 +3110,14 @@ function nearestEnemy(range) {
   }
   return best;
 }
-// OWNER 2026-10-07: attacks snap to face the nearest enemy at press time,
-// so strikes aim correctly now that walking no longer magnet-faces enemies.
+// OWNER 2026-10-07: attacks pick the nearest enemy at press time, so strikes aim correctly now
+// that walking no longer magnet-faces enemies. Combat fix 2026-10-09: this no longer SNAPS
+// rotation.y instantly — it sets intent (p.face) and playerUpdate's busy-branch turns the model
+// toward the target smoothly, landing before the impact delay. Same aim, no visible snap.
 function faceNearestEnemy() {
   if (!player) return;
   const t = nearestEnemy(99);
-  if (t) {
-    player.face = t.px >= player.px ? 1 : -1;
-    player.root.rotation.y = player.face > 0 ? Math.PI / 2 : -Math.PI / 2;
-  }
+  if (t) player.face = t.px >= player.px ? 1 : -1;
   player.animMove = false; // run anim yields to the attack; state machine restarts it after
 }
 function nearestEnemyFront(range) {  let best = null, bd = range;
@@ -3124,7 +3152,7 @@ function spawnEnemy(famId, mi, bx, bz) {
   e.px = bx; e.pz = clamp(bz, -1.3, 1.3);
   e.ai = 'walk'; e.aiT = rnd(0.4, 1.2) / df.aggro; e.windup = 0; e.vy = 0; e.airborne = false; e.aggro = df.aggro;
   syncPos(e);
-  playAnim(e, 'Running_A', { loop: true });
+  playAnim(e, 'Spawn_Ground', { ts: 1.1 }); // combat fix: unused clip now used — spawn rise, then AI takes over
   enemies.push(e);
   return e;
 }
@@ -3139,7 +3167,7 @@ function spawnBoss(bossId, bx) {
   e.maxHp = e.hp = Math.round(b.hp * dfb.hpMul); e.dmgMult = b.dmg * dfb.dmgMul; e.spd = b.spd; e.aggro = dfb.aggro;
   e.px = bx; e.pz = 0; e.ai = 'walk'; e.patIdx = 0; e.patT = 2.2; e.vy = 0; e.airborne = false;
   syncPos(e);
-  playAnim(e, 'Running_A', { loop: true });
+  playAnim(e, 'Spawn_Ground', { ts: 1.1 }); // combat fix: unused clip now used — spawn rise, then AI takes over
   enemies.push(e); bossRef = e;
   bossBeat(b.name); // letterboxed boss entrance card
   banner('⚠ ' + b.name + ' ⚠');
@@ -3208,6 +3236,7 @@ function doFinisher(t) {
 function doParry(e) {
   e.windup = 0; hideWarn(e); e.stagger = 1.2;
   playAnim(e, 'Hit_A', { ts: 1.4 });
+  playAnim(player, 'Melee_Block_Hit', { ts: 1.8, fade: 0.04 }); // combat fix: unused clip now used — the block reads
   player.energy = clamp(player.energy + 20 * (1 + (blessFx().energyGain || 0)), 0, energyMax());
   sparkFX(player.px + player.face * 0.8, 1.2, player.pz, 0x7af0ff, 16);
   const sp = screenPos(player.root.position.clone().add(new THREE.Vector3(0, 2.0, 0)));
@@ -3246,8 +3275,8 @@ function doPunch() {
     [clip, ts, delay, dmg, label, hs, sh] = ATK[atkIdx % ATK.length]; atkIdx++;
     launcher = !ce && (atkIdx % 3 === 0);
   }
-  if (dash) player.px = clamp(player.px + dash, 0.5, mission.len === Infinity ? 1e6 : mission.len - 1.5);
-  if (retreat) player.px = clamp(player.px - retreat, 0.5, mission.len === Infinity ? 1e6 : mission.len - 1.5);
+  if (dash) startTravel(player, dash, 0.12); // root-motion lunge: travels, not teleports
+  if (retreat) startTravel(player, -retreat, 0.12);
   player.busy = delay + 0.12;
   playAnim(player, clip, { ts: ts * (player.spd || 1), fade: 0.05 });
   sfxSwing(0.5); // S2: dedicated swing whoosh on the swing
@@ -3291,8 +3320,8 @@ function doBlitz() {
   player.blitzCD = 1.4; player.busy = 0.34;
   const lunge = 2.6 * face;
   const x0 = player.px;
-  player.px = clamp(player.px + lunge, 0.5, mission.len === Infinity ? 1e6 : mission.len - 1.5);
-  player.blitzX0 = x0; player.blitzX1 = player.px;
+  startTravel(player, lunge, 0.14); // root-motion lunge: travels over the windup, not teleports
+  player.blitzX0 = x0; player.blitzX1 = player.travel ? player.travel.to : clamp(player.px + lunge, 0.5, mission.len === Infinity ? 1e6 : mission.len - 1.5);
   playAnim(player, 'Melee_Unarmed_Attack_Punch_A', { ts: 2.6 * (player.spd || 1), fade: 0.05 });
   sfxSwing(0.6); // S2: dedicated swing whoosh
   sparkFX(player.px + face * 0.6, 1.1, player.pz, 0xffd166, 10);
@@ -3433,21 +3462,16 @@ function doJump() {
   ev('jump', {});
 }
 function doJumpAttack() {
-  // dive kick: strike on the way down, small AOE
-  player.busy = 0.35;
-  playAnim(player, 'Melee_Unarmed_Attack_Kick', { ts: 2.4, fade: 0.03 });
+  // DIVE KICK (combat fix 2026-10-09): the hit used to apply INSTANTLY at press — even at the
+  // apex of the jump, feet nowhere near anyone. Now the kick goes ACTIVE on the way down: press
+  // HIT in the air to fast-fall, and the strike connects when you descend onto the target.
+  if (player.dive) return; // one dive per airtime
+  player.busy = 0.5;
+  player.dive = { hit: new Set(), dur: 0.6 };
+  playAnim(player, 'Melee_Unarmed_Attack_Kick', { ts: 2.2, fade: 0.03 });
   player.vy = Math.min(player.vy, -2); // fast fall into the kick
   sfxSwing(0.55); // S2: dedicated swing whoosh
-  const hitR = 2.3;
-  let hitAny = false;
-  for (const e of enemies.slice()) {
-    if (e.hp > 0 && Math.abs(e.px - player.px) < hitR && Math.abs(e.pz - player.pz) < 1.6) {
-      landHit(e, Math.round(18 * player.dmgMult), 'DIVE KICK', 0.07, 0.3, false, false);
-      hitAny = true;
-    }
-  }
-  damageDestructibles(hitR);
-  if (hitAny) { shake = Math.max(shake, 0.3); } else sfxSwing(0.8, true); // S2: whiff
+  T.dives = (T.dives || 0) + 1; // test hook
 }
 function doStanceFin(fd) {
   // Stance-exclusive finisher: only available in stance mode (double-tap TAUNT). Style, not power: a tradeoff move.
@@ -3789,6 +3813,7 @@ function killEnemy(e) {
     $('bossWrap').style.display = 'none';
     musicStage(); // boss down -> back to the stage loop
     banner('BOSS DOWN!');
+    save.bossesBeaten = (save.bossesBeaten || 0) + 1; writeSave(); // gates boss-tier cosmetics
   } else {
     slowmo = 0.35; slowmoT = 0.7; shake = 0.45; hitstop = 0.09;
   }
@@ -4536,6 +4561,12 @@ function playerUpdate(dt) {
   const maxX = mission.len === Infinity ? 1e6 : mission.len - 1.5;
   p.px = clamp(p.px + mx * dt, 0.5, maxX);
   p.pz = clamp(p.pz + mz * dt, -1.4, 1.4);
+  if (p.travel) { // ROOT MOTION: lunge travel integration (smoothstep over the windup)
+    const tr = p.travel; tr.t += dt;
+    const k = Math.min(1, tr.t / tr.dur), e = k * k * (3 - 2 * k);
+    p.px = clamp(tr.from + (tr.to - tr.from) * e, 0.5, maxX);
+    if (k >= 1) p.travel = null;
+  }
   for (const c of colliders) { // solid props block movement (owner bug report 2026-10-06)
     if (c.dead) continue;
     const cx = p.px - c.x, cz = p.pz - c.z, rr = c.r + 0.45;
@@ -4551,6 +4582,23 @@ function playerUpdate(dt) {
     if (p.py <= ground) { p.py = ground; p.airT = 0; p.vy = 0;
       burst(p.root.position.clone().add(new THREE.Vector3(0, 0.1, 0)), 8, 0x999999, 2);
       if (p.busy <= 0) playAnim(p, 'Melee_Unarmed_Idle', { loop: true });
+    }
+    if (p.dive) { // DIVE KICK active window: connects while FALLING near the ground
+      p.dive.dur -= dt;
+      if (p.vy < 0 && (p.py || 0) < 1.6) {
+        for (const e of enemies) {
+          if (e.hp > 0 && !p.dive.hit.has(e) && Math.abs(e.px - p.px) < 2.2 && Math.abs(e.pz - p.pz) < 1.6) {
+            p.dive.hit.add(e);
+            landHit(e, Math.round(18 * p.dmgMult), 'DIVE KICK', 0.07, 0.3, false, false);
+          }
+        }
+        damageDestructibles(2.2);
+      }
+      if (p.dive.dur <= 0 || (p.py || 0) <= 0.02 || p.airT <= 0) {
+        if (p.dive.hit.size === 0) sfxSwing(0.8, true); // S2: whiff — the kick missed
+        else shake = Math.max(shake, 0.3);
+        p.dive = null;
+      }
     }
   } else if ((p.py || 0) > 0) { // walked off a platform -> fall
     let over = false;
@@ -4579,9 +4627,12 @@ function playerUpdate(dt) {
       p.root.rotation.y = p.face > 0 ? Math.PI / 2 : -Math.PI / 2;
     }
   } else if (p.busy > 0) {
-    // mid-action: track nearest enemy so strikes aim correctly
+    // mid-action: track nearest enemy so strikes aim correctly — smooth turn, no snap
     const tgt = nearestEnemy(99);
-    if (tgt) { p.face = tgt.px >= p.px ? 1 : -1; p.root.rotation.y = p.face > 0 ? Math.PI / 2 : -Math.PI / 2; }
+    if (tgt) {
+      p.face = tgt.px >= p.px ? 1 : -1;
+      faceToward(p, p.face > 0 ? Math.PI / 2 : -Math.PI / 2, dt, 14);
+    }
   }
   const spdNow = Math.hypot(mx, mz);
   const wantRun = spdNow > 0.6 && p.dodgeT <= 0 && p.busy <= 0 && (p.airT || 0) <= 0 && (p.knockT || 0) <= 0;
