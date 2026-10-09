@@ -5035,6 +5035,8 @@ function setupInput() {
 
 // ---------- enemy AI ----------
 let camX = 2;
+// VIDEO PRODUCTION: camera override for trailer capture (setCam/clearCam hooks)
+let camOverride = null;
 function enemyAI(e, dt) {
   if (e.hp <= 0) return;
   if (window.__cdfreeze) return; // test hook: freeze enemy AI for deterministic verification
@@ -6225,8 +6227,11 @@ const clock = new THREE.Clock();
 let lowFx = false; const fpsAcc = [];
 function loop() {
   requestAnimationFrame(loop);
-  frame(Math.min(clock.getDelta(), 0.05), true);
+  if (!capHold) frame(Math.min(clock.getDelta(), 0.05), true);
 }
+// VIDEO PRODUCTION: hold flag for deterministic capture (rAF loop skips advance;
+// capture drives frame() directly via stepRender)
+let capHold = false;
 // OBVIOUS-DEFECT LAW (owner 2026-10-09): circle colliders on the ground plane.
 // Every live grounded fighter gets a body circle; overlapping circles are pushed
 // apart every frame. Fighters never interpenetrate — not the player, not thugs,
@@ -6556,6 +6561,12 @@ function frame(dt, doRender = true) {
       if (span / 40 > 0.045) { lowFx = true; renderer.shadowMap.enabled = false; renderer.setPixelRatio(1); scene.traverse((o) => { if (o.material) o.material.needsUpdate = true; }); ev('low_fx'); }
     }
   }
+  // VIDEO PRODUCTION: camera override for trailer capture — applied after frame()'s
+  // own positioning, before render. Set via __cdtest.setCam / cleared via clearCam.
+  if (camOverride) {
+    camera.position.set(camOverride.px, camOverride.py, camOverride.pz);
+    camera.lookAt(camOverride.tx, camOverride.ty, camOverride.tz);
+  }
   renderer.render(scene, camera);
   T.state = state; T.frameMs = +(clock.elapsedTime * 0).toFixed(1); T.drawCalls = renderer.info.render.calls; T.tris = renderer.info.render.triangles;
 }
@@ -6655,6 +6666,11 @@ window.__cdtest = {
   layoutInfo: () => ({ platforms: platforms.length, destruct: destructibles.length, colliders: colliders.length }),
   forceFoeSig: () => { const e = enemies.find(x => x.hp > 0 && !x.boss); if (e) { e.ai = 'windup'; e.windup = 0.01; e.sigUse = !!e.sig; } },
   clearFoes: () => { for (const e of enemies.slice()) { removeFighter(e); const i = enemies.indexOf(e); if (i >= 0) enemies.splice(i, 1); } bossRef = null; },
+  // VIDEO PRODUCTION: camera override hooks for trailer capture
+  setCam: (px, py, pz, tx, ty, tz) => { camOverride = { px, py, pz, tx, ty, tz }; return true; },
+  clearCam: () => { camOverride = null; return true; },
+  stepRender: (dt) => { frame(dt || 1 / 30, true); return +gameTime.toFixed(2); }, // deterministic step + render for video capture
+  capHold: (v) => { capHold = !!v; return capHold; }, // hold rAF loop during deterministic capture
   healPlayer: () => { if (player) { player.hp = player.maxHp || 100; setHud(); } },
   esigLog: () => T.esig || {}, bsigLog: () => T.bsig || {},
   showMission: () => showMission(),
