@@ -3784,6 +3784,9 @@ function startGrabLink(t, g, linkIdx) {
     launch: !!(link && link.launch), isChain: !!isChain };
   player.busy = strikeDur + dur + rDur + 0.4; // uninterruptible through strikes + deliver + recover
   t.stagger = 999; t.grabLock = true;
+  // NO-SNAP LAW: record where the victim is NOW; every phase lerps from here.
+  // The victim is never teleported — not at grab start, not between chain links.
+  player.grab.sx = t.px; player.grab.sy = t.py || 0; player.grab.sz = t.pz;
   faceNearestEnemy();
   if (strikes) {
     playAnim(player, 'Melee_Unarmed_Attack_Punch_A', { ts: 1.8, fade: 0.06 });
@@ -3859,6 +3862,17 @@ function endGrab() {
   player.busy = Math.min(player.busy || 0, 0.25);
   playAnim(player, 'Melee_Unarmed_Idle', { loop: true, fade: 0.15 });
 }
+function grabHandMid() {
+  // World-space midpoint of the attacker's hands — the victim's body tracks this
+  // through GRAB -> LIFT -> LOCKUP -> THROW. No snapping, ever.
+  if (!player || !player.root) return null;
+  const hl = player.root.getObjectByName('handl') || player.root.getObjectByName('hand.l');
+  const hr = player.root.getObjectByName('handr') || player.root.getObjectByName('hand.r');
+  if (!hl || !hr) return null;
+  const vl = new THREE.Vector3(), vr = new THREE.Vector3();
+  hl.getWorldPosition(vl); hr.getWorldPosition(vr);
+  return vl.add(vr).multiplyScalar(0.5);
+}
 function updateGrapple(dt) {
   // Drives the victim through GRAB -> LIFT -> LOCKUP -> THROW while the attacker's
   // mocap deliver plays. Whole-body kinematic follow (standard fighting-game practice);
@@ -3870,9 +3884,14 @@ function updateGrapple(dt) {
   const face = player.face || 1;
   if (gr.phase === 'strikes') {
     // COMBO GRAPPLE: hold the victim, land knee/bodyshots (real punch clips), then throw.
+    // NO-SNAP: lerp from the victim's actual position into the hold — never teleport.
     gr.t += dt;
-    t.px = clamp(player.px + face * 0.9, 0.5, mission.len === Infinity ? 1e6 : mission.len - 1.5);
-    t.pz = player.pz || 0; t.py = 0; syncPos(t);
+    const hq = Math.min(1, gr.t / 0.25);
+    const hx = player.px + face * 0.9;
+    t.px = clamp(gr.sx + (hx - gr.sx) * hq, 0.5, mission.len === Infinity ? 1e6 : mission.len - 1.5);
+    t.pz = (gr.sz || 0) + ((player.pz || 0) - (gr.sz || 0)) * hq;
+    t.py = (gr.sy || 0) * (1 - hq);
+    syncPos(t);
     const want = Math.min(gr.strikeTotal, Math.floor(gr.t / 0.34) + 1);
     while (gr.strikeN < want && gr.strikeN < gr.strikeTotal) {
       gr.strikeN++;
@@ -3890,21 +3909,46 @@ function updateGrapple(dt) {
   } else if (gr.phase === 'deliver') {
     gr.t += dt;
     const p = Math.min(1, gr.t / gr.dur);
-    // Victim arc: grab (front, ground) -> lift (rises with the hands) -> lockup/throw (arcs over) -> slam
-    let vx, vy;
-    const x0 = player.px + face * 0.9;
+    // NO-SNAP LAW: the victim's body travels WITH the attacker's hands through
+    // GRAB -> LIFT -> LOCKUP -> THROW. Hand-tracked, continuous, every link.
+    const hm = grabHandMid();
+    let vx, vy, vz;
     if (gr.juggle) {
-      // Juggle: victim starts airborne, gets popped higher, then slammed down
-      const startPy = Math.max(0.8, t.py || 0.8);
-      if (p < 0.4) { vx = player.px + face * 0.7; vy = startPy + p * 2.0; }
-      else if (p < 0.7) { vx = player.px + face * 0.9; vy = startPy + 0.8 + (p - 0.4) * 3.0; }
-      else { const q = (p - 0.7) / 0.3; vx = player.px + face * (0.9 + q * 1.2); vy = Math.max(0, (startPy + 1.7) * (1 - q * q)); }
-    } else if (p < 0.28) { const q = p / 0.28; vx = x0; vy = 0; }
-    else if (p < 0.55) { const q = (p - 0.28) / 0.27; vx = player.px + face * (0.9 - q * 0.5); vy = q * q * 2.3; }
-    else if (p < 0.82) { const q = (p - 0.55) / 0.27; vx = player.px + face * (0.4 + q * 1.6); vy = 2.3 - q * q * 1.6; }
-    else { const q = (p - 0.82) / 0.18; vx = player.px + face * 2.0; vy = Math.max(0, 0.7 * (1 - q * q)); }
+      // Juggle: victim starts airborne, gets popped higher, then slammed down.
+      // Lerp from actual air position — no snap.
+      const startPy = Math.max(0.8, gr.sy || 0.8);
+      if (p < 0.4) { const q = p / 0.4; vx = gr.sx + (player.px + face * 0.7 - gr.sx) * q; vy = startPy + q * 1.2; vz = gr.sz; }
+      else if (p < 0.7) { const q = (p - 0.4) / 0.3; vx = player.px + face * 0.9; vy = startPy + 1.2 + q * 1.4; vz = player.pz || 0; }
+      else { const q = (p - 0.7) / 0.3; vx = player.px + face * (0.9 + q * 1.2); vy = Math.max(0, (startPy + 2.6) * (1 - q * q)); vz = player.pz || 0; }
+    } else if (hm) {
+      // Hand-tracked: GRAB (lerp to hands) -> LIFT (rise with hands) -> LOCKUP/THROW (arc with hands) -> SLAM (release)
+      const hy = hm.y - 1.05; // victim's feet hang below the hands; torso at hand level
+      if (p < 0.22) {
+        // GRAB: smooth pull from wherever the victim is into the attacker's grip
+        const q = p / 0.22, e = q * q * (3 - 2 * q); // smoothstep
+        vx = gr.sx + (hm.x - gr.sx) * e;
+        vy = gr.sy + (Math.max(0, hy) - gr.sy) * e;
+        vz = (gr.sz || 0) + (hm.z - (gr.sz || 0)) * e;
+      } else if (p < 0.8) {
+        // LIFT + LOCKUP: body travels with the hands — the core of the no-snap law
+        vx = hm.x; vy = Math.max(0, hy); vz = hm.z;
+      } else {
+        // THROW/SLAM: release — blend from the hands to the slam spot, then down
+        const q = (p - 0.8) / 0.2;
+        const slamX = player.px + face * 2.0;
+        vx = hm.x + (slamX - hm.x) * q;
+        vy = Math.max(0, hy * (1 - q * q));
+        vz = hm.z + ((player.pz || 0) - hm.z) * q;
+      }
+    } else {
+      // Fallback (no hand bones): smooth parametric arc from the victim's real position
+      if (p < 0.28) { const q = p / 0.28; vx = gr.sx; vy = gr.sy * (1 - q); vz = gr.sz; }
+      else if (p < 0.55) { const q = (p - 0.28) / 0.27; vx = player.px + face * (0.9 - q * 0.5); vy = q * q * 2.3; vz = player.pz || 0; }
+      else if (p < 0.82) { const q = (p - 0.55) / 0.27; vx = player.px + face * (0.4 + q * 1.6); vy = 2.3 - q * q * 1.6; vz = player.pz || 0; }
+      else { const q = (p - 0.82) / 0.18; vx = player.px + face * 2.0; vy = Math.max(0, 0.7 * (1 - q * q)); vz = player.pz || 0; }
+    }
     t.px = clamp(vx, 0.5, mission.len === Infinity ? 1e6 : mission.len - 1.5);
-    t.pz = player.pz || 0;
+    t.pz = vz;
     t.py = vy;
     syncPos(t);
     if (!gr.hitDone && p >= 0.8) {
@@ -6588,6 +6632,9 @@ window.__cdtest = {
   dbgStrike: (range) => { const h = strikeHit(player, 'hand', range || 2.7); return h ? { hp: Math.round(h.target.hp), pen: +h.pen.toFixed(3) } : null; },
   spawnFoeAt: (x) => { if (player) return spawnEnemy('thug', 0, x, 0); },
   foeHp: (i) => (enemies[i] ? enemies[i].hp : -1),
+  boneNames: () => { const out = []; if (player && player.root) player.root.traverse(o => { if (o.isBone || o.isObject3D) out.push(o.name); }); return out; },
+  grabPosDbg: () => { const gr = player && player.grab; if (!gr || !gr.victim) return null; const hm = grabHandMid(); return { phase: gr.phase, t: +gr.t.toFixed(2), vpy: +(gr.victim.py||0).toFixed(2), vpx: +gr.victim.px.toFixed(2), hmy: hm ? +hm.y.toFixed(2) : null, hmx: hm ? +hm.x.toFixed(2) : null }; },
+  foePy: (i) => (enemies[i] ? +(enemies[i].py || 0).toFixed(2) : null),
   foeCount: () => enemies.length,
   playerGrab: () => (player && player.grab ? { phase: player.grab.phase, link: player.grab.link, name: player.grab.name } : null),
   fighterArchetype: () => fighterDef().archetype,
