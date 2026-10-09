@@ -86,7 +86,17 @@ Wire in this order; playtest after each tier. Owner plays and vetoes — wire, d
 ## TIER 5 — systems
 19. **U6 pause menu** — resume/restart/settings/quit (uses 9-slice panels + fonts from ui/).
 20. **U9 settings** — volume sliders, mute, quality toggle, control scheme choice; **Y2** persist.
-21. **Y8 daily seeded run** — `staging/systems/seedrandom.js` (MIT); one seed/day for all players.
+21. **Y8 daily seeded run** ✅ WIRED 2026-10-09 — `staging/systems/seedrandom.js` (MIT, David Bau
+    2019) vendored verbatim into `game-3d/src/vendor/seedrandom.js`, bundled via esbuild, credited
+    in ASSETS_CREDITS.md. `dailySeed()` = local-date YYYYMMDD (one seed/day for all players);
+    DAILY RUN mission: district rotation neon → overpass → industrial, fixed 220-unit circuit,
+    seedrandom wired through buildStreet/buildRoads/buildIndustrial/buildLayout/spawnBreakables
+    (seeded r2 range replaced 46 Math.random `rnd(` calls — audio/cosmetic jitter untouched) +
+    missionR()/R_safe() for breakable loot rolls, spawn fam picks, wave composition;
+    `save.dailyBest = { date, wave, score, cash }` on the Y9 Records screen; date shown in the
+    mission intro card + fight banner (`DAILY RUN — OCT 9 · SEED 20261009`). Playtest-verified
+    (19/19, zero errors: determinism across reloads, deep-equal spawn tables + layout hashes,
+    5 screenshots eyes-on).
 22. **Y9 local leaderboards** — best wave/combo/score board screen (data already tracked).
 23. **U11 unlock ceremony** — "NEW FIGHTER UNLOCKED" moment (boss-defeat → playable).
 
