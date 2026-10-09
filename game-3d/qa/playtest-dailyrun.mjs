@@ -48,11 +48,21 @@ await E('t.showMission()'); await sleep(1500);
 const menuTxt = await page.evaluate(() => document.getElementById('mission').textContent);
 must('3a. mission menu shows the DAILY RUN button', /⚡ DAILY RUN/.test(menuTxt));
 must('3b. mission menu shows the daily tag with seed + date', /DAILY SEED 20\d{6}/.test(menuTxt));
+// the mission list scrolls horizontally; the daily card is in the last zone (SIDE HUSTLES)
+await page.evaluate(() => { const ml = document.getElementById('mList'); if (ml) ml.scrollLeft = ml.scrollWidth; });
+await sleep(1000);
 await page.screenshot({ path: SHOTS + '/2-dailyrun-menu.png' });
 
 // 4. start the daily mission: verify wiring, catch the intro date banner
 await E(`t.startMission('daily')`);
-await sleep(2500); // mid intro-card: date caption visible
+// headless game-time runs slow: poll the letterbox caption until the date cap appears
+let sawDateCap = false;
+for (let i = 0; i < 40; i++) {
+  const cap = await page.evaluate(() => document.getElementById('cineCap').textContent || '');
+  if (/SEED/.test(cap)) { sawDateCap = true; break; }
+  await sleep(1000);
+}
+must('4. intro card shows the DAILY RUN date caption', sawDateCap);
 await page.screenshot({ path: SHOTS + '/3-intro-date.png' });
 const md = await E('t.missionDbg()');
 console.log('   missionDbg:', JSON.stringify(md));

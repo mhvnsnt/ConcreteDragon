@@ -44,7 +44,7 @@ screen, and the date shown in the mission intro + HUD banner.
 - `layoutRec` recorder inside `placeProp` — only active during `dailyBuild` test calls.
 
 ## Verification
-- Playtest `game-3d/qa/playtest-dailyrun.mjs`: **19/19 PASS**, zero page/console errors.
+- Playtest `game-3d/qa/playtest-dailyrun.mjs`: **23/23 PASS**, zero page/console errors.
 - (a) `dailySeed('2026-10-09')` = 20261009 on two fresh page loads; (b) two `dailyBuild`
   calls → identical district, deep-equal 17-entry spawn tables, identical layout hash;
   (c) `dailySeed('2026-10-10')` = 20261010 ≠ 20261009, different layout hash.

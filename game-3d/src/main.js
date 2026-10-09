@@ -24,7 +24,7 @@ function seedPRNG(seed) { let t = seed >>> 0; return function () { t += 0x6D2B79
 const todayStr = () => new Date().toISOString().slice(0, 10);
 // ---------- Y8 DAILY SEEDED RUN (wave 16, TIER 5 item 21) ----------
 // One integer seed per LOCAL day — the same run for every player that day.
-const localDateStr = (d) => { const x = d ? new Date(d) : new Date(); return x.getFullYear() + '-' + String(x.getMonth() + 1).padStart(2, '0') + String(x.getDate()).padStart(2, '0'); };
+const localDateStr = (d) => { const x = d ? new Date(d) : new Date(); return x.getFullYear() + '-' + String(x.getMonth() + 1).padStart(2, '0') + '-' + String(x.getDate()).padStart(2, '0'); };
 function dailySeed(dateLike) { // YYYYMMDD integer; pure in dateLike → deterministic across page loads
   const d = dateLike ? new Date(dateLike) : new Date();
   return d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate();
