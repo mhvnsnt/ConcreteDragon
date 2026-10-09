@@ -3234,6 +3234,8 @@ function doParry(e) {
 }
 function doPunch() {
   if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.busy > 0) return;
+  // WALK-IN GRAB: HIT while holding a foe = knee strike
+  if (player.grabVictim) { doGrabKnee(); return; }
   faceNearestEnemy();
   unlockAudio();
   T.taps++; hint(false); save.seenHint = true;
@@ -3375,11 +3377,19 @@ function doTech() {
 function doGrapple() {
   // WRESTLING FINISHERS (No More Heroes): staggered enemy + GRAPPLE = suplex/piledriver/powerbomb.
   // Stun an enemy (parry/counter), then style on them. Wrestling flavor for the wrestling-rooted roster.
-  if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.busy > 0 || player.airT > 0) return;
+  // WALK-IN GRAB (Final Fight/Double Dragon): GRP near a fresh foe = seize them; GRP while holding = throw.
+  if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0) return;
+  if (player.grabVictim) { doThrow(); return; } // holding a foe: GRP throws
+  if (player.busy > 0 || player.airT > 0) return;
   faceNearestEnemy();
   unlockAudio(); T.taps++; hint(false);
   const t = nearestEnemy(2.4);
   if (!t || !(t.stagger > 0) || t.boss) {
+    // WALK-IN GRAB: no staggered foe in range — seize a fresh one up close instead of whiffing
+    const g = nearestEnemy(1.7);
+    if (g && !g.boss && !g.creature && !(g.stagger > 0) && !g.airborne && !g.grabbed && g.hp > 0) {
+      doGrab(g); return;
+    }
     // whiff: small stumble, no penalty beyond the beat
     player.busy = 0.3;
     playAnim(player, 'Melee_Unarmed_Idle', { ts: 0.8, fade: 0.1 });
@@ -3410,6 +3420,82 @@ function doGrapple() {
   }, 300);
   T.grapples = (T.grapples || 0) + 1; ev('grapple', { name: wname }); setHud();
 }
+// ---------- WALK-IN GRAB / THROW (Final Fight / Double Dragon lane) ----------
+function doGrab(e) {
+  // Seize a non-staggered foe up close. Hold: knee with HIT, throw with GRP (+direction).
+  // The victim struggles — escape meter fills in ~2.8s, knees knock it back down.
+  if (!e || e.hp <= 0) return;
+  player.busy = 0.25;
+  player.grabVictim = e; player.grabT = 0;
+  e.grabbed = true; e.grabEscape = 0; e.ai = 'grabbed'; e.aiT = 0;
+  e.stagger = 0; e.windup = 0; e.guardT = 0; // interrupt whatever they were doing
+  playAnim(player, 'Melee_Unarmed_Attack_Punch_B', { ts: 0.9, fade: 0.05 });
+  playAnim(e, 'Hit_A', { ts: 0.7 });
+  lockGrabbed(e);
+  const sp = screenPos(e.root.position.clone().add(new THREE.Vector3(0, 2.4, 0)));
+  popText('GRABBED!', 'spc', sp.x, sp.y);
+  sfx('whoosh', 0.5, false, 0.8);
+  T.grabs = (T.grabs || 0) + 1; ev('grab', {}); setHud();
+}
+function lockGrabbed(e) {
+  // Positional lock: victim held at a fixed offset in front — bodies never interpenetrate.
+  if (!e || !player || typeof mission === 'undefined') return;
+  const maxX = mission.len === Infinity ? 1e6 : mission.len - 1.5;
+  e.px = clamp(player.px + (player.face || 1) * 0.85, 0.5, maxX);
+  e.pz = player.pz || 0;
+  syncPos(e);
+}
+function releaseGrab(v, brokeFree) {
+  if (player) { player.grabVictim = null; player.grabT = 0; }
+  if (!v) return;
+  v.grabbed = false; v.grabEscape = 0;
+  if (v.hp > 0) {
+    v.ai = 'recover'; v.aiT = brokeFree ? 0.7 : 0.4;
+    if (player && typeof mission !== 'undefined') {
+      const maxX = mission.len === Infinity ? 1e6 : mission.len - 1.5;
+      v.px = clamp(v.px + (player.face || 1) * 0.6, 0.5, maxX);
+      syncPos(v);
+    }
+    playAnim(v, 'Melee_Unarmed_Idle', { loop: true });
+    if (brokeFree && player) {
+      const sp = screenPos(v.root.position.clone().add(new THREE.Vector3(0, 2.2, 0)));
+      popText('BROKE FREE!', 'bad', sp.x, sp.y);
+    }
+  }
+}
+function doGrabKnee() {
+  // HIT while holding a foe = knee strike. Small damage, knocks the escape meter back down.
+  const v = player.grabVictim;
+  if (!v || v.hp <= 0) { releaseGrab(v); return; }
+  player.busy = 0.3;
+  playAnim(player, 'Melee_Unarmed_Attack_Kick', { ts: 1.6, fade: 0.05 });
+  v.grabEscape = Math.max(0, (v.grabEscape || 0) - 0.35);
+  lockGrabbed(v);
+  landHit(v, Math.round(10 * player.dmgMult), 'KNEE', 0.04, 0.15, false, false);
+  T.grabKnees = (T.grabKnees || 0) + 1; ev('grabknee', {});
+}
+function doThrow() {
+  // GRP while holding a foe = throw. Stick direction chooses: toward facing = forward throw,
+  // away = back throw. The thrown body is a projectile — it damages other enemies (crowd control).
+  const v = player.grabVictim;
+  if (!v || v.hp <= 0) { releaseGrab(v); return; }
+  const sdx = (typeof stick !== 'undefined' ? stick.dx : 0) || 0;
+  const face = player.face || 1;
+  const dir = sdx > 0.3 ? 1 : sdx < -0.3 ? -1 : face;
+  const fwd = dir === face;
+  player.busy = 0.5;
+  playAnim(player, 'Melee_Unarmed_Attack_Punch_B', { ts: 1.4, fade: 0.05 });
+  v.grabbed = false; v.grabEscape = 0;
+  v.airborne = true; v.vy = 4.5; v.thrownBody = true; v.thrownHit = new Set();
+  v.kvx = dir * 13; v.kvz = ((v.pz || 0) >= 0 ? 1 : -1) * rnd(0.5, 1.5);
+  v.ai = 'launched';
+  player.grabVictim = null; player.grabT = 0;
+  const sp = screenPos(v.root.position.clone().add(new THREE.Vector3(0, 2.2, 0)));
+  popText(fwd ? 'THROW!' : 'BACK THROW!', 'spc', sp.x, sp.y);
+  sfx('whoosh', 0.7, false, 0.7); sfxSwing(0.6);
+  shake = Math.max(shake, 0.3);
+  T.throws = (T.throws || 0) + 1; ev('throw', { dir }); setHud();
+}
 function doTaunt() {
   // TMNT taunt: talk trash, build special meter. Pure addition — costs a beat of vulnerability.
   if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.busy > 0 || player.airT > 0) return;
@@ -3426,12 +3512,17 @@ function doTaunt() {
     setHud(); ev('radical', {}); return;
   }
   player.busy = 0.8;
-  playAnim(player, 'Melee_Unarmed_Idle', { ts: 0.7, fade: 0.1 });
+  // YAKUZA TAUNT (throws-air lane): readable beckon — slow menacing gesture, trash talk,
+  // small damage buff. The risk (0.8s vulnerable) buys +15% damage for 8s.
+  playAnim(player, 'Melee_Unarmed_Attack_Punch_B', { ts: 0.45, fade: 0.15 });
+  player.tauntBuffT = 8;
   player.energy = clamp(player.energy + 25 * (1 + (blessFx().energyGain || 0)), 0, energyMax());
   const sp = screenPos(player.root.position.clone().add(new THREE.Vector3(0, 2.2, 0)));
-  popText('COME ON!', 'spc', sp.x, sp.y);
+  const trash = ['COME ON!', 'IS THAT ALL?', 'MY TURN.', 'STEP UP!'];
+  popText(trash[Math.floor(Math.random() * trash.length)], 'spc', sp.x, sp.y);
   sfxUiClick(0.6, 0.7);
-  setHud(); ev('taunt', {});
+  T.taunts = (T.taunts || 0) + 1;
+  setHud(); ev('taunt', { buff: true });
 }
 function doStance() {
   // MIXTAPE STANCE SYSTEM (Double Dragon Neon): two switchable loadouts mid-fight.
@@ -3470,6 +3561,25 @@ function doJump() {
   ev('jump', {});
 }
 function doJumpAttack() {
+  // AIR GAME: rising kick on the way up (juggle tool), dive kick on the way down (existing)
+  if (player.vy > 1) {
+    player.busy = 0.3;
+    playAnim(player, 'Melee_Unarmed_Attack_Kick', { ts: 1.8, fade: 0.05 });
+    sfxSwing(0.55); // S2: dedicated swing whoosh
+    setTimeout(() => {
+      if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0) return;
+      // CONTACT COLLISION: foot hitbox vs hurtbox at our height — reaches airborne foes
+      const hit = strikeHit(player, 'foot', 2.0);
+      if (hit) {
+        resolveStrikeContact(player, hit.target, hit, { knockback: 0.15 });
+        const t = hit.target;
+        if (t.airborne) { t.vy = Math.max(t.vy, 2.6); } // keep the juggle alive
+        landHit(t, Math.round(14 * player.dmgMult), 'AIR KICK', 0.04, 0.2, false, false);
+        T.airKicks = (T.airKicks || 0) + 1; ev('airkick', {});
+      } else sfxSwing(0.8, true); // S2: whiff
+    }, 120);
+    return;
+  }
   // dive kick: strike on the way down, small AOE
   player.busy = 0.35;
   playAnim(player, 'Melee_Unarmed_Attack_Kick', { ts: 2.4, fade: 0.03 });
@@ -4192,6 +4302,10 @@ function enemyAI(e, dt) {
     e.root.rotation.y = (player && player.px >= e.px) ? Math.PI / 2 : -Math.PI / 2;
     syncPos(e); return;
   }
+  if (e.grabbed) { // WALK-IN GRAB: seized — struggle in place, can't act (player drives via lockGrabbed)
+    if (Math.random() < dt * 6) playAnim(e, 'Hit_A', { ts: 1.1 });
+    syncPos(e); return;
+  }
   if (e.airborne) { // launched / juggled
     e.vy -= 18 * dt; e.root.position.y += e.vy * dt;
     // F8 EDGE-BOUNCE (owner 2026-10-07, wave 9): horizontal knock velocity integrates with
@@ -4224,8 +4338,28 @@ function enemyAI(e, dt) {
     }
     if (e.root.position.y <= 0) {
       e.root.position.y = 0; e.airborne = false; e.vy = 0;
+      // THROWN BODY: slam landing — the victim takes throw damage on impact
+      if (e.thrownBody) {
+        e.thrownBody = false;
+        landHit(e, Math.round(25 * (player ? player.dmgMult : 1)), 'THROW SLAM', 0.08, 0.4, false, false);
+        T.throwSlams = (T.throwSlams || 0) + 1;
+      }
       playAnim(e, 'Melee_Unarmed_Idle', { loop: true });
       e.ai = 'recover'; e.aiT = 0.9;
+    }
+    // THROWN BODY (walk-in grab lane): the flying victim is a projectile — damages other
+    // grounded enemies on contact (Final Fight crowd control). One hit per enemy per throw.
+    if (e.thrownBody && e.hp > 0) {
+      for (const o of enemies) {
+        if (o === e || o.hp <= 0 || o.airborne || o.grabbed) continue;
+        if (e.thrownHit && e.thrownHit.has(o)) continue;
+        if (Math.abs(o.px - e.px) < 1.3 && Math.abs((o.pz || 0) - (e.pz || 0)) < 1.1) {
+          if (e.thrownHit) e.thrownHit.add(o);
+          landHit(o, Math.round(30 * (player ? player.dmgMult : 1)), 'THROWN BODY', 0.08, 0.4, false, false);
+          e.kvx = (e.kvx || 0) * 0.7; // plowing through the crowd bleeds speed
+          T.throwCrowd = (T.throwCrowd || 0) + 1; ev('throwcrowd', {});
+        }
+      }
     }
     return;
   }
@@ -4671,6 +4805,22 @@ function playerUpdate(dt) {
     if (Math.random() < dt * 10) sparkFX(p.px + rnd(-0.5, 0.5), 1.0 + rnd(0, 1), p.pz + rnd(-0.3, 0.3), 0xff2222, 2);
     if (p.rageT <= 0) { p.dmgMult = p.baseDmgMult * (p.radicalT > 0 ? 1.3 : 1); popText('RAGE SPENT', 'bad', innerWidth / 2, innerHeight * 0.35); }
   } else if ((p.rage || 0) > 0) { p.rage = Math.max(0, p.rage - dt * 6); } // rage bleeds off
+  // TAUNT BUFF (Yakuza lane): +15% damage for 8s after taunting — the reward for the risk
+  if (p.tauntBuffT > 0) {
+    p.tauntBuffT -= dt; p.dmgMult *= 1.15;
+    if (p.tauntBuffT <= 0) { const sp2 = screenPos(p.root.position.clone().add(new THREE.Vector3(0, 2.4, 0))); popText('BUFF FADED', '', sp2.x, sp2.y); }
+  }
+  // WALK-IN GRAB: maintain the hold — victim locked in front, escape meter fills, release on death/escape
+  if (p.grabVictim) {
+    const v = p.grabVictim;
+    if (v.hp <= 0 || (v.grabEscape || 0) >= 1 || p.hp <= 0) {
+      releaseGrab(v, v.hp > 0 && (v.grabEscape || 0) >= 1);
+    } else {
+      v.grabEscape = (v.grabEscape || 0) + dt / 2.8;
+      lockGrabbed(v);
+      p.busy = Math.max(p.busy, 0.12); // stay engaged while holding
+    }
+  }
   // BURST juggle tracking (Guilty Gear): hits taken within a 2.5s window
   if (p.jugT > 0) { p.jugT -= dt; if (p.jugT <= 0) p.jugN = 0; }
   // TECH knockdown (Smash-inspired): tick down; teching is handled in the input layer
