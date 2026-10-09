@@ -3402,6 +3402,8 @@ function doGrapple() {
       t.px = clamp(player.px + (player.face || 1) * 0.85, 0.5, mission.len === Infinity ? 1e6 : mission.len - 1.5);
       t.pz = player.pz || 0;
       syncPos(t);
+      const gc = limbContact(player, t, 'hand');
+      if (gc) resolveStrikeContact(player, t, gc, { knockback: 0.3 });
     }
     landHit(t, Math.round(48 * player.dmgMult), wname, 0.12, 0.8, true, false);
     damageDestructibles(2.4);
