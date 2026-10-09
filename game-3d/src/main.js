@@ -4919,6 +4919,14 @@ window.__cdtest = {
   stanceInfo: () => player ? { stance: player.stance || 0, name: (player.stance && fighterDef().stance) ? fighterDef().stance.name : 'BALANCED', dmg: +player.dmgMult.toFixed(2), spd: +player.spd.toFixed(2) } : null,
   step: (dt) => { playerUpdate(dt || 1 / 60); }, // drive the real physics deterministically
   estep: (dt) => { for (const e of enemies.slice()) enemyAI(e, dt || 1 / 60); }, // drive enemy AI deterministically (test only)
+  ff: (n, dt) => { // improve-loop C2: deterministic FULL-frame stepping for playtests (no render).
+    // frame() covers playerUpdate + director + enemyAI + hitstop/combo timers + projectiles.
+    // NOTE: hit resolution uses wall-clock setTimeout — after ff(), await a real sleep so
+    // pending hit timeouts fire, then sample. Positions are read fresh inside the timeout.
+    const t = Math.max(1, Math.min(600, n | 0 || 1));
+    for (let i = 0; i < t; i++) frame(dt || 1 / 60, false);
+    return +gameTime.toFixed(2);
+  },
   dbg: () => player ? { st: state, mo: missionOver, en: ended, hp: player.hp, busy: player.busy, airT: player.airT, py: player.py, vy: player.vy, frames: dbgFrames } : null,
   setStick: (dx, dy) => { stick.dx = dx; stick.dy = dy; },
   playerPos: () => player ? { px: +player.px.toFixed(2), pz: +player.pz.toFixed(2), py: +(player.py || 0).toFixed(2), airT: +(player.airT || 0).toFixed(2) } : null,
