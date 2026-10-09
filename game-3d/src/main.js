@@ -85,7 +85,9 @@ const hustleMult = () => 1 + save.up_hustle * 0.15;
 
 // ---------- data: roster (data-driven; unlock via missions/bosses) ----------
 const FIGHTERS = [
-  { id: 'kidblue', wrestle: 'DRAGON SUPLEX', name: 'KID BLUE', tag: 'Balanced brawler. Big heart, bigger hands.', hp: 100, dmg: 1.0, spd: 1.0, unlock: { type: 'start' },
+  { id: 'kidblue', wrestle: 'DRAGON SUPLEX',
+    archetype: 'allrounder',
+    grapple: { range: 2.0, dmgMul: 1.0, chains: null }, name: 'KID BLUE', tag: 'Balanced brawler. Big heart, bigger hands.', hp: 100, dmg: 1.0, spd: 1.0, unlock: { type: 'start' },
     spc2: { name: 'DRAGON RUSH', cost: 35, desc: 'Shoulder-first dash through the whole pack.' },
     qcf: { name: "DRAGON'S BREATH", sigkind: 'fireball', kind: 'fire', dmg: 30, speed: 9.5, color: 0xff7a2a, desc: 'Fireball', tag: 'Fireball projectile — 25 energy' },
     ki: { name: 'DRAGON PALM', dmg: 9, speed: 15, color: 0xff7a2a, cost: 5 },
@@ -110,12 +112,15 @@ const FIGHTERS = [
       ['TECH', 'HIT while knocked down', 'Instant recovery + bounce + brief invuln. Never helpless.'],
       ['DUST LAUNCHER', '↓ + HVY', 'Universal overhead launcher. Pops them up for juggles.'],
       ['TAG SPOT', 'TAUNT near a glowing wall', 'Spray the wall (3s, vulnerable). Big cash + 15 REP.'],
-      ['GRAPPLE', 'GRP btn / G on staggered foe', 'Wrestling finisher: suplex/piledriver/powerbomb. Big moment.'],
+      ['GRAPPLE', 'GRP near a foe', 'Basic grab: suplex slam. On a staggered foe: DRAGON SUPLEX finisher.'],
+      ['COMBO ROUTE', 'JAB > CROSS > DUST LAUNCHER', 'Pop them up, juggle in the air. Balanced and reliable.'],
       ['BLOCK', 'HOLD DDG / hold L', 'Guard stance: damage becomes chip. Heavies still hurt.'],
       ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
       ['DRAGON RUSH', '↓ + SPC (50 meter)', 'Shoulder dash straight through the pack.'],
     ] },
-  { id: 'ghost', wrestle: 'PHANTOM DRIVER', name: 'GHOST', tag: 'Fast striker. Blink and you lose.', hp: 85, dmg: 0.9, spd: 1.25, unlock: { type: 'start' },
+  { id: 'ghost', wrestle: 'PHANTOM DRIVER',
+    archetype: 'striker',
+    grapple: { range: 2.0, dmgMul: 0.85, chains: null }, name: 'GHOST', tag: 'Fast striker. Blink and you lose.', hp: 85, dmg: 0.9, spd: 1.25, unlock: { type: 'start' },
     spc2: { name: 'BLINK FLURRY', cost: 35, desc: 'Blink between the 3 nearest enemies, striking each.' },
     qcf: { name: 'PHANTOM STEP', sigkind: 'teleport', dmg: 36, color: 0x9a7bff, desc: 'Blink behind the nearest enemy and strike', tag: 'Teleport strike — 25 energy' },
     ki: { name: 'SPECTRAL BOLT', dmg: 8, speed: 16, color: 0x9a7bff, cost: 5 },
@@ -140,12 +145,19 @@ const FIGHTERS = [
       ['TECH', 'HIT while knocked down', 'Instant recovery + bounce + brief invuln. Never helpless.'],
       ['DUST LAUNCHER', '↓ + HVY', 'Universal overhead launcher. Pops them up for juggles.'],
       ['TAG SPOT', 'TAUNT near a glowing wall', 'Spray the wall (3s, vulnerable). Big cash + 15 REP.'],
-      ['GRAPPLE', 'GRP btn / G on staggered foe', 'Wrestling finisher: suplex/piledriver/powerbomb. Big moment.'],
+      ['GRAPPLE', 'GRP near a foe', 'Quick snatch suplex — fast but light. On a staggered foe: PHANTOM DRIVER finisher.'],
+      ['COMBO ROUTE', 'PHANTOM STEP > FANG FLICKER x3', 'Teleport in, blur them with speed. Never stand still.'],
       ['BLOCK', 'HOLD DDG / hold L', 'Guard stance: damage becomes chip. Heavies still hurt.'],
       ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
       ['BLINK FLURRY', '↓ + SPC (50 meter)', 'Blink between the 3 nearest enemies.'],
     ] },
-  { id: 'brick', wrestle: 'RENT-A-POWERBOMB', name: 'BRICK', tag: 'Walking wall. Hits like rent day.', hp: 135, dmg: 1.25, spd: 0.85, unlock: { type: 'start' },
+  { id: 'brick', wrestle: 'RENT-A-POWERBOMB',
+    archetype: 'grappler',
+    grapple: { range: 2.7, dmgMul: 1.25, chains: [
+      { name: 'RENT-A-POWERBOMB', d: 'chain_brick_d1', r: 'chain_brick_r1', dmg: 30, window: 0.55, strikes: 2 },
+      { name: 'EVICTION NOTICE', d: 'chain_brick_d2', r: 'chain_brick_r2', dmg: 44, window: 0.5 },
+      { name: 'FORECLOSURE', d: 'chain_brick_d3', r: 'chain_brick_r3', dmg: 62, window: 0, launch: true },
+    ] }, name: 'BRICK', tag: 'Walking wall. Hits like rent day.', hp: 135, dmg: 1.25, spd: 0.85, unlock: { type: 'start' },
     spc2: { name: 'SEISMIC SLAM', cost: 35, desc: 'Ground pound: shockwave launches everyone near.' },
     qcf: { name: 'RENT COLLECTION', sigkind: 'grab', dmg: 46, color: 0xffb02e, desc: 'Command grab — yank and slam', tag: 'Command grab — 25 energy' },
     ki: { name: 'BRICK BAT', dmg: 12, speed: 12, color: 0xffb02e, cost: 6 },
@@ -170,12 +182,18 @@ const FIGHTERS = [
       ['TECH', 'HIT while knocked down', 'Instant recovery + bounce + brief invuln. Never helpless.'],
       ['DUST LAUNCHER', '↓ + HVY', 'Universal overhead launcher. Pops them up for juggles.'],
       ['TAG SPOT', 'TAUNT near a glowing wall', 'Spray the wall (3s, vulnerable). Big cash + 15 REP.'],
-      ['GRAPPLE', 'GRP btn / G on staggered foe', 'Wrestling finisher: suplex/piledriver/powerbomb. Big moment.'],
+      ['CHAIN GRAPPLE', 'GRP near a foe', 'Grab opens with knee strikes into RENT-A-POWERBOMB. GRP in the gold window to chain: EVICTION NOTICE, then FORECLOSURE (launcher).'],
       ['BLOCK', 'HOLD DDG / hold L', 'Guard stance: damage becomes chip. Heavies still hurt.'],
       ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
       ['SEISMIC SLAM', '↓ + SPC (50 meter)', 'Ground pound launches everyone nearby.'],
     ] },
-  { id: 'kingpin', wrestle: 'HOSTILE SUPLEX', name: 'KINGPIN', tag: 'Used to run this block. Now he runs with you.', hp: 150, dmg: 1.3, spd: 0.9, unlock: { type: 'boss', boss: 'kingpin' },
+  { id: 'kingpin', wrestle: 'HOSTILE SUPLEX',
+    archetype: 'grappler',
+    grapple: { range: 2.6, dmgMul: 1.2, chains: [
+      { name: 'HOSTILE SUPLEX', d: 'chain_kingpin_d1', r: 'chain_kingpin_r1', dmg: 32, window: 0.55, strikes: 2 },
+      { name: 'ROYAL DECREE', d: 'chain_kingpin_d2', r: 'chain_kingpin_r2', dmg: 46, window: 0.5 },
+      { name: 'HOSTILE TAKEOVER', d: 'chain_kingpin_d3', r: 'chain_kingpin_r3', dmg: 68, window: 0, launch: true },
+    ] }, name: 'KINGPIN', tag: 'Used to run this block. Now he runs with you.', hp: 150, dmg: 1.3, spd: 0.9, unlock: { type: 'boss', boss: 'kingpin' },
     spc2: { name: "KINGPIN'S WRATH", cost: 35, desc: 'Royal beatdown: massive AOE around him.' },
     qcf: { name: 'ROYAL DECREE', sigkind: 'orb', kind: 'orb', dmg: 40, speed: 5, color: 0xffd166, desc: 'Slow explosive orb', tag: 'Explosive orb — 25 energy' },
     ki: { name: "KING'S WRATH", dmg: 10, speed: 14, color: 0xffd166, cost: 6 },
@@ -200,12 +218,19 @@ const FIGHTERS = [
       ['TECH', 'HIT while knocked down', 'Instant recovery + bounce + brief invuln. Never helpless.'],
       ['DUST LAUNCHER', '↓ + HVY', 'Universal overhead launcher. Pops them up for juggles.'],
       ['TAG SPOT', 'TAUNT near a glowing wall', 'Spray the wall (3s, vulnerable). Big cash + 15 REP.'],
-      ['GRAPPLE', 'GRP btn / G on staggered foe', 'Wrestling finisher: suplex/piledriver/powerbomb. Big moment.'],
+      ['CHAIN GRAPPLE', 'GRP near a foe', 'Grab opens with knee strikes into HOSTILE SUPLEX. GRP in the gold window to chain: ROYAL DECREE, then HOSTILE TAKEOVER (launcher).'],
       ['BLOCK', 'HOLD DDG / hold L', 'Guard stance: damage becomes chip. Heavies still hurt.'],
       ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
       ["KINGPIN'S WRATH", '↓ + SPC (50 meter)', 'Massive shockwave around him.'],
     ] },
-  { id: 'sledge', wrestle: 'DEMOLITION DRIVER', name: 'SLEDGE', tag: 'Yard enforcer. Swings first, talks never.', hp: 165, dmg: 1.45, spd: 0.8, unlock: { type: 'boss', boss: 'sledge' },
+  { id: 'sledge', wrestle: 'DEMOLITION DRIVER',
+    archetype: 'grappler',
+    grapple: { range: 2.8, dmgMul: 1.35, chains: [
+      { name: 'YARD TOSS', d: 'chain_sledge_d1', r: 'chain_sledge_r1', dmg: 28, window: 0.6, strikes: 3 },
+      { name: 'SCRAP SUPLEX', d: 'chain_sledge_d2', r: 'chain_sledge_r2', dmg: 40, window: 0.55 },
+      { name: 'GIRDER GERMAN', d: 'chain_sledge_d3', r: 'chain_sledge_r3', dmg: 52, window: 0.5 },
+      { name: 'DEMOLITION DAY', d: 'chain_sledge_d4', r: 'chain_sledge_r4', dmg: 78, window: 0, launch: true },
+    ] }, name: 'SLEDGE', tag: 'Yard enforcer. Swings first, talks never.', hp: 165, dmg: 1.45, spd: 0.8, unlock: { type: 'boss', boss: 'sledge' },
     spc2: { name: 'WRECKING SWING', cost: 35, desc: '360° swing that clears the whole circle.' },
     qcf: { name: 'IRON CYCLONE', sigkind: 'spin', dmg: 16, color: 0x80ed99, desc: 'Traveling spin — multi-hit', tag: 'Traveling spin — 25 energy' },
     ki: { name: 'IRON JAB', dmg: 8, speed: 14, color: 0x80ed99, cost: 5 },
@@ -230,12 +255,14 @@ const FIGHTERS = [
       ['TECH', 'HIT while knocked down', 'Instant recovery + bounce + brief invuln. Never helpless.'],
       ['DUST LAUNCHER', '↓ + HVY', 'Universal overhead launcher. Pops them up for juggles.'],
       ['TAG SPOT', 'TAUNT near a glowing wall', 'Spray the wall (3s, vulnerable). Big cash + 15 REP.'],
-      ['GRAPPLE', 'GRP btn / G on staggered foe', 'Wrestling finisher: suplex/piledriver/powerbomb. Big moment.'],
+      ['CHAIN GRAPPLE', 'GRP near a foe', 'Grab opens with bodyshots into YARD TOSS. GRP in the gold window to chain: SCRAP SUPLEX, GIRDER GERMAN, then DEMOLITION DAY (launcher).'],
       ['BLOCK', 'HOLD DDG / hold L', 'Guard stance: damage becomes chip. Heavies still hurt.'],
       ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
       ['WRECKING SWING', '↓ + SPC (50 meter)', '360° swing clears the whole circle.'],
     ] },
-  { id: 'viper', wrestle: 'VENOM POWERBOMB', name: 'VIPER', tag: 'Fast hands, faster mouth.', hp: 95, dmg: 1.05, spd: 1.35, unlock: { type: 'boss', boss: 'viper' },
+  { id: 'viper', wrestle: 'VENOM POWERBOMB',
+    archetype: 'striker',
+    grapple: { range: 2.0, dmgMul: 0.9, chains: null }, name: 'VIPER', tag: 'Fast hands, faster mouth.', hp: 95, dmg: 1.05, spd: 1.35, unlock: { type: 'boss', boss: 'viper' },
     spc2: { name: 'VENOM DASH', cost: 35, desc: 'Serpent dash: strikes everything in a line.' },
     qcf: { name: "SERPENT'S WAKE", sigkind: 'groundwave', kind: 'fangwave', dmg: 26, speed: 9, color: 0x7cff6b, desc: 'Ground fang wave', tag: 'Ground fang wave — 25 energy' },
     ki: { name: 'VENOM SPIT', dmg: 7, speed: 17, color: 0x7cff6b, cost: 4 },
@@ -260,12 +287,14 @@ const FIGHTERS = [
       ['TECH', 'HIT while knocked down', 'Instant recovery + bounce + brief invuln. Never helpless.'],
       ['DUST LAUNCHER', '↓ + HVY', 'Universal overhead launcher. Pops them up for juggles.'],
       ['TAG SPOT', 'TAUNT near a glowing wall', 'Spray the wall (3s, vulnerable). Big cash + 15 REP.'],
-      ['GRAPPLE', 'GRP btn / G on staggered foe', 'Wrestling finisher: suplex/piledriver/powerbomb. Big moment.'],
+      ['GRAPPLE', 'GRP near a foe', 'Quick snatch suplex — fast but light. On a staggered foe: VENOM POWERBOMB finisher.'],
       ['BLOCK', 'HOLD DDG / hold L', 'Guard stance: damage becomes chip. Heavies still hurt.'],
       ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
       ['VENOM DASH', '↓ + SPC (50 meter)', 'Dash in a line, striking everything.'],
     ] },
-  { id: 'dust', wrestle: 'DUST DEVIL DRIVER', name: 'DUST', tag: 'Quick hands. Gone before you blink.', hp: 80, dmg: 0.95, spd: 1.4, unlock: { type: 'boss', boss: 'rust' },
+  { id: 'dust', wrestle: 'DUST DEVIL DRIVER',
+    archetype: 'striker',
+    grapple: { range: 2.0, dmgMul: 0.85, chains: null }, name: 'DUST', tag: 'Quick hands. Gone before you blink.', hp: 80, dmg: 0.95, spd: 1.4, unlock: { type: 'boss', boss: 'rust' },
     spc2: { name: 'DUST DEVIL', cost: 35, desc: 'Spin into the pack: AOE hits while moving.' },
     qcf: { name: 'DESERT SPIKES', sigkind: 'erupt', dmg: 30, color: 0xd8b56b, desc: 'Spikes erupt under nearby enemies', tag: 'Ground eruption — 25 energy' },
     ki: { name: 'SAND BLAST', dmg: 8, speed: 15, color: 0xd8b56b, cost: 5 },
@@ -287,8 +316,11 @@ const FIGHTERS = [
       ['CYCLONE KICK', 'JUMP, then HIT', 'Aerial cyclone kick.'],
       ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
       ['DUST DEVIL', '↓ + SPC (50 meter)', 'Spinning AOE that travels through the pack.'],
+      ['GRAPPLE', 'GRP near a foe', 'Quick snatch suplex — fast but light. On a staggered foe: DUST DEVIL DRIVER finisher.'],
     ] },
-  { id: 'jack', wrestle: 'HARVEST SUPLEX', name: 'JACK', tag: 'He wears the harvest. The harvest wears you.', hp: 95, dmg: 1.05, spd: 1.05,
+  { id: 'jack', wrestle: 'HARVEST SUPLEX',
+    archetype: 'allrounder',
+    grapple: { range: 2.1, dmgMul: 1.0, chains: null }, name: 'JACK', tag: 'He wears the harvest. The harvest wears you.', hp: 95, dmg: 1.05, spd: 1.05,
     unlock: { type: 'boss', boss: 'pumpkinking' }, head: 'pumpkin', tint: 0xe07b1f,
     spc2: { name: 'CANDLE RUSH', cost: 35, desc: 'Burning dash: leaves a fire trail through the pack.' },
     qcf: { name: 'PUMPKIN BOMB', sigkind: 'fireball', kind: 'fire', dmg: 34, speed: 8, color: 0xff7a1a, arc: 1, desc: 'Lobbed flaming pumpkin', tag: 'Lobbed pumpkin bomb — 25 energy' },
@@ -314,11 +346,9 @@ const FIGHTERS = [
       ['TECH', 'HIT while knocked down', 'Instant recovery + bounce + brief invuln. Never helpless.'],
       ['DUST LAUNCHER', '↓ + HVY', 'Universal overhead launcher. Pops them up for juggles.'],
       ['TAG SPOT', 'TAUNT near a glowing wall', 'Spray the wall (3s, vulnerable). Big cash + 15 REP.'],
-      ['GRAPPLE', 'GRP btn / G on staggered foe', 'Wrestling finisher: suplex/piledriver/powerbomb. Big moment.'],
-      ['BLOCK', 'HOLD DDG / hold L', 'Guard stance: damage becomes chip. Heavies still hurt.'],
+      ['GRAPPLE', 'GRP near a foe', 'Quick snatch suplex — fast but light. On a staggered foe: HARVEST SUPLEX finisher.'],
       ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
       ['CANDLE RUSH', '↓ + SPC (50 meter)', 'Burning dash through the pack.'],
-      ['GRAPPLE', 'GRP btn / G on staggered foe', 'Wrestling finisher: suplex/piledriver/powerbomb. Big moment.'],
       ['BLOCK', 'HOLD DDG / hold L', 'Guard stance: damage becomes chip. Heavies still hurt.'],
     ] },
 ];
@@ -3429,31 +3459,108 @@ function doTech() {
   return true;
 }
 function doGrapple() {
-  // WRESTLING FINISHERS (No More Heroes): staggered enemy + GRAPPLE = suplex/piledriver/powerbomb.
-  // Stun an enemy (parry/counter), then style on them. Wrestling flavor for the wrestling-rooted roster.
-  if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.busy > 0 || player.airT > 0 || player.blocking) return;
+  // MOVESETS: universal basic grab + grappler chain throws (Tekken King-style).
+  // Every grapple is DELIVER (throw lands, own clip) + RECOVER (back to neutral, own clip).
+  // Grapplers: after each recover, a timed GRP window chains the next link.
+  // NOTE: the chain-window check MUST come before the busy guard — the window is a
+  // deliberate opening (player.busy is held through it), and GRP inside it advances the chain.
+  if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.airT > 0 || player.blocking) return;
+  if (player.grab && player.grab.phase === 'window') { chainNext(); return; }
+  if (player.busy > 0) return;
+  if (player.grab) return; // already grabbing
   faceNearestEnemy();
   unlockAudio(); T.taps++; hint(false);
-  const t = nearestEnemy(2.4);
-  if (!t || !(t.stagger > 0) || t.boss) {
-    // whiff: small stumble, no penalty beyond the beat
+  const fd = fighterDef();
+  const g = fd.grapple || { range: 2.0, dmgMul: 1.0, chains: null };
+  const t = nearestEnemy(g.range);
+  if (!t || t.boss) {
     player.busy = 0.3;
     playAnim(player, 'Melee_Unarmed_Idle', { ts: 0.8, fade: 0.1 });
     return;
   }
+  // JUGGLE GRAPPLE (grapplers): catch a launched/juggled foe out of the air
+  if ((t.airborne || (t.airT || 0) > 0 || (t.py || 0) > 0.5) && fd.archetype === 'grappler' && clips['juggle_d']) {
+    startJuggleGrab(t, g);
+    return;
+  }
+  // Staggered foe: classic wrestling finisher (uses the fighter's signature wrestle name)
+  if (t.stagger > 0) { wrestlingFinisher(t, fd); return; }
+  // Universal basic grab (all characters). Grapplers: this IS chain link 0.
+  startGrabLink(t, g, 0);
+}
+function grabClipDur(name, ts) {
+  const c = clips[name];
+  return c ? (c.duration / (ts || 1)) : 1.0;
+}
+function startGrabLink(t, g, linkIdx) {
+  // Begin a grab link. Grapplers open link 0 with COMBO GRAPPLE strikes
+  // (knee/bodyshots, real punch clips) before the throw deliver.
+  // Then DELIVER (throw lands, own mocap clip) + RECOVER (own mocap clip, sped up).
+  // Victim is kinematically driven through GRAB -> LIFT -> LOCKUP -> THROW by
+  // updateGrapple (whole-body follow, not bone faking).
   const fd = fighterDef();
+  const isChain = g.chains && g.chains[linkIdx];
+  const link = isChain || null;
+  const dClip = link ? link.d : 'grab_basic_d';
+  const rClip = link ? link.r : 'grab_basic_r';
+  const name = link ? link.name : (fd.wrestle || 'STREET SUPLEX');
+  const dmg = Math.round((link ? link.dmg : 34) * (player.dmgMult || 1) * (g.dmgMul || 1));
+  const ts = 1.35;
+  const dur = grabClipDur(dClip, ts);
+  const strikes = (link && link.strikes) || 0;
+  const strikeDur = strikes * 0.34;
+  const rDur = grabClipDur(rClip, 2.0); // recover plays back faster — chains stay snappy
+  player.grab = { victim: t, link: linkIdx, chain: g.chains || null, linkDef: link,
+    phase: strikes ? 'strikes' : 'deliver', t: 0, dur: strikes ? strikeDur : dur, dClip, rClip, name, dmg, ts,
+    rDur, strikeTotal: strikes, strikeN: 0, strikeDmg: Math.round(9 * (player.dmgMult || 1) * (g.dmgMul || 1)),
+    launch: !!(link && link.launch), isChain: !!isChain };
+  player.busy = strikeDur + dur + rDur + 0.4; // uninterruptible through strikes + deliver + recover
+  t.stagger = 999; t.grabLock = true;
+  faceNearestEnemy();
+  if (strikes) {
+    playAnim(player, 'Melee_Unarmed_Attack_Punch_A', { ts: 1.8, fade: 0.06 });
+    playAnim(t, 'Hit_A', { ts: 1.2, fade: 0.06 });
+  } else {
+    playAnim(player, dClip, { ts, fade: 0.08 });
+    playAnim(t, 'Hit_B', { ts: 1.0, fade: 0.08 });
+  }
+  banner(name + '!', 'spc'); sfx('hit3', 1, false, 0.55);
+  const sp = screenPos(t.root.position.clone().add(new THREE.Vector3(0, 2.4, 0)));
+  popText(name + '!', 'big', sp.x, sp.y);
+  sparkFX(t.px, 1.2, t.pz, 0xffd166, 24);
+  T.grapples = (T.grapples || 0) + 1; ev('grapple', { name }); setHud();
+}
+function startJuggleGrab(t, g) {
+  // Air grab: pop-up german on a launched foe, slam back down.
+  const fd = fighterDef();
+  const ts = 1.35;
+  const dClip = 'juggle_d', rClip = 'juggle_r';
+  const dur = grabClipDur(dClip, ts);
+  const dmg = Math.round(46 * (player.dmgMult || 1) * (g.dmgMul || 1));
+  player.grab = { victim: t, link: -2, chain: null, linkDef: null,
+    phase: 'deliver', t: 0, dur, dClip, rClip, name: 'SKY SNATCH', dmg, ts,
+    launch: false, isChain: false, juggle: true };
+  player.busy = dur + 0.9;
+  t.stagger = 999; t.grabLock = true;
+  faceNearestEnemy();
+  playAnim(player, dClip, { ts, fade: 0.08 });
+  playAnim(t, 'Hit_B', { ts: 1.1, fade: 0.08 }); // victim reacts with a real hit clip, timed to the pop-up
+  banner('SKY SNATCH!', 'spc'); sfx('hit3', 1, false, 0.55);
+  sparkFX(t.px, 1.6, t.pz, 0x7af0ff, 24);
+  T.grapples = (T.grapples || 0) + 1; ev('grapple', { name: 'SKY SNATCH' }); setHud();
+}
+function wrestlingFinisher(t, fd) {
+  // Original staggered-foe wrestling finisher (kept intact).
   const wname = fd.wrestle || 'STREET SUPLEX';
   player.busy = 1.0;
   playAnim(player, 'Melee_Unarmed_Attack_Punch_B', { ts: 1.2, fade: 0.05 });
   banner(wname + '!', 'spc'); sfx('hit3', 1, false, 0.55); flash('#ffd166');
-  addSlowmo(0.5, 0.5); shake = 0.7; // big moment: slow-mo allowed
+  addSlowmo(0.5, 0.5); shake = 0.7;
   const sp = screenPos(t.root.position.clone().add(new THREE.Vector3(0, 2.4, 0)));
   popText(wname + '!', 'big', sp.x, sp.y);
   sparkFX(t.px, 1.2, t.pz, 0xffd166, 24);
   setTimeout(() => {
     if (state !== 'fight' || missionOver || ended) return;
-    // CONTACT COLLISION: positional lock — the victim is held at a fixed offset in front
-    // of the attacker for the slam; bodies never interpenetrate.
     if (t.hp > 0) {
       t.px = clamp(player.px + (player.face || 1) * 0.85, 0.5, mission.len === Infinity ? 1e6 : mission.len - 1.5);
       t.pz = player.pz || 0;
@@ -3465,6 +3572,120 @@ function doGrapple() {
     damageDestructibles(2.4);
   }, 300);
   T.grapples = (T.grapples || 0) + 1; ev('grapple', { name: wname }); setHud();
+}
+function chainNext() {
+  // GRP pressed inside the window: advance to the next chain link.
+  const gr = player.grab;
+  if (!gr || gr.phase !== 'window') return;
+  const t = gr.victim;
+  if (!t || t.hp <= 0) { endGrab(); return; }
+  const g = (fighterDef().grapple || {});
+  startGrabLink(t, g, gr.link + 1);
+}
+function endGrab() {
+  const gr = player.grab;
+  if (gr && gr.victim) { gr.victim.grabLock = false; if (gr.victim.stagger > 100) gr.victim.stagger = 0.6; }
+  player.grab = null;
+  player.busy = Math.min(player.busy || 0, 0.25);
+  playAnim(player, 'Melee_Unarmed_Idle', { loop: true, fade: 0.15 });
+}
+function updateGrapple(dt) {
+  // Drives the victim through GRAB -> LIFT -> LOCKUP -> THROW while the attacker's
+  // mocap deliver plays. Whole-body kinematic follow (standard fighting-game practice);
+  // the attacker's bones are real mocap, the victim plays real hit clips.
+  const gr = player && player.grab;
+  if (!gr || !gr.victim) return;
+  const t = gr.victim;
+  if (t.hp <= 0) { endGrab(); return; }
+  const face = player.face || 1;
+  if (gr.phase === 'strikes') {
+    // COMBO GRAPPLE: hold the victim, land knee/bodyshots (real punch clips), then throw.
+    gr.t += dt;
+    t.px = clamp(player.px + face * 0.9, 0.5, mission.len === Infinity ? 1e6 : mission.len - 1.5);
+    t.pz = player.pz || 0; t.py = 0; syncPos(t);
+    const want = Math.min(gr.strikeTotal, Math.floor(gr.t / 0.34) + 1);
+    while (gr.strikeN < want && gr.strikeN < gr.strikeTotal) {
+      gr.strikeN++;
+      landHit(t, gr.strikeDmg, 'KNEE', 0.03, 0.2, false, false);
+      playAnim(t, 'Hit_A', { ts: 1.6, fade: 0.04 });
+      sfx('hit2', 0.9, false, 1.1);
+    }
+    if (gr.t >= gr.dur) {
+      // strikes done -> the throw deliver
+      gr.phase = 'deliver'; gr.t = 0;
+      gr.dur = grabClipDur(gr.dClip, gr.ts);
+      playAnim(player, gr.dClip, { ts: gr.ts, fade: 0.08 });
+      playAnim(t, 'Hit_B', { ts: 1.0, fade: 0.08 });
+    }
+  } else if (gr.phase === 'deliver') {
+    gr.t += dt;
+    const p = Math.min(1, gr.t / gr.dur);
+    // Victim arc: grab (front, ground) -> lift (rises with the hands) -> lockup/throw (arcs over) -> slam
+    let vx, vy;
+    const x0 = player.px + face * 0.9;
+    if (gr.juggle) {
+      // Juggle: victim starts airborne, gets popped higher, then slammed down
+      const startPy = Math.max(0.8, t.py || 0.8);
+      if (p < 0.4) { vx = player.px + face * 0.7; vy = startPy + p * 2.0; }
+      else if (p < 0.7) { vx = player.px + face * 0.9; vy = startPy + 0.8 + (p - 0.4) * 3.0; }
+      else { const q = (p - 0.7) / 0.3; vx = player.px + face * (0.9 + q * 1.2); vy = Math.max(0, (startPy + 1.7) * (1 - q * q)); }
+    } else if (p < 0.28) { const q = p / 0.28; vx = x0; vy = 0; }
+    else if (p < 0.55) { const q = (p - 0.28) / 0.27; vx = player.px + face * (0.9 - q * 0.5); vy = q * q * 2.3; }
+    else if (p < 0.82) { const q = (p - 0.55) / 0.27; vx = player.px + face * (0.4 + q * 1.6); vy = 2.3 - q * q * 1.6; }
+    else { const q = (p - 0.82) / 0.18; vx = player.px + face * 2.0; vy = Math.max(0, 0.7 * (1 - q * q)); }
+    t.px = clamp(vx, 0.5, mission.len === Infinity ? 1e6 : mission.len - 1.5);
+    t.pz = player.pz || 0;
+    t.py = vy;
+    syncPos(t);
+    if (!gr.hitDone && p >= 0.8) {
+      gr.hitDone = true;
+      // CONTACT COLLISION: positional lock at slam — bodies never interpenetrate
+      const gc = limbContact(player, t, 'hand');
+      if (gc) resolveStrikeContact(player, t, gc, { knockback: 0.3 });
+      // Non-launch links slam the victim down (no launcher pop — the arc already
+      // delivered them). Launch finishers send them skyward for real.
+      landHit(t, gr.dmg, gr.name, 0.12, 0.8, false, false);
+      damageDestructibles(2.4);
+      shake = Math.max(shake || 0, 0.6);
+      if (gr.launch) {
+        t.vy = 7; t.airborne = true; t.ai = 'launched';
+        playAnim(t, 'Hit_B', { ts: 1.2 });
+        const lsp = screenPos(t.root.position.clone().add(new THREE.Vector3(0, 2.4, 0)));
+        popText('LAUNCH!', 'spc', lsp.x, lsp.y - 60);
+      } else {
+        t.airborne = false; t.vy = 0; t.ai = 'recover'; t.aiT = 1.0;
+      }
+    }
+    if (p >= 1) {
+      gr.phase = 'recover';
+      gr.t = 0;
+      gr.dur = gr.rDur || grabClipDur(gr.rClip, gr.ts);
+      playAnim(player, gr.rClip, { ts: 2.0, fade: 0.1 }); // recover at 2x — chains stay snappy
+      // victim stays down briefly (unless the finisher launched them — they fly free)
+      if (!gr.launch) { t.py = 0; syncPos(t); }
+    }
+  } else if (gr.phase === 'recover') {
+    gr.t += dt;
+    // keep the victim grounded at the slam spot during recover (launched ones fly free)
+    if (!gr.launch) { t.py = 0; syncPos(t); }
+    if (gr.t >= gr.dur) {
+      if (gr.chain && gr.chain[gr.link + 1] && t.hp > 0) {
+        // Open the timed chain window
+        gr.phase = 'window';
+        gr.t = 0;
+        gr.dur = gr.chain[gr.link + 1].window || 0.5;
+        player.busy = gr.dur + 0.2;
+        const sp = screenPos(player.root.position.clone().add(new THREE.Vector3(0, 2.6, 0)));
+        popText('GRP! ' + gr.chain[gr.link + 1].name, 'chain', sp.x, sp.y);
+        sfx('counter', 1, false, 0.4);
+      } else {
+        endGrab();
+      }
+    }
+  } else if (gr.phase === 'window') {
+    gr.t += dt;
+    if (gr.t >= gr.dur) endGrab(); // window missed: chain ends
+  }
 }
 function doTaunt() {
   // TMNT taunt: talk trash, build special meter. Pure addition — costs a beat of vulnerability.
@@ -5799,6 +6020,7 @@ function frame(dt, doRender = true) {
     if (f.cheerT > 0) f.cheerT -= dt;
   }
   updateFx(dt);
+  if (state === 'fight') updateGrapple(dt); // MOVESETS: chain-throw state machine + victim driving
   if (!lowFx && state === 'fight') {
     fpsAcc.push(clock.elapsedTime);
     if (fpsAcc.length > 40) {
@@ -5830,8 +6052,8 @@ async function loadArenaProps() {
 }
 async function boot() {
   loadSave();
-  const [fg, am, ag, amv, amx, st, rd, ix] = await Promise.all(['fighter.glb', 'anim_melee.glb', 'anim_general.glb', 'anim_move.glb', 'anim_moves.glb', 'street.glb', 'roads.glb', 'industrial.glb'].map(parse));
-  for (const g of [am, ag, amv, amx]) for (const c of g.animations) clips[c.name] = c;
+  const [fg, am, ag, amv, agr, amx, st, rd, ix] = await Promise.all(['fighter.glb', 'anim_melee.glb', 'anim_general.glb', 'anim_move.glb', 'anim_grapple.glb', 'anim_moves.glb', 'street.glb', 'roads.glb', 'industrial.glb'].map(parse));
+  for (const g of [am, ag, amv, agr, amx]) for (const c of g.animations) clips[c.name] = c;
   fighterTemplate = fg.scene;
   const names = new Set(); fighterTemplate.traverse((o) => names.add(o.name));
   for (const c of Object.values(clips)) c.tracks = c.tracks.filter((t) => names.has(t.name.split('.')[0]));
@@ -5859,6 +6081,9 @@ boot().catch((e) => { T.errors.push(String(e && e.stack || e)); console.error(e)
 // QA hook (test automation only — drives the real game systems, no mocks)
 window.__cdtest = {
   startMission, state: () => state,
+  gameTime: () => gameTime,
+  playClipOnPlayer: (name) => { if (player && clips[name]) { playAnim(player, name, { loop: false, fade: 0.1, ts: 0.5 }); return true; } return false; },
+  clipNames: () => Object.keys(clips),
   clips: () => Object.keys(clips),
   playClip: (name) => { if (player) playAnim(player, name, { once: true, dur: 0.6 }); return !!clips[name]; },
   doKiBlast, doWaveStart, doWaveRelease, doSpinAttack,
@@ -5875,6 +6100,11 @@ window.__cdtest = {
   freeze: (on) => { window.__cdfreeze = !!on; },
   spawnBoss: (id) => { if (player) return spawnBoss(id || 'kingpin', player.px + 6); },
   spawnFam: (famId) => { if (player) return spawnEnemy(famId, 0, player.px + 3, 0); },
+  spawnFoeAt: (x) => { if (player) return spawnEnemy('thug', 0, x, 0); },
+  foeHp: (i) => (enemies[i] ? enemies[i].hp : -1),
+  foeCount: () => enemies.length,
+  playerGrab: () => (player && player.grab ? { phase: player.grab.phase, link: player.grab.link, name: player.grab.name } : null),
+  fighterArchetype: () => fighterDef().archetype,
   sigChance: (v) => { window.__cdSigChance = v; },
   playerDbg: () => player ? { busy: +player.busy.toFixed(2), stance: player.stance||0, hp: Math.round(player.hp), state, fid: fighterDef().id, hasFin: !!fighterDef().stanceFin, face: player.face, animMove: !!player.animMove, animTs: player.cur ? +player.cur.timeScale.toFixed(2) : 0, px: +player.px.toFixed(2) } : null,
   fireStanceFin: (fid) => { const fd = FIGHTERS.find(f => f.id === fid); if (fd && fd.stanceFin && player) { player.stance = 1; doStanceFin(fd); return fd.stanceFin.kind; } return null; },
