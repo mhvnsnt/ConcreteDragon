@@ -221,7 +221,66 @@ body.cine #cineSkip{display:block}
 .bline b{color:#ffd166}
 .diffBtn{font-family:'BebasNeue','Anton',Arial,sans-serif;font-size:13px;letter-spacing:1px;background:#221a3a;color:#fff;border:2px solid #4a4370;border-radius:10px;padding:8px 6px;cursor:pointer;pointer-events:auto;min-height:44px;flex:1}
 .diffBtn.sel{border-color:#ffe14d;color:#ffe14d;box-shadow:0 0 8px #ffe14d66}
-#loading{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:22px;background:#150f2a;z-index:20}
+#loading{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:22px;background:#150f2a;z-index:20;font-family:'SairaStencil','Bungee','Anton',Arial,sans-serif;letter-spacing:4px}
+/* ================= ROUND 2: custom HUD + menu art ================= */
+/* --- arcade health bars: angled plates, segment ticks, top shine, low-HP alarm --- */
+#pbar{transform:skewX(-14deg)}
+#ebar{transform:skewX(14deg)}
+.bar::after{content:'';position:absolute;left:0;right:0;top:0;height:42%;background:linear-gradient(180deg,rgba(255,255,255,.38),rgba(255,255,255,0));pointer-events:none;z-index:3}
+.bar::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0,transparent calc(25% - 2px),rgba(0,0,0,.55) calc(25% - 2px),rgba(0,0,0,.55) 25%);pointer-events:none;z-index:2}
+@keyframes lowPulse{0%,100%{filter:none}50%{filter:brightness(1.9) drop-shadow(0 0 10px #ff2a2a)}}
+.bar.low{animation:lowPulse .55s infinite}
+/* --- fighter name plates --- */
+.lbl{background:linear-gradient(180deg,rgba(43,33,64,.95),rgba(18,12,38,.95));border:1px solid #ffffff55;padding:3px 12px 2px;top:calc(max(14px,env(safe-area-inset-top)) + 34px);font-family:'SairaStencil','Bungee','Anton',Arial,sans-serif;font-size:13px;border-radius:3px}
+#pname{border-left:4px solid #4fd1ff;transform:skewX(-10deg)}
+#ename{border-right:4px solid #ff4d4d;transform:skewX(10deg)}
+/* --- energy meter: angled to match, hotter fill, stronger ready state --- */
+#spcWrap{transform:skewX(-14deg)}
+#spcLbl{font-family:'SairaStencil','Bungee','Anton',Arial,sans-serif;font-size:13px;text-shadow:0 0 10px #0af,0 2px 0 #000}
+#spcWrap.ready{box-shadow:0 0 16px #ff4fd8,inset 0 0 8px rgba(255,79,216,.35)}
+.spcSeg.lit{background:linear-gradient(180deg,rgba(255,255,255,.55),#38c8f4 32%,#ff4fd8);box-shadow:0 0 8px rgba(255,79,216,.9)}
+/* --- boss bar: phased segments, skull nameplate, rage alarm --- */
+#bossBar{transform:skewX(-8deg)}
+#bossBar::after{content:'';position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0,transparent calc(20% - 2px),rgba(0,0,0,.6) calc(20% - 2px),rgba(0,0,0,.6) 20%);pointer-events:none;z-index:2}
+#bossWrap .bn{font-family:'SairaStencil','Bungee','Anton',Impact,Arial,sans-serif;font-size:18px;text-shadow:0 0 12px #f00,0 3px 0 #000}
+#bossWrap .bn::before{content:'';display:inline-block;width:22px;height:22px;margin-right:8px;vertical-align:-4px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23ff4d4d' d='M12 2C7 2 3 6 3 11c0 2.4 1 4.6 2.6 6.2V20c0 1.1.9 2 2 2h8.8c1.1 0 2-.9 2-2v-2.8C20 15.6 21 13.4 21 11c0-5-4-9-9-9zM8.5 13.5c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2zm7 0c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2zM12 17.2l-1.4-2.4h2.8L12 17.2z'/%3E%3C/svg%3E") center/contain no-repeat}
+#bossWrap.rage #bossBar{animation:lowPulse .45s infinite}
+/* --- cash: coin icon + stencil --- */
+#cash{font-family:'SairaStencil','Bungee','Anton',Arial,sans-serif;font-size:18px}
+#cash::before{content:'';display:inline-block;width:20px;height:20px;margin-right:6px;vertical-align:-4px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='10' fill='%23ffd166' stroke='%237a5200' stroke-width='2'/%3E%3Cpath d='M12 6v12M8.5 8.5c0-1 1.6-2 3.5-2s3.5 1 3.5 2.2c0 2.8-7 1.8-7 4.6 0 1.2 1.6 2.2 3.5 2.2s3.5-1 3.5-2' stroke='%237a5200' stroke-width='1.6' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") center/contain no-repeat;filter:drop-shadow(0 2px 0 #000)}
+/* --- combo: backdrop plate for readability --- */
+#combo{padding:4px 20px}
+#combo::before{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(42,11,0,.85),rgba(10,6,24,.85));border:2px solid rgba(255,225,77,.55);border-radius:8px;transform:skewX(-8deg);z-index:-1;box-shadow:0 4px 0 #000}
+/* --- touch buttons: steel rings, icon glow, punchier press --- */
+.abtn{box-shadow:0 4px 0 rgba(0,0,0,.65),inset 0 0 14px rgba(0,0,0,.6)}
+.abtn:active{transform:scale(.9);filter:brightness(1.5)}
+.abtn .ic{filter:drop-shadow(0 0 5px rgba(255,255,255,.6))}
+/* --- title: riveted steel plate behind logo, framed tap-to-start, notes card --- */
+#title #logo{position:relative;padding:16px 30px 12px}
+#title #logo::before{content:'';position:absolute;inset:0;z-index:-1;border-radius:14px;border:3px solid #4a4370;box-shadow:0 6px 0 #000,inset 0 0 34px rgba(0,0,0,.65);background:radial-gradient(circle at 14px 14px,#9aa3b8 0 3px,#2a2f3a 4px,transparent 5px),radial-gradient(circle at calc(100% - 14px) 14px,#9aa3b8 0 3px,#2a2f3a 4px,transparent 5px),radial-gradient(circle at 14px calc(100% - 14px),#9aa3b8 0 3px,#2a2f3a 4px,transparent 5px),radial-gradient(circle at calc(100% - 14px) calc(100% - 14px),#9aa3b8 0 3px,#2a2f3a 4px,transparent 5px),linear-gradient(180deg,rgba(38,32,64,.95),rgba(16,11,34,.96))}
+#tapStart{display:inline-block;padding:10px 34px;border:3px solid #ffe14d;border-radius:12px;background:rgba(26,15,42,.87);box-shadow:0 0 18px rgba(255,225,77,.35),inset 0 0 14px rgba(0,0,0,.55)}
+#patchNotes{background:rgba(18,12,38,.87);border:2px solid #4a4370;border-radius:10px;padding:4px 14px 10px}
+/* --- dragon dividers on section headers --- */
+.subtitle{display:flex;align-items:center;justify-content:center;gap:12px}
+.subtitle::before,.subtitle::after{content:'';height:2px;width:70px;background:linear-gradient(90deg,transparent,#ffe14d)}
+.subtitle::after{background:linear-gradient(90deg,#ffe14d,transparent)}
+/* --- select: framed cards, shining stat bars, readable move list --- */
+.card{background:linear-gradient(180deg,rgba(34,27,56,.96),rgba(16,11,32,.96));border:3px solid #4a4370;border-radius:10px;box-shadow:0 4px 0 rgba(0,0,0,.65)}
+.card.goldcard{border-color:#ffd166;box-shadow:0 0 16px rgba(255,209,102,.55),0 4px 0 rgba(0,0,0,.65)}
+.card .nm{text-shadow:0 2px 0 #000}
+.sbar .tr{background:rgba(0,0,0,.65);border:1px solid #ffffff66;box-shadow:inset 0 2px 4px #000}
+.sbar .fl{background:linear-gradient(180deg,#ffe9a3,#ffcf2e 55%,#c78a00);box-shadow:inset 0 1px 0 rgba(255,255,255,.65)}
+.mvrow{padding:5px 8px}
+.mvrow:nth-child(odd){background:rgba(255,255,255,.05);border-radius:6px}
+/* --- mission: framed cards, zoned headers --- */
+.mcard{background:linear-gradient(180deg,rgba(34,27,56,.95),rgba(16,11,32,.95));border:3px solid #4a4370;border-radius:10px;box-shadow:0 4px 0 rgba(0,0,0,.65);transition:transform .12s}
+.mcard:active{transform:scale(.97)}
+.zoneHead{background:rgba(18,12,38,.8);border-radius:0 10px 10px 0}
+/* --- results: plated stat rows --- */
+.stat{background:rgba(20,16,38,.8);border:1px solid rgba(255,255,255,.18);border-radius:8px;padding:7px 14px;margin:7px auto;max-width:360px}
+/* --- damage popups: harder outline --- */
+.pop{text-shadow:0 3px 0 #000,0 0 10px rgba(0,0,0,.8)}
+.dlg h2{text-shadow:0 3px 0 #000}
 </style>
 </head><body>
 <canvas id="c"></canvas>
