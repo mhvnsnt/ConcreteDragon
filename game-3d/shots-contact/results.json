@@ -1,0 +1,70 @@
+{
+ "tests": [
+  {
+   "name": "jab",
+   "maxPen": 0,
+   "lastStrike": 0.156,
+   "strikes": 1,
+   "foes": 3,
+   "kills": 0,
+   "php": 100
+  },
+  {
+   "name": "heavy",
+   "maxPen": 0,
+   "lastStrike": 0.276,
+   "strikes": 1,
+   "foes": 3,
+   "kills": 0,
+   "php": 100
+  },
+  {
+   "name": "blitz",
+   "maxPen": 0,
+   "lastStrike": 0.335,
+   "strikes": 1,
+   "foes": 3,
+   "kills": 0,
+   "php": 100
+  },
+  {
+   "name": "divekick",
+   "maxPen": 0,
+   "lastStrike": 0,
+   "strikes": 0,
+   "foes": 3,
+   "kills": 0,
+   "php": 100
+  },
+  {
+   "name": "enemy-punch",
+   "maxPen": 0,
+   "lastStrike": 0,
+   "strikes": 0,
+   "foes": 4,
+   "kills": 0,
+   "php": 100
+  },
+  {
+   "name": "boss-slam",
+   "maxPen": 0,
+   "lastStrike": 0,
+   "strikes": 0,
+   "foes": 5,
+   "kills": 0,
+   "php": 100
+  },
+  {
+   "name": "grapple",
+   "maxPen": 0,
+   "lastStrike": 0,
+   "strikes": 0,
+   "foes": 6,
+   "kills": 0,
+   "php": 100
+  }
+ ],
+ "errors": [],
+ "boot": "PASS",
+ "done": true
+}
