@@ -4080,7 +4080,25 @@ function stickEnd(e) {
 }
 function setupInput() {
   const bind = (id, fn) => $(id).addEventListener('pointerdown', (e) => { e.stopPropagation(); e.preventDefault(); fn(); }, { passive: false });
-  bind('btnAtk', () => { if (player && player.knockT > 0) doTech(); else doPunch(); }); bind('btnDdg', doDodge); bind('btnSpc', doSpecial); bind('btnJmp', doJump);
+  bind('btnAtk', () => { if (player && player.knockT > 0) doTech(); else doPunch(); }); bind('btnDdg', doDodge); bind('btnJmp', doJump);
+  // SPC: tap = special, double-tap = KI BLAST, hold = charge ENERGY WAVE
+  { const el = $('btnSpc'); let spcDownT = 0, spcLastTap = 0, spcHoldTimer = 0;
+    el.addEventListener('pointerdown', (e) => { e.stopPropagation(); e.preventDefault();
+      const now = performance.now();
+      if (now - spcLastTap < 300) { spcLastTap = 0; doKiBlast(); return; } // double-tap: ki blast
+      spcDownT = now; spcHoldTimer = 0;
+    }, { passive: false });
+    const spcUp = (e) => { e.stopPropagation();
+      if (waveCharging) { doWaveRelease(); }
+      else if (spcDownT > 0 && performance.now() - spcDownT < 350) { spcLastTap = performance.now(); doSpecial(); }
+      spcDownT = 0;
+    };
+    el.addEventListener('pointerup', spcUp, { passive: false });
+    el.addEventListener('pointercancel', spcUp, { passive: false });
+    // hold detection: after 350ms, start wave charge
+    el.addEventListener('pointermove', () => {}, { passive: true });
+    setInterval(() => { if (spcDownT > 0 && !waveCharging && performance.now() - spcDownT > 350) doWaveStart(); }, 50);
+  }
   bind('btnGrp', doGrapple); // WRESTLING FINISHERS (No More Heroes): GRAPPLE on staggered foes
   // FOCUS (SFIV): HOLD HVY 0.45s = focus stance (absorb one hit), release = crumple strike; tap = normal heavy
   { const el = $('btnHvy');
@@ -4736,10 +4754,9 @@ function playerUpdate(dt) {
     for (const pl of platforms) if (Math.abs(p.px - pl.x) < pl.w / 2 && Math.abs(p.pz - pl.z) < pl.d / 2) { over = true; break; }
     if (!over) { p.airT = 0.01; p.vy = 0; }
   }
-  if (p.spinT > 0) { // IRON CYCLONE: spinning travel, multi-hit
+  if (p.spinT > 0) { // SPIN: travel + multi-hit (rotation from real SpinAttack clip, not procedural)
     const maxX = mission.len === Infinity ? 1e6 : mission.len - 1.5;
     p.px = clamp(p.px + p.face * 9.5 * dt, 0.5, maxX);
-    p.root.rotation.y += dt * 16 * p.face;
     for (const e of enemies) {
       if (!e.dead && e.hp > 0 && !p.spinHit.has(e) && Math.abs(e.px - p.px) < 1.6 && Math.abs(e.pz - p.pz) < 1.25) {
         // CONTACT COLLISION: spinning body hitbox vs hurtbox
@@ -4862,7 +4879,7 @@ const projs = []; // {spr,x,y,z,vx,vy,vz,kind,dmg,from,color,pierce,life,arc,rad
 function fireProj(o) {
   const mat = new THREE.SpriteMaterial({ map: sparkTex, color: o.color, transparent: true, opacity: 1, depthWrite: false });
   const s = new THREE.Sprite(mat);
-  const sc = o.kind === 'beam' ? [1.9, 0.6] : o.kind === 'shock' ? [1.3, 0.55] : o.kind === 'orb' ? [1.15, 1.15] : [0.9, 0.9];
+  const sc = o.kind === 'beam' ? [1.9, 0.6] : o.kind === 'shock' ? [1.3, 0.55] : o.kind === 'orb' ? [1.15, 1.15] : o.kind === 'ki' ? [0.55, 0.55] : o.kind === 'wave' ? [1.7, 1.0] : [0.9, 0.9];
   s.scale.set(sc[0], sc[1], 1);
   s.position.set(o.x, o.y || 1.15, o.z);
   scene.add(s);
@@ -4892,6 +4909,8 @@ function updateProjs(dt) {
     p.spr.material.rotation += dt * 9;
     if (Math.random() < 0.45) sparkFX(p.x, p.y, p.z, p.color, 2);
     if (p.kind === 'fangwave' && Math.random() < 0.7) sparkFX(p.x, 0.18, p.z, p.color, 3);
+    if (p.kind === 'wave' && Math.random() < 0.8) { sparkFX(p.x, p.y, p.z, p.color, 4); sparkFX(p.x, p.y + 0.3, p.z, 0xffffff, 2); }
+    if (p.kind === 'ki' && Math.random() < 0.5) sparkFX(p.x, p.y, p.z, p.color, 2);
     let dead = p.life <= 0 || Math.abs(p.x) > 32 || Math.abs(p.z) > 15;
     if (!dead && p.from === 'p') {
       for (const e of enemies) {
@@ -4988,8 +5007,8 @@ function doMotionSpecial(kind, free) {
       }
       present();
     } else if (pr.sigkind === 'spin') {
-      playAnim(player, 'Melee_Unarmed_Attack_Punch_A', { once: true, dur: 0.5 });
-      player.busy = Math.max(player.busy, 0.55);
+      playAnim(player, 'SpinAttack', { once: true, dur: 0.62 });
+      player.busy = Math.max(player.busy, 0.62);
       player.spinT = 0.55; player.spinHit = new Set();
       player.spinName = pr.name; player.spinColor = pr.color; player.spinDmg = pr.dmg;
       sfx(300, 0.4, 'sawtooth', 0.4);
@@ -5024,6 +5043,98 @@ function doMotionSpecial(kind, free) {
     addHitstop(0.08); addSlowmo(0.35, 0.35);
   }
 }
+
+// ---------- MOVES EXPANSION: ki blasts, energy waves, generalized spin ----------
+// Ki Blast: rapid-fire ki projectile (double-tap SPC). Spammable, low cost.
+function doKiBlast() {
+  if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.busy > 0) return;
+  const fd = fighterDef();
+  const ki = fd.ki || { name: 'KI BLAST', dmg: 8, speed: 14, color: 0x7af0ff, cost: 5 };
+  if (player.energy < ki.cost) { popText('NEED ENERGY', 'bad', innerWidth/2, innerHeight*0.4); return; }
+  player.energy -= ki.cost; setHud();
+  faceNearestEnemy(); unlockAudio();
+  player.busy = Math.max(player.busy, 0.22);
+  playAnim(player, 'KiBlast', { once: true, dur: 0.35 });
+  sfxSwing(0.4);
+  const sp = screenPos(player.root.position);
+  setTimeout(() => {
+    if (state !== 'fight' || missionOver || ended) return;
+    fireProj({ x: player.px + player.face * 0.8, z: player.pz, y: 1.15,
+      vx: player.face * ki.speed, kind: 'ki', label: ki.name,
+      dmg: Math.round(ki.dmg * player.dmgMult), color: ki.color,
+      fromPlayer: true, life: 1.2, radius: 0.35 });
+    popText(ki.name, 'spc', sp.x, sp.y - 70);
+  }, 120);
+  ev('kiblast', {});
+}
+
+// Energy Wave: hold SPC to charge (WaveCharge clip + growing glow), release to fire.
+// Charge levels 1-3 based on hold time. Piercing traveling wave.
+let waveChargeT = 0, waveCharging = false, waveChargeFx = null;
+function doWaveStart() {
+  if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.busy > 0) return;
+  if (player.energy < 15) return false;
+  waveCharging = true; waveChargeT = 0;
+  playAnim(player, 'WaveCharge', { loop: true, fade: 0.1 });
+  sfx(110, 0.3, 'sawtooth', 0.5);
+  return true;
+}
+function doWaveTick(dt) {
+  if (!waveCharging || !player) return;
+  waveChargeT += dt;
+  const lvl = Math.min(3, 1 + Math.floor(waveChargeT / 0.5));
+  // growing glow
+  if (Math.random() < 0.5) sparkFX(player.px + player.face * 0.6, 1.0, player.pz, 0x7af0ff, 2 + lvl);
+  if (waveChargeT > 1.6) doWaveRelease(); // auto-release at max
+}
+function doWaveRelease() {
+  if (!waveCharging) return;
+  waveCharging = false;
+  if (state !== 'fight' || !player || player.hp <= 0) return;
+  const fd = fighterDef();
+  const wv = fd.wave || { name: 'ENERGY WAVE', dmg: 22, speed: 7, color: 0x7af0ff, cost: 15 };
+  const lvl = Math.min(3, 1 + Math.floor(waveChargeT / 0.5));
+  const cost = wv.cost + (lvl - 1) * 10;
+  if (player.energy < cost) { popText('NEED ENERGY', 'bad', innerWidth/2, innerHeight*0.4); waveChargeT = 0; return; }
+  player.energy -= cost; setHud();
+  faceNearestEnemy();
+  player.busy = Math.max(player.busy, 0.4);
+  playAnim(player, 'WaveRelease', { once: true, dur: 0.4 });
+  addHitstop(0.06); shake = Math.max(shake, 0.3 + lvl * 0.15);
+  sfx(180, 0.5, 'sawtooth', 0.4);
+  const sp = screenPos(player.root.position);
+  popText(wv.name + ' LV' + lvl, 'spc', sp.x, sp.y - 80);
+  banner(wv.name, 'spc');
+  setTimeout(() => {
+    if (state !== 'fight' || missionOver || ended) return;
+    fireProj({ x: player.px + player.face * 0.9, z: player.pz, y: 1.0,
+      vx: player.face * wv.speed, kind: 'wave', label: wv.name,
+      dmg: Math.round(wv.dmg * lvl * player.dmgMult), color: wv.color,
+      fromPlayer: true, pierce: 99, life: 1.4, radius: 0.7 + lvl * 0.2 });
+    burst(player.root.position.clone().add(new THREE.Vector3(player.face, 1.0, 0)), 16, wv.color, 5);
+  }, 100);
+  waveChargeT = 0;
+  ev('energywave', { lvl });
+}
+
+// Generalized spin attack: real SpinAttack clip (baked 360, not procedural).
+// Any fighter can use via fd.spin config; lane 7 (movesets) assigns per character.
+function doSpinAttack(opts) {
+  if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.busy > 0) return;
+  const o = opts || (fighterDef().spin) || { name: 'SPIN ATTACK', dmg: 16, color: 0x80ed99, dur: 0.6, cost: 20 };
+  if (player.energy < (o.cost || 20)) { popText('NEED ENERGY', 'bad', innerWidth/2, innerHeight*0.4); return; }
+  player.energy -= (o.cost || 20); setHud();
+  faceNearestEnemy(); unlockAudio();
+  player.busy = Math.max(player.busy, o.dur || 0.6);
+  playAnim(player, 'SpinAttack', { once: true, dur: o.dur || 0.6 });
+  player.spinT = o.dur || 0.6; player.spinHit = new Set();
+  player.spinName = o.name; player.spinColor = o.color; player.spinDmg = o.dmg;
+  sfx(300, 0.4, 'sawtooth', 0.4);
+  const sp = screenPos(player.root.position);
+  popText(o.name, 'spc', sp.x, sp.y - 70);
+  ev('spinattack', {});
+}
+
 // ---------- MEGA SUPER (full energy, cinematic) ----------
 function doMega() {
   const fd = fighterDef();
@@ -5443,6 +5554,7 @@ function frame(dt, doRender = true) {
   if (hitstop > 0) { hitstop -= dt; dt *= 0.05; }
   if (slowmoT > 0) { slowmoT -= dt; dt *= slowmo; }
   for (const f of fighters) { f.mixer.update(dt); if (f.busy > 0) f.busy -= dt; }
+  doWaveTick(dt); // MOVES EXPANSION: energy wave charge
 
   if (state === 'select' || state === 'title') {
     if (showcase && state === 'select') {
@@ -5531,8 +5643,8 @@ async function loadArenaProps() {
 }
 async function boot() {
   loadSave();
-  const [fg, am, ag, amv, st, rd, ix] = await Promise.all(['fighter.glb', 'anim_melee.glb', 'anim_general.glb', 'anim_move.glb', 'street.glb', 'roads.glb', 'industrial.glb'].map(parse));
-  for (const g of [am, ag, amv]) for (const c of g.animations) clips[c.name] = c;
+  const [fg, am, ag, amv, amx, st, rd, ix] = await Promise.all(['fighter.glb', 'anim_melee.glb', 'anim_general.glb', 'anim_move.glb', 'anim_moves.glb', 'street.glb', 'roads.glb', 'industrial.glb'].map(parse));
+  for (const g of [am, ag, amv, amx]) for (const c of g.animations) clips[c.name] = c;
   fighterTemplate = fg.scene;
   const names = new Set(); fighterTemplate.traverse((o) => names.add(o.name));
   for (const c of Object.values(clips)) c.tracks = c.tracks.filter((t) => names.has(t.name.split('.')[0]));
