@@ -3635,7 +3635,7 @@ function doHeavy() {
       resolveStrikeContact(player, hit.target, hit, { knockback: 0.35 });
       landHit(hit.target, Math.round(24 * player.dmgMult), 'HEAVY', 0.09, 0.4, false, false);
       buzz(25); // F10 haptics
-    } (Contact collision: hitboxes + hurtboxes + strike contact resolution)
+    }
     else sfxSwing(0.8, true); // S2: whiff
     damageDestructibles(1.9);
   }, 230);
