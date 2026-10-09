@@ -16,7 +16,8 @@ await page.setViewport({ width: 844, height: 390, isMobile: true, hasTouch: true
 page.on('pageerror', (e) => errors.push('[pageerror] ' + e.message.slice(0, 200)));
 page.on('console', (m) => { if (m.type() === 'error') errors.push('[console.error] ' + m.text().slice(0, 200)); });
 const E = async (expr) => page.evaluate(new Function('const t = window.__cdtest; return (' + expr + ')'));
-await page.goto('file:///home/hatch/workspace/ConcreteDragon/game-3d/dist/concrete-dragon.html', { waitUntil: 'networkidle0', timeout: 120000 });
+const DIST = process.env.CD_DIST || '/home/hatch/workspace/ConcreteDragon/game-3d/dist/concrete-dragon.html';
+await page.goto('file://' + DIST, { waitUntil: 'networkidle0', timeout: 120000 });
 let booted = false;
 for (let i = 0; i < 15; i++) { try { if ((await E('t.simDbg().st')) === 'title') { booted = true; break; } } catch (e) {} await sleep(2000); }
 console.log('boot:', booted ? 'PASS' : 'FAIL');
