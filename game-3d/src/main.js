@@ -5243,6 +5243,7 @@ window.__cdtest = {
     if (mode === 'guard') { e.dodgeCD = 99; Math.random = () => 0.01; } // dodge disabled, guard passes
     else if (mode === 'dodge') { Math.random = () => 0.001; } // dodge rolls first, passes
     else if (mode === 'clean') { Math.random = () => 0.999; } // both fail
+    else if (mode === 'windup') { e.ai = 'windup'; Math.random = () => 0.001; } // mid-swing: committed, no reaction
     try { landHit(e, 20, 'jab', 0.03, 0.2, false, false); }
     finally { Math.random = origRnd; }
     return { hp0, hp1: Math.round(e.hp), guards: (T.guards || 0) - g0, dodges: (T.dodges || 0) - d0,
