@@ -33,3 +33,11 @@ copyDir('pwa', 'dist/pwa');
 const swPath = 'dist/pwa/sw.js';
 fs.writeFileSync(swPath, fs.readFileSync(swPath, 'utf8').replace(/__CD_PWA_VERSION__/g, () => pwaVer));
 console.log('pwa shipped, sw cache version', pwaVer);
+// MIRROR PWA FILES TO DIST ROOT: the built HTML references ./icons/...,
+// ./manifest.webmanifest and ./sw.js relative to itself (the production deploy
+// flattens pwa/ to the site root the same way), so the raw dist layout must
+// match — otherwise icons/manifest/SW 404 on boot.
+copyDir('pwa/icons', 'dist/icons');
+fs.copyFileSync('pwa/manifest.webmanifest', 'dist/manifest.webmanifest');
+fs.copyFileSync(swPath, 'dist/sw.js');
+console.log('pwa mirrored to dist root (icons + manifest + sw)');
