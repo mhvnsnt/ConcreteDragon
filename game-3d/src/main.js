@@ -109,6 +109,7 @@ const FIGHTERS = [
       ['DUST LAUNCHER', '↓ + HVY', 'Universal overhead launcher. Pops them up for juggles.'],
       ['TAG SPOT', 'TAUNT near a glowing wall', 'Spray the wall (3s, vulnerable). Big cash + 15 REP.'],
       ['GRAPPLE', 'GRP near a foe', 'Basic grab: suplex slam. On a staggered foe: DRAGON SUPLEX finisher.'],
+      ['COMBO ROUTE', 'JAB > CROSS > DUST LAUNCHER', 'Pop them up, juggle in the air. Balanced and reliable.'],
       ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
       ['DRAGON RUSH', '↓ + SPC (50 meter)', 'Shoulder dash straight through the pack.'],
     ] },
@@ -137,6 +138,7 @@ const FIGHTERS = [
       ['DUST LAUNCHER', '↓ + HVY', 'Universal overhead launcher. Pops them up for juggles.'],
       ['TAG SPOT', 'TAUNT near a glowing wall', 'Spray the wall (3s, vulnerable). Big cash + 15 REP.'],
       ['GRAPPLE', 'GRP near a foe', 'Quick snatch suplex — fast but light. On a staggered foe: PHANTOM DRIVER finisher.'],
+      ['COMBO ROUTE', 'PHANTOM STEP > FANG FLICKER x3', 'Teleport in, blur them with speed. Never stand still.'],
       ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
       ['BLINK FLURRY', '↓ + SPC (50 meter)', 'Blink between the 3 nearest enemies.'],
     ] },
@@ -3533,7 +3535,6 @@ function endGrab() {
   playAnim(player, 'Melee_Unarmed_Idle', { loop: true, fade: 0.15 });
 }
 function updateGrapple(dt) {
-  if (window.__grabDbg && player && player.grab) window.__grabDbg.push([player.grab.phase, +player.grab.t.toFixed(2), +player.grab.dur.toFixed(2)]);
   // Drives the victim through GRAB -> LIFT -> LOCKUP -> THROW while the attacker's
   // mocap deliver plays. Whole-body kinematic follow (standard fighting-game practice);
   // the attacker's bones are real mocap, the victim plays real hit clips.
@@ -5780,10 +5781,8 @@ async function boot() {
 boot().catch((e) => { T.errors.push(String(e && e.stack || e)); console.error(e); });
 
 // QA hook (test automation only — drives the real game systems, no mocks)
-window.__grabDbg = [];
 window.__cdtest = {
   startMission, state: () => state,
-  grabDbg: () => window.__grabDbg.splice(0),
   gameTime: () => gameTime,
   playClipOnPlayer: (name) => { if (player && clips[name]) { playAnim(player, name, { loop: false, fade: 0.1, ts: 0.5 }); return true; } return false; },
   clipNames: () => Object.keys(clips),
