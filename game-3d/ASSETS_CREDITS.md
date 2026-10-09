@@ -24,7 +24,7 @@ Every asset in `game-3d/build/assets/` is **CC0 1.0 (public domain)**. No royalt
 
 ## UI kit (embedded in `src/template.html` as data URIs — no external files)
 
-- **Fonts:** Bungee, Anton, Bebas Neue — SIL Open Font License 1.1 (Google Fonts)
+- **Fonts:** Bungee, Anton, Bebas Neue, Saira Stencil One — SIL Open Font License 1.1 (Google Fonts, self-hosted as data URIs)
 - **Concrete texture:** ambientCG PBRConcrete030 — CC0 1.0 (downscaled to 256px)
 - **Button/UI icons** (fist, punch, lightning, padlock, trophy, cash, heart): Lorc via game-icons.net — **CC BY 3.0** (attribution: "Icons by Lorc via game-icons.net, CC BY 3.0"). Recolored from white originals.
 - **9-slice panel/button/bar art:** authored in-house for this project (SVG, matches street style)

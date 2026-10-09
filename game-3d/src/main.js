@@ -2962,6 +2962,7 @@ let player = null, enemies = [], mission = null, missionR = Math.random;
 let spawnQueue = [], bossSpawned = false, bossRef = null, missionOver = false, ended = false;
 let gameTime = 0, combo = 0, comboT = 0, maxCombo = 0, atkIdx = 0, dmgTaken = 0, missionMaxHp = 100;
 let cashRun = 0, kills = 0, distWalked = 0, endlessT = 3, endlessTier = 0, endlessMuts = [];
+let scoreRun = 0; // PRESENTATION: arcade score for this mission
 function hint(on) { $('hint').style.opacity = on ? 1 : 0; }
 function awardCash(base, pos, tag, quiet) {
   const fever = (mission && mission.endless && (endlessMuts || []).includes('FEVER')) ? 2 : 1;
@@ -3059,6 +3060,7 @@ function startMission(id, node) {
   bossSpawned = false; bossRef = null; missionOver = false; ended = false;
   gameTime = 0; combo = 0; comboT = 0; maxCombo = 0; atkIdx = 0; dmgTaken = 0; missionMaxHp = player.maxHp;
   cashRun = 0; kills = 0; distWalked = 0; endlessT = 3; endlessTier = 0; endlessMuts = [];
+  scoreRun = 0; // PRESENTATION: reset arcade score
   camX = 2;
   state = 'fight'; ev('mission_start', { id: mission.id });
   // ONE-HIT (Katana Zero): brief planning slow-mo at mission start — survey the room, then move
