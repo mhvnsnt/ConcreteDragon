@@ -18,6 +18,7 @@ Every asset in `game-3d/build/assets/` is **CC0 1.0 (public domain)**. No royalt
 | `uiclick.mp3` | Kenney — UI Audio (CC0 1.0) |
 | `uiclick.mp3` (click2) | Kenney — UI Audio (CC0 1.0) |
 | `pickup.mp3` (mouseclick1) | Kenney — UI Audio (CC0 1.0) — cash-pickup chime (S6/S7, 2026-10-08) |
+| `hitlayer1.mp3` (metalPot2), `hitlayer2.mp3` (dropLeather), `hitlayer3.mp3` (doorClose_2) | Kenney — RPG Audio (CC0 1.0) |
 
 ## UI kit (embedded in `src/template.html` as data URIs — no external files)
 

@@ -978,12 +978,20 @@ async function unlockAudio() {
   if (actx) return;
   try {
     actx = new (window.AudioContext || window.webkitAudioContext)();
-    await Promise.all(['hit1', 'hit2', 'hit3', 'bell', 'crowd', 'music', 'click', 'whoosh', 'step', 'crack', 'coin', 'uiclick', 'swing1', 'swing2', 'swing3', 'step1', 'step2', 'step3', 'step4', 'step5', 'counter', 'pickup'].map(async (k) => { sbuf[k] = await actx.decodeAudioData(b64ToBuf(A[k + '.mp3'])); }));
+    await Promise.all(['hit1', 'hit2', 'hit3', 'bell', 'crowd', 'music', 'click', 'whoosh', 'step', 'crack', 'coin', 'uiclick', 'swing1', 'swing2', 'swing3', 'step1', 'step2', 'step3', 'step4', 'step5', 'counter', 'pickup', 'hitlayer1', 'hitlayer2', 'hitlayer3'].map(async (k) => { sbuf[k] = await actx.decodeAudioData(b64ToBuf(A[k + '.mp3'])); }));
     sfx('music', 0.32, true); sfx('crowd', 0.25, true);
   } catch (e) { T.errors.push('audio:' + e); }
 }
 function sfx(k, vol = 1, loop = false, rate = 1) {
   if (!actx || !sbuf[k] || muted) return null;
+  // S1 hit layering (TIER 3 item 14, owner 2026-10-08): fire a subtle CC0 impact texture
+  // UNDER every synth hit. Hooked here inside sfx() so all ~30 hit1/2/3 call sites get it
+  // with zero per-site edits. Never replaces or mutes the synth hit — sfxHitLayer plays a
+  // low-volume texture and the main hit below plays exactly as before.
+  if (k === 'hit1' || k === 'hit2' || k === 'hit3') {
+    T.synthHitSfx = (T.synthHitSfx || 0) + 1; // playtest counter: synth hits still resolve
+    sfxHitLayer(vol);
+  }
   const s = actx.createBufferSource(); s.buffer = sbuf[k]; s.loop = loop; s.playbackRate.value = rate;
   const g = actx.createGain(); g.gain.value = vol; s.connect(g).connect(actx.destination); s.start(); return s;
 }
@@ -1047,6 +1055,17 @@ function sfxUiClick(vol = 0.7, rate = 1) {
 function sfxPickupChime(vol = 0.7) {
   T.pickupChimeSfx = (T.pickupChimeSfx || 0) + 1;
   sfx('pickup', vol, false, 1.15 * (1 + (Math.random() * 0.12 - 0.06)));
+}
+// S1 hit layering (TIER 3 item 14, owner 2026-10-08): dedicated impact-texture SFX from Kenney
+// RPG Audio (CC0 1.0) — hitlayer1/metalPot2 (metallic clang), hitlayer2/dropLeather (leathery
+// thud), hitlayer3/doorClose_2 (woody slam). Hooked inside sfx() so it fires UNDER every
+// synth hit1/2/3 resolution: one random layer sample at low volume with +/-5% pitch — a
+// subtle crunch/meat texture that never replaces the synthesized hits. T.hitLayerSfx is the
+// playtest counter; hitLayerDbg()/hitLayerClear() are __cdtest hooks.
+function sfxHitLayer(vol = 0.9, rate = 1) {
+  const k = ['hitlayer1', 'hitlayer2', 'hitlayer3'][Math.floor(Math.random() * 3)];
+  T.hitLayerSfx = (T.hitLayerSfx || 0) + 1;
+  sfx(k, 0.22 * vol, false, rate * (1 + (Math.random() * 0.10 - 0.05)));
 }
 let paused = false, pushT = 0;
 const pushPos = new THREE.Vector3();
@@ -4895,6 +4914,9 @@ window.__cdtest = {
     stick.dx = 0; stick.dy = 0; // neutral stick: doPunch resolves as COUNTER (not parry)
     return true;
   },
+  hitLayerDbg: () => ({ layer: T.hitLayerSfx || 0, synth: T.synthHitSfx || 0 }), // S1 hit-layer tranche (owner 2026-10-08): layer fires AND synth hits still resolve
+  hitLayerClear: () => { T.hitLayerSfx = 0; T.synthHitSfx = 0; },
+  dbgFoePassive: () => { let n = 0; for (const e of enemies) if (!e.boss && e.hp > 0) { e.ai = 'recover'; e.aiT = 999; n++; } return n; }, // S1 hit-layer playtest: passive punching bag (still a real enemy, takes real hits)
   audioDbg: (ks) => (ks || []).map(k => ({ k, ok: !!(sbuf[k] && sbuf[k] instanceof AudioBuffer) })), // S2: prove swing SFX decoded
   uiClickDbg: () => ({ uiClick: T.uiClickSfx || 0 }), // S6 UI click tranche (owner 2026-10-08): playtest hook for the central UI-button click SFX
   uiClickClear: () => { T.uiClickSfx = 0; },

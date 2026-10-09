@@ -90,6 +90,16 @@ Wire in this order; playtest after each tier. Owner plays and vetoes — wire, d
     12/12 PASS, zero errors; shots in `game-3d/shots-uipickup/` (eyes-on verified).
     Decision doc `docs/TRANCHE_WAVE13_UIPICKUP.md`.
 14. **S1 layering** — layer rpg-audio impacts under existing synth hits (±5% pitch).
+14. **S1 layering** ✅ WIRED 2026-10-08 (tranche wave 14): `hitlayer1.mp3` (metalPot2),
+    `hitlayer2.mp3` (dropLeather), `hitlayer3.mp3` (doorClose_2) from `kenney_rpg-audio.zip`,
+    OGG→MP3 into `game-3d/build/assets/`, registered in `build/asset-manifest.json`
+    (build only embeds manifest-listed files), credited in `ASSETS_CREDITS.md`.
+    `sfxHitLayer(vol, rate)` plays one random layer sample at low volume (0.22×vol) with
+    ±5% pitch; hooked inside `sfx()` so it fires UNDER every `hit1/2/3` resolution —
+    never replaces or mutes the synth hits. `__cdtest.hitLayerDbg()/hitLayerClear()`
+    (+`dbgFoePassive()` for deterministic drills). Playtest `qa/playtest-hitlayering.mjs`
+    17/17 PASS, zero errors, shots in `game-3d/shots-hitlayering/` (eyes-on verified).
+    Decision doc `docs/TRANCHE_WAVE14_HITLAYER.md`.
 15. **S15 mixing** — music/sfx buses; music ducks under big hits.
 
 ## WIRED 2026-10-06 (beat-em-up worker)
