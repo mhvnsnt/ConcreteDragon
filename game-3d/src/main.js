@@ -5004,4 +5004,7 @@ window.__cdtest = {
     return { district: dist, seed: ds, spawns, hash: rec.join('|') };
   },
   dbgUnlockMission: (id) => { if (!save.missionsDone.includes(id)) { save.missionsDone.push(id); writeSave(); } return true; },
+  saveDbg: () => JSON.parse(JSON.stringify({ daily: save.daily, dailyBest: save.dailyBest, boards: save.boards })),
+  missionDbg: () => mission ? { id: mission.id, district: mission.district, len: mission.len, daily: !!mission.daily, dailyDate: mission.dailyDate || null, dailySeed: mission.dailySeed || null, nSpawns: (mission.spawns || []).length } : null,
+  missionComplete,
 };
