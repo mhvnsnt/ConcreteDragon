@@ -5450,6 +5450,11 @@ function setHud() {
   // LAST STAND edge glow persists while dangerous
   const lse = $('lsEdge');
   if (lse) lse.style.opacity = (player.hp > 0 && player.hp < player.maxHp * 0.3) ? '1' : '0';
+  // ROUND 2 UI: low-HP alarm on health bars, rage state on boss bar
+  $('pbar').classList.toggle('low', player.hp > 0 && player.hp < player.maxHp * 0.3);
+  $('ebar').classList.toggle('low', !!e && e.hp > 0 && e.hp < e.maxHp * 0.3);
+  const _bw = $('bossWrap');
+  if (_bw) _bw.classList.toggle('rage', !!(bossRef && bossRef.hp > 0 && bossRef.hp < bossRef.maxHp * 0.25));
   const segs = spcSegs(); const litSegs = Math.round(clamp(player.energy / energyMax(), 0, 1) * SPC_SEGS);
   for (let i = 0; i < segs.length; i++) segs[i].classList.toggle('lit', i < litSegs);
   $('spcWrap').classList.toggle('ready', player.energy >= 60);
