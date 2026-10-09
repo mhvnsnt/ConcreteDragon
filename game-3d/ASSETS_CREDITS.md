@@ -24,7 +24,7 @@ Every asset in `game-3d/build/assets/` is **CC0 1.0 (public domain)**. No royalt
 
 ## UI kit (embedded in `src/template.html` as data URIs — no external files)
 
-- **Fonts:** Bungee, Anton, Bebas Neue — SIL Open Font License 1.1 (Google Fonts)
+- **Fonts:** Bungee, Anton, Bebas Neue, Saira Stencil One — SIL Open Font License 1.1 (Google Fonts, self-hosted as data URIs)
 - **Concrete texture:** ambientCG PBRConcrete030 — CC0 1.0 (downscaled to 256px)
 - **Button/UI icons** (fist, punch, lightning, padlock, trophy, cash, heart): Lorc via game-icons.net — **CC BY 3.0** (attribution: "Icons by Lorc via game-icons.net, CC BY 3.0"). Recolored from white originals.
 - **9-slice panel/button/bar art:** authored in-house for this project (SVG, matches street style)
@@ -44,3 +44,9 @@ node build.mjs        # -> dist/concrete-dragon.html (single self-contained HTML
 ```
 
 The 3D models are CC0 KayKit mannequins tinted per fighter/skin. No real-person likenesses, no ripped meshes, no proprietary IP.
+
+## PWA icons (M9, wave 19)
+`pwa/icons/` (icon-192/512, icon-maskable-512, apple-touch-icon-180) are
+center-crops/resizes of the Concrete Dragon cover art staged for the itch.io
+listing (`~/workspace/concrete-dragon-itch/art/cover-630x500.png`) — original
+AI-generated art commissioned for this project, no third-party IP.
