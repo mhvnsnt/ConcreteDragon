@@ -2760,8 +2760,6 @@ function showMission() {
     if (best) card.appendChild(el('div', 'best', `BEST: ${best}`));
     card.appendChild(el('div', 'rw', locked ? '🔒 ' + (m.unlock.id ? 'Clear ' + missionDef(m.unlock.id).name : '') : '★ ' + m.reward));
     if (!locked) {
-      const go = el('button', 'go', m.daily && save.daily.date === todayStr() ? 'RETRY' : 'GO');
-      go.onclick = (e) => { e.stopPropagation(); unlockAudio(); sfxUiClick(0.8); startMission(m.id); };
       const ranToday = m.daily && save.daily.date === localDateStr();
       const go = el('button', 'go' + (m.daily ? ' panel9g' : ''), m.daily ? (ranToday ? '⚡ DAILY RUN · RETRY' : '⚡ DAILY RUN') : 'GO');
       go.onclick = (e) => { e.stopPropagation(); unlockAudio(); sfx('uiclick', 0.8); startMission(m.id); };
@@ -3719,9 +3717,63 @@ function doDodge() {
   T.dodgeSfx = (T.dodgeSfx || 0) + 1; // test hook
   ev('dodge', {});
 }
+// ---------- G3: ENEMY BLOCK / DODGE (improve-loop c4; refs SoR4 / Final Fight / Urban Reign) ----------
+// Backlog finding: player offense was uncontested except by spacing — no enemy guards, no
+// sidesteps. Eligible enemies (grounded, not staggered, in walk/recover — windup is committed)
+// react to an incoming strike with a sidestep (whiffs the hit) or a guard (chip damage).
+// Cooldowns + modest chances keep it fair; test hooks T.guards / T.dodges.
+function enemyCanReact(e) {
+  if (!e || e.hp <= 0 || e.airborne || e.launched || (e.stagger || 0) > 0) return false;
+  const st = e.ai || 'walk';
+  return st === 'walk' || st === 'recover';
+}
+function enemySidestepReact(e) {
+  if (!enemyCanReact(e) || (e.dodgeCD || 0) > 0) return false;
+  const chance = e.boss ? 0.10 : (e.move === 'knife' ? 0.14 : 0.08);
+  if (Math.random() >= chance) return false;
+  e.dodgeCD = rnd(1.5, 2.5);
+  // quick lateral shift off the player's line — reads as a real sidestep
+  const away = ((e.pz || 0) >= (player ? player.pz : 0)) ? 1 : -1;
+  e.pz = clamp((e.pz || 0) + away * rnd(0.8, 1.2), -1.4, 1.4);
+  e.px = (e.px || 0) + rnd(-0.3, 0.3);
+  e.dodgeT = 0.3; // i-frames cover the rest of this strike's multi-hits
+  playAnim(e, 'Running_A', { ts: 2.6 });
+  burst(e.root.position.clone().add(new THREE.Vector3(0, 0.3, 0)), 8, 0xcfcfcf, 3);
+  const sp = screenPos(e.root.position.clone().add(new THREE.Vector3(0, 1.6, 0)));
+  popText('DODGED!', 'spc', sp.x, sp.y - 20);
+  sfx('whoosh', 0.4, false, 1.6);
+  T.dodges = (T.dodges || 0) + 1; ev('edodge', {});
+  syncPos(e);
+  return true;
+}
+function enemyGuardReact(e, dmg, label) {
+  if (!enemyCanReact(e) || (e.guardCD || 0) > 0) return false;
+  const chance = e.boss ? 0.22 : 0.12;
+  if (Math.random() >= chance) return false;
+  const chip = Math.max(1, Math.round(dmg * 0.12)); // chip only — no crit, no combo build
+  e.hp -= chip;
+  T.hits++; T.guards = (T.guards || 0) + 1; ev('eguard', { label, chip });
+  e.guardT = 0.5; e.guardCD = rnd(1.4, 2.4);
+  e.root.rotation.y = (player && player.px >= e.px) ? Math.PI / 2 : -Math.PI / 2;
+  playAnim(e, 'Melee_Unarmed_Idle', { loop: true }); // brace (no guard anim asset — read comes from FX)
+  const chest = e.root.position.clone().add(new THREE.Vector3(0, fighterHeight * 0.62 * (e.sc || 1), 0.15));
+  burst(chest, 12, 0x7af0ff, 3); // blue block flash
+  const sp = screenPos(chest);
+  popText('BLOCKED -' + chip, 'spc', sp.x, sp.y - 20);
+  sfx('hit2', 0.5, false, 0.5); // pitched-down thud = block sound
+  shake = Math.max(shake, 0.08);
+  setHud();
+  if (e.hp <= 0) killEnemy(e);
+  return true;
+}
 function landHit(e, dmg, label, hs, sh, launcher, counter) {
   if (mission && mission.endless && (endlessMuts || []).includes('GLASS JAW')) dmg = Math.round(dmg * 1.5);
   if (!e || e.hp <= 0 || state !== 'fight') return;
+  // G3 ENEMY BLOCK/DODGE (improve-loop c4): reactions happen here, the single damage choke
+  // point, so every player attack type is contestable — but windup/staggered/airborne enemies
+  // stay punishable (see enemyCanReact).
+  if (enemySidestepReact(e)) return;
+  if (enemyGuardReact(e, dmg, label)) return;
   // ONE-HIT (Katana Zero): everyone dies in one hit — bosses take heavy damage instead
   if (mission && hasMod('onehit')) { if (e.boss) dmg = Math.max(dmg, 150); else dmg = 99999; }
   T.hits++; if (counter) T.counters++;
@@ -4039,6 +4091,15 @@ let camX = 2;
 function enemyAI(e, dt) {
   if (e.hp <= 0) return;
   if (window.__cdfreeze) return; // test hook: freeze enemy AI for deterministic verification
+  // G3 timers (improve-loop c4): guard brace + reaction cooldowns + dodge i-frames tick everywhere
+  if (e.guardT > 0) e.guardT -= dt;
+  e.guardCD = Math.max(0, (e.guardCD || 0) - dt);
+  e.dodgeCD = Math.max(0, (e.dodgeCD || 0) - dt);
+  if (e.dodgeT > 0) e.dodgeT -= dt;
+  if (e.guardT > 0) { // braced: face the player, hold position, can't act until the brace ends
+    e.root.rotation.y = (player && player.px >= e.px) ? Math.PI / 2 : -Math.PI / 2;
+    syncPos(e); return;
+  }
   if (e.airborne) { // launched / juggled
     e.vy -= 18 * dt; e.root.position.y += e.vy * dt;
     // F8 EDGE-BOUNCE (owner 2026-10-07, wave 9): horizontal knock velocity integrates with
@@ -4239,6 +4300,12 @@ function execEnemySig(e) {
 }
 // ---------- boss AI: telegraphed patterns ----------
 function bossAI(e, dt, dx, dz, adx, adz) {
+  // G3 timers (improve-loop c4): guard brace + reaction cooldowns + dodge i-frames
+  if (e.guardT > 0) e.guardT -= dt;
+  e.guardCD = Math.max(0, (e.guardCD || 0) - dt);
+  e.dodgeCD = Math.max(0, (e.dodgeCD || 0) - dt);
+  if (e.dodgeT > 0) e.dodgeT -= dt;
+  if (e.guardT > 0) { e.root.rotation.y = dx > 0 ? Math.PI / 2 : -Math.PI / 2; syncPos(e); return; }
   if (e.ai === 'walk') {
     e.px += Math.sign(dx) * Math.min(adx, e.spd * dt);
     e.pz += Math.sign(dz) * Math.min(adz, e.spd * 0.8 * dt);
@@ -5165,6 +5232,23 @@ window.__cdtest = {
   showMission: () => showMission(),
   dbgBlitz: () => { doBlitz(); return player.blitzCD; },
   dbgHurt: (d) => hurtPlayer(d),
+  dbgG3: (mode) => { // TEST ONLY (improve-loop c4): one landHit vs a controlled foe, forcing the reaction
+    const e = enemies.find(x => x.hp > 0 && !x.boss);
+    if (!e || !player || state !== 'fight') return null;
+    e.ai = 'walk'; e.stagger = 0; e.airborne = false; e.launched = false; e.guardCD = 0; e.dodgeCD = 0;
+    e.guardT = 0; e.dodgeT = 0;
+    e.px = player.px + 2; e.pz = player.pz; syncPos(e);
+    const hp0 = Math.round(e.hp), g0 = T.guards || 0, d0 = T.dodges || 0, pz0 = e.pz;
+    const origRnd = Math.random;
+    if (mode === 'guard') { e.dodgeCD = 99; Math.random = () => 0.01; } // dodge disabled, guard passes
+    else if (mode === 'dodge') { Math.random = () => 0.001; } // dodge rolls first, passes
+    else if (mode === 'clean') { Math.random = () => 0.999; } // both fail
+    else if (mode === 'windup') { e.ai = 'windup'; Math.random = () => 0.001; } // mid-swing: committed, no reaction
+    try { landHit(e, 20, 'jab', 0.03, 0.2, false, false); }
+    finally { Math.random = origRnd; }
+    return { hp0, hp1: Math.round(e.hp), guards: (T.guards || 0) - g0, dodges: (T.dodges || 0) - d0,
+      guardT: +(e.guardT || 0).toFixed(2), dodgeT: +(e.dodgeT || 0).toFixed(2), pzShift: +(e.pz - pz0).toFixed(2) };
+  },
   dbgDodgeT: (v) => { if (player) player.dodgeT = v; return player.dodgeT; },
   dbgEvents: () => T.events.map((e) => e.name),
   dbgPlayer: () => player ? { hp: player.hp, energy: Math.round(player.energy), px: +player.px.toFixed(2), witchCD: +(player.witchCD||0).toFixed(2), blitzCD: +(player.blitzCD||0).toFixed(2) } : null,
@@ -5376,8 +5460,6 @@ window.__cdtest = {
   step: (dt) => { playerUpdate(dt || 1 / 60); }, // drive the real physics deterministically
   estep: (dt) => { for (const e of enemies.slice()) enemyAI(e, dt || 1 / 60); }, // drive enemy AI deterministically (test only)
   estepN: (n, dt) => { for (let i = 0; i < (n || 60); i++) for (const e of enemies.slice()) enemyAI(e, dt || 1 / 60); return true; }, // batch estep (test only)
-  ff: (n, dt) => { // improve-loop C2: deterministic FULL-frame stepping for playtests (no render).
-}
   ff: (n, dt) => { // improve-loop: deterministic FULL-frame stepping for playtests (no render).
     // frame() covers playerUpdate + director + enemyAI + hitstop/combo timers + projectiles.
     // NOTE: hit resolution uses wall-clock setTimeout — after ff(), await a real sleep so
