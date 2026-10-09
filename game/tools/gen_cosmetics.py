@@ -167,16 +167,16 @@ def p_hockey(fighter):
     img = base_img(fighter, "head"); d = ImageDraw.Draw(img)
     L = LAND[fighter]; cx, cy = L["face_c"]; r = L["face_r"]
     bone = (232, 226, 210, 255)
-    d.ellipse([cx - r + 2, cy - r + 18, cx + r - 2, cy + r - 8], fill=bone)
-    d.ellipse([cx - r + 2, cy - r + 18, cx + r - 2, cy + r - 8], outline=INK, width=8)
+    d.ellipse([cx - r + 12, cy - r + 34, cx + r - 12, cy + r - 18], fill=bone)
+    d.ellipse([cx - r + 12, cy - r + 34, cx + r - 12, cy + r - 18], outline=INK, width=8)
     # red stripes
-    for yy in (cy - 40, cy + 40):
-        d.arc([cx - r + 2, yy - 70, cx + r - 2, yy + 70], 200, 340, fill=(198, 40, 55, 255), width=12)
+    for yy in (cy - 30, cy + 40):
+        d.arc([cx - r + 12, yy - 60, cx + r - 12, yy + 60], 200, 340, fill=(198, 40, 55, 255), width=12)
     # vent holes
-    for yy in range(int(cy + 62), int(cy + r - 24), 22):
-        for xx in range(int(cx - 52), int(cx + 56), 26):
+    for yy in range(int(cy + 58), int(cy + r - 30), 22):
+        for xx in range(int(cx - 40), int(cx + 44), 26):
             d.ellipse([xx, yy, xx + 9, yy + 12], fill=(30, 28, 34, 255))
-    highlight(d, [cx - r + 2, cy - r + 18, cx + r - 2, cy + r - 8])
+    highlight(d, [cx - r + 12, cy - r + 34, cx + r - 12, cy + r - 18])
     img = repaste_eyes(img, fighter)
     d = ImageDraw.Draw(img)
     for ec in (L["eye_l"], L["eye_r"]):
@@ -216,8 +216,6 @@ def p_wolf(fighter):
     img = base_img(fighter, "head"); d = ImageDraw.Draw(img)
     L = LAND[fighter]; cx, cy = L["face_c"]; r = L["face_r"]
     fur = (122, 128, 140, 255); dark = (70, 74, 84, 255)
-    # swallow the baked hair first so no human hair shows above the fur
-    d.ellipse([cx - r - 6, cy - r - 40, cx + r + 6, cy - r + 60], fill=fur)
     # ears
     for s in (-1, 1):
         poly_ink(d, [(cx + s * (r - 44), cy - r + 6), (cx + s * (r - 10), cy - r - 52),
@@ -240,10 +238,6 @@ def p_wolf(fighter):
     d.arc([cx - 26, cy + 66, cx, cy + 96], 10, 170, fill=INK, width=5)
     d.arc([cx, cy + 66, cx + 26, cy + 96], 10, 170, fill=INK, width=5)
     img = repaste_eyes(img, fighter)
-    d = ImageDraw.Draw(img)
-    for ec in (L["eye_l"], L["eye_r"]):
-        d.ellipse([ec[0] - L["erx"] - 9, ec[1] - L["ery"] - 9,
-                   ec[0] + L["erx"] + 9, ec[1] + L["ery"] + 9], outline=dark, width=6)
     return img
 
 
@@ -251,8 +245,6 @@ def p_tiger(fighter):
     img = base_img(fighter, "head"); d = ImageDraw.Draw(img)
     L = LAND[fighter]; cx, cy = L["face_c"]; r = L["face_r"]
     org = (240, 140, 40, 255)
-    # swallow the baked hair first
-    d.ellipse([cx - r - 6, cy - r - 40, cx + r + 6, cy - r + 60], fill=org)
     for s in (-1, 1):
         poly_ink(d, [(cx + s * (r - 50), cy - r + 10), (cx + s * (r - 14), cy - r - 46),
                       (cx + s * (r - 82), cy - r + 6)], org)
@@ -269,10 +261,6 @@ def p_tiger(fighter):
     ellipse_ink(d, [cx - 46, cy + 40, cx + 46, cy + 100], (246, 230, 200, 255))
     d.ellipse([cx - 13, cy + 52, cx + 13, cy + 66], fill=INK)
     img = repaste_eyes(img, fighter)
-    d = ImageDraw.Draw(img)
-    for ec in (L["eye_l"], L["eye_r"]):
-        d.ellipse([ec[0] - L["erx"] - 9, ec[1] - L["ery"] - 9,
-                   ec[0] + L["erx"] + 9, ec[1] + L["ery"] + 9], outline=INK, width=6)
     return img
 
 
@@ -366,16 +354,18 @@ def p_hoodvest_torso(fighter):
 def p_mohawk(fighter):
     img = base_img(fighter, "head"); d = ImageDraw.Draw(img)
     L = LAND[fighter]; cx = 128; skin = L["skin"]
-    ht, hb = L["hair_top"], L["hair_bot"]
-    # shave the baked hair band only (never above the hairline), keep center strip
-    d.rectangle([24, ht, 100, hb + 4], fill=skin)
-    d.rectangle([156, ht, 232, hb + 4], fill=skin)
-    # mohawk strip with spikes, rooted in the hair band
-    d.rectangle([100, ht + 2, 156, hb + 2], fill=(26, 24, 32, 255), outline=INK, width=6)
-    for i, sx in enumerate(range(104, 156, 10)):
-        h = 26 + (i % 3) * 8
-        d.polygon([(sx, ht + 4), (sx + 5, ht + 4 - h), (sx + 10, ht + 4)],
-                  fill=(26, 24, 32, 255), outline=INK)
+    # shave the baked hair: paint skin over the hair band except the center strip
+    d.rectangle([20, L["hair_top"] - 8, 108, L["hair_bot"] + 6], fill=skin)
+    d.rectangle([148, L["hair_top"] - 8, 236, L["hair_bot"] + 6], fill=skin)
+    # mohawk strip with spikes
+    pts = []
+    for i in range(9):
+        x = 108 + i * 5
+        pts += [(x, 34), (x + 2.5, 2)]
+    poly_ink(d, [(108, 40)] + pts + [(148, 40), (148, 108), (108, 108)], (26, 24, 32, 255))
+    d.rectangle([108, 40, 148, 108], fill=(26, 24, 32, 255), outline=INK, width=6)
+    for i, sx in enumerate(range(112, 148, 9)):
+        d.polygon([(sx, 40), (sx + 4, 8 + (i % 3) * 8), (sx + 8, 40)], fill=(26, 24, 32, 255), outline=INK)
     return img
 
 
@@ -383,9 +373,9 @@ def p_locs(fighter):
     img = base_img(fighter, "head"); d = ImageDraw.Draw(img)
     L = LAND[fighter]; cx, cy = L["face_c"]; r = L["face_r"]
     loc = (74, 52, 38, 255); loc_d = (48, 34, 24, 255)
-    # cap over baked hair (raised to swallow the hairline)
-    d.chord([cx - r, cy - r - 34, cx + r, cy - r + 96], 180, 360, fill=loc)
-    d.arc([cx - r, cy - r - 34, cx + r, cy - r + 96], 180, 360, fill=INK, width=7)
+    # cap over baked hair
+    d.chord([cx - r, cy - r - 4, cx + r, cy - r + 96], 180, 360, fill=loc)
+    d.arc([cx - r, cy - r - 4, cx + r, cy - r + 96], 180, 360, fill=INK, width=7)
     # hanging locs down the sides
     for s in (-1, 1):
         for i, lx in enumerate([cx + s * (r - 18), cx + s * (r - 2), cx + s * (r + 12)]):
@@ -400,20 +390,14 @@ def p_locs(fighter):
 def p_fade(fighter):
     img = base_img(fighter, "head"); d = ImageDraw.Draw(img)
     L = LAND[fighter]; cx = 128; skin = L["skin"]
-    ht, hb = L["hair_top"], L["hair_bot"]
-    # buzz the baked-hair band down to skin, keep a short top
-    d.rectangle([24, ht, 232, hb + 4], fill=skin)
-    d.chord([cx - 74, ht - 6, cx + 74, ht + 104], 180, 360, fill=(30, 28, 34, 255))
-    d.arc([cx - 74, ht - 6, cx + 74, ht + 104], 180, 360, fill=INK, width=6)
+    # buzz the sides down to skin, keep a short top
+    d.rectangle([20, L["hair_top"] - 8, 236, L["hair_bot"] + 6], fill=skin)
+    d.chord([cx - 62, 8, cx + 62, 118], 180, 360, fill=(30, 28, 34, 255))
+    d.arc([cx - 62, 8, cx + 62, 118], 180, 360, fill=INK, width=6)
     # lightning bolt shaved design on the left
-    bolt = [(46, ht + 34), (84, ht + 34), (66, ht + 58), (94, ht + 58), (40, ht + 96),
-            (56, ht + 62), (34, ht + 62)]
-    d.polygon(bolt, fill=(215, 205, 195, 255))
+    bolt = [(52, 60), (78, 60), (64, 78), (84, 78), (48, 104), (60, 80), (44, 80)]
+    d.polygon(bolt, fill=(210, 200, 190, 255))
     return img
-
-
-# ---------------- FACE PAINT (transparent overlays, paint marks only) ----------------
-
 def p_paint_cornerman(fighter):
     img = blank(); d = ImageDraw.Draw(img)
     L = LAND[fighter]; cx = 128
@@ -521,17 +505,14 @@ def p_eyes_hollow(f): return _eyes_base(f, (150, 255, 240, 255), glow=True)
 def _glove(fighter, fill, cuff, deco=None):
     img = blank(); d = ImageDraw.Draw(img)
     x0, y0, x1, y1 = LIMB[fighter]["hand"]
-    # oversized mitt: must fully swallow the baked hand/glove
-    x0, x1 = x0 - 18, x1 + 18
-    y1 = y1 + 4
-    # cuff at wrist (wide + high: must bury the baked hand's top edge)
-    d.rounded_rectangle([x0 + 6, y0 - 26, x1 - 6, y0 + 30], radius=10, fill=cuff, outline=INK, width=6)
+    # cuff at wrist
+    d.rounded_rectangle([x0 + 12, y0 - 6, x1 - 12, y0 + 34], radius=10, fill=cuff, outline=INK, width=6)
     # mitt
-    d.ellipse([x0, y0 + 8, x1, y1], fill=fill)
-    d.ellipse([x0, y0 + 8, x1, y1], outline=INK, width=8)
+    d.ellipse([x0, y0 + 18, x1, y1], fill=fill)
+    d.ellipse([x0, y0 + 18, x1, y1], outline=INK, width=8)
     # thumb
-    d.ellipse([x0 - 4, y0 + 46, x0 + 48, y0 + 106], fill=fill, outline=INK, width=7)
-    highlight(d, [x0, y0 + 8, x1, y1])
+    d.ellipse([x0 - 6, y0 + 52, x0 + 44, y0 + 108], fill=fill, outline=INK, width=7)
+    highlight(d, [x0, y0 + 18, x1, y1])
     if deco:
         deco(d, x0, y0, x1, y1)
     return img
@@ -565,18 +546,15 @@ def p_gloves_dragon(f): return _glove(f, (34, 139, 90, 255), (18, 70, 45, 255), 
 def _kick(fighter, fill, sole, deco=None):
     img = blank(); d = ImageDraw.Draw(img)
     x0, y0, x1, y1 = LIMB[fighter]["foot"]
-    # oversized shoe: must fully swallow the baked foot/sneaker
-    x0, x1 = x0 - 16, x1 + 16
-    y1 = y1 + 4
-    # ankle collar (wide + high: must bury the baked foot's top edge)
-    d.rounded_rectangle([x0 + 14, y0 - 24, x1 - 14, y0 + 26], radius=10, fill=fill, outline=INK, width=6)
+    # ankle collar
+    d.rounded_rectangle([x0 + 16, y0 - 10, x1 - 16, y0 + 30], radius=10, fill=fill, outline=INK, width=6)
     # shoe body
-    d.rounded_rectangle([x0, y0 + 6, x1, y1 - 14], radius=18, fill=fill, outline=INK, width=8)
+    d.rounded_rectangle([x0, y0 + 20, x1, y1 - 16], radius=18, fill=fill, outline=INK, width=8)
     # toe cap
-    d.chord([x0 - 4, y0 + 28, x0 + 80, y1 - 6], 270, 90, fill=(fill[0] // 2, fill[1] // 2, fill[2] // 2, 255))
+    d.chord([x0 - 4, y0 + 34, x0 + 74, y1 - 8], 270, 90, fill=(fill[0] // 2, fill[1] // 2, fill[2] // 2, 255))
     # sole
     d.rounded_rectangle([x0 - 4, y1 - 22, x1 + 4, y1], radius=8, fill=sole, outline=INK, width=6)
-    highlight(d, [x0, y0 + 14, x1, y1 - 14])
+    highlight(d, [x0, y0 + 20, x1, y1 - 16])
     if deco:
         deco(d, x0, y0, x1, y1)
     return img
@@ -662,148 +640,6 @@ def p_wristpad_leather(f):
     for yy in (y0 + 10, (y0 + y1) / 2, y1 - 10):
         d.line([x0 + 6, yy, x1 - 6, yy], fill=(70, 44, 24, 255), width=3)
     return img
-
-# item_id -> {slot, name, rarity, unlock, price, desc, canvases}
-# slot: headgear | gloves | kicks | accessory | facepaint | eyes
-# rarity: Street | Rare | Epic | Legendary
-# unlock: {type: shop|season|boss, price?, season?, boss?}
-# canvases: which 256px overlay canvases this item ships per fighter
-#   head / torso / arm_f / leg_s
-CATALOG = {
-    # ---- headgear ----
-    "skimask_ink":   {"slot": "headgear", "name": "Ink Ski Mask", "rarity": "Street",
-                      "unlock": {"type": "shop", "price": 150}, "canvases": ["head"],
-                      "desc": "Full-face ink balaclava. Nobody knows."},
-    "bandana_crimson": {"slot": "headgear", "name": "Crimson Bandana", "rarity": "Street",
-                      "unlock": {"type": "shop", "price": 150}, "canvases": ["head"],
-                      "desc": "Barrio colors, tied tight."},
-    "hoodie_up":     {"slot": "headgear", "name": "Up Hoodie", "rarity": "Street",
-                      "unlock": {"type": "shop", "price": 200}, "canvases": ["head", "torso"],
-                      "desc": "Hood up. Neon downtown uniform."},
-    "mohawk_ink":    {"slot": "headgear", "name": "Ink Mohawk", "rarity": "Street",
-                      "unlock": {"type": "shop", "price": 200}, "canvases": ["head"],
-                      "desc": "Shaved sides, lightning attitude."},
-    "hockey_mask":   {"slot": "headgear", "name": "Rink Mask", "rarity": "Rare",
-                      "unlock": {"type": "shop", "price": 450}, "canvases": ["head"],
-                      "desc": "Goalie mask, street rules."},
-    "puffer_hood":   {"slot": "headgear", "name": "Rust Puffer Hood", "rarity": "Rare",
-                      "unlock": {"type": "shop", "price": 450}, "canvases": ["head", "torso"],
-                      "desc": "Rust-belt winter armor."},
-    "hoodvest":      {"slot": "headgear", "name": "Hooded Vest", "rarity": "Rare",
-                      "unlock": {"type": "shop", "price": 400}, "canvases": ["head", "torso"],
-                      "desc": "Sleeveless. Arms stay free."},
-    "locs_long":     {"slot": "headgear", "name": "Long Locs", "rarity": "Rare",
-                      "unlock": {"type": "shop", "price": 400}, "canvases": ["head"],
-                      "desc": "Crown weight, worn long."},
-    "fade_design":   {"slot": "headgear", "name": "Lightning Fade", "rarity": "Epic",
-                      "unlock": {"type": "shop", "price": 800}, "canvases": ["head"],
-                      "desc": "Fade with the bolt carved in."},
-    "lucha_barrio":  {"slot": "headgear", "name": "Barrio Lucha", "rarity": "Epic",
-                      "unlock": {"type": "shop", "price": 900}, "canvases": ["head"],
-                      "desc": "Generic lucha pattern — teal and pink diamonds."},
-    "wolf_head":     {"slot": "headgear", "name": "Wolf Head", "rarity": "Epic",
-                      "unlock": {"type": "season", "season": "halloween"}, "canvases": ["head"],
-                      "desc": "Halloween season reward. Hunt at full moon."},
-    "tiger_head":    {"slot": "headgear", "name": "Tiger Head", "rarity": "Legendary",
-                      "unlock": {"type": "boss", "boss": 3}, "canvases": ["head"],
-                      "desc": "Beat the zone-3 boss to wear the stripes."},
-    # ---- gloves ----
-    "gloves_neon":   {"slot": "gloves", "name": "Neon Synthetics", "rarity": "Street",
-                      "unlock": {"type": "shop", "price": 200}, "canvases": ["arm_f"],
-                      "desc": "Hot pink / cyan fight synthetics."},
-    "gloves_work":   {"slot": "gloves", "name": "Work Leather", "rarity": "Street",
-                      "unlock": {"type": "shop", "price": 200}, "canvases": ["arm_f"],
-                      "desc": "Industrial leather. Built to last."},
-    "gloves_canvas": {"slot": "gloves", "name": "Boardwalk Canvas", "rarity": "Rare",
-                      "unlock": {"type": "shop", "price": 450}, "canvases": ["arm_f"],
-                      "desc": "Canvas wraps, boardwalk edition."},
-    "gloves_gold":   {"slot": "gloves", "name": "Gold-Trim", "rarity": "Epic",
-                      "unlock": {"type": "shop", "price": 850}, "canvases": ["arm_f"],
-                      "desc": "Black and gold. Championship energy."},
-    "gloves_dragon": {"slot": "gloves", "name": "Dragon-Scale", "rarity": "Legendary",
-                      "unlock": {"type": "boss", "boss": 5}, "canvases": ["arm_f"],
-                      "desc": "Scale plating. Endgame hands."},
-    # ---- kicks ----
-    "kicks_canvas":  {"slot": "kicks", "name": "Boardwalk Hi-Tops", "rarity": "Street",
-                      "unlock": {"type": "shop", "price": 200}, "canvases": ["leg_s"],
-                      "desc": "Canvas hi-tops, pier-tested."},
-    "kicks_workboot": {"slot": "kicks", "name": "Work Boots", "rarity": "Street",
-                      "unlock": {"type": "shop", "price": 200}, "canvases": ["leg_s"],
-                      "desc": "Steel attitude, leather boots."},
-    "kicks_neon":    {"slot": "kicks", "name": "Neon Runners", "rarity": "Rare",
-                      "unlock": {"type": "shop", "price": 450}, "canvases": ["leg_s"],
-                      "desc": "Downtown after dark."},
-    "kicks_gold":    {"slot": "kicks", "name": "Gold Hi-Tops", "rarity": "Epic",
-                      "unlock": {"type": "shop", "price": 850}, "canvases": ["leg_s"],
-                      "desc": "Black and gold, laced tight."},
-    # ---- accessory (multi-equip: chains on torso, wrist pads on arms) ----
-    "chain_dogtags": {"slot": "accessory", "name": "Dog Tags", "rarity": "Street",
-                      "unlock": {"type": "shop", "price": 150}, "canvases": ["torso"],
-                      "desc": "Stamped steel. Earned, not bought. (Bought.)"},
-    "wristpad_neon": {"slot": "accessory", "name": "Neon Wrist Pads", "rarity": "Street",
-                      "unlock": {"type": "shop", "price": 150}, "canvases": ["arm_f"],
-                      "desc": "Wrap the wrists, protect the money-makers."},
-    "chain_curb":    {"slot": "accessory", "name": "Curb Chain", "rarity": "Rare",
-                      "unlock": {"type": "shop", "price": 500}, "canvases": ["torso"],
-                      "desc": "Chunky gold curb links."},
-    "wristpad_leather": {"slot": "accessory", "name": "Leather Wraps", "rarity": "Rare",
-                      "unlock": {"type": "shop", "price": 400}, "canvases": ["arm_f"],
-                      "desc": "Old-school leather wrist wraps."},
-    "medal_saint":   {"slot": "accessory", "name": "Saint Medallion", "rarity": "Epic",
-                      "unlock": {"type": "season", "season": "takeover"}, "canvases": ["torso"],
-                      "desc": "Season-pass relic. Blessed by the block."},
-    # ---- face paint ----
-    "paint_cornerman": {"slot": "facepaint", "name": "Cornerman Stripes", "rarity": "Street",
-                      "unlock": {"type": "shop", "price": 150}, "canvases": ["head"],
-                      "desc": "Fight-night tape stripes."},
-    "paint_war":     {"slot": "facepaint", "name": "War Paint", "rarity": "Rare",
-                      "unlock": {"type": "shop", "price": 400}, "canvases": ["head"],
-                      "desc": "Black band, red slashes. Business."},
-    "paint_tag":     {"slot": "facepaint", "name": "Cheek Tag", "rarity": "Rare",
-                      "unlock": {"type": "shop", "price": 400}, "canvases": ["head"],
-                      "desc": "Wildstyle CD on the cheek."},
-    "paint_sugarskull": {"slot": "facepaint", "name": "Sugar Skull", "rarity": "Epic",
-                      "unlock": {"type": "season", "season": "halloween"}, "canvases": ["head"],
-                      "desc": "Day of the Dead. Halloween season reward."},
-    # ---- eyes ----
-    "eyes_amber":    {"slot": "eyes", "name": "Amber Eyes", "rarity": "Rare",
-                      "unlock": {"type": "shop", "price": 350}, "canvases": ["head"],
-                      "desc": "Predator amber."},
-    "eyes_ice":      {"slot": "eyes", "name": "Ice Eyes", "rarity": "Rare",
-                      "unlock": {"type": "shop", "price": 350}, "canvases": ["head"],
-                      "desc": "Glacier stare."},
-    "eyes_violet":   {"slot": "eyes", "name": "Violet Eyes", "rarity": "Epic",
-                      "unlock": {"type": "shop", "price": 750}, "canvases": ["head"],
-                      "desc": "Neon-district violet."},
-    "eyes_hollow":   {"slot": "eyes", "name": "Hollow Glow", "rarity": "Legendary",
-                      "unlock": {"type": "boss", "boss": 7}, "canvases": ["head"],
-                      "desc": "Hollow Point's glow. Boss-tier eyes."},
-}
-
-# item_id -> painter function name (defined in parts 2/3)
-PAINTERS = {
-    "skimask_ink": "p_skimask", "bandana_crimson": "p_bandana",
-    "hoodie_up": "p_hoodie", "mohawk_ink": "p_mohawk",
-    "hockey_mask": "p_hockey", "puffer_hood": "p_puffer", "hoodvest": "p_hoodvest",
-    "locs_long": "p_locs", "fade_design": "p_fade", "lucha_barrio": "p_lucha",
-    "wolf_head": "p_wolf", "tiger_head": "p_tiger",
-    "paint_cornerman": "p_paint_cornerman", "paint_war": "p_paint_war",
-    "paint_tag": "p_paint_tag", "paint_sugarskull": "p_paint_sugarskull",
-    "eyes_amber": "p_eyes_amber", "eyes_ice": "p_eyes_ice",
-    "eyes_violet": "p_eyes_violet", "eyes_hollow": "p_eyes_hollow",
-    "gloves_neon": "p_gloves_neon", "gloves_work": "p_gloves_work",
-    "gloves_canvas": "p_gloves_canvas", "gloves_gold": "p_gloves_gold",
-    "gloves_dragon": "p_gloves_dragon",
-    "kicks_canvas": "p_kicks_canvas", "kicks_workboot": "p_kicks_workboot",
-    "kicks_neon": "p_kicks_neon", "kicks_gold": "p_kicks_gold",
-    "chain_dogtags": "p_chain_dogtags", "chain_curb": "p_chain_curb",
-    "medal_saint": "p_medal_saint",
-    "wristpad_neon": "p_wristpad_neon", "wristpad_leather": "p_wristpad_leather",
-}
-TORSO_PAINTERS = {"hoodie_up": "p_hoodie_torso", "puffer_hood": "p_puffer_torso",
-                  "hoodvest": "p_hoodvest_torso"}
-
-
 def write_catalog():
     out = {"schema": 1, "slots": ["headgear", "gloves", "kicks", "accessory", "facepaint", "eyes"],
            "rarities": ["Street", "Rare", "Epic", "Legendary"],

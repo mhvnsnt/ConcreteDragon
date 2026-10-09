@@ -13,6 +13,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { clone as skClone } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import seedrandom from './vendor/seedrandom.js'; // Y8 daily seeded run (wave 16, TIER 5 item 21): MIT © 2019 David Bau — see ASSETS_CREDITS.md
+import { cdApplyAll, renderCDSection } from './cosmetics.js'; // Phase 2 suite (Track 2): district-flavored cosmetics, ink-painted parts
 
 const $ = (id) => document.getElementById(id);
 const b64ToBuf = (b64) => { const bin = atob(b64); const u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return u.buffer; };
@@ -2053,6 +2054,8 @@ function applyFighterCosmetics(f, fid) {
     attachPart(f, pid, M); ids.push(pid);
   }
   f.partIds = ids;
+  // Phase 2 suite (Track 2): CD catalog parts + face paint + eyes (style only — never power).
+  cdApplyAll(f, fid, { save, writeSave, activeSeason });
 }
 
 // ---------- SCOUT system (owner 2026-10-07): infinite procedurally generated fighters ----------
@@ -2203,6 +2206,10 @@ function renderCustomize() {
     }
     b.appendChild(row);
   }
+  // Phase 2 suite (Track 2): district-flavored unlockable cosmetics.
+  // NOTE: pass the named sfx() (key,vol) — cosmetics.js calls ctx.sfx('deny',0.8)
+  // etc.; sfxUiClick(vol,rate) has the wrong signature.
+  renderCDSection({ el, save, writeSave, sfx, refreshShowcase, rerender: renderCustomize, activeSeason }, b, fid);
 }
 
 // ---------- species creatures: whole-body CC0 models as enemies/bosses ----------
@@ -3789,6 +3796,7 @@ function killEnemy(e) {
     $('bossWrap').style.display = 'none';
     musicStage(); // boss down -> back to the stage loop
     banner('BOSS DOWN!');
+    save.bossesBeaten = (save.bossesBeaten || 0) + 1; writeSave(); // gates boss-tier cosmetics
   } else {
     slowmo = 0.35; slowmoT = 0.7; shake = 0.45; hitstop = 0.09;
   }
