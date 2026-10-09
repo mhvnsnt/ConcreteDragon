@@ -3,7 +3,7 @@
   {
    "name": "jab",
    "maxPen": 0,
-   "lastStrike": 0.156,
+   "lastStrike": 0.185,
    "strikes": 1,
    "foes": 3,
    "kills": 0,
@@ -12,7 +12,7 @@
   {
    "name": "heavy",
    "maxPen": 0,
-   "lastStrike": 0.276,
+   "lastStrike": 0.293,
    "strikes": 1,
    "foes": 3,
    "kills": 0,
@@ -21,7 +21,7 @@
   {
    "name": "blitz",
    "maxPen": 0,
-   "lastStrike": 0.335,
+   "lastStrike": 0.249,
    "strikes": 1,
    "foes": 3,
    "kills": 0,
@@ -34,7 +34,7 @@
    "strikes": 0,
    "foes": 3,
    "kills": 0,
-   "php": 100
+   "php": 80
   },
   {
    "name": "enemy-punch",
@@ -43,7 +43,7 @@
    "strikes": 0,
    "foes": 4,
    "kills": 0,
-   "php": 100
+   "php": 80
   },
   {
    "name": "boss-slam",
@@ -52,7 +52,7 @@
    "strikes": 0,
    "foes": 5,
    "kills": 0,
-   "php": 100
+   "php": 80
   },
   {
    "name": "grapple",
@@ -61,7 +61,7 @@
    "strikes": 0,
    "foes": 6,
    "kills": 0,
-   "php": 100
+   "php": 66
   }
  ],
  "errors": [],
