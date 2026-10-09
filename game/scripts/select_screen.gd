@@ -50,6 +50,18 @@ func _ready() -> void:
 	rec.position = Vector2(950, 648)
 	add_child(rec)
 
+	var gear := Button.new()
+	gear.text = "⚙ GEAR"
+	gear.position = Vector2(560, 636)
+	gear.custom_minimum_size = Vector2(200, 56)
+	gear.add_theme_font_size_override("font_size", 30)
+	gear.pressed.connect(_on_gear)
+	add_child(gear)
+
+
+func _on_gear() -> void:
+	main.show_customize()
+
 
 func _label(text: String, size: int, color: Color) -> Label:
 	var l := Label.new()

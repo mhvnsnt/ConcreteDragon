@@ -113,7 +113,7 @@ func _spawn_player() -> void:
 	var kind: int = save.selected
 	var def: Dictionary = Fighter.FIGHTER_DEFS.get(kind, Fighter.FIGHTER_DEFS[0])
 	var nm := str(def["name"])
-	player.setup(kind, false, nm, save.get_skin(kind))
+	player.setup(kind, false, nm, save.get_skin(kind), save.get_equipped(kind))
 	player.fight = self
 	player.position = Vector2(430, GROUND_Y)
 	player._ground_y = GROUND_Y

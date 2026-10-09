@@ -31,6 +31,13 @@ func show_select() -> void:
 	_swap(s)
 
 
+func show_customize() -> void:
+	Engine.time_scale = 1.0
+	var c := CustomizeScreen.new()
+	c.setup(self, save)
+	_swap(c)
+
+
 func start_fight() -> void:
 	Engine.time_scale = 1.0
 	var f := FightScreen.new()
