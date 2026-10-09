@@ -37,6 +37,9 @@ html,body{margin:0;height:100%;overflow:hidden;background:#150f2a;touch-action:n
 .lbl{position:absolute;top:calc(max(14px,env(safe-area-inset-top)) + 30px);font-size:15px;letter-spacing:2px;text-shadow:0 2px 0 #000}
 #pname{left:14px}#ename{right:14px;text-align:right}
 #cash{position:absolute;top:calc(max(14px,env(safe-area-inset-top)) + 50px);left:14px;font-size:17px;color:#ffd166;text-shadow:0 2px 0 #000;letter-spacing:2px}
+#score{position:absolute;top:calc(max(14px,env(safe-area-inset-top)) + 74px);left:14px;font-size:15px;color:#7af0ff;text-shadow:0 2px 0 #000;letter-spacing:2px;font-family:'Bungee','Anton',Arial,sans-serif}
+#score.pop{animation:scorePop .18s ease-out}
+@keyframes scorePop{0%{transform:scale(1)}50%{transform:scale(1.35)}100%{transform:scale(1)}}
 #spcWrap{position:absolute;top:calc(max(14px,env(safe-area-inset-top)) + 50px);right:14px;width:32%;height:12px;border:5px solid transparent;border-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'48'%20height%3D'48'%3E%3Crect%20x%3D'2'%20y%3D'14'%20width%3D'44'%20height%3D'20'%20rx%3D'6'%20fill%3D'%23000000'%20fill-opacity%3D'0.72'%20stroke%3D'%23ffffff'%20stroke-opacity%3D'0.9'%20stroke-width%3D'3'%2F%3E%3C%2Fsvg%3E") 5 fill stretch;background-clip:padding-box;overflow:hidden}
 #spc{height:100%;width:100%;display:flex;gap:2px;padding:2px 3px;box-sizing:border-box}
 .spcSeg{flex:1;height:100%;transform:skewX(-18deg);background:rgba(122,240,255,.07);border:1px solid rgba(122,240,255,.28);box-sizing:border-box}
@@ -242,6 +245,7 @@ body.cine #cineSkip{display:block}
   <button id="pauseBtn">❚❚</button>
   <button id="tauntBtn" title="Taunt: +energy">🗣</button>
   <div id="cash"></div>
+  <div id="score">SCORE 0</div>
   <div id="spcWrap"><div id="spc"></div></div><div id="spcLbl">ENERGY</div>
   <div id="bossWrap"><div class="bn" id="bossName"></div><div id="bossBar"><i id="bghost" class="ghost" style="width:100%"></i><i id="bossHp" style="width:100%"></i></div></div>
   <div id="combo"></div><div id="styleRank"></div><div id="warn">! COUNTER NOW !</div>
