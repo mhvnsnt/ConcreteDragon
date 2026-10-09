@@ -3413,7 +3413,7 @@ function doGrapple() {
     px0: t.px, pz0: t.pz || 0, finisher: true,
     dmg: Math.round(48 * player.dmgMult), wname,
   };
-  t.ai = 'grabbed'; t.aiT = 999; // held for the sequence
+  t.ai = 'grabbed'; t.aiT = 999; t.grabbed = true; t.grabEscape = 0; // held for the sequence — enemyAI yields
   T.grapples = (T.grapples || 0) + 1; ev('grapple', { name: wname }); setHud();
 }
 // ---------- WALK-IN GRAB / THROW (Final Fight / Double Dragon lane) ----------
@@ -3488,7 +3488,7 @@ function doThrow() {
     fwd: dir === face,
     px0: v.px, pz0: v.pz || 0,
   };
-  v.grabbed = false; v.grabEscape = 0; // now driven by throwSeq, not grab hold
+  v.grabbed = true; v.grabEscape = 0; // STAYS grabbed during the sequence — enemyAI yields, we drive
   player.grabVictim = null; player.grabT = 0;
   const sp = screenPos(v.root.position.clone().add(new THREE.Vector3(0, 2.2, 0)));
   popText(dir === face ? 'THROW!' : 'BACK THROW!', 'spc', sp.x, sp.y);
@@ -3501,7 +3501,7 @@ function updateThrowSeq(p, dt) {
   const ts = p.throwSeq;
   if (!ts) return;
   const v = ts.victim;
-  if (!v || v.hp <= 0 || p.hp <= 0) { p.throwSeq = null; if (v && v.hp > 0) { v.ai = 'recover'; v.aiT = 0.5; } return; }
+  if (!v || v.hp <= 0 || p.hp <= 0) { p.throwSeq = null; if (v && v.hp > 0) { v.grabbed = false; v.py = 0; v.ai = 'recover'; v.aiT = 0.5; syncPos(v); } return; }
   ts.t += dt;
   const B = bindCombatBones(p);
   // attacker's hand midpoint (the defender hangs from the hands)
@@ -3519,22 +3519,26 @@ function updateThrowSeq(p, dt) {
     const k = Math.min(1, ts.t / 0.25);
     v.px = ts.px0 + (targetX - ts.px0) * k;
     v.pz = ts.pz0 + (targetZ - ts.pz0) * k;
-    v.root.position.set(v.px, 0, v.pz);
+    v.py = 0;
+    syncPos(v);
     if (ts.t >= 0.25) { ts.phase = 'lift'; ts.t = 0; playAnim(v, 'Hit_B', { ts: 0.9 }); }
   } else if (ts.phase === 'lift') {
-    // LIFT: defender rises WITH the hands — body travels continuously with the grip
+    // LIFT: defender rises WITH the hands — body travels continuously with the grip.
+    // Drive via v.py so enemyAI's syncPos preserves the height (it yields while grabbed).
     const liftY = Math.max(0, handY - 1.05);
-    v.root.position.y += (liftY - v.root.position.y) * Math.min(1, dt * 12);
+    v.py = liftY;
     v.px += (targetX - v.px) * Math.min(1, dt * 12);
     v.pz += (targetZ - v.pz) * Math.min(1, dt * 12);
-    v.root.position.x = v.px; v.root.position.z = v.pz;
+    syncPos(v);
     if (ts.t >= 0.45) { ts.phase = 'lockup'; ts.t = 0; }
   } else if (ts.phase === 'lockup') {
     // LOCKUP: bodies held together at the peak
-    v.root.position.y += (Math.max(0, handY - 1.05) - v.root.position.y) * Math.min(1, dt * 12);
+    v.py = Math.max(0, handY - 1.05);
+    syncPos(v);
     if (ts.t >= 0.15) {
       // THROW: release with momentum — defender becomes a projectile
       const dir = ts.dir;
+      v.grabbed = false; v.py = 0; // release the hold
       v.airborne = true; v.vy = 4.5; v.thrownBody = true; v.thrownHit = new Set();
       v.kvx = dir * 13; v.kvz = ((v.pz || 0) >= 0 ? 1 : -1) * rnd(0.5, 1.5);
       v.ai = 'launched';
@@ -6021,6 +6025,13 @@ window.__cdtest = {
     doGrapple();
     return { ok: 1, fired: (T.grabs || 0) > before, victim: !!(player.grabVictim === e), grabbed: !!e.grabbed };
   },
+  spawnFoeTest: () => { // spawn a test thug next to the player for deterministic QA
+    if (!player || player.hp <= 0) return { ok: 0, why: 'no-player' };
+    const e = spawnEnemy('thug', 0, player.px + 2, player.pz || 0);
+    if (!e) return { ok: 0, why: 'spawn-failed' };
+    e.hp = e.maxHp = 500;
+    return { ok: 1, foes: enemies.length };
+  },
   throwTest: () => { // throw a held foe; 4-beat sequence starts (GRAB->LIFT->LOCKUP->THROW)
     const e = player.grabVictim;
     if (!e) return { ok: 0, why: 'no-grab' };
@@ -6033,7 +6044,7 @@ window.__cdtest = {
     const ts = player.throwSeq;
     if (!ts) return { ok: 0, why: 'no-seq' };
     const v = ts.victim;
-    return { ok: 1, phase: ts.phase, t: +ts.t.toFixed(2), vy: +v.root.position.y.toFixed(2), vpx: +v.px.toFixed(2) };
+    return { ok: 1, phase: ts.phase, t: +ts.t.toFixed(2), vy: +(v.py || 0).toFixed(2), vpx: +v.px.toFixed(2), grabbed: !!v.grabbed };
   },
   airKickTest: () => { // rising air kick while ascending
     if (!player || player.hp <= 0) return { ok: 0, why: 'no-player' };
@@ -6076,6 +6087,7 @@ window.__cdtest = {
   setDiff: (id) => { save.difficulty = id; writeSave(); },
   zeroBusy: () => { if (player) player.busy = 0; },
   info: () => ({ px: player ? +player.px.toFixed(1) : 0, hp: player ? Math.round(player.hp) : 0, foes: enemies.length, boss: bossRef ? Math.round(bossRef.hp) : 0, cash: cashRun, kills }),
+  clipNames: () => Object.keys(clips),
   foes: () => enemies.map((e) => ({ px: +e.px.toFixed(2), pz: +(e.pz || 0).toFixed(2), ai: e.ai, hp: Math.round(e.hp), name: e.name, wu: +((e.windup || 0).toFixed(2)) })),
   // combat+cinematics wave: motion inputs, energy, mega, projectiles, cine
   energy: () => player ? Math.round(player.energy) : 0,
