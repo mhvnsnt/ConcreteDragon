@@ -2773,8 +2773,7 @@ function showMission() {
     if (best) card.appendChild(el('div', 'best', `BEST: ${best}`));
     card.appendChild(el('div', 'rw', locked ? '🔒 ' + (m.unlock.id ? 'Clear ' + missionDef(m.unlock.id).name : '') : '★ ' + m.reward));
     if (!locked) {
-      const go = el('button', 'go', m.daily && save.daily.date === todayStr() ? 'RETRY' : 'GO');
-      go.onclick = (e) => { e.stopPropagation(); unlockAudio(); sfxUiClick(0.8); startMission(m.id); };
+      // (dead duplicate 'go' button removed — build fix 2026-10-09: it redeclared the binding below)
       const ranToday = m.daily && save.daily.date === localDateStr();
       const go = el('button', 'go' + (m.daily ? ' panel9g' : ''), m.daily ? (ranToday ? '⚡ DAILY RUN · RETRY' : '⚡ DAILY RUN') : 'GO');
       go.onclick = (e) => { e.stopPropagation(); unlockAudio(); sfx('uiclick', 0.8); startMission(m.id); };
@@ -3994,6 +3993,7 @@ function setupInput() {
   $('againBtn').addEventListener('click', (e) => { e.stopPropagation(); unlockAudio(); sfxUiClick(0.8); showMission(); });
   $('rematchBtn').addEventListener('click', (e) => { e.stopPropagation(); unlockAudio(); sfxUiClick(0.8); if (mission) startMission(mission.id); }); // soul law: one-tap rematch
   $('backBtn').addEventListener('click', (e) => { e.stopPropagation(); sfxUiClick(0.8); showSelect(); });
+  $('selectBackBtn').addEventListener('click', (e) => { e.stopPropagation(); sfxUiClick(0.8); showTitle(); });
   $('pauseBtn').addEventListener('click', (e) => { e.stopPropagation(); togglePause(); });
   $('tauntBtn').addEventListener('click', (e) => {
     e.stopPropagation();
@@ -4004,6 +4004,7 @@ function setupInput() {
   $('resumeBtn').addEventListener('click', (e) => { e.stopPropagation(); togglePause(false); });
   $('restartBtn').addEventListener('click', (e) => { e.stopPropagation(); togglePause(false); startMission(mission.id); });
   $('quitBtn').addEventListener('click', (e) => { e.stopPropagation(); setPaused(false); $('pauseOv').classList.add('hidden'); showMission(); });
+  $('quitTitleBtn').addEventListener('click', (e) => { e.stopPropagation(); setPaused(false); $('pauseOv').classList.add('hidden'); showTitle(); });
   $('muteBtn').addEventListener('click', (e) => { e.stopPropagation(); save.muted = !save.muted; e.target.textContent = save.muted ? 'OFF' : 'ON'; writeSave(); sfxUiClick(0.7); });
   $('qualityBtn').addEventListener('click', (e) => { e.stopPropagation(); save.quality = save.quality === 'auto' ? 'low' : save.quality === 'low' ? 'high' : 'auto'; e.target.textContent = save.quality.toUpperCase(); writeSave(); sfxUiClick(0.7); applyQuality(); });
   $('muteBtn').addEventListener('click', (e) => { e.stopPropagation(); save.muted = !save.muted; e.target.textContent = save.muted ? 'OFF' : 'ON'; writeSave(); sfx('uiclick', 0.7); });
@@ -5200,7 +5201,7 @@ window.__cdtest = {
   simDbg: () => ({ hs: +hitstop.toFixed(3), sm: slowmo, smT: +slowmoT.toFixed(3), st: state }),
   unpause: () => setPaused(false),
   freeze: (on) => { window.__cdfreeze = !!on; },
-  spawnBoss: (id) => { if (player) return spawnBoss(id || 'kingpin', player.px + 6); },
+  // (duplicate spawnBoss removed — build fix 2026-10-09: the (id, bx) form below is the superset)
   spawnFam: (famId) => { if (player) return spawnEnemy(famId, 0, player.px + 3, 0); },
   sigChance: (v) => { window.__cdSigChance = v; },
   playerDbg: () => player ? { busy: +player.busy.toFixed(2), stance: player.stance||0, hp: Math.round(player.hp), state, fid: fighterDef().id, hasFin: !!fighterDef().stanceFin, face: player.face, animMove: !!player.animMove, animTs: player.cur ? +player.cur.timeScale.toFixed(2) : 0, px: +player.px.toFixed(2) } : null,
@@ -5306,7 +5307,7 @@ window.__cdtest = {
     try { landHit(e, 99999, 'HEAVY', 0.09, 0.6, false, false); } catch (err) { return { ok: 0, why: 'threw' }; }
     return { ok: 1, dead: e.hp <= 0, ducks: T.ducks || 0 };
   },
-  dbgFoePassive: () => { let n = 0; for (const e of enemies) if (!e.boss && e.hp > 0) { e.ai = 'recover'; e.aiT = 999; n++; } return n; }, // passive punching bag (still a real enemy, takes real hits)
+  // (duplicate dbgFoePassive removed — build fix 2026-10-09: identical to the one above)
   dbgStickDown: (v) => { stick.dy = v ? 1 : 0; return stick.dy; }, // S15: hold stick down so doHeavy takes the real DUST LAUNCHER path
   vfxDbg: () => ({ // wave 17 VFX tranche (owner 2026-10-06): per-category burst counters + texture decode proof
     ko: T.vfxKo || 0, hit: T.vfxHit || 0, spc: T.vfxSpc || 0, dust: T.vfxDust || 0,
@@ -5427,16 +5428,7 @@ window.__cdtest = {
   step: (dt) => { playerUpdate(dt || 1 / 60); }, // drive the real physics deterministically
   estep: (dt) => { for (const e of enemies.slice()) enemyAI(e, dt || 1 / 60); }, // drive enemy AI deterministically (test only)
   estepN: (n, dt) => { for (let i = 0; i < (n || 60); i++) for (const e of enemies.slice()) enemyAI(e, dt || 1 / 60); return true; }, // batch estep (test only)
-  ff: (n, dt) => { // improve-loop C2: deterministic FULL-frame stepping for playtests (no render).
-}
-  ff: (n, dt) => { // improve-loop: deterministic FULL-frame stepping for playtests (no render).
-    // frame() covers playerUpdate + director + enemyAI + hitstop/combo timers + projectiles.
-    // NOTE: hit resolution uses wall-clock setTimeout — after ff(), await a real sleep so
-    // pending hit timeouts fire, then sample. Positions are read fresh inside the timeout.
-    const t = Math.max(1, Math.min(600, n | 0 || 1));
-    for (let i = 0; i < t; i++) frame(dt || 1 / 60, false);
-    return +gameTime.toFixed(2);
-  },
+  // (duplicate 'ff' removed — build fix 2026-10-09: the canonical fast-forward lives above at 'improve-loop playtest tooling')
   dbg: () => player ? { st: state, mo: missionOver, en: ended, hp: player.hp, busy: player.busy, airT: player.airT, py: player.py, vy: player.vy, frames: dbgFrames } : null,
   setStick: (dx, dy) => { stick.dx = dx; stick.dy = dy; },
   playerPos: () => player ? { px: +player.px.toFixed(2), pz: +player.pz.toFixed(2), py: +(player.py || 0).toFixed(2), airT: +(player.airT || 0).toFixed(2) } : null,
