@@ -53,8 +53,9 @@ console.log('   durability on equip:', dur0);
 must('5. durability starts at 12', dur0 === 12);
 
 // 6-7. swing at spawned thug: damage + durability--
+await E('t.clearFoes()'); await sleep(200);
 await E(`t.spawnFam('thug')`); await sleep(400);
-await E('t.tp(t.enemiesDbg()[0].px - 1.5)'); await sleep(200); // step into range
+await E('t.tp(t.enemiesDbg()[0].px - 1.5)'); await E('t.ff(10)'); await sleep(200); // step into range + sync 3D
 const ehp0 = await E('t.enemiesDbg()[0].hp');
 await E('t.doPunch()'); await sleep(800);
 const ehp1 = await E('t.enemiesDbg()[0].hp');
@@ -67,7 +68,7 @@ await page.screenshot({ path: SHOTS + '/3-swing-hit.jpg', type: 'jpeg', quality:
 // 8. break at 0: set durability 1, land another hit
 await E('t.clearFoes()');
 await E(`t.spawnFam('thug')`); await sleep(400);
-await E('t.tp(t.enemiesDbg()[0].px - 1.5)'); await sleep(200);
+await E('t.tp(t.enemiesDbg()[0].px - 1.5)'); await E('t.ff(10)'); await sleep(200);
 await E(`t.setWpnDurability(1)`);
 await E('t.doPunch()'); await sleep(800);
 const broken = await E('!t.playerDbg().weapon');
@@ -80,7 +81,7 @@ await E('t.ff(40)'); await sleep(400);
 must('9a. bat equipped', (await E('t.playerDbg().weapon.type')) === 'bat');
 await E('t.clearFoes()');
 await E(`t.spawnFam('thug')`); await sleep(400);
-await E('t.tp(t.enemiesDbg()[0].px - 6)'); await sleep(200); // 6 units away — out of swing range
+await E('t.tp(t.enemiesDbg()[0].px - 6)'); await E('t.ff(10)'); await sleep(200); // 6 units away — out of swing range
 const thp0 = await E('t.enemiesDbg()[0].hp');
 await E('t.doGrapple()'); await sleep(1500);
 const thp1 = await E('t.enemiesDbg()[0].hp');
