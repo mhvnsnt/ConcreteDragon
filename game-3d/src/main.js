@@ -107,6 +107,7 @@ const FIGHTERS = [
       ['DUST LAUNCHER', '↓ + HVY', 'Universal overhead launcher. Pops them up for juggles.'],
       ['TAG SPOT', 'TAUNT near a glowing wall', 'Spray the wall (3s, vulnerable). Big cash + 15 REP.'],
       ['GRAPPLE', 'GRP btn / G on staggered foe', 'Wrestling finisher: suplex/piledriver/powerbomb. Big moment.'],
+      ['BLOCK', 'HOLD DDG / hold L', 'Guard stance: damage becomes chip. Heavies still hurt.'],
       ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
       ['DRAGON RUSH', '↓ + SPC (50 meter)', 'Shoulder dash straight through the pack.'],
     ] },
@@ -133,6 +134,7 @@ const FIGHTERS = [
       ['DUST LAUNCHER', '↓ + HVY', 'Universal overhead launcher. Pops them up for juggles.'],
       ['TAG SPOT', 'TAUNT near a glowing wall', 'Spray the wall (3s, vulnerable). Big cash + 15 REP.'],
       ['GRAPPLE', 'GRP btn / G on staggered foe', 'Wrestling finisher: suplex/piledriver/powerbomb. Big moment.'],
+      ['BLOCK', 'HOLD DDG / hold L', 'Guard stance: damage becomes chip. Heavies still hurt.'],
       ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
       ['BLINK FLURRY', '↓ + SPC (50 meter)', 'Blink between the 3 nearest enemies.'],
     ] },
@@ -159,6 +161,7 @@ const FIGHTERS = [
       ['DUST LAUNCHER', '↓ + HVY', 'Universal overhead launcher. Pops them up for juggles.'],
       ['TAG SPOT', 'TAUNT near a glowing wall', 'Spray the wall (3s, vulnerable). Big cash + 15 REP.'],
       ['GRAPPLE', 'GRP btn / G on staggered foe', 'Wrestling finisher: suplex/piledriver/powerbomb. Big moment.'],
+      ['BLOCK', 'HOLD DDG / hold L', 'Guard stance: damage becomes chip. Heavies still hurt.'],
       ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
       ['SEISMIC SLAM', '↓ + SPC (50 meter)', 'Ground pound launches everyone nearby.'],
     ] },
@@ -185,6 +188,7 @@ const FIGHTERS = [
       ['DUST LAUNCHER', '↓ + HVY', 'Universal overhead launcher. Pops them up for juggles.'],
       ['TAG SPOT', 'TAUNT near a glowing wall', 'Spray the wall (3s, vulnerable). Big cash + 15 REP.'],
       ['GRAPPLE', 'GRP btn / G on staggered foe', 'Wrestling finisher: suplex/piledriver/powerbomb. Big moment.'],
+      ['BLOCK', 'HOLD DDG / hold L', 'Guard stance: damage becomes chip. Heavies still hurt.'],
       ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
       ["KINGPIN'S WRATH", '↓ + SPC (50 meter)', 'Massive shockwave around him.'],
     ] },
@@ -211,6 +215,7 @@ const FIGHTERS = [
       ['DUST LAUNCHER', '↓ + HVY', 'Universal overhead launcher. Pops them up for juggles.'],
       ['TAG SPOT', 'TAUNT near a glowing wall', 'Spray the wall (3s, vulnerable). Big cash + 15 REP.'],
       ['GRAPPLE', 'GRP btn / G on staggered foe', 'Wrestling finisher: suplex/piledriver/powerbomb. Big moment.'],
+      ['BLOCK', 'HOLD DDG / hold L', 'Guard stance: damage becomes chip. Heavies still hurt.'],
       ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
       ['WRECKING SWING', '↓ + SPC (50 meter)', '360° swing clears the whole circle.'],
     ] },
@@ -237,6 +242,7 @@ const FIGHTERS = [
       ['DUST LAUNCHER', '↓ + HVY', 'Universal overhead launcher. Pops them up for juggles.'],
       ['TAG SPOT', 'TAUNT near a glowing wall', 'Spray the wall (3s, vulnerable). Big cash + 15 REP.'],
       ['GRAPPLE', 'GRP btn / G on staggered foe', 'Wrestling finisher: suplex/piledriver/powerbomb. Big moment.'],
+      ['BLOCK', 'HOLD DDG / hold L', 'Guard stance: damage becomes chip. Heavies still hurt.'],
       ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
       ['VENOM DASH', '↓ + SPC (50 meter)', 'Dash in a line, striking everything.'],
     ] },
@@ -284,9 +290,11 @@ const FIGHTERS = [
       ['DUST LAUNCHER', '↓ + HVY', 'Universal overhead launcher. Pops them up for juggles.'],
       ['TAG SPOT', 'TAUNT near a glowing wall', 'Spray the wall (3s, vulnerable). Big cash + 15 REP.'],
       ['GRAPPLE', 'GRP btn / G on staggered foe', 'Wrestling finisher: suplex/piledriver/powerbomb. Big moment.'],
+      ['BLOCK', 'HOLD DDG / hold L', 'Guard stance: damage becomes chip. Heavies still hurt.'],
       ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
       ['CANDLE RUSH', '↓ + SPC (50 meter)', 'Burning dash through the pack.'],
       ['GRAPPLE', 'GRP btn / G on staggered foe', 'Wrestling finisher: suplex/piledriver/powerbomb. Big moment.'],
+      ['BLOCK', 'HOLD DDG / hold L', 'Guard stance: damage becomes chip. Heavies still hurt.'],
     ] },
 ];
 // ---------- fighting-game move sets: motion inputs + energy costs per fighter ----------
@@ -3233,7 +3241,7 @@ function doParry(e) {
   player.busy = 0.25; setHud(); ev('parry', {});
 }
 function doPunch() {
-  if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.busy > 0) return;
+  if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.busy > 0 || player.blocking) return;
   faceNearestEnemy();
   unlockAudio();
   T.taps++; hint(false); save.seenHint = true;
@@ -3375,7 +3383,7 @@ function doTech() {
 function doGrapple() {
   // WRESTLING FINISHERS (No More Heroes): staggered enemy + GRAPPLE = suplex/piledriver/powerbomb.
   // Stun an enemy (parry/counter), then style on them. Wrestling flavor for the wrestling-rooted roster.
-  if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.busy > 0 || player.airT > 0) return;
+  if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.busy > 0 || player.airT > 0 || player.blocking) return;
   faceNearestEnemy();
   unlockAudio(); T.taps++; hint(false);
   const t = nearestEnemy(2.4);
@@ -3412,7 +3420,7 @@ function doGrapple() {
 }
 function doTaunt() {
   // TMNT taunt: talk trash, build special meter. Pure addition — costs a beat of vulnerability.
-  if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.busy > 0 || player.airT > 0) return;
+  if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.busy > 0 || player.airT > 0) || player.blocking return;
   unlockAudio();
   // JET SET RADIO: near a tag spot, TAUNT starts spraying instead of trash-talking
   const tag = nearestTagSpot(2.2);
@@ -3436,7 +3444,7 @@ function doTaunt() {
 function doStance() {
   // MIXTAPE STANCE SYSTEM (Double Dragon Neon): two switchable loadouts mid-fight.
   // Double-tap TAUNT swaps stances — trade damage for speed or vice versa. Style, not power: pure tradeoff.
-  if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.busy > 0 || player.airT > 0) return;
+  if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.busy > 0 || player.airT > 0) || player.blocking return;
   unlockAudio();
   const fd = fighterDef();
   player.stance = player.stance ? 0 : 1;
@@ -3461,7 +3469,7 @@ function doStance() {
   setHud(); ev('stance', { stance: player.stance });
 }
 function doJump() {
-  if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.busy > 0) return;
+  if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.busy > 0 || player.blocking) return;
   if (player.airT > 0) return;
   unlockAudio();
   player.vy = 7.2; player.airT = 0.001; player.py = 0.001;
@@ -3576,7 +3584,7 @@ function doStanceFin(fd) {
   setHud(); ev('stancefin', { kind: fin.kind });
 }
 function doHeavy() {
-  if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.busy > 0) return;
+  if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.busy > 0 || player.blocking) return;
   faceNearestEnemy();
   unlockAudio(); T.taps++; hint(false);
   // DUST LAUNCHER (Guilty Gear): ↓+HVY = universal overhead launcher, same for every fighter.
@@ -3641,7 +3649,7 @@ function doHeavy() {
   }, 230);
 }
 function doSpecial() {
-  if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0) return;
+  if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.blocking) return;
   faceNearestEnemy();
   unlockAudio();
   const fd = fighterDef();
@@ -3808,6 +3816,42 @@ function doDodge() {
   burst(player.root.position.clone().add(new THREE.Vector3(0, 0.3, 0)), 8, 0xcfcfcf, 3);
   T.dodgeSfx = (T.dodgeSfx || 0) + 1; // test hook
   ev('dodge', {});
+}
+// ---------- PLAYER BLOCK (defense lane; refs SoR4 / Yakuza / Def Jam) ----------
+// HOLD DDG (touch) or hold L (keyboard) = block stance. Tap = dodge (unchanged).
+// Blocking: negates most damage to chip, brief blockstun, can't move/attack while
+// holding. Can't block mid-attack (busy), while airborne, or while knocked down.
+let blockHoldT = 0, blockHoldTimer = null; // input hold detection
+function startBlock() {
+  if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0) return false;
+  if (player.blocking || player.busy > 0 || (player.airT || 0) > 0 || (player.knockT || 0) > 0) return false;
+  player.blocking = true;
+  faceNearestEnemy();
+  playAnim(player, 'Melee_Unarmed_Idle', { loop: true });
+  sparkFX(player.px, 1.1, player.pz, 0x7af0ff, 8);
+  T.blocks = (T.blocks || 0); // counter increments on blocked hits
+  ev('blockstart', {});
+  return true;
+}
+function stopBlock() {
+  if (!player || !player.blocking) return;
+  player.blocking = false;
+  blockHoldT = 0;
+  if (player.hp > 0 && state === 'fight') playAnim(player, 'Melee_Unarmed_Idle', { loop: true });
+  ev('blockend', {});
+}
+// DDG hold detection: tap (<220ms) = dodge, hold = block stance until release
+function ddgDown() {
+  if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0) return;
+  unlockAudio();
+  blockHoldT = performance.now();
+  clearTimeout(blockHoldTimer);
+  blockHoldTimer = setTimeout(() => { blockHoldTimer = null; startBlock(); }, 220);
+}
+function ddgUp() {
+  if (blockHoldTimer) { clearTimeout(blockHoldTimer); blockHoldTimer = null; doDodge(); }
+  else stopBlock();
+  blockHoldT = 0;
 }
 // ---------- G3: ENEMY BLOCK / DODGE (improve-loop c4; refs SoR4 / Final Fight / Urban Reign) ----------
 // Backlog finding: player offense was uncontested except by spacing — no enemy guards, no
@@ -4004,6 +4048,28 @@ function hurtPlayer(dmg) {
     }
     return;
   }
+  // PLAYER BLOCK (defense lane; refs SoR4/Yakuza/Def Jam): holding block while grounded
+  // reduces the hit to chip. Heavies still hurt through guard (chip scales with damage).
+  // Blockstun is tracked separately so holding block through a flurry keeps blocking —
+  // you can't be forced out of guard by chip alone. Uses the real Melee_Block_Hit
+  // clip for the reaction — never faked.
+  if (player.blocking && !((player.airT || 0) > 0)) {
+    const chip = Math.max(1, Math.round(dmg * 0.15));
+    player.hp -= chip;
+    T.blocks = (T.blocks || 0) + 1; ev('pblock', { chip, dmg });
+    playAnim(player, 'Melee_Block_Hit', { ts: 1.3 });
+    sparkFX(player.px + (player.face || 1) * 0.5, 1.2, player.pz, 0x7af0ff, 14);
+    const bsp = screenPos(player.root.position.clone().add(new THREE.Vector3(0, 2.0, 0)));
+    popText('BLOCKED -' + chip, 'spc', bsp.x, bsp.y - 20);
+    sfx('hit2', 0.5, false, 0.5); // pitched-down thud = block sound
+    player.blockstunT = 0.3; // holding guard through blockstun keeps blocking
+    player.busy = Math.max(player.busy, 0.15); // brief counter-pressure window
+    player.energy = clamp(player.energy + 3, 0, energyMax()); // defense rewarded, not punished
+    hitstop = 0.04; shake = Math.max(shake, 0.06);
+    setHud();
+    if (player.hp <= 0) { player.hp = 0; setHud(); playAnim(player, 'Death_A', { clamp: true }); missionOver = true; }
+    return;
+  }
   dmg = Math.max(1, Math.round(dmg * (1 - (blessFx().armor || 0)))); // IRON SKIN
   dmgTaken += dmg; player.hp -= dmg; combo = 0; shake = 0.3; hitstop = 0.05; flash('#ff2a2a'); sfx('hit2', 0.8, false, 0.7); buzz(50); // F10 haptics
   player.jugN = (player.jugN || 0) + 1; player.jugT = 2.5; // BURST (Guilty Gear): juggle tracking
@@ -4080,7 +4146,14 @@ function stickEnd(e) {
 }
 function setupInput() {
   const bind = (id, fn) => $(id).addEventListener('pointerdown', (e) => { e.stopPropagation(); e.preventDefault(); fn(); }, { passive: false });
-  bind('btnAtk', () => { if (player && player.knockT > 0) doTech(); else doPunch(); }); bind('btnDdg', doDodge); bind('btnSpc', doSpecial); bind('btnJmp', doJump);
+  bind('btnAtk', () => { if (player && player.knockT > 0) doTech(); else doPunch(); });
+  // BLOCK (defense lane): HOLD DDG = block stance, tap = dodge (unchanged)
+  { const el = $('btnDdg');
+    el.addEventListener('pointerdown', (e) => { e.stopPropagation(); e.preventDefault(); ddgDown(); }, { passive: false });
+    el.addEventListener('pointerup', (e) => { e.stopPropagation(); ddgUp(); }, { passive: false });
+    el.addEventListener('pointercancel', (e) => { e.stopPropagation(); ddgUp(); }, { passive: false });
+  }
+  bind('btnSpc', doSpecial); bind('btnJmp', doJump);
   bind('btnGrp', doGrapple); // WRESTLING FINISHERS (No More Heroes): GRAPPLE on staggered foes
   // FOCUS (SFIV): HOLD HVY 0.45s = focus stance (absorb one hit), release = crumple strike; tap = normal heavy
   { const el = $('btnHvy');
@@ -4163,7 +4236,7 @@ function setupInput() {
     if (k === 'j') { if (player && player.knockT > 0) { doTech(); } else doPunch(); }
     if (k === 'g') doGrapple(); // WRESTLING FINISHERS: GRAPPLE on staggered foes
     if (k === 'k') doHeavy();
-    if (k === 'l') doDodge();
+    if (k === 'l' && !e.repeat) { ddgDown(); } // BLOCK (defense lane): hold L = block, tap = dodge
     if (k === 'u') doSpecial();
     if (k === 't') { const now = performance.now(); if (now - tauntKeyLastT < 350) { tauntKeyLastT = 0; doStance(); } else { tauntKeyLastT = now; doTaunt(); } }
     if (k === ' ') { e.preventDefault(); doJump(); }
@@ -4174,6 +4247,7 @@ function setupInput() {
     if ((k === 'arrowright' || k === 'd') && stick.dx > 0) stick.dx = 0;
     if ((k === 'arrowup' || k === 'w') && stick.dy < 0) stick.dy = 0;
     if ((k === 'arrowdown' || k === 's') && stick.dy > 0) stick.dy = 0;
+    if (k === 'l') ddgUp(); // BLOCK (defense lane): release L = stop block or dodge on tap
   });
   addEventListener('resize', resize);
 }
@@ -4657,6 +4731,7 @@ function playerUpdate(dt) {
   if (p.dodgeCD > 0) p.dodgeCD -= dt;
   if (p.blitzCD > 0) p.blitzCD -= dt;
   if (p.witchCD > 0) p.witchCD -= dt;
+  if (p.blockstunT > 0) p.blockstunT -= dt; // BLOCK (defense lane)
   // RADICAL MODE (TMNT): +30% dmg, +15% speed while active
   if (p.radicalT > 0) {
     p.radicalT -= dt;
@@ -4712,6 +4787,7 @@ function playerUpdate(dt) {
   const spd = 4.4 * (p.spd || 1) * (p.slowT > 0 ? 0.45 : 1) * (1 + (blessFx().moveSpd || 0));
   let mx = stick.dx * spd, mz = stick.dy * spd;
   if (p.dodgeT > 0) { mx = p.dodgeDx * 10; mz = p.dodgeDz * 10; }
+  if (p.blocking) { mx = 0; mz = 0; } // BLOCK (defense lane): holding guard roots you
   const maxX = mission.len === Infinity ? 1e6 : mission.len - 1.5;
   p.px = clamp(p.px + mx * dt, 0.5, maxX);
   p.pz = clamp(p.pz + mz * dt, -1.4, 1.4);
@@ -5602,6 +5678,9 @@ window.__cdtest = {
       guardT: +(e.guardT || 0).toFixed(2), dodgeT: +(e.dodgeT || 0).toFixed(2), pzShift: +(e.pz - pz0).toFixed(2) };
   },
   dbgDodgeT: (v) => { if (player) player.dodgeT = v; return player.dodgeT; },
+  // BLOCK (defense lane) test hooks
+  dbgBlock: (on) => { if (player) { if (on) startBlock(); else stopBlock(); } return !!(player && player.blocking); },
+  dbgBlockHit: (dmg) => { const hp0 = player.hp, b0 = T.blocks || 0; hurtPlayer(dmg || 20); return { hp0, hp1: player.hp, chip: hp0 - player.hp, blocks: (T.blocks || 0) - b0 }; },
   dbgEvents: () => T.events.map((e) => e.name),
   dbgPlayer: () => player ? { hp: player.hp, energy: Math.round(player.energy), px: +player.px.toFixed(2), witchCD: +(player.witchCD||0).toFixed(2), blitzCD: +(player.blitzCD||0).toFixed(2) } : null,
   dbgBoss: (id) => { const b = bossDef(id); return b ? { name: b.name, hp: b.hp, proc: !!b.proc, sig: b.sig ? b.sig.name : null } : null; },
