@@ -1,0 +1,465 @@
+{
+  "schema": 1,
+  "slots": [
+    "headgear",
+    "gloves",
+    "kicks",
+    "accessory",
+    "facepaint",
+    "eyes"
+  ],
+  "rarities": [
+    "Street",
+    "Rare",
+    "Epic",
+    "Legendary"
+  ],
+  "cosmetic_only": true,
+  "items": {
+    "skimask_ink": {
+      "slot": "headgear",
+      "name": "Ink Ski Mask",
+      "rarity": "Street",
+      "unlock": {
+        "type": "shop",
+        "price": 150
+      },
+      "canvases": [
+        "head"
+      ],
+      "desc": "Full-face ink balaclava. Nobody knows."
+    },
+    "bandana_crimson": {
+      "slot": "headgear",
+      "name": "Crimson Bandana",
+      "rarity": "Street",
+      "unlock": {
+        "type": "shop",
+        "price": 150
+      },
+      "canvases": [
+        "head"
+      ],
+      "desc": "Barrio colors, tied tight."
+    },
+    "hoodie_up": {
+      "slot": "headgear",
+      "name": "Up Hoodie",
+      "rarity": "Street",
+      "unlock": {
+        "type": "shop",
+        "price": 200
+      },
+      "canvases": [
+        "head",
+        "torso"
+      ],
+      "desc": "Hood up. Neon downtown uniform."
+    },
+    "mohawk_ink": {
+      "slot": "headgear",
+      "name": "Ink Mohawk",
+      "rarity": "Street",
+      "unlock": {
+        "type": "shop",
+        "price": 200
+      },
+      "canvases": [
+        "head"
+      ],
+      "desc": "Shaved sides, lightning attitude."
+    },
+    "hockey_mask": {
+      "slot": "headgear",
+      "name": "Rink Mask",
+      "rarity": "Rare",
+      "unlock": {
+        "type": "shop",
+        "price": 450
+      },
+      "canvases": [
+        "head"
+      ],
+      "desc": "Goalie mask, street rules."
+    },
+    "puffer_hood": {
+      "slot": "headgear",
+      "name": "Rust Puffer Hood",
+      "rarity": "Rare",
+      "unlock": {
+        "type": "shop",
+        "price": 450
+      },
+      "canvases": [
+        "head",
+        "torso"
+      ],
+      "desc": "Rust-belt winter armor."
+    },
+    "hoodvest": {
+      "slot": "headgear",
+      "name": "Hooded Vest",
+      "rarity": "Rare",
+      "unlock": {
+        "type": "shop",
+        "price": 400
+      },
+      "canvases": [
+        "head",
+        "torso"
+      ],
+      "desc": "Sleeveless. Arms stay free."
+    },
+    "locs_long": {
+      "slot": "headgear",
+      "name": "Long Locs",
+      "rarity": "Rare",
+      "unlock": {
+        "type": "shop",
+        "price": 400
+      },
+      "canvases": [
+        "head"
+      ],
+      "desc": "Crown weight, worn long."
+    },
+    "fade_design": {
+      "slot": "headgear",
+      "name": "Lightning Fade",
+      "rarity": "Epic",
+      "unlock": {
+        "type": "shop",
+        "price": 800
+      },
+      "canvases": [
+        "head"
+      ],
+      "desc": "Fade with the bolt carved in."
+    },
+    "lucha_barrio": {
+      "slot": "headgear",
+      "name": "Barrio Lucha",
+      "rarity": "Epic",
+      "unlock": {
+        "type": "shop",
+        "price": 900
+      },
+      "canvases": [
+        "head"
+      ],
+      "desc": "Generic lucha pattern \u2014 teal and pink diamonds."
+    },
+    "wolf_head": {
+      "slot": "headgear",
+      "name": "Wolf Head",
+      "rarity": "Epic",
+      "unlock": {
+        "type": "season",
+        "season": "halloween"
+      },
+      "canvases": [
+        "head"
+      ],
+      "desc": "Halloween season reward. Hunt at full moon."
+    },
+    "tiger_head": {
+      "slot": "headgear",
+      "name": "Tiger Head",
+      "rarity": "Legendary",
+      "unlock": {
+        "type": "boss",
+        "boss": 3
+      },
+      "canvases": [
+        "head"
+      ],
+      "desc": "Beat the zone-3 boss to wear the stripes."
+    },
+    "gloves_neon": {
+      "slot": "gloves",
+      "name": "Neon Synthetics",
+      "rarity": "Street",
+      "unlock": {
+        "type": "shop",
+        "price": 200
+      },
+      "canvases": [
+        "arm_f"
+      ],
+      "desc": "Hot pink / cyan fight synthetics."
+    },
+    "gloves_work": {
+      "slot": "gloves",
+      "name": "Work Leather",
+      "rarity": "Street",
+      "unlock": {
+        "type": "shop",
+        "price": 200
+      },
+      "canvases": [
+        "arm_f"
+      ],
+      "desc": "Industrial leather. Built to last."
+    },
+    "gloves_canvas": {
+      "slot": "gloves",
+      "name": "Boardwalk Canvas",
+      "rarity": "Rare",
+      "unlock": {
+        "type": "shop",
+        "price": 450
+      },
+      "canvases": [
+        "arm_f"
+      ],
+      "desc": "Canvas wraps, boardwalk edition."
+    },
+    "gloves_gold": {
+      "slot": "gloves",
+      "name": "Gold-Trim",
+      "rarity": "Epic",
+      "unlock": {
+        "type": "shop",
+        "price": 850
+      },
+      "canvases": [
+        "arm_f"
+      ],
+      "desc": "Black and gold. Championship energy."
+    },
+    "gloves_dragon": {
+      "slot": "gloves",
+      "name": "Dragon-Scale",
+      "rarity": "Legendary",
+      "unlock": {
+        "type": "boss",
+        "boss": 5
+      },
+      "canvases": [
+        "arm_f"
+      ],
+      "desc": "Scale plating. Endgame hands."
+    },
+    "kicks_canvas": {
+      "slot": "kicks",
+      "name": "Boardwalk Hi-Tops",
+      "rarity": "Street",
+      "unlock": {
+        "type": "shop",
+        "price": 200
+      },
+      "canvases": [
+        "leg_s"
+      ],
+      "desc": "Canvas hi-tops, pier-tested."
+    },
+    "kicks_workboot": {
+      "slot": "kicks",
+      "name": "Work Boots",
+      "rarity": "Street",
+      "unlock": {
+        "type": "shop",
+        "price": 200
+      },
+      "canvases": [
+        "leg_s"
+      ],
+      "desc": "Steel attitude, leather boots."
+    },
+    "kicks_neon": {
+      "slot": "kicks",
+      "name": "Neon Runners",
+      "rarity": "Rare",
+      "unlock": {
+        "type": "shop",
+        "price": 450
+      },
+      "canvases": [
+        "leg_s"
+      ],
+      "desc": "Downtown after dark."
+    },
+    "kicks_gold": {
+      "slot": "kicks",
+      "name": "Gold Hi-Tops",
+      "rarity": "Epic",
+      "unlock": {
+        "type": "shop",
+        "price": 850
+      },
+      "canvases": [
+        "leg_s"
+      ],
+      "desc": "Black and gold, laced tight."
+    },
+    "chain_dogtags": {
+      "slot": "accessory",
+      "name": "Dog Tags",
+      "rarity": "Street",
+      "unlock": {
+        "type": "shop",
+        "price": 150
+      },
+      "canvases": [
+        "torso"
+      ],
+      "desc": "Stamped steel. Earned, not bought. (Bought.)"
+    },
+    "wristpad_neon": {
+      "slot": "accessory",
+      "name": "Neon Wrist Pads",
+      "rarity": "Street",
+      "unlock": {
+        "type": "shop",
+        "price": 150
+      },
+      "canvases": [
+        "arm_f"
+      ],
+      "desc": "Wrap the wrists, protect the money-makers."
+    },
+    "chain_curb": {
+      "slot": "accessory",
+      "name": "Curb Chain",
+      "rarity": "Rare",
+      "unlock": {
+        "type": "shop",
+        "price": 500
+      },
+      "canvases": [
+        "torso"
+      ],
+      "desc": "Chunky gold curb links."
+    },
+    "wristpad_leather": {
+      "slot": "accessory",
+      "name": "Leather Wraps",
+      "rarity": "Rare",
+      "unlock": {
+        "type": "shop",
+        "price": 400
+      },
+      "canvases": [
+        "arm_f"
+      ],
+      "desc": "Old-school leather wrist wraps."
+    },
+    "medal_saint": {
+      "slot": "accessory",
+      "name": "Saint Medallion",
+      "rarity": "Epic",
+      "unlock": {
+        "type": "season",
+        "season": "takeover"
+      },
+      "canvases": [
+        "torso"
+      ],
+      "desc": "Season-pass relic. Blessed by the block."
+    },
+    "paint_cornerman": {
+      "slot": "facepaint",
+      "name": "Cornerman Stripes",
+      "rarity": "Street",
+      "unlock": {
+        "type": "shop",
+        "price": 150
+      },
+      "canvases": [
+        "head"
+      ],
+      "desc": "Fight-night tape stripes."
+    },
+    "paint_war": {
+      "slot": "facepaint",
+      "name": "War Paint",
+      "rarity": "Rare",
+      "unlock": {
+        "type": "shop",
+        "price": 400
+      },
+      "canvases": [
+        "head"
+      ],
+      "desc": "Black band, red slashes. Business."
+    },
+    "paint_tag": {
+      "slot": "facepaint",
+      "name": "Cheek Tag",
+      "rarity": "Rare",
+      "unlock": {
+        "type": "shop",
+        "price": 400
+      },
+      "canvases": [
+        "head"
+      ],
+      "desc": "Wildstyle CD on the cheek."
+    },
+    "paint_sugarskull": {
+      "slot": "facepaint",
+      "name": "Sugar Skull",
+      "rarity": "Epic",
+      "unlock": {
+        "type": "season",
+        "season": "halloween"
+      },
+      "canvases": [
+        "head"
+      ],
+      "desc": "Day of the Dead. Halloween season reward."
+    },
+    "eyes_amber": {
+      "slot": "eyes",
+      "name": "Amber Eyes",
+      "rarity": "Rare",
+      "unlock": {
+        "type": "shop",
+        "price": 350
+      },
+      "canvases": [
+        "head"
+      ],
+      "desc": "Predator amber."
+    },
+    "eyes_ice": {
+      "slot": "eyes",
+      "name": "Ice Eyes",
+      "rarity": "Rare",
+      "unlock": {
+        "type": "shop",
+        "price": 350
+      },
+      "canvases": [
+        "head"
+      ],
+      "desc": "Glacier stare."
+    },
+    "eyes_violet": {
+      "slot": "eyes",
+      "name": "Violet Eyes",
+      "rarity": "Epic",
+      "unlock": {
+        "type": "shop",
+        "price": 750
+      },
+      "canvases": [
+        "head"
+      ],
+      "desc": "Neon-district violet."
+    },
+    "eyes_hollow": {
+      "slot": "eyes",
+      "name": "Hollow Glow",
+      "rarity": "Legendary",
+      "unlock": {
+        "type": "boss",
+        "boss": 7
+      },
+      "canvases": [
+        "head"
+      ],
+      "desc": "Hollow Point's glow. Boss-tier eyes."
+    }
+  }
+}
