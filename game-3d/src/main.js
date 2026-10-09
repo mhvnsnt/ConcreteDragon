@@ -4097,6 +4097,7 @@ function enemyAI(e, dt) {
     // Fighting/windup/recover states are silent.
     e.stepAcc = (e.stepAcc || 0) + Math.hypot(e.px - epx0, e.pz - epz0);
     if (e.stepAcc >= 1.9) { e.stepAcc -= 1.9; sfxFootstep(Math.hypot(dx, dz), true); }
+    // (enemy-enemy separation now handled globally by resolveBodyCollision() in frame())
     e.root.rotation.y = dx > 0 ? Math.PI / 2 : -Math.PI / 2;
     e.aiT -= dt;
     if (adx < 1.35 && adz < 0.65 && e.aiT <= 0) {
@@ -4983,6 +4984,40 @@ function loop() {
   requestAnimationFrame(loop);
   frame(Math.min(clock.getDelta(), 0.05), true);
 }
+// OBVIOUS-DEFECT LAW (owner 2026-10-09): circle colliders on the ground plane.
+// Every live grounded fighter gets a body circle; overlapping circles are pushed
+// apart every frame. Fighters never interpenetrate — not the player, not thugs,
+// not bosses. Launched/juggled (airborne) foes fly over bodies and are skipped.
+const BODY_R = 0.45, BOSS_BODY_R = 0.68;
+function resolveBodyCollision() {
+  const bs = [];
+  if (player && player.hp > 0) bs.push(player);
+  for (const e of enemies) { if (e.hp > 0 && !e.airborne) bs.push(e); }
+  // iterate: one pairwise pass can leave chain residuals when 3+ bodies converge
+  for (let pass = 0; pass < 3; pass++) {
+    let clean = true;
+    for (let i = 0; i < bs.length; i++) {
+      for (let j = i + 1; j < bs.length; j++) {
+        const a = bs[i], b = bs[j];
+        const min = (a.boss ? BOSS_BODY_R : BODY_R) + (b.boss ? BOSS_BODY_R : BODY_R);
+        let dx = b.px - a.px, dz = (b.pz || 0) - (a.pz || 0);
+        let d = Math.hypot(dx, dz);
+        if (d >= min) continue;
+        clean = false;
+        if (d < 1e-4) { dx = 1; dz = 0; d = 1; } // exact stack: pick an axis
+        const push = min - d, nx = dx / d, nz = dz / d;
+        // mass: player 3, boss 5, thug 1 — heavier moves less (bosses shove, thugs don't)
+        const ma = a === player ? 3 : (a.boss ? 5 : 1);
+        const mb = b === player ? 3 : (b.boss ? 5 : 1);
+        const tw = ma + mb;
+        a.px -= nx * push * (mb / tw); a.pz = (a.pz || 0) - nz * push * (mb / tw);
+        b.px += nx * push * (ma / tw); b.pz = (b.pz || 0) + nz * push * (ma / tw);
+      }
+    }
+    if (clean) break;
+  }
+  for (const f of bs) syncPos(f);
+}
 function frame(dt, doRender = true) {
   const RR = () => { if (doRender) renderer.render(scene, camera); };
   if (paused) { RR(); return; }
@@ -5008,6 +5043,7 @@ function frame(dt, doRender = true) {
     recordStick(); // fighting-game motion input history
     director(dt);
     for (const e of enemies.slice()) enemyAI(e, dt);
+    resolveBodyCollision(); // OBVIOUS-DEFECT LAW: no interpenetration, ever
     for (const e of enemies) positionWarn(e);
     for (const e of enemies) if (e.dotT > 0 && e.hp > 0 && !e.dead) { e.dotT -= dt; e.hp -= e.dotDps * dt; sparkFX(e.px, 1.2, e.pz, 0x7cff6b, 1); if (e.hp <= 0) killEnemy(e); }
     if (comboT > 0 && (comboT -= dt) <= 0) { combo = 0; setHud(); }
@@ -5340,6 +5376,14 @@ window.__cdtest = {
   step: (dt) => { playerUpdate(dt || 1 / 60); }, // drive the real physics deterministically
   estep: (dt) => { for (const e of enemies.slice()) enemyAI(e, dt || 1 / 60); }, // drive enemy AI deterministically (test only)
   estepN: (n, dt) => { for (let i = 0; i < (n || 60); i++) for (const e of enemies.slice()) enemyAI(e, dt || 1 / 60); return true; }, // batch estep (test only)
+  ff: (n, dt) => { // improve-loop C2: deterministic FULL-frame stepping for playtests (no render).
+    // frame() covers playerUpdate + director + enemyAI + hitstop/combo timers + projectiles.
+    // NOTE: hit resolution uses wall-clock setTimeout — after ff(), await a real sleep so
+    // pending hit timeouts fire, then sample. Positions are read fresh inside the timeout.
+    const t = Math.max(1, Math.min(600, n | 0 || 1));
+    for (let i = 0; i < t; i++) frame(dt || 1 / 60, false);
+    return +gameTime.toFixed(2);
+  },
   dbg: () => player ? { st: state, mo: missionOver, en: ended, hp: player.hp, busy: player.busy, airT: player.airT, py: player.py, vy: player.vy, frames: dbgFrames } : null,
   setStick: (dx, dy) => { stick.dx = dx; stick.dy = dy; },
   playerPos: () => player ? { px: +player.px.toFixed(2), pz: +player.pz.toFixed(2), py: +(player.py || 0).toFixed(2), airT: +(player.airT || 0).toFixed(2) } : null,
