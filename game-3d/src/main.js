@@ -1541,6 +1541,8 @@ const DESTRUCT_DEFS = {
   ind_container_c: { hp: 35, name: 'SHIPPING CONTAINER', pickups: ['cash', 'health'] }, // industrial kit
   ind_tank: { hp: 50, name: 'FUEL TANK', pickups: ['cash', 'cash', 'health'] },          // industrial kit
   ind_solar: { hp: 15, name: 'SOLAR PANEL', pickups: ['cash'] },                        // industrial kit
+  barrel: { hp: 18, name: 'OIL DRUM', pickups: ['cash', 'wpn_pipe'] },
+  phonebooth: { hp: 42, name: 'PHONE BOOTH', pickups: ['cash', 'cash', 'food', 'wpn_bat'] },
   car_taxi: { hp: 70, name: 'TAXI', pickups: ['cash', 'cash', 'cash', 'special'] },
   car_police: { hp: 70, name: 'SQUAD CAR', pickups: ['cash', 'cash', 'health', 'special'] },
 };
@@ -1637,7 +1639,7 @@ function spawnBreakables(district, missionLen, R) {
   const over = district === 'overpass', ind = district === 'industrial';
   const names = over ? ['barrier', 'cone', 'dumpster']
     : ind ? ['box_A', 'ind_container_a', 'ind_container_b', 'ind_tank', 'ind_solar']
-    : ['trash_A', 'trash_B', 'box_A', 'tnt_crate'];
+    : ['trash_A', 'trash_B', 'box_A', 'tnt_crate', 'barrel', 'barrel', 'phonebooth'];
   const P = over ? roadParts : ind ? indParts : null, SC = over ? 1.6 : 2.2;
   const step = (typeof hasMod === 'function' && mission && hasMod('party')) ? 5 : 9;
   for (let px = 8; px < L; px += r2(step, step + 7)) {
@@ -1645,6 +1647,69 @@ function spawnBreakables(district, missionLen, R) {
     placeProp(nm, px + r2(-2, 2), r2(-1.5, 1.5), R() * 3, SC, null, P);
   }
 }
+// ---------- BREAKABLES: barrel + phone booth (procedural, blocky — Final Fight street dressing) ----------
+// Free-first: modeled in-code (no Kenney pack has a fitting phone booth; barrel is trivial).
+// Matches the game's blocky aesthetic; zero download weight.
+function buildBarrel() {
+  const g = new THREE.Group();
+  const bodyMat = new THREE.MeshStandardMaterial({ color: 0xb3402a, roughness: 0.55, metalness: 0.35 });
+  const body = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.42, 1.05, 12), bodyMat);
+  body.position.y = 0.52; g.add(body);
+  const ringMat = new THREE.MeshStandardMaterial({ color: 0x4a4a4a, roughness: 0.5, metalness: 0.6 });
+  for (const y of [0.24, 0.8]) {
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(0.425, 0.035, 8, 16), ringMat);
+    ring.rotation.x = Math.PI / 2; ring.position.y = y; g.add(ring);
+  }
+  const lid = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.42, 0.05, 12), ringMat);
+  lid.position.y = 1.06; g.add(lid);
+  g.traverse((m) => { if (m.isMesh) { m.castShadow = true; m.receiveShadow = true; } });
+  return g;
+}
+function buildPhoneBooth() {
+  const g = new THREE.Group();
+  const frame = new THREE.MeshStandardMaterial({ color: 0x1a6fc4, roughness: 0.4, metalness: 0.25 });
+  const glass = new THREE.MeshStandardMaterial({ color: 0x9fd8ff, roughness: 0.08, metalness: 0.15, transparent: true, opacity: 0.32 });
+  for (const [x, z] of [[-0.45, -0.45], [0.45, -0.45], [-0.45, 0.45], [0.45, 0.45]]) {
+    const post = new THREE.Mesh(new THREE.BoxGeometry(0.09, 2.2, 0.09), frame);
+    post.position.set(x, 1.1, z); g.add(post);
+  }
+  const roof = new THREE.Mesh(new THREE.BoxGeometry(1.06, 0.14, 1.06), frame); roof.position.y = 2.27; g.add(roof);
+  const base = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.1, 1.0), frame); base.position.y = 0.05; g.add(base);
+  const sign = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.22, 0.06),
+    new THREE.MeshStandardMaterial({ color: 0x0d2c54, roughness: 0.5, emissive: 0x2a7fff, emissiveIntensity: 0.7 }));
+  sign.position.set(0, 2.05, 0.5); g.add(sign);
+  for (const [w, d, x, z] of [[0.86, 0.04, 0, -0.45], [0.86, 0.04, 0, 0.45], [0.04, 0.86, -0.45, 0], [0.04, 0.86, 0.45, 0]]) {
+    const p = new THREE.Mesh(new THREE.BoxGeometry(w, 1.85, d), glass);
+    p.position.set(x, 1.15, z); g.add(p);
+  }
+  const phone = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.42, 0.2),
+    new THREE.MeshStandardMaterial({ color: 0x1c1c1c, roughness: 0.6 }));
+  phone.position.set(0, 1.25, -0.28); g.add(phone);
+  const shelf = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.06, 0.4), frame);
+  shelf.position.set(0, 1.0, -0.25); g.add(shelf);
+  g.traverse((m) => { if (m.isMesh) { m.castShadow = true; m.receiveShadow = true; } });
+  return g;
+}
+// ---------- TURKEY (Final Fight homage): the big heal ----------
+function buildTurkeyMesh() {
+  const g = new THREE.Group();
+  const meat = new THREE.MeshStandardMaterial({ color: 0xc47b3a, roughness: 0.65 });
+  const bone = new THREE.MeshStandardMaterial({ color: 0xf2e6c8, roughness: 0.5 });
+  const body = new THREE.Mesh(new THREE.SphereGeometry(0.34, 10, 8), meat);
+  body.scale.set(1.15, 0.85, 0.9); g.add(body);
+  for (const s of [-1, 1]) {
+    const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 0.34, 8), bone);
+    leg.position.set(s * 0.16, 0.22, -0.28); leg.rotation.x = 0.7; g.add(leg);
+    const tip = new THREE.Mesh(new THREE.SphereGeometry(0.09, 8, 6), meat);
+    tip.position.set(s * 0.16, 0.36, -0.4); g.add(tip);
+  }
+  const shine = new THREE.Mesh(new THREE.SphereGeometry(0.1, 8, 6),
+    new THREE.MeshStandardMaterial({ color: 0xffd98a, roughness: 0.3, emissive: 0xcc8833, emissiveIntensity: 0.4 }));
+  shine.position.set(0.12, 0.18, 0.22); g.add(shine);
+  g.traverse((m) => { if (m.isMesh) m.castShadow = true; });
+  return g;
+}
+
 // ---------- pickups: health / cash / special (dropped by enemies + destructibles) ----------
 const pickups = []; // {type, mesh, px, pz, t}
 const PICKUP_DEFS = {
@@ -1652,8 +1717,10 @@ const PICKUP_DEFS = {
   cash: { color: 0x80ed99, label: '+$' },
   special: { color: 0x7af0ff, label: '+SPC' },
   food: { color: 0xffb020, label: '+FOOD' }, // RIVER CITY RANSOM: food heals big — eat between beatdowns
+  turkey: { color: 0xd98a4a, label: '+TURKEY' }, // FINAL FIGHT homage: the big bird heals huge
 };
 function spawnPickup(type, x, z) {
+  if (type.startsWith('wpn_')) { spawnWeaponPickup(type.slice(4), x, z); return; }
   const d = PICKUP_DEFS[type]; if (!d) return;
   const g = new THREE.Group();
   const mat = new THREE.MeshStandardMaterial({ color: d.color, emissive: d.color, emissiveIntensity: 0.55, roughness: 0.4 });
@@ -1665,6 +1732,13 @@ function spawnPickup(type, x, z) {
     // burger: bun + patty
     const bun = new THREE.Mesh(new THREE.SphereGeometry(0.28, 8, 6, 0, Math.PI * 2, 0, Math.PI / 2), mat); g.add(bun);
     const patty = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.12, 8), new THREE.MeshStandardMaterial({ color: 0x6b4226, roughness: 0.8 })); patty.position.y = -0.05; g.add(patty);
+  } else if (type === 'turkey') {
+    g.add(buildTurkeyMesh());
+    g.position.set(x, 0.75, z);
+    g.traverse((m) => { if (m.isMesh) m.castShadow = true; });
+    streetGroup.add(g);
+    pickups.push({ type, mesh: g, px: x, pz: z, t: Math.random() * 6 });
+    return;
   } else if (type === 'cash') {
     g.add(new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.32, 0.08), mat));
   } else {
@@ -1681,8 +1755,8 @@ function updatePickups(dt) {
   for (let i = pickups.length - 1; i >= 0; i--) {
     const pk = pickups[i];
     pk.t += dt;
-    pk.mesh.position.y = 0.85 + Math.sin(pk.t * 3.2) * 0.14;
-    pk.mesh.rotation.y += dt * 2.4;
+    if (pk.flat) { pk.mesh.rotation.y += dt * 0.8; }
+    else { pk.mesh.position.y = 0.85 + Math.sin(pk.t * 3.2) * 0.14; pk.mesh.rotation.y += dt * 2.4; }
     const dx = player.px - pk.px, dz = player.pz - pk.pz;
     const dist = Math.hypot(dx, dz);
     if (dist < magnetR() && dist > 0.01) { // magnet (gym MAGNET widens it)
@@ -1691,9 +1765,14 @@ function updatePickups(dt) {
       pk.mesh.position.x = pk.px; pk.mesh.position.z = pk.pz;
     }
     if (dist < 0.75) {
+      if (pk.type.startsWith('wpn_')) {
+        equipWeapon(pk.type.slice(4), pk.durability);
+        streetGroup.remove(pk.mesh); pickups.splice(i, 1); continue;
+      }
       const d = PICKUP_DEFS[pk.type];
       const sp = screenPos(pk.mesh.position.clone());
-      if (pk.type === 'health') { player.hp = Math.min(player.maxHp, player.hp + player.maxHp * 0.3); popText('+HP', 'gold', sp.x, sp.y); }
+      if (pk.type === 'turkey') { player.hp = Math.min(player.maxHp, player.hp + player.maxHp * 0.75); popText('TURKEY! +HP', 'gold', sp.x, sp.y); }
+      else if (pk.type === 'health') { player.hp = Math.min(player.maxHp, player.hp + player.maxHp * 0.3); popText('+HP', 'gold', sp.x, sp.y); }
       else if (pk.type === 'food') { player.hp = Math.min(player.maxHp, player.hp + player.maxHp * 0.5); player.energy = clamp(player.energy + 20, 0, energyMax()); popText('+FOOD! +HP +SPC', 'gold', sp.x, sp.y); }
       else if (pk.type === 'cash') { const c = Math.round(rnd(15, 40)); awardCash(c, pk.mesh.position.clone(), null, true); sfxPickupChime(); }
       else { player.energy = clamp(player.energy + 35, 0, energyMax()); popText('+ENERGY', 'big', sp.x, sp.y); }
@@ -1705,7 +1784,183 @@ function updatePickups(dt) {
   }
 }
 function R_safe() { return typeof missionR === 'function' ? missionR() : Math.random(); }
-function clearPickups() { for (const pk of pickups) streetGroup.remove(pk.mesh); pickups.length = 0; }
+function clearPickups() { for (const pk of pickups) streetGroup.remove(pk.mesh); pickups.length = 0; for (const t of thrownWpns) streetGroup.remove(t.mesh); thrownWpns.length = 0; }
+// ---------- WEAPONS (Final Fight): pipe / bat / knife — pickup, swing, durability, throw ----------
+// Free-first note: modeled procedurally in the game's blocky aesthetic (matches existing
+// procedural pickups: health cross, burger, cash). Kenney packs cover env props; no Kenney
+// melee set fits the street-brawler look, so in-code primitives keep style + zero weight.
+const WEAPON_DEFS = {
+  pipe:  { name: 'PIPE',  dmg: 24, range: 2.7, swingT: 1.0,  durability: 12, throwDmg: 36, color: 0x9aa2ac },
+  bat:   { name: 'BAT',   dmg: 34, range: 3.0, swingT: 0.8,  durability: 8,  throwDmg: 44, color: 0x8b5a2b },
+  knife: { name: 'KNIFE', dmg: 16, range: 2.1, swingT: 1.45, durability: 16, throwDmg: 52, color: 0xd7dce2 },
+};
+function buildWeaponMesh(type) {
+  const d = WEAPON_DEFS[type];
+  const g = new THREE.Group();
+  const metal = (c, r = 0.45, m = 0.55) => new THREE.MeshStandardMaterial({ color: c, roughness: r, metalness: m });
+  if (type === 'pipe') {
+    const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 1.15, 10), metal(d.color));
+    shaft.rotation.z = Math.PI / 2; g.add(shaft);
+    for (const x of [-0.32, 0.32]) {
+      const ring = new THREE.Mesh(new THREE.TorusGeometry(0.075, 0.028, 8, 14), metal(0x5c6169));
+      ring.rotation.y = Math.PI / 2; ring.position.x = x; g.add(ring);
+    }
+  } else if (type === 'bat') {
+    const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.095, 0.055, 0.72, 10), metal(0x8b5a2b, 0.7, 0.05));
+    barrel.rotation.z = Math.PI / 2; barrel.position.x = 0.32; g.add(barrel);
+    const handle = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.42, 8), metal(0x4a2f18, 0.8, 0));
+    handle.rotation.z = Math.PI / 2; handle.position.x = -0.25; g.add(handle);
+    const knob = new THREE.Mesh(new THREE.SphereGeometry(0.065, 8, 6), metal(0x4a2f18, 0.8, 0));
+    knob.position.x = -0.47; g.add(knob);
+  } else { // knife
+    const grip = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.09, 0.09), metal(0x2b2b2b, 0.8, 0.1));
+    grip.position.x = -0.28; g.add(grip);
+    const blade = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.035, 0.11), metal(d.color, 0.25, 0.85));
+    blade.position.x = 0.12; g.add(blade);
+    const guard = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.14, 0.13), metal(0x6b6f76, 0.5, 0.6));
+    guard.position.x = -0.12; g.add(guard);
+  }
+  g.traverse((m) => { if (m.isMesh) m.castShadow = true; });
+  return g;
+}
+// Ground pickup for a weapon: lies flat, gentle rotation (rests on the street, no bob).
+function spawnWeaponPickup(type, x, z, durability) {
+  if (!WEAPON_DEFS[type]) return;
+  const g = buildWeaponMesh(type);
+  g.rotation.y = Math.random() * Math.PI;
+  g.position.set(x, 0.16, z);
+  streetGroup.add(g);
+  pickups.push({ type: 'wpn_' + type, mesh: g, px: x, pz: z, t: Math.random() * 6, durability: durability || WEAPON_DEFS[type].durability, flat: true });
+}
+function handBone() {
+  if (!player || !player.root) return null;
+  return player.root.getObjectByName('handr') || player.root.getObjectByName('hand.r')
+    || player.root.getObjectByName('handR') || null;
+}
+function detachWeaponMesh() {
+  const b = handBone();
+  if (b) { const old = b.getObjectByName('heldWeapon'); if (old) b.remove(old); }
+}
+function attachWeaponMesh() {
+  detachWeaponMesh();
+  if (!player || !player.weapon) return;
+  const bone = handBone(); if (!bone) return;
+  const m = buildWeaponMesh(player.weapon.type);
+  m.name = 'heldWeapon';
+  m.rotation.set(0, 0, -1.1);
+  m.position.set(0.06, -0.04, 0.03);
+  bone.add(m);
+  player.weapon.mesh = m;
+}
+function dropWeapon(px, pz, w) {
+  detachWeaponMesh();
+  if (w) spawnWeaponPickup(w.type, px, pz, w.durability);
+}
+function equipWeapon(type, durability) {
+  if (!player || !WEAPON_DEFS[type]) return;
+  if (player.weapon) dropWeapon(player.px, player.pz, player.weapon);
+  player.weapon = { type, durability: durability || WEAPON_DEFS[type].durability };
+  attachWeaponMesh();
+  const d = WEAPON_DEFS[type];
+  const sp = screenPos(player.root.position.clone().add(new THREE.Vector3(0, 2.0, 0)));
+  popText(d.name + '!', 'gold', sp.x, sp.y);
+  sfx('uiclick', 0.8, false, 1.2);
+  ev('weapon_pickup', { type });
+  setHud();
+}
+function breakWeapon() {
+  const w = player.weapon; if (!w || !player) return;
+  const pos = player.root.position.clone().add(new THREE.Vector3(0, 1.2, 0));
+  burst(pos, 12, 0x999999, 4);
+  sfx('crack', 1, false, 0.7);
+  const sp = screenPos(pos); popText(WEAPON_DEFS[w.type].name + ' BROKE!', 'bad', sp.x, sp.y);
+  detachWeaponMesh(); player.weapon = null;
+  ev('weapon_break', { type: w.type });
+  setHud();
+}
+function clearWeapon() {
+  detachWeaponMesh();
+  if (player) player.weapon = null;
+  for (const t of thrownWpns) streetGroup.remove(t.mesh);
+  thrownWpns.length = 0;
+}
+// Weapon swing: replaces the punch when armed. Uses the contact-collision hand hitbox
+// at weapon range — the hit CONNECTS (hit-stop + knockback via landHit), never passes through.
+// NO-FAKE-ANIMATION: uses the real Punch_A clip (Punch_B doesn't exist in the anim packs);
+// dedicated Mixamo weapon swings are flagged for the moves-expansion lane.
+function doWeaponSwing() {
+  const w = player.weapon; if (!w) return;
+  const d = WEAPON_DEFS[w.type];
+  faceNearestEnemy(); unlockAudio(); T.taps++; hint(false); save.seenHint = true;
+  player.busy = 0.34 / d.swingT;
+  playAnim(player, 'Melee_Unarmed_Attack_Punch_A', { ts: 2.1 * d.swingT, fade: 0.05 });
+  sfxSwing(0.6);
+  setTimeout(() => {
+    if (state !== 'fight' || missionOver || ended || !player || !player.weapon) return;
+    const hit = strikeHit(player, 'hand', d.range);
+    if (hit && hit.target.hp > 0) {
+      const t = hit.target;
+      landHit(t, Math.round(d.dmg * player.dmgMult * (1 + (blessFx().punchDmg || 0))), d.name, 0.08, 0.45, false, false);
+      limbContact(player, t, 'hand');
+      sparkFX(t.px, 1.2, t.pz, 0xffd166, 8);
+      sfx('hit2', 0.85, false, 0.85);
+      T.wpnHits = (T.wpnHits || 0) + 1;
+      w.durability--;
+      if (w.durability <= 0) breakWeapon();
+      else setHud();
+    } else sfxSwing(0.9, true);
+    damageDestructibles(d.range);
+  }, Math.round(140 / d.swingT));
+}
+// Thrown weapons: GRP while armed (no staggered foe in range) hurls it — Final Fight style.
+// Spinning mesh projectile; damages the first enemy it meets, then drops as a ground pickup.
+const thrownWpns = []; // {mesh, type, dmg, px, pz, vx, life, spin}
+function throwWeapon() {
+  const w = player.weapon; if (!w || !player) return;
+  const d = WEAPON_DEFS[w.type];
+  detachWeaponMesh(); player.weapon = null;
+  faceNearestEnemy(); unlockAudio(); T.taps++;
+  const dir = player.face || 1;
+  const mesh = buildWeaponMesh(w.type);
+  mesh.position.set(player.px + dir * 0.5, 1.25, player.pz);
+  streetGroup.add(mesh);
+  thrownWpns.push({ mesh, type: w.type, dmg: d.throwDmg, px: player.px + dir * 0.5, pz: player.pz, vx: 11 * dir, life: 1.4, spin: 0 });
+  player.busy = 0.35;
+  playAnim(player, 'Melee_Unarmed_Attack_Punch_B', { ts: 2.2, fade: 0.05 }); // real hook clip (anim_moves.glb)
+  sfxSwing(0.7);
+  const sp = screenPos(mesh.position.clone()); popText(d.name + ' THROWN!', 'big', sp.x, sp.y);
+  ev('weapon_throw', { type: w.type });
+  setHud();
+}
+function updateThrownWpns(dt) {
+  for (let i = thrownWpns.length - 1; i >= 0; i--) {
+    const t = thrownWpns[i];
+    t.life -= dt; t.px += t.vx * dt; t.spin += dt * 15;
+    t.mesh.position.set(t.px, 1.15 + Math.sin(t.spin * 0.45) * 0.18, t.pz);
+    t.mesh.rotation.x = t.spin;
+    let done = false;
+    for (const e of enemies) {
+      if (e.hp <= 0 || e.dead) continue;
+      if (Math.abs(e.px - t.px) < 0.85 && Math.abs(e.pz - t.pz) < 1.2) {
+        landHit(e, Math.round(t.dmg * (player ? player.dmgMult : 1)), WEAPON_DEFS[t.type].name + ' THROW', 0.1, 0.6, false, false);
+        sparkFX(t.px, 1.2, t.pz, 0xffd166, 12); sfx('hit3', 0.9, false, 0.8);
+        T.wpnThrowHits = (T.wpnThrowHits || 0) + 1;
+        done = true; break;
+      }
+    }
+    if (!done) for (const dd of destructibles) {
+      if (dd.hp > 0 && !dd.col.dead && Math.abs(dd.px - t.px) < 1.0 && Math.abs(dd.pz - t.pz) < 1.0) {
+        dd.hp = 0; destroyDestructible(dd); done = true; break;
+      }
+    }
+    if (done || t.life <= 0 || t.px < 0.3 || t.px > (mission && isFinite(mission.len) ? mission.len : 1e6)) {
+      streetGroup.remove(t.mesh);
+      if (!done) spawnWeaponPickup(t.type, clamp(t.px, 0.5, 200), clamp(t.pz, -1.4, 1.4));
+      thrownWpns.splice(i, 1);
+    }
+  }
+}
+
 
 // ---------- GRAFFITI TAG SPOTS (Jet Set Radio) ----------
 // Tag spots: claim the block with style. Stand in the zone + TAUNT to spray (3s channel, vulnerable).
@@ -2351,7 +2606,7 @@ function playAnim(f, name, { loop = false, fade = 0.08, ts = 1, done = null, cla
     const cname = role && f.creatureDef.clips[role];
     clip = (cname && f.creatureClips[cname]) || f.creatureClips[f.creatureDef.clips.idle] || null;
   } else clip = clips[name];
-  if (!clip) return;
+  if (!clip) { if (typeof T !== 'undefined') T.missingClip = name; return; }
   const a = f.mixer.clipAction(clip);
   a.reset(); a.setLoop(loop ? THREE.LoopRepeat : THREE.LoopOnce, Infinity); a.clampWhenFinished = clamp || !loop; a.timeScale = ts;
   if (f.cur && f.cur !== a) a.crossFadeFrom(f.cur, fade, false);
@@ -3320,6 +3575,7 @@ function doParry(e) {
 }
 function doPunch() {
   if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.busy > 0 || player.blocking) return;
+  if (player.weapon) { doWeaponSwing(); return; }
   // WALK-IN GRAB: HIT while holding a foe = knee strike
   if (player.grabVictim) { doGrabKnee(); return; }
   faceNearestEnemy();
@@ -3478,6 +3734,7 @@ function doGrapple() {
   const fd = fighterDef();
   const g = fd.grapple || { range: 2.0, dmgMul: 1.0, chains: null };
   const t = nearestEnemy(g.range);
+  if (player.weapon && (!t || !(t.stagger > 0) || t.boss)) { throwWeapon(); return; }
   // WALK-IN HOLD (throws-air): fresh foe up close — seize and hold (not the instant chain grab)
   const wh = nearestEnemy(1.7);
   if (wh && !wh.boss && !wh.creature && !(wh.stagger > 0) && !wh.airborne && !wh.grabbed && wh.hp > 0 && !player.grab) {
@@ -4453,7 +4710,9 @@ function killEnemy(e) {
   if (mission.crowd) crowdCheer();
   if (R_safe() < 0.32 * luckMult()) {
     const roll = R_safe();
-    spawnPickup(roll < 0.35 ? 'health' : roll < 0.65 ? 'cash' : roll < 0.85 ? 'special' : 'food',
+    const wroll = R_safe();
+    const wtype = wroll < 0.08 ? ['wpn_pipe', 'wpn_bat', 'wpn_knife'][Math.floor(R_safe() * 3)] : null;
+    spawnPickup(wtype || (roll < 0.35 ? 'health' : roll < 0.65 ? 'cash' : roll < 0.85 ? 'special' : (R_safe() < 0.3 ? 'turkey' : 'food')),
       clamp(e.root.position.x + rnd(-0.8, 0.8), 0.5, 1e6), clamp(e.root.position.z + rnd(-0.8, 0.8), -1.4, 1.4));
   }
   // RECRUIT (River City Girls): KO'd grunts sometimes join your crew for the mission
@@ -5872,6 +6131,14 @@ function setHud() {
   $('cash').textContent = 'CASH: $' + (save.cash + cashRun);
   // PRESENTATION: arcade score HUD
   const sc = $('score'); if (sc) sc.textContent = 'SCORE ' + scoreRun.toLocaleString('en-US');
+  const wb = $('wpnBadge');
+  if (wb) {
+    if (player.weapon) {
+      const wd = WEAPON_DEFS[player.weapon.type];
+      wb.style.display = 'block';
+      wb.textContent = '\u2694 ' + wd.name + ' ' + '\u25ae'.repeat(Math.max(0, player.weapon.durability));
+    } else wb.style.display = 'none';
+  }
   const _cb = $('combo');
   _cb.style.opacity = combo >= 2 ? 1 : 0;
   const _ct = combo + ' HIT COMBO';
@@ -6215,7 +6482,7 @@ function frame(dt, doRender = true) {
     updateTagSpots(dt); // JET SET RADIO: tag-spot glow + spray channel
     updateMascot(dt); // CORNER-CREW MASCOTS: follow + perks
     updateRain(dt);
-    updateProjs(dt);
+    updateProjs(dt); updateThrownWpns(dt); // WEAPONS
     player.energy = Math.min(energyMax(), player.energy + 5 * dt); // energy trickles back
     setHud();
     camX += ((player.px + 0.8) - camX) * Math.min(1, dt * 5);
@@ -6283,6 +6550,7 @@ async function boot() {
   await loadPartTemplates(); // species head attachments (pumpkin, masks...)
   await loadCreatureTemplates(); // whole-body species (zombie, demon, spider, dragon)
   streetParts = {}; st.scene.children.slice().forEach((c) => { streetParts[c.name] = c; });
+  streetParts['barrel'] = buildBarrel(); streetParts['phonebooth'] = buildPhoneBooth();
   await loadArenaProps(); // Kenney CC0 arena dressing
   roadParts = {}; rd.scene.children.slice().forEach((c) => { roadParts[c.name] = c; });
   indParts = {}; ix.scene.children.slice().forEach((c) => { indParts[c.name] = c; });
@@ -6317,13 +6585,22 @@ window.__cdtest = {
   freeze: (on) => { window.__cdfreeze = !!on; },
   spawnBoss: (id) => { if (player) return spawnBoss(id || 'kingpin', player.px + 6); },
   spawnFam: (famId) => { if (player) return spawnEnemy(famId, 0, player.px + 3, 0); },
+  dbgStrike: (range) => { const h = strikeHit(player, 'hand', range || 2.7); return h ? { hp: Math.round(h.target.hp), pen: +h.pen.toFixed(3) } : null; },
   spawnFoeAt: (x) => { if (player) return spawnEnemy('thug', 0, x, 0); },
   foeHp: (i) => (enemies[i] ? enemies[i].hp : -1),
   foeCount: () => enemies.length,
   playerGrab: () => (player && player.grab ? { phase: player.grab.phase, link: player.grab.link, name: player.grab.name } : null),
   fighterArchetype: () => fighterDef().archetype,
+  enemiesDbg: () => enemies.map((e) => ({ hp: Math.round(e.hp), px: +e.px.toFixed(2), dead: !!e.dead })),
+  destructDbg: () => destructibles.map((d) => ({ name: d.name, hp: Math.round(d.hp), px: +d.px.toFixed(2) })),
+  thrownDbg: () => thrownWpns.map((t) => ({ type: t.type, px: +t.px.toFixed(2) })),
+  spawnPropAt: (name, dx) => { if (player) placeProp(name, player.px + dx, 0); },
+  spawnPickupAt: (type, dx) => { if (player) spawnPickup(type, player.px + dx, player.pz); },
+  setWpnDurability: (n) => { if (player && player.weapon) { player.weapon.durability = n; setHud(); } },
+  setHp: (n) => { if (player) { player.hp = n; setHud(); } },
+  smashNearestDestruct: () => { const d = destructibles.find((x) => x.hp > 0); if (d) { d.hp = 0; destroyDestructible(d); } },
   sigChance: (v) => { window.__cdSigChance = v; },
-  playerDbg: () => player ? { busy: +player.busy.toFixed(2), stance: player.stance||0, hp: Math.round(player.hp), state, fid: fighterDef().id, hasFin: !!fighterDef().stanceFin, face: player.face, animMove: !!player.animMove, animTs: player.cur ? +player.cur.timeScale.toFixed(2) : 0, px: +player.px.toFixed(2) } : null,
+  playerDbg: () => player ? { busy: +player.busy.toFixed(2), stance: player.stance||0, hp: Math.round(player.hp), maxHp: Math.round(player.maxHp), state, fid: fighterDef().id, weapon: player.weapon ? { type: player.weapon.type, durability: player.weapon.durability } : null, hasFin: !!fighterDef().stanceFin, face: player.face, animMove: !!player.animMove, animTs: player.cur ? +player.cur.timeScale.toFixed(2) : 0, px: +player.px.toFixed(2) } : null,
   fireStanceFin: (fid) => { const fd = FIGHTERS.find(f => f.id === fid); if (fd && fd.stanceFin && player) { player.stance = 1; doStanceFin(fd); return fd.stanceFin.kind; } return null; },
   forceStance: () => { if (player && player.stance !== 1) doStance(); return true; },
   forceBossSig: () => { if (bossRef) { bossRef.pat = 'sig'; bossRef.ai = 'windup'; bossRef.windup = 0.01; } },
