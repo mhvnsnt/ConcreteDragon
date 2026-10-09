@@ -20,6 +20,8 @@ html,body{margin:0;height:100%;overflow:hidden;background:#150f2a;touch-action:n
 /* ------- HUD ------- */
 .bar{position:absolute;top:max(14px,env(safe-area-inset-top));height:20px;width:32%;border:7px solid transparent;border-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'48'%20height%3D'48'%3E%3Crect%20x%3D'2'%20y%3D'14'%20width%3D'44'%20height%3D'20'%20rx%3D'6'%20fill%3D'%23000000'%20fill-opacity%3D'0.72'%20stroke%3D'%23ffffff'%20stroke-opacity%3D'0.9'%20stroke-width%3D'3'%2F%3E%3C%2Fsvg%3E") 7 fill stretch;background-clip:padding-box;overflow:hidden}
 .bar i{display:block;height:100%;transition:width .15s}
+.bar i.ghost{position:absolute;left:0;top:0;bottom:0;height:auto;background:linear-gradient(90deg,#fff,#ff6b6b);opacity:.85;transition:width .9s ease-out}
+#ebar i.ghost{left:auto;right:0;margin-left:0;background:linear-gradient(90deg,#ff6b6b,#fff)}
 #pbar{left:10px}#pbar i{background:linear-gradient(90deg,#3cf,#4fd1ff)}
 #ebar{right:10px}#ebar i{background:linear-gradient(90deg,#ff3d6b,#ffb03d);margin-left:auto}
 .lbl{position:absolute;top:calc(max(14px,env(safe-area-inset-top)) + 30px);font-size:15px;letter-spacing:2px;text-shadow:0 2px 0 #000}
@@ -38,9 +40,12 @@ html,body{margin:0;height:100%;overflow:hidden;background:#150f2a;touch-action:n
 #tauntBtn{position:absolute;top:calc(max(14px,env(safe-area-inset-top)) + 82px);right:14px;pointer-events:auto;background:#221a3add;color:#fff;border:2px solid #ff4fd8;border-radius:8px;font-size:16px;padding:4px 10px;cursor:pointer}
 #bossWrap{position:absolute;top:calc(max(14px,env(safe-area-inset-top)) + 84px);left:50%;transform:translateX(-50%);width:70%;display:none}
 #bossWrap .bn{text-align:center;font-size:16px;letter-spacing:3px;color:#ff4d4d;text-shadow:0 2px 0 #000;margin-bottom:2px}
-#bossBar{height:14px;border:6px solid transparent;border-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'48'%20height%3D'48'%3E%3Crect%20x%3D'2'%20y%3D'14'%20width%3D'44'%20height%3D'20'%20rx%3D'6'%20fill%3D'%23000000'%20fill-opacity%3D'0.72'%20stroke%3D'%23ffffff'%20stroke-opacity%3D'0.9'%20stroke-width%3D'3'%2F%3E%3C%2Fsvg%3E") 6 fill stretch;background-clip:padding-box;overflow:hidden}
+#bossBar{position:relative;height:14px;border:6px solid transparent;border-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'48'%20height%3D'48'%3E%3Crect%20x%3D'2'%20y%3D'14'%20width%3D'44'%20height%3D'20'%20rx%3D'6'%20fill%3D'%23000000'%20fill-opacity%3D'0.72'%20stroke%3D'%23ffffff'%20stroke-opacity%3D'0.9'%20stroke-width%3D'3'%2F%3E%3C%2Fsvg%3E") 6 fill stretch;background-clip:padding-box;overflow:hidden}
 #bossBar i{display:block;height:100%;background:linear-gradient(90deg,#ff2a2a,#ffb03d);margin-left:auto;transition:width .15s}
-#combo{position:absolute;left:50%;top:24%;transform:translateX(-50%) rotate(-4deg);font-size:32px;font-family:'SairaStencil','Bungee','Anton',Arial,sans-serif;color:#ffe14d;text-shadow:0 3px 0 #b3001b,0 0 12px #f80;opacity:0;transition:opacity .15s}
+#bossBar i.ghost{position:absolute;left:0;top:0;bottom:0;height:auto;background:linear-gradient(90deg,#fff,#ff6b6b);opacity:.85;transition:width .9s ease-out;margin-left:0}
+@keyframes comboPop{0%{transform:translateX(-50%) rotate(-4deg) scale(1.6)}100%{transform:translateX(-50%) rotate(-4deg) scale(1)}}
+#combo.pop{animation:comboPop .18s ease-out}
+#combo{position:absolute;left:50%;top:22%;transform:translateX(-50%) rotate(-4deg);font-size:44px;font-family:'SairaStencil','Bungee','Anton',Arial,sans-serif;color:#ffe14d;text-shadow:0 3px 0 #b3001b,0 0 12px #f80;opacity:0;transition:opacity .15s}
 #styleRank{position:absolute;left:50%;top:31%;transform:translateX(-50%) rotate(3deg);font-size:26px;font-family:'SairaStencil','Bungee','Anton',Arial,sans-serif;color:#7af0ff;text-shadow:0 2px 0 #06283a,0 0 10px #0af;opacity:0;transition:opacity .15s}
 #lsEdge{position:fixed;inset:0;pointer-events:none;z-index:6;opacity:0;transition:opacity .3s;background:radial-gradient(ellipse at center,transparent 55%,rgba(255,42,42,.55) 100%)}
 .gearSlot,.charmDot{display:inline-block;min-width:64px;margin:4px;padding:6px 8px;background:#1c1433;border:2px solid #3a2c5a;border-radius:8px;color:#fff;font-family:Arial,sans-serif;font-size:11px;font-weight:700;text-align:center;cursor:pointer}
@@ -60,6 +65,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#150f2a;touch-action:n
 #hint b{font-size:26px;text-shadow:0 3px 0 #000;letter-spacing:1px}
 #hint small{display:block;font-family:Arial,sans-serif;font-weight:700;font-size:13px;margin-top:4px;text-shadow:0 2px 0 #000;text-transform:none}
 @keyframes ring{0%{transform:scale(.7);opacity:1}100%{transform:scale(1.25);opacity:.2}}
+#ko::before{content:'';position:absolute;left:50%;top:50%;width:420px;height:420px;transform:translate(-50%,-50%);background:radial-gradient(circle,rgba(255,80,40,.55) 0%,rgba(255,180,40,.25) 40%,transparent 70%);z-index:-1;pointer-events:none}
 #ko{position:absolute;left:50%;top:40%;transform:translate(-50%,-50%) scale(0);font-size:96px;font-family:'SairaStencil','Bungee','Anton',Arial,sans-serif;color:#ffe14d;text-shadow:0 6px 0 #b3001b,0 0 30px #f80;transition:transform .25s cubic-bezier(.2,2,.4,1);white-space:nowrap}
 #ko.show{transform:translate(-50%,-50%) scale(1)}
 #flash{position:fixed;inset:0;opacity:0;transition:opacity .12s;pointer-events:none;mix-blend-mode:screen;z-index:4}
@@ -220,14 +226,14 @@ body.cine #cineSkip{display:block}
 </head><body>
 <canvas id="c"></canvas>
 <div id="hud">
-  <div class="bar" id="pbar"><i id="php" style="width:100%"></i></div><div class="lbl" id="pname">You</div>
-  <div class="bar" id="ebar"><i id="ehp" style="width:100%"></i></div><div class="lbl" id="ename"></div>
+  <div class="bar" id="pbar"><i id="pghost" class="ghost" style="width:100%"></i><i id="php" style="width:100%"></i></div><div class="lbl" id="pname">You</div>
+  <div class="bar" id="ebar"><i id="eghost" class="ghost" style="width:100%"></i><i id="ehp" style="width:100%"></i></div><div class="lbl" id="ename"></div>
   <div id="progWrap"><div id="prog"></div></div>
   <button id="pauseBtn">❚❚</button>
   <button id="tauntBtn" title="Taunt: +energy">🗣</button>
   <div id="cash"></div>
   <div id="spcWrap"><div id="spc"></div></div><div id="spcLbl">ENERGY</div>
-  <div id="bossWrap"><div class="bn" id="bossName"></div><div id="bossBar"><i id="bossHp" style="width:100%"></i></div></div>
+  <div id="bossWrap"><div class="bn" id="bossName"></div><div id="bossBar"><i id="bghost" class="ghost" style="width:100%"></i><i id="bossHp" style="width:100%"></i></div></div>
   <div id="combo"></div><div id="styleRank"></div><div id="warn">! COUNTER NOW !</div>
   <div id="hint"><div class="ring"></div><b id="hintT">DRAG LEFT SIDE TO MOVE</b><small id="hintS">Tap right side to punch · dodge the <span style="color:#ff4d4d">!</span> or tap to counter</small></div>
   <div id="ko">K.O.</div>

@@ -5140,17 +5140,37 @@ function spcSegs() {
   if (!_spcSegs) { _spcSegs = []; const wrap = $('spc'); for (let i = 0; i < SPC_SEGS; i++) { const d = document.createElement('div'); d.className = 'spcSeg'; wrap.appendChild(d); _spcSegs.push(d); } }
   return _spcSegs;
 }
+// damage ghost bars (art-ui): white/red trailing bar drains slowly after damage (genre standard).
+// CSS transition animates the trail; on heal we snap the ghost (no transition) so it never lags growth.
+const _ghostLast = {};
+function ghostFill(id, ghostId, frac) {
+  const el = $(id), g = $(ghostId);
+  if (!el || !g) return;
+  el.style.width = Math.max(0, frac * 100) + '%';
+  const last = (_ghostLast[id] !== undefined) ? _ghostLast[id] : frac;
+  if (frac >= last - 0.001) {
+    g.style.transition = 'none';
+    g.style.width = Math.max(0, frac * 100) + '%';
+    void g.offsetWidth;
+    g.style.transition = '';
+  } else {
+    g.style.width = Math.max(0, frac * 100) + '%';
+  }
+  _ghostLast[id] = frac;
+}
 function setHud() {
   if (!player) return;
   const fd = fighterDef();
-  $('php').style.width = Math.max(0, player.hp / player.maxHp * 100) + '%';
+  ghostFill('php', 'pghost', Math.max(0, player.hp / player.maxHp));
   $('pname').textContent = fd.name + (player.stance && fd.stance ? ' — ' + fd.stance.name : '');
   const e = (bossRef && bossRef.hp > 0) ? bossRef : nearestEnemy(99);
-  if (e) { $('ehp').style.width = Math.max(0, e.hp / e.maxHp * 100) + '%'; $('ename').textContent = e.name; }
-  else { $('ehp').style.width = '0%'; $('ename').textContent = ''; }
+  if (e) { ghostFill('ehp', 'eghost', Math.max(0, e.hp / e.maxHp)); $('ename').textContent = e.name; }
+  else { ghostFill('ehp', 'eghost', 0); $('ename').textContent = ''; }
   $('cash').textContent = 'CASH: $' + (save.cash + cashRun);
-  $('combo').style.opacity = combo >= 2 ? 1 : 0;
-  $('combo').textContent = combo + ' HIT COMBO';
+  const _cb = $('combo');
+  _cb.style.opacity = combo >= 2 ? 1 : 0;
+  const _ct = combo + ' HIT COMBO';
+  if (_cb.textContent !== _ct) { _cb.textContent = _ct; _cb.classList.remove('pop'); void _cb.offsetWidth; _cb.classList.add('pop'); }
   const sr2 = $('styleRank');
   if (sr2) {
     sr2.style.opacity = styleRank >= 2 && combo >= 3 ? 1 : 0;
@@ -5167,7 +5187,7 @@ function setHud() {
   $('btnSpc').classList.toggle('ready', player.energy >= 60);
   const prog = mission && isFinite(mission.len) ? clamp(player.px / mission.len, 0, 1) : clamp(distWalked / 220, 0, 1);
   $('prog').style.width = (prog * 100) + '%';
-  if (bossRef && bossRef.hp > 0) $('bossHp').style.width = Math.max(0, bossRef.hp / bossRef.maxHp * 100) + '%';
+  if (bossRef && bossRef.hp > 0) ghostFill('bossHp', 'bghost', Math.max(0, bossRef.hp / bossRef.maxHp));
 }
 // ---------- layout ----------
 function resize() {
