@@ -2162,10 +2162,146 @@ function updateFx(dt) {
     else { s.userData.v.y -= 9 * dt; s.position.addScaledVector(s.userData.v, dt); s.material.opacity = Math.max(0, s.userData.life * 2.5); }
     if (s.userData.life <= 0) { scene.remove(s); s.material.dispose(); sparks.splice(i, 1); }
   }
+  updateVfx(dt); // wave-17 pooled Kenney sprite bursts
 }
 let shake = 0, hitstop = 0, slowmo = 1, slowmoT = 0;
 const lerp = (a, b, t) => a + (b - a) * t;
 function sparkFX(x, y, z, color, n) { burst(new THREE.Vector3(x, y, z), n || 10, color); }
+
+// ---------- WAVE 17 VFX (TIER 6 item 25, owner 2026-10-06): Kenney Particle Pack (CC0)
+// Billboarded sprite bursts for KO bursts, hit-impact pops, special-move VFX, edge-bounce
+// dust. Pooled sprites (zero per-frame allocation), burst counts capped on lowFx.
+// Textures decode from build/assets/vfx/*.png (manifest-embedded, like tex-patchwork.png).
+const VFXTEX = ['circle', 'dirt', 'fire', 'flame', 'flare', 'light', 'magic', 'muzzle', 'smoke', 'spark', 'star', 'twirl'];
+const vfxTex = {}; // name -> THREE.Texture (decoded PNG)
+function loadVfxTex() {
+  return Promise.all(VFXTEX.map((n) => new Promise((res) => {
+    const img = new Image();
+    img.onload = () => {
+      const t = new THREE.Texture(img);
+      t.colorSpace = THREE.SRGBColorSpace;
+      t.needsUpdate = true;
+      vfxTex[n] = t; res();
+    };
+    img.onerror = () => res(); // sprite family unavailable: recipes skip it gracefully
+    img.src = 'data:image/png;base64,' + A['vfx/' + n + '.png'];
+  })));
+}
+const VFXMAX = 320; // hard cap on live pooled sprites
+const vfxPool = [], vfxLive = [];
+function vfxGet() {
+  for (let i = vfxPool.length - 1; i >= 0; i--) { const s = vfxPool[i]; vfxPool.splice(i, 1); vfxLive.push(s); return s; }
+  if (vfxLive.length >= VFXMAX) { const s = vfxLive.shift(); vfxLive.push(s); return s; } // recycle oldest
+  const mk = (additive) => new THREE.SpriteMaterial({ transparent: true, depthWrite: false, blending: additive ? THREE.AdditiveBlending : THREE.NormalBlending });
+  const s = new THREE.Sprite(mk(true));
+  s.userData.matA = s.material; s.userData.matN = mk(false);
+  s.visible = false; scene.add(s); vfxLive.push(s); return s;
+}
+function vfxKill(s) {
+  s.visible = false;
+  const i = vfxLive.indexOf(s); if (i >= 0) vfxLive.splice(i, 1);
+  vfxPool.push(s);
+}
+// one pooled billboard sprite. tex: key into VFXTEX. vel/grav/drag/grow/spin in world units.
+function vfxOne(tex, pos, { color = 0xffffff, size = 0.4, vel = null, life = 0.5, grav = 0, grow = 0, spin = 0, additive = true, opacity = 1, drag = 0 } = {}) {
+  const t = vfxTex[tex]; if (!t) return; // texture not decoded yet: skip, never throw
+  const s = vfxGet(), u = s.userData;
+  s.material = additive ? u.matA : u.matN;
+  const m = s.material;
+  m.map = t; m.color.setHex(color); m.opacity = opacity; m.rotation = Math.random() * Math.PI * 2;
+  s.position.copy(pos); s.scale.set(size, size, size); s.visible = true;
+  u.v = vel ? vel.clone() : new THREE.Vector3();
+  u.life = life; u.maxLife = life; u.grav = grav; u.grow = grow; u.spin = spin; u.opacity = opacity; u.drag = drag; u.size = size;
+}
+function updateVfx(dt) {
+  for (let i = vfxLive.length - 1; i >= 0; i--) {
+    const s = vfxLive[i], u = s.userData;
+    u.life -= dt;
+    if (u.life <= 0) { vfxKill(s); continue; }
+    u.v.y -= u.grav * dt;
+    if (u.drag) u.v.multiplyScalar(Math.max(0, 1 - u.drag * dt));
+    s.position.addScaledVector(u.v, dt);
+    const k = u.life / u.maxLife;
+    s.material.opacity = u.opacity * Math.min(1, k * 2.4);
+    const sc = u.size * (1 + u.grow * (1 - k));
+    s.scale.set(sc, sc, sc);
+    if (u.spin) s.material.rotation += u.spin * dt;
+  }
+}
+const vfxQ = () => (lowFx ? 0.45 : 1); // low-quality mode (U9 / auto-degrade) halves burst counts
+// Hit-impact pop: muzzle flash + star/spark flecks, on EVERY landed hit.
+function vfxImpact(pos, heavy) {
+  const q = vfxQ();
+  vfxOne('muzzle', pos, { color: 0xfff2c0, size: heavy ? 1.0 : 0.62, life: 0.16, additive: true, opacity: 0.95 });
+  const n = Math.max(1, Math.round((heavy ? 5 : 3) * q));
+  for (let i = 0; i < n; i++) {
+    const a = Math.random() * Math.PI * 2, sp = 2.5 + Math.random() * 3.5;
+    vfxOne(i % 2 ? 'star' : 'spark', pos, {
+      color: i % 3 ? 0xffd27a : 0xffffff, size: 0.3 + Math.random() * 0.2,
+      vel: new THREE.Vector3(Math.cos(a) * sp, 1 + Math.random() * 3, Math.sin(a) * sp),
+      life: 0.3 + Math.random() * 0.2, grav: 12 });
+  }
+  T.vfxHit = (T.vfxHit || 0) + 1;
+}
+// KO burst: expanding shockwave ring + flare + smoke + spark shower.
+function vfxKO(pos, boss) {
+  const q = vfxQ();
+  vfxOne('circle', pos, { color: 0xfff6d8, size: 0.5, life: 0.45, grow: 6, additive: true, opacity: 0.9 });
+  vfxOne('flare', pos, { color: 0xffffff, size: boss ? 2.2 : 1.4, life: 0.2, additive: true });
+  const ns = Math.max(2, Math.round(4 * q));
+  for (let i = 0; i < ns; i++)
+    vfxOne('smoke', pos.clone().add(new THREE.Vector3((Math.random() - 0.5) * 1.2, 0.2 + Math.random() * 0.6, (Math.random() - 0.5) * 1.2)), {
+      color: 0x9a9aa2, size: 0.7 + Math.random() * 0.6,
+      vel: new THREE.Vector3((Math.random() - 0.5) * 2, 1 + Math.random() * 1.5, (Math.random() - 0.5) * 2),
+      life: 0.7 + Math.random() * 0.4, grow: 1.6, additive: false, opacity: 0.75 });
+  const n = Math.max(4, Math.round((boss ? 26 : 14) * q));
+  for (let i = 0; i < n; i++) {
+    const a = Math.random() * Math.PI * 2, sp = 3 + Math.random() * 5;
+    vfxOne(i % 3 ? 'spark' : 'star', pos, {
+      color: [0xffd166, 0xffffff, 0xff7a1a][i % 3], size: 0.32 + Math.random() * 0.25,
+      vel: new THREE.Vector3(Math.cos(a) * sp, 2 + Math.random() * 4.5, Math.sin(a) * sp),
+      life: 0.5 + Math.random() * 0.3, grav: 14 });
+  }
+  T.vfxKo = (T.vfxKo || 0) + 1;
+}
+// Special-move VFX: 'flame' for damage specials, 'magic' for BURST-style / tech specials.
+function vfxSpecial(pos, kind) {
+  const q = vfxQ();
+  if (kind === 'flame' || kind === 'both') {
+    vfxOne('circle', pos, { color: 0xff6a1a, size: 0.6, life: 0.5, grow: 4.5, additive: true, opacity: 0.85 });
+    const n = Math.max(3, Math.round(12 * q));
+    for (let i = 0; i < n; i++) {
+      const a = Math.random() * Math.PI * 2, sp = 1.5 + Math.random() * 3;
+      vfxOne(i % 2 ? 'flame' : 'fire', pos.clone().add(new THREE.Vector3((Math.random() - 0.5) * 0.8, 0.2, (Math.random() - 0.5) * 0.8)), {
+        color: [0xff7a1a, 0xffc14d, 0xff3d00][i % 3], size: 0.45 + Math.random() * 0.35,
+        vel: new THREE.Vector3(Math.cos(a) * sp, 2.5 + Math.random() * 3, Math.sin(a) * sp),
+        life: 0.45 + Math.random() * 0.25, grav: -2, additive: true });
+    }
+  }
+  if (kind === 'magic' || kind === 'both') {
+    vfxOne('magic', pos, { color: 0x7CFC00, size: 1.2, life: 0.6, grow: 1.8, spin: 2.4, additive: true, opacity: 0.9 });
+    vfxOne('twirl', pos, { color: 0xbfff9a, size: 1.6, life: 0.5, grow: 1.2, spin: -3.2, additive: true, opacity: 0.7 });
+    const n = Math.max(2, Math.round(8 * q));
+    for (let i = 0; i < n; i++) {
+      const a = Math.random() * Math.PI * 2, sp = 2 + Math.random() * 3;
+      vfxOne('light', pos, {
+        color: 0x9dff57, size: 0.3 + Math.random() * 0.25,
+        vel: new THREE.Vector3(Math.cos(a) * sp, 1.5 + Math.random() * 3, Math.sin(a) * sp),
+        life: 0.4 + Math.random() * 0.25, grav: -1, additive: true });
+    }
+  }
+  T.vfxSpc = (T.vfxSpc || 0) + 1;
+}
+// Edge-bounce wall thud (wave 9): smoke + dirt puffs where the enemy hits the wall.
+function vfxDust(pos) {
+  const q = vfxQ(), n = Math.max(2, Math.round(5 * q));
+  for (let i = 0; i < n; i++)
+    vfxOne(i % 2 ? 'smoke' : 'dirt', pos.clone().add(new THREE.Vector3((Math.random() - 0.5) * 0.8, 0.1 + Math.random() * 0.4, (Math.random() - 0.5) * 0.8)), {
+      color: i % 2 ? 0x8a8a92 : 0xa0805a, size: 0.5 + Math.random() * 0.4,
+      vel: new THREE.Vector3((Math.random() - 0.5) * 3, 1 + Math.random() * 2, (Math.random() - 0.5) * 3),
+      life: 0.5 + Math.random() * 0.3, grow: 2.2, drag: 1.5, additive: false, opacity: 0.8 });
+  T.vfxDust = (T.vfxDust || 0) + 1;
+}
 function addHitstop(t) { hitstop = Math.max(hitstop, t); }
 function addSlowmo(mult, t) { slowmo = mult; slowmoT = Math.max(slowmoT, t); }
 function popText(txt, cls, x, y) {
@@ -3193,21 +3329,25 @@ function doStanceFin(fd) {
   } else if (fin.kind === 'smash') { // SLEDGE: overhead crusher, launches pack
     const t = nearestEnemy(3.0);
     burst(player.root.position.clone().add(new THREE.Vector3(dir * 1.0, 1.4, 0)), 36, fin.color, 7); shake = 0.7;
+    vfxSpecial(player.root.position.clone().add(new THREE.Vector3(dir * 1.0, 1.4, 0)), 'flame'); // wave 17
     hitAll(2.8, 1.8, 38, fin.name, true); damageDestructibles(2.8);
   } else if (fin.kind === 'linedash') { // VIPER: coil through the line
     const dist = 4.6;
     player.px = clamp(player.px + dir * dist, 0.5, mission.len === Infinity ? 1e6 : mission.len - 1.5);
     burst(player.root.position.clone().add(new THREE.Vector3(0, 1.0, 0)), 30, fin.color, 6);
+    vfxSpecial(player.root.position.clone().add(new THREE.Vector3(0, 1.0, 0)), 'flame'); // wave 17
     for (const e of enemies.slice()) {
       if (e.hp > 0 && Math.abs(e.px - (player.px - dir * dist / 2)) < dist / 2 + 0.8 && Math.abs(e.pz - player.pz) < 1.6)
         landHit(e, Math.round(28 * player.dmgMult), fin.name, 0.08, 0.35, false, false);
     }
   } else if (fin.kind === 'storm') { // DUST: sandstorm closes in
     burst(player.root.position.clone().add(new THREE.Vector3(0, 1.2, 0)), 44, fin.color, 8); shake = 0.55;
+    vfxSpecial(player.root.position.clone().add(new THREE.Vector3(0, 1.2, 0)), 'flame'); // wave 17
     hitAll(3.4, 2.4, 26, fin.name, false); damageDestructibles(3.4);
   } else if (fin.kind === 'launcher') { // JACK: rising gourd uppercut
     const t = nearestEnemy(2.6);
     burst(player.root.position.clone().add(new THREE.Vector3(0, 1.6, 0)), 30, fin.color, 7);
+    vfxSpecial(player.root.position.clone().add(new THREE.Vector3(0, 1.6, 0)), 'flame'); // wave 17
     if (t) landHit(t, Math.round(36 * player.dmgMult), fin.name, 0.12, 0.7, true, false);
     else popText('WHIFF', '', innerWidth / 2, innerHeight * 0.4);
   }
@@ -3285,6 +3425,7 @@ function doSpecial() {
     addSlowmo(0.4, 0.5); shake = 0.8;
     playAnim(player, 'Melee_Unarmed_Attack_Kick', { ts: 1.8, fade: 0.05 });
     burst(player.root.position.clone().add(new THREE.Vector3(0, 1, 0)), 44, 0xff4444, 8);
+    vfxSpecial(player.root.position.clone().add(new THREE.Vector3(0, 1, 0)), 'flame'); // wave 17
     for (const e of enemies.slice()) {
       if (e.hp > 0 && Math.abs(e.px - player.px) < 4.2 && Math.abs(e.pz - player.pz) < 2.2) {
         landHit(e, Math.round(38 * player.dmgMult), 'DESPERATION', 0.1, 0.9, true, false);
@@ -3308,6 +3449,7 @@ function doSpecial() {
     banner('BURST!', 'spc'); sfx('hit3', 1, false, 0.7); flash('#7CFC00');
     addSlowmo(0.4, 0.5); shake = 0.5;
     burst(player.root.position.clone().add(new THREE.Vector3(0, 1, 0)), 36, 0x7CFC00, 6);
+    vfxSpecial(player.root.position.clone().add(new THREE.Vector3(0, 1, 0)), 'magic'); // wave 17: BURST combo-breaker
     for (const e of enemies.slice()) {
       if (e.hp > 0 && Math.abs(e.px - player.px) < 3.4 && Math.abs(e.pz - player.pz) < 1.8) {
         landHit(e, Math.round(22 * player.dmgMult), 'BURST', 0.09, 0.6, true, false);
@@ -3357,6 +3499,7 @@ function doDesperation() {
   banner('DESPERATION!', 'bad');
   sfx('whoosh', 0.8, false, 0.7); sfx('hit3', 0.8, false, 0.9);
   burst(player.root.position.clone().add(new THREE.Vector3(0, 1, 0)), 30, 0xff4d4d, 6);
+  vfxSpecial(player.root.position.clone().add(new THREE.Vector3(0, 1, 0)), 'flame'); // wave 17: panic-button desperation
   for (const e of enemies.slice()) {
     if (e.hp > 0 && Math.abs(e.px - player.px) < 2.6 && Math.abs(e.pz - player.pz) < 1.8)
       landHit(e, Math.round(26 * player.dmgMult), 'DESPERATION', 0.08, 0.35, false, false);
@@ -3375,6 +3518,7 @@ function doSpecial2(fd) {
     const dir = player.face || 1, dist = 4.2;
     player.px = clamp(player.px + dir * dist, 0.5, mission.len === Infinity ? 1e6 : mission.len - 1.5);
     burst(player.root.position.clone().add(new THREE.Vector3(0, 1, 0)), 30, 0xff4fd8, 6);
+    vfxSpecial(player.root.position.clone().add(new THREE.Vector3(0, 1, 0)), 'magic'); // wave 17: dash special
     for (const e of enemies.slice()) {
       if (e.hp > 0 && Math.abs(e.px - (player.px - dir * dist / 2)) < dist / 2 + 0.8 && Math.abs(e.pz - player.pz) < 1.6)
         landHit(e, Math.round(30 * player.dmgMult), sp.name, 0.08, 0.35, false, false);
@@ -3384,11 +3528,13 @@ function doSpecial2(fd) {
       (Math.abs(a.px - player.px) - Math.abs(b.px - player.px))).slice(0, 3);
     for (const e of near) {
       burst(e.root.position.clone().add(new THREE.Vector3(0, 1.2, 0)), 18, 0x7af0ff, 5);
+      vfxSpecial(e.root.position.clone().add(new THREE.Vector3(0, 1.2, 0)), 'magic'); // wave 17: blink special
       landHit(e, Math.round(26 * player.dmgMult), sp.name, 0.06, 0.25, false, false);
     }
     if (!near.length) popText('NO TARGET', '', innerWidth / 2, innerHeight * 0.4);
   } else { // slam: radial shockwave + launch
     burst(player.root.position.clone().add(new THREE.Vector3(0, 0.3, 0)), 45, 0xffb03d, 8);
+    vfxSpecial(player.root.position.clone().add(new THREE.Vector3(0, 0.3, 0)), 'flame'); // wave 17: slam special
     for (const e of enemies.slice()) {
       if (e.hp > 0 && Math.abs(e.px - player.px) < 3.4 && Math.abs(e.pz - player.pz) < 2.2)
         landHit(e, Math.round(34 * player.dmgMult), sp.name, 0.09, 0.4, true, false);
@@ -3446,6 +3592,7 @@ function landHit(e, dmg, label, hs, sh, launcher, counter) {
   if (player) player.energy = clamp(player.energy + 8 * (1 + (blessFx().energyGain || 0)), 0, energyMax());
   const head = e.root.position.clone().add(new THREE.Vector3(0, fighterHeight * 0.78 * e.sc, 0.15));
   burst(head, counter ? 30 : 16, counter ? 0x7af0ff : 0xffd27a, counter ? 6 : 4);
+  vfxImpact(head, counter); // wave 17: Kenney muzzle/star impact pops on every landed hit
   shake = sh; hitstop = hs; // snappy: tiny freeze on light hits, bigger only for counter/heavy/special/KO
   sfx(['hit1', 'hit2', 'hit3'][Math.floor(Math.random() * 3)], 0.9, false, 0.9 + Math.random() * 0.2);
   const sp = screenPos(head); popText((critOn ? 'CRIT ' : '') + (lsOn ? 'LAST STAND ' : '') + (counter ? 'COUNTER! -' : '-') + dealt, counter ? 'big' : '', sp.x, sp.y - 30);
@@ -3486,6 +3633,7 @@ function killEnemy(e) {
     slowmo = 0.35; slowmoT = 0.7; shake = 0.45; hitstop = 0.09;
   }
   sfx('bell', 0.8); flash('#ffffff');
+  vfxKO(e.root.position.clone().add(new THREE.Vector3(0, 1, 0)), !!e.boss); // wave 17: Kenney ring+smoke+spark KO burst
   pushT = 0.85; pushPos.copy(e.root.position);
   $('ko').classList.add('show'); setTimeout(() => $('ko').classList.remove('show'), 900);
   const base = e.boss ? 60 : (8 + Math.round(distWalked * 0.2)) * (e.golden ? 5 : 1);
@@ -3747,6 +3895,7 @@ function enemyAI(e, dt) {
         if (e.root.position.y < 1.2) e.vy = Math.max(e.vy, 1.8); // keep the juggle alive off the wall
         sfx('crack', 0.55, false, 0.6); // CC0 Kenney crack pitched down = wall thud
         burst(e.root.position.clone(), 10, 0xcfcfcf, 4);
+        vfxDust(e.root.position.clone().add(new THREE.Vector3(0, 0.4, 0))); // wave 17: Kenney smoke+dirt wall-thud puffs
         const bsp = screenPos(e.root.position.clone().add(new THREE.Vector3(0, 1.6, 0)));
         popText('EDGE BOUNCE!', 'spc', bsp.x, bsp.y);
         T.bounces = (T.bounces || 0) + 1; ev('edgebounce', {});
@@ -4404,6 +4553,8 @@ function doMotionSpecial(kind, free) {
       banner(pr.name, 'spc');
       addHitstop(0.08); addSlowmo(0.3, 0.35);
       flash('#' + pr.color.toString(16).padStart(6, '0'));
+      vfxSpecial(player.root.position.clone().add(new THREE.Vector3(0, 1.1, 0)), // wave 17: signature special VFX
+        (pr.sigkind === 'fireball' || pr.sigkind === 'orb' || pr.sigkind === 'groundwave') ? 'flame' : 'magic');
       if (navigator.vibrate) navigator.vibrate(25);
     };
     if (pr.sigkind === 'fireball' || pr.sigkind === 'orb') {
@@ -4511,6 +4662,7 @@ function megaHit() {
     fireProj({ x: player.px + player.face, z: player.pz, y: 1.25 + Math.abs(i) * 0.2, vx: player.face * (10 + Math.abs(i) * 1.5), vz: i * 1.4, kind: 'fire', dmg: 20 * player.dmgMult, color: fd.qcf.color, fromPlayer: true, life: 1.0 });
   sparkFX(player.px + player.face * 1.5, 1.2, player.pz, 0xffe14d, 42);
   sparkFX(player.px + player.face * 1.5, 1.2, player.pz, 0xff4fd8, 30);
+  vfxSpecial(new THREE.Vector3(player.px + player.face * 1.5, 1.2, player.pz), 'both'); // wave 17: MEGA SUPER
   flash('#ffffff');
   shake=Math.max(shake,0.9);
   sfx(220, 0.9, 'sawtooth', 0.6); sfx(55, 1.2, 'square', 0.6);
@@ -4729,6 +4881,7 @@ async function boot() {
   // texture variants: capture the GLB's embedded map as 'original', decode patchwork PNG
   fighterTemplate.traverse((o) => { if (o.isMesh && o.material && o.material.map && !texObjs.original) texObjs.original = o.material.map; });
   await loadTexVariants();
+  await loadVfxTex(); // wave 17: Kenney Particle Pack billboard sprites (TIER 6 item 25)
   const box = new THREE.Box3().setFromObject(fighterTemplate); fighterHeight = box.max.y - box.min.y;
   const s = 1.8 / fighterHeight; fighterTemplate.scale.setScalar(s); fighterHeight = 1.8;
   await loadPartTemplates(); // species head attachments (pumpkin, masks...)
@@ -4813,6 +4966,12 @@ window.__cdtest = {
   swingDbg: () => ({ swing: T.swingSfx || 0, whiff: T.whiffSfx || 0 }), // S2 swing-whoosh tranche (owner 2026-10-07)
   swingClear: () => { T.swingSfx = 0; T.whiffSfx = 0; },
   audioDbg: (ks) => (ks || []).map(k => ({ k, ok: !!(sbuf[k] && sbuf[k] instanceof AudioBuffer) })), // S2: prove swing SFX decoded
+  vfxDbg: () => ({ // wave 17 VFX tranche (owner 2026-10-06): per-category burst counters + texture decode proof
+    ko: T.vfxKo || 0, hit: T.vfxHit || 0, spc: T.vfxSpc || 0, dust: T.vfxDust || 0,
+    tex: VFXTEX.slice(),
+    texOk: VFXTEX.filter((n) => !!(vfxTex[n] && vfxTex[n].image && vfxTex[n].image.width)).length,
+    live: vfxLive.length, pool: vfxPool.length }),
+  vfxClear: () => { T.vfxKo = T.vfxHit = T.vfxSpc = T.vfxDust = 0; return true; },
   dodgeTest: () => { // S3 dodge SFX tranche (owner 2026-10-07): verify dodge fires SFX hook + i-frames
     if (!player || state !== 'fight') return { ok: 0, why: 'no-fight' };
     player.dodgeCD = 0; player.busy = 0; lastDodgeTap = 0; // single tap: dodge, not double-tap desperation
