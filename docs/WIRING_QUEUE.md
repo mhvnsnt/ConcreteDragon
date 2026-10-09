@@ -79,6 +79,16 @@ Wire in this order; playtest after each tier. Owner plays and vetoes — wire, d
     `counter.mp3` decoded to AudioBuffer; shots in `game-3d/shots-countersfx/` (eyes-on verified).
     Decision doc `docs/TRANCHE_WAVE12_COUNTERSFX.md`.
 13. **S6/S7 UI + pickup** — `kenney_ui-audio.zip` clicks; pickup chime on cash.
+13. **S6/S7 UI + pickup** ✅ WIRED 2026-10-08 (tranche wave 13, PR #3):
+    `uiclick.mp3` (click2, pre-existing) + `pickup.mp3` (mouseclick1, OGG→MP3 96k)
+    from `kenney_ui-audio.zip`, both registered in `build/asset-manifest.json` +
+    credited in `ASSETS_CREDITS.md` + preloaded in `unlockAudio()`. New
+    `sfxUiClick()` (all 30 `sfx('uiclick',…)` call sites — menus, pause, settings,
+    dojo, store, shop, mission select, results, customize) and `sfxPickupChime()`
+    (fires ONLY on physical cash-pickup collection; cash skips the generic coin —
+    distinct, not layered, wave-12 philosophy). Playtest `qa/playtest-uipickup.mjs`
+    12/12 PASS, zero errors; shots in `game-3d/shots-uipickup/` (eyes-on verified).
+    Decision doc `docs/TRANCHE_WAVE13_UIPICKUP.md`.
 14. **S1 layering** — layer rpg-audio impacts under existing synth hits (±5% pitch).
 15. **S15 mixing** — music/sfx buses; music ducks under big hits.
 

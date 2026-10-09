@@ -978,7 +978,7 @@ async function unlockAudio() {
   if (actx) return;
   try {
     actx = new (window.AudioContext || window.webkitAudioContext)();
-    await Promise.all(['hit1', 'hit2', 'hit3', 'bell', 'crowd', 'music', 'click', 'whoosh', 'step', 'crack', 'coin', 'uiclick', 'swing1', 'swing2', 'swing3', 'step1', 'step2', 'step3', 'step4', 'step5', 'counter'].map(async (k) => { sbuf[k] = await actx.decodeAudioData(b64ToBuf(A[k + '.mp3'])); }));
+    await Promise.all(['hit1', 'hit2', 'hit3', 'bell', 'crowd', 'music', 'click', 'whoosh', 'step', 'crack', 'coin', 'uiclick', 'swing1', 'swing2', 'swing3', 'step1', 'step2', 'step3', 'step4', 'step5', 'counter', 'pickup'].map(async (k) => { sbuf[k] = await actx.decodeAudioData(b64ToBuf(A[k + '.mp3'])); }));
     sfx('music', 0.32, true); sfx('crowd', 0.25, true);
   } catch (e) { T.errors.push('audio:' + e); }
 }
@@ -1031,6 +1031,23 @@ function sfxCounter(vol = 0.85) {
   T.counterSfx = (T.counterSfx || 0) + 1;
   sfx('counter', vol, false, 1 + (Math.random() * 0.12 - 0.06));
 }
+// S6 UI click (TIER 3 item 13, owner 2026-10-08): central UI-button click SFX — Kenney UI Audio
+// (CC0 1.0) click2.ogg (already uiclick.mp3). Every UI button activation routes through here so
+// the click has one consistent identity (±6% pitch jitter on top of any intentional base rate)
+// and a playtest counter. T.uiClickSfx is the playtest hook.
+function sfxUiClick(vol = 0.7, rate = 1) {
+  T.uiClickSfx = (T.uiClickSfx || 0) + 1;
+  sfx('uiclick', vol, false, rate * (1 + (Math.random() * 0.12 - 0.06)));
+}
+// S7 pickup chime (TIER 3 item 13, owner 2026-10-08): dedicated CASH-pickup chime — Kenney UI
+// Audio (CC0 1.0) mouseclick1.ogg (bright ~8.9kHz centroid, pitched up 1.15x for chime character).
+// Plays ONLY when a cash pickup is collected in-world (never on health/food/energy pickups, never
+// on store transactions) so cash reads audibly distinct from the generic coin SFX — same
+// distinct-not-layered philosophy as the wave-12 counter SFX. T.pickupChimeSfx is the playtest hook.
+function sfxPickupChime(vol = 0.7) {
+  T.pickupChimeSfx = (T.pickupChimeSfx || 0) + 1;
+  sfx('pickup', vol, false, 1.15 * (1 + (Math.random() * 0.12 - 0.06)));
+}
 let paused = false, pushT = 0;
 const pushPos = new THREE.Vector3();
 function setPaused(p) { if (actx) (p ? actx.suspend() : actx.resume()).catch(() => {}); paused = p; }
@@ -1046,7 +1063,7 @@ function togglePause(force) {
       b.className = 'diffBtn' + (d.id === save.difficulty ? ' sel' : '');
       b.textContent = d.name;
       b.title = d.desc;
-      b.addEventListener('click', (e) => { e.stopPropagation(); save.difficulty = d.id; writeSave(); sfx('uiclick', 0.7);
+      b.addEventListener('click', (e) => { e.stopPropagation(); save.difficulty = d.id; writeSave(); sfxUiClick(0.7);
         for (const x of dr.children) x.classList.toggle('sel', x === b); });
       dr.appendChild(b);
     }
@@ -1054,7 +1071,7 @@ function togglePause(force) {
   setPaused(on);
   $('pauseOv').classList.toggle('hidden', !on);
   $('touch').classList.toggle('on', !on);
-  sfx('uiclick', 0.7);
+  sfxUiClick(0.7);
 }
 // U9: quality setting — low forces lowFx, high disables auto-degrade, auto = current behavior
 function applyQuality() {
@@ -1079,7 +1096,7 @@ function renderBoard() {
   }
   if (!any) L.innerHTML = '<div class="bline"><span>No records yet — go fight.</span><b>—</b></div>';
 }
-function tipJar() { sfx('uiclick', 0.7); window.open(TIP_URL, '_blank', 'noopener'); }
+function tipJar() { sfxUiClick(0.7); window.open(TIP_URL, '_blank', 'noopener'); }
 document.addEventListener('visibilitychange', () => setPaused(document.hidden));
 
 // ---------- renderer / scene ----------
@@ -1522,9 +1539,9 @@ function updatePickups(dt) {
       const sp = screenPos(pk.mesh.position.clone());
       if (pk.type === 'health') { player.hp = Math.min(player.maxHp, player.hp + player.maxHp * 0.3); popText('+HP', 'gold', sp.x, sp.y); }
       else if (pk.type === 'food') { player.hp = Math.min(player.maxHp, player.hp + player.maxHp * 0.5); player.energy = clamp(player.energy + 20, 0, energyMax()); popText('+FOOD! +HP +SPC', 'gold', sp.x, sp.y); }
-      else if (pk.type === 'cash') { const c = Math.round(rnd(15, 40)); awardCash(c, pk.mesh.position.clone()); }
+      else if (pk.type === 'cash') { const c = Math.round(rnd(15, 40)); awardCash(c, pk.mesh.position.clone(), null, true); sfxPickupChime(); }
       else { player.energy = clamp(player.energy + 35, 0, energyMax()); popText('+ENERGY', 'big', sp.x, sp.y); }
-      sfx('coin', 0.6, false, pk.type === 'health' ? 0.8 : 1.2);
+      if (pk.type !== 'cash') sfx('coin', 0.6, false, pk.type === 'health' ? 0.8 : 1.2); // cash gets the dedicated chime INSTEAD of the generic coin — distinct, not layered
       streetGroup.remove(pk.mesh);
       pickups.splice(i, 1);
       setHud();
@@ -1668,7 +1685,7 @@ function updateMascot(dt) {
   // DOG: bark when a tag spot is near
   if (mascotId === 'm_dog' && Math.random() < dt * 0.5) {
     const s = tagSpots.find(s => !s.done && Math.hypot(player.px - s.px, player.pz - s.pz) < 6);
-    if (s) { sfx('uiclick', 0.7, false, 1.8); sparkFX(m.x, 0.8, m.z, 0xc98d4b, 3); }
+    if (s) { sfxUiClick(0.7, 1.8); sparkFX(m.x, 0.8, m.z, 0xc98d4b, 3); }
   }
 }
 function mascotMagnetBonus() { return mascotId === 'm_pigeon' ? 0.3 : 0; } // +30% magnet radius
@@ -1747,7 +1764,7 @@ function renderDojo(into) {
       const b = el('button', 'buyBtn', 'BUY $' + m.cost);
       b.onclick = (e) => {
         e.stopPropagation();
-        if ((save.cash || 0) < m.cost) { sfx('uiclick', 0.5, false, 0.6); popText('NOT ENOUGH CASH', 'bad', innerWidth / 2, innerHeight * 0.4); return; }
+        if ((save.cash || 0) < m.cost) { sfxUiClick(0.5, 0.6); popText('NOT ENOUGH CASH', 'bad', innerWidth / 2, innerHeight * 0.4); return; }
         save.cash -= m.cost; save.dojoMoves.push(m.id); writeSave();
         sfx('bell', 1, false, 1.2); banner(m.name + ' LEARNED!', 'spc');
         renderDojo(into); setHud(); ev('dojobuy', { id: m.id });
@@ -2251,7 +2268,7 @@ function openGearPanel(slot) {
     d.innerHTML = `<div>${g.name} ×${inv[g.id]}</div><div class="gt">${GEAR_TIERS[gearTier(g.id)]} · ${g.tags.join('/')} · ${g.desc}</div>`;
     d.onclick = () => {
       save.gearEq = save.gearEq || {}; save.gearEq[slot] = g.id; writeSave();
-      sfx('uiclick', 0.8); renderGear();
+      sfxUiClick(0.8); renderGear();
     };
     row.appendChild(d);
     if ((inv[g.id] || 0) >= 2 && gearTier(g.id) < 3) {
@@ -2274,7 +2291,7 @@ function renderCharms() {
   for (const c of avail) {
     const d = el('div', 'charmDot' + (save.charm === c.id ? ' sel' : ''));
     d.innerHTML = `<div>${c.name}</div><div class="gt">${c.desc}</div>`;
-    d.onclick = () => { save.charm = save.charm === c.id ? null : c.id; writeSave(); sfx('uiclick', 0.8); renderCharms(); };
+    d.onclick = () => { save.charm = save.charm === c.id ? null : c.id; writeSave(); sfxUiClick(0.8); renderCharms(); };
     row.appendChild(d);
   }
   renderMascots(); // CORNER-CREW MASCOTS: pick your ride-or-die
@@ -2287,7 +2304,7 @@ function renderMascots() {
   for (const m of avail) {
     const d = el('div', 'mascotDot charmDot' + (save.mascot === m.id ? ' sel' : ''));
     d.innerHTML = `<div>🐾 ${m.name}</div><div class="gt">${m.desc}</div>`;
-    d.onclick = () => { save.mascot = save.mascot === m.id ? null : m.id; writeSave(); sfx('uiclick', 0.8); renderCharms(); };
+    d.onclick = () => { save.mascot = save.mascot === m.id ? null : m.id; writeSave(); sfxUiClick(0.8); renderCharms(); };
     row.appendChild(d);
   }
 }
@@ -2318,7 +2335,7 @@ function renderStore(into) {
   }
   const rr = el('button', '', '🎲 REROLL $50');
   rr.disabled = save.cash < 50;
-  rr.onclick = (e) => { e.stopPropagation(); if (save.cash < 50) return; save.cash -= 50; storeStock = gearStock(3); writeSave(); sfx('uiclick', 0.8); renderStore(into); renderMeta(); };
+  rr.onclick = (e) => { e.stopPropagation(); if (save.cash < 50) return; save.cash -= 50; storeStock = gearStock(3); writeSave(); sfxUiClick(0.8); renderStore(into); renderMeta(); };
   into.appendChild(rr);
   // recycle: sell back owned gear for partial refund
   const inv = save.gearInv || {};
@@ -2344,7 +2361,7 @@ function renderShop(into) {
     box.appendChild(el('div', 'ud', u.desc));
     const b = el('button', '', `$${cost}`);
     b.disabled = save.cash < cost;
-    b.onclick = (e) => { e.stopPropagation(); if (save.cash < cost) return; save.cash -= cost; save[u.key]++; writeSave(); sfx('uiclick', 0.8); renderShop(into); renderMeta(); refreshShowcase(); renderScoutRow(); };
+    b.onclick = (e) => { e.stopPropagation(); if (save.cash < cost) return; save.cash -= cost; save[u.key]++; writeSave(); sfxUiClick(0.8); renderShop(into); renderMeta(); refreshShowcase(); renderScoutRow(); };
     box.appendChild(b); into.appendChild(box);
   }
   const sp = el('div', 'shopItem panel9');
@@ -2361,7 +2378,7 @@ function shuffleSkin() {
   const fid = save.selected;
   const tint = Math.floor(Math.random() * 0xffffff);
   save.skins[fid] = 'custom:' + tint.toString(16).padStart(6, '0');
-  writeSave(); sfx('uiclick', 0.8);
+  writeSave(); sfxUiClick(0.8);
   showSelect();
 }
 function refreshShowcase() {
@@ -2480,7 +2497,7 @@ function showMission() {
       b.title = r === 0 ? 'No REP modifier' : `REP ${r}: +${r * 30}% enemy HP, +${r * 18}% damage, +${r * 35}% cash` + (unlocked ? '' : ' — clear RUST BELT to unlock');
       b.disabled = !unlocked && r > 0;
       b.style.flex = '0 0 auto'; b.style.padding = '6px 10px'; b.style.minHeight = '36px';
-      b.onclick = (e) => { e.stopPropagation(); save.rep = r; writeSave(); sfx('uiclick', 0.7); showMission(); };
+      b.onclick = (e) => { e.stopPropagation(); save.rep = r; writeSave(); sfxUiClick(0.7); showMission(); };
       rr.appendChild(b);
     }
     if (!unlocked) {
@@ -2515,7 +2532,7 @@ function showMission() {
     card.appendChild(el('div', 'rw', locked ? '🔒 ' + (m.unlock.id ? 'Clear ' + missionDef(m.unlock.id).name : '') : '★ ' + m.reward));
     if (!locked) {
       const go = el('button', 'go', m.daily && save.daily.date === todayStr() ? 'RETRY' : 'GO');
-      go.onclick = (e) => { e.stopPropagation(); unlockAudio(); sfx('uiclick', 0.8); startMission(m.id); };
+      go.onclick = (e) => { e.stopPropagation(); unlockAudio(); sfxUiClick(0.8); startMission(m.id); };
       card.appendChild(go);
     }
     list.appendChild(card);
@@ -2537,12 +2554,12 @@ function showMission() {
     card.appendChild(el('div', 'rw', locked ? '🔒 Clear FIRST BLOOD' : '★ Infinite missions — always something new'));
     if (!locked) {
       const go = el('button', 'go', 'GO');
-      go.onclick = (e) => { e.stopPropagation(); unlockAudio(); sfx('uiclick', 0.8); startMission('circuit'); };
+      go.onclick = (e) => { e.stopPropagation(); unlockAudio(); sfxUiClick(0.8); startMission('circuit'); };
       card.appendChild(go);
       const map = el('button', 'go', '🗺 MAP');
       map.style.marginLeft = '6px';
       map.title = 'Branching circuit map — choose your next fight and its reward';
-      map.onclick = (e) => { e.stopPropagation(); unlockAudio(); sfx('uiclick', 0.8); renderCircuitMap(list, n); };
+      map.onclick = (e) => { e.stopPropagation(); unlockAudio(); sfxUiClick(0.8); renderCircuitMap(list, n); };
       card.appendChild(map);
     }
     list.appendChild(card);
@@ -2670,11 +2687,11 @@ function showResults(win, mission, stats) {
     if (mission.proc) {
       const nxt = procMission(mission.circuitN + 1);
       nb.style.display = ''; nb.textContent = 'NEXT: ' + nxt.name + ' →';
-      nb.onclick = (e) => { e.stopPropagation(); unlockAudio(); sfx('uiclick', 0.8); startMission('circuit'); };
+      nb.onclick = (e) => { e.stopPropagation(); unlockAudio(); sfxUiClick(0.8); startMission('circuit'); };
     } else {
       const idx = MISSIONS.findIndex((m) => m.id === mission.id);
       const nxt = idx >= 0 ? MISSIONS[idx + 1] : null;
-      if (nxt) { nb.style.display = ''; nb.textContent = 'NEXT: ' + nxt.name + ' →'; nb.onclick = (e) => { e.stopPropagation(); unlockAudio(); sfx('uiclick', 0.8); startMission(nxt.id); }; }
+      if (nxt) { nb.style.display = ''; nb.textContent = 'NEXT: ' + nxt.name + ' →'; nb.onclick = (e) => { e.stopPropagation(); unlockAudio(); sfxUiClick(0.8); startMission(nxt.id); }; }
       else { nb.style.display = 'none'; }
     }
   } else {
@@ -2705,14 +2722,14 @@ let spawnQueue = [], bossSpawned = false, bossRef = null, missionOver = false, e
 let gameTime = 0, combo = 0, comboT = 0, maxCombo = 0, atkIdx = 0, dmgTaken = 0, missionMaxHp = 100;
 let cashRun = 0, kills = 0, distWalked = 0, endlessT = 3, endlessTier = 0, endlessMuts = [];
 function hint(on) { $('hint').style.opacity = on ? 1 : 0; }
-function awardCash(base, pos, tag) {
+function awardCash(base, pos, tag, quiet) {
   const fever = (mission && mission.endless && (endlessMuts || []).includes('FEVER')) ? 2 : 1;
   const amount = Math.max(1, Math.round(base * hustleMult() * (1 + (blessFx().cash || 0)) * ((mission && mission.cashMult) || 1) * fever));
   cashRun += amount;
   const txt = tag ? tag + ' +$' + amount : '+$' + amount;
   const sp = pos ? screenPos(pos) : { x: innerWidth / 2, y: innerHeight * 0.45 };
   popText(txt, 'gold', sp.x + (Math.random() * 60 - 30), sp.y);
-  sfx('coin', 0.7, false, 1.15);
+  if (!quiet) sfx('coin', 0.7, false, 1.15); // TIER 3 item 13: cash PICKUP collection passes quiet=true so the dedicated pickup chime replaces the generic coin (distinct, not layered)
 }
 function genDailySpawns(R) {
   const sp = []; const fams = ['thug', 'rico', 'jabber', 'heavyd'];
@@ -2746,7 +2763,7 @@ function renderCircuitMap(into, n) {
     c.appendChild(el('div', 'cn', opt.reward.icon + ' ' + opt.reward.name));
     c.appendChild(el('div', 'cr', opt.reward.desc));
     c.appendChild(el('div', 'cr', '#' + (n + 1) + ' ' + opt.name));
-    c.onclick = (e) => { e.stopPropagation(); unlockAudio(); sfx('uiclick', 0.8); startMission('circuit', opt.reward.id); };
+    c.onclick = (e) => { e.stopPropagation(); unlockAudio(); sfxUiClick(0.8); startMission('circuit', opt.reward.id); };
     into.appendChild(c);
   }
   const back = el('button', 'ghostBtn', '← back');
@@ -3084,7 +3101,7 @@ function doTech() {
   playAnim(player, 'Melee_Unarmed_Idle', { ts: 1.6, fade: 0.05 });
   const sp = screenPos(player.root.position.clone().add(new THREE.Vector3(0, 2.2, 0)));
   popText('TECH!', 'spc', sp.x, sp.y);
-  sfx('uiclick', 0.9, false, 1.3); sparkFX(player.px, 1.0, player.pz, 0x7af0ff, 10);
+  sfxUiClick(0.9, 1.3); sparkFX(player.px, 1.0, player.pz, 0x7af0ff, 10);
   T.techs = (T.techs || 0) + 1; ev('tech', {}); setHud();
   return true;
 }
@@ -3137,7 +3154,7 @@ function doTaunt() {
   player.energy = clamp(player.energy + 25 * (1 + (blessFx().energyGain || 0)), 0, energyMax());
   const sp = screenPos(player.root.position.clone().add(new THREE.Vector3(0, 2.2, 0)));
   popText('COME ON!', 'spc', sp.x, sp.y);
-  sfx('uiclick', 0.6, false, 0.7);
+  sfxUiClick(0.6, 0.7);
   setHud(); ev('taunt', {});
 }
 function doStance() {
@@ -3163,7 +3180,7 @@ function doStance() {
   if (!(player.radicalT > 0) && !(player.rageT > 0)) { player.dmgMult = player.baseDmgMult; player.spd = player.baseSpd; }
   player.busy = 0.4;
   playAnim(player, 'Melee_Unarmed_Idle', { ts: 1.6, fade: 0.1 });
-  sfx('uiclick', 0.9, false, 1.2);
+  sfxUiClick(0.9, 1.2);
   sparkFX(player.px, 1.4, player.pz, 0xff4fd8, 10);
   setHud(); ev('stance', { stance: player.stance });
 }
@@ -3472,7 +3489,7 @@ function landHit(e, dmg, label, hs, sh, launcher, counter) {
       playAnim(e, 'Melee_Unarmed_Idle', { loop: true });
       const rsp = screenPos(e.root.position.clone().add(new THREE.Vector3(0, 2.2, 0)));
       popText('READ!', 'bad', rsp.x, rsp.y);
-      sfx('uiclick', 0.8, false, 0.6); ev('antiinfinite', { label });
+      sfxUiClick(0.8, 0.6); ev('antiinfinite', { label });
       T.antiinf = (T.antiinf || 0) + 1; // test hook
     }
   } else { e.jugSeq = []; }
@@ -3690,12 +3707,12 @@ function setupInput() {
   const up = (e) => { showcaseDragX = null; stickEnd(e); };
   document.addEventListener('pointerup', up);
   document.addEventListener('pointercancel', () => { showcaseDragX = null; stickEnd(); });
-  $('fightBtn').addEventListener('click', (e) => { e.stopPropagation(); unlockAudio(); sfx('uiclick', 0.8); showMission(); });
-  $('customizeBtn').addEventListener('click', (e) => { e.stopPropagation(); unlockAudio(); sfx('uiclick', 0.8); openCustomize(); });
-  $('customClose').addEventListener('click', (e) => { e.stopPropagation(); sfx('uiclick', 0.8); closeCustomize(); });
-  $('againBtn').addEventListener('click', (e) => { e.stopPropagation(); unlockAudio(); sfx('uiclick', 0.8); showMission(); });
-  $('rematchBtn').addEventListener('click', (e) => { e.stopPropagation(); unlockAudio(); sfx('uiclick', 0.8); if (mission) startMission(mission.id); }); // soul law: one-tap rematch
-  $('backBtn').addEventListener('click', (e) => { e.stopPropagation(); sfx('uiclick', 0.8); showSelect(); });
+  $('fightBtn').addEventListener('click', (e) => { e.stopPropagation(); unlockAudio(); sfxUiClick(0.8); showMission(); });
+  $('customizeBtn').addEventListener('click', (e) => { e.stopPropagation(); unlockAudio(); sfxUiClick(0.8); openCustomize(); });
+  $('customClose').addEventListener('click', (e) => { e.stopPropagation(); sfxUiClick(0.8); closeCustomize(); });
+  $('againBtn').addEventListener('click', (e) => { e.stopPropagation(); unlockAudio(); sfxUiClick(0.8); showMission(); });
+  $('rematchBtn').addEventListener('click', (e) => { e.stopPropagation(); unlockAudio(); sfxUiClick(0.8); if (mission) startMission(mission.id); }); // soul law: one-tap rematch
+  $('backBtn').addEventListener('click', (e) => { e.stopPropagation(); sfxUiClick(0.8); showSelect(); });
   $('pauseBtn').addEventListener('click', (e) => { e.stopPropagation(); togglePause(); });
   $('tauntBtn').addEventListener('click', (e) => {
     e.stopPropagation();
@@ -3706,8 +3723,8 @@ function setupInput() {
   $('resumeBtn').addEventListener('click', (e) => { e.stopPropagation(); togglePause(false); });
   $('restartBtn').addEventListener('click', (e) => { e.stopPropagation(); togglePause(false); startMission(mission.id); });
   $('quitBtn').addEventListener('click', (e) => { e.stopPropagation(); setPaused(false); $('pauseOv').classList.add('hidden'); showMission(); });
-  $('muteBtn').addEventListener('click', (e) => { e.stopPropagation(); save.muted = !save.muted; e.target.textContent = save.muted ? 'OFF' : 'ON'; writeSave(); sfx('uiclick', 0.7); });
-  $('qualityBtn').addEventListener('click', (e) => { e.stopPropagation(); save.quality = save.quality === 'auto' ? 'low' : save.quality === 'low' ? 'high' : 'auto'; e.target.textContent = save.quality.toUpperCase(); writeSave(); sfx('uiclick', 0.7); applyQuality(); });
+  $('muteBtn').addEventListener('click', (e) => { e.stopPropagation(); save.muted = !save.muted; e.target.textContent = save.muted ? 'OFF' : 'ON'; writeSave(); sfxUiClick(0.7); });
+  $('qualityBtn').addEventListener('click', (e) => { e.stopPropagation(); save.quality = save.quality === 'auto' ? 'low' : save.quality === 'low' ? 'high' : 'auto'; e.target.textContent = save.quality.toUpperCase(); writeSave(); sfxUiClick(0.7); applyQuality(); });
   // CREDITS (CC-BY attributions — owner 2026-10-06)
   const CREDITS = [
     ['Carmilla the vampire, happy/sad ghosts, cute skull — JellyLion (OpenGameArt)', 'CC-BY 4.0 — https://opengameart.org'],
@@ -3719,14 +3736,14 @@ function setupInput() {
     ['All other models, code, music — Orion Enterprises LLC', 'Original / CC0'],
   ];
   $('creditsBody').innerHTML = CREDITS.map((c) => '<div>• ' + c[0] + '<br><span style="opacity:.7">' + c[1] + '</span></div>').join('');
-  $('creditsBtn').addEventListener('click', (e) => { e.stopPropagation(); $('creditsOv').classList.remove('hidden'); sfx('uiclick', 0.7); });
-  $('creditsClose').addEventListener('click', (e) => { e.stopPropagation(); $('creditsOv').classList.add('hidden'); sfx('uiclick', 0.7); });
+  $('creditsBtn').addEventListener('click', (e) => { e.stopPropagation(); $('creditsOv').classList.remove('hidden'); sfxUiClick(0.7); });
+  $('creditsClose').addEventListener('click', (e) => { e.stopPropagation(); $('creditsOv').classList.add('hidden'); sfxUiClick(0.7); });
   // ASSIST (SF6 Modern-controls-inspired, Soul Law 7: accessibility is respect)
   $('assistBtn').textContent = save.assist ? 'ON' : 'OFF';
   $('assistBtn').title = 'ASSIST: SPC button fires your best special automatically';
-  $('assistBtn').addEventListener('click', (e) => { e.stopPropagation(); save.assist = !save.assist; e.target.textContent = save.assist ? 'ON' : 'OFF'; writeSave(); sfx('uiclick', 0.7); });
-  $('boardBtn').addEventListener('click', (e) => { e.stopPropagation(); sfx('uiclick', 0.8); renderBoard(); $('boardOv').classList.remove('hidden'); });
-  $('boardClose').addEventListener('click', (e) => { e.stopPropagation(); sfx('uiclick', 0.7); $('boardOv').classList.add('hidden'); });
+  $('assistBtn').addEventListener('click', (e) => { e.stopPropagation(); save.assist = !save.assist; e.target.textContent = save.assist ? 'ON' : 'OFF'; writeSave(); sfxUiClick(0.7); });
+  $('boardBtn').addEventListener('click', (e) => { e.stopPropagation(); sfxUiClick(0.8); renderBoard(); $('boardOv').classList.remove('hidden'); });
+  $('boardClose').addEventListener('click', (e) => { e.stopPropagation(); sfxUiClick(0.7); $('boardOv').classList.add('hidden'); });
   $('tipBtnTitle').addEventListener('click', (e) => { e.stopPropagation(); tipJar(); });
   $('tipBtnResults').addEventListener('click', (e) => { e.stopPropagation(); tipJar(); });
   document.addEventListener('keydown', (e) => {
@@ -4229,7 +4246,7 @@ function playerUpdate(dt) {
   if (hvyPressT && !hvyFocusing && performance.now() - hvyPressT > 450 && state === 'fight' && !missionOver && !ended && player.hp > 0 && player.busy <= 0) {
     hvyFocusing = true; player.focusT = 99; player.focusHit = false;
     playAnim(player, 'Melee_Unarmed_Idle', { ts: 0.5, fade: 0.1 });
-    banner('FOCUS', 'spc'); sfx('uiclick', 0.7, false, 0.6);
+    banner('FOCUS', 'spc'); sfxUiClick(0.7, 0.6);
   }
   // DASH STRIKE (Ruiner-inspired): the dodge IS a weapon — plow through an enemy once per dodge
   if (p.dodgeT > 0 && !p.dashStruck) {
@@ -4879,6 +4896,11 @@ window.__cdtest = {
     return true;
   },
   audioDbg: (ks) => (ks || []).map(k => ({ k, ok: !!(sbuf[k] && sbuf[k] instanceof AudioBuffer) })), // S2: prove swing SFX decoded
+  uiClickDbg: () => ({ uiClick: T.uiClickSfx || 0 }), // S6 UI click tranche (owner 2026-10-08): playtest hook for the central UI-button click SFX
+  uiClickClear: () => { T.uiClickSfx = 0; },
+  pickupChimeDbg: () => ({ chime: T.pickupChimeSfx || 0 }), // S7 pickup chime tranche (owner 2026-10-08): fires ONLY on physical cash-pickup collection
+  pickupChimeClear: () => { T.pickupChimeSfx = 0; },
+  dbgSpawnPickup: (type) => { if (player) { spawnPickup(type || 'cash', player.px, player.pz); return true; } return false; }, // stage a physical pickup at the player for chime tests
   dodgeTest: () => { // S3 dodge SFX tranche (owner 2026-10-07): verify dodge fires SFX hook + i-frames
     if (!player || state !== 'fight') return { ok: 0, why: 'no-fight' };
     player.dodgeCD = 0; player.busy = 0; lastDodgeTap = 0; // single tap: dodge, not double-tap desperation

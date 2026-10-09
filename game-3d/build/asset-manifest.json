@@ -105,7 +105,11 @@
  },
  {
   "file": "uiclick.mp3",
-  "source": "Kenney UI Audio (CC0 1.0)"
+  "source": "Kenney UI Audio (CC0 1.0) [click2.ogg]"
+ },
+ {
+  "file": "pickup.mp3",
+  "source": "Kenney UI Audio (CC0 1.0) [mouseclick1.ogg]"
  },
  {
   "file": "swing1.mp3",
