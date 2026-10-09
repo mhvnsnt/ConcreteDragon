@@ -5,7 +5,7 @@
 // crack/chime (T.counterSfx >= 1, T.counters >= 1). Zero page/console errors required.
 // Screenshots -> game-3d/shots-countersfx/
 import puppeteer from 'puppeteer-core';
-const CHROME = '/home/hatch/.cache/ms-playwright/chromium-1243/chrome-linux64/chrome';
+const CHROME = '/home/hatch/.cache/puppeteer/chrome/linux-131.0.6778.204/chrome-linux64/chrome';
 const SHOTS = '/home/hatch/workspace/ConcreteDragon/game-3d/shots-countersfx';
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const errors = [];
