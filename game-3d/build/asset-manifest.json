@@ -308,6 +308,10 @@
   "source": "Original composition \u2014 Orion Enterprises LLC (synth-composed 2026-10-09, boss music lane)"
  },
  {
+  "file": "anim_grapple.glb",
+  "source": "Retargeted mocap (bannon-video-pipe library) \u2014 throw clips"
+ },
+ {
   "file": "anim_moves.glb",
   "source": "Hand-authored keyframed clips \u2014 Orion Enterprises LLC (moves expansion 2026-10-09)"
  }
