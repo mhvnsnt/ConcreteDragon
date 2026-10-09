@@ -978,7 +978,7 @@ async function unlockAudio() {
   if (actx) return;
   try {
     actx = new (window.AudioContext || window.webkitAudioContext)();
-    await Promise.all(['hit1', 'hit2', 'hit3', 'bell', 'crowd', 'music', 'click', 'whoosh', 'step', 'crack', 'coin', 'uiclick', 'swing1', 'swing2', 'swing3'].map(async (k) => { sbuf[k] = await actx.decodeAudioData(b64ToBuf(A[k + '.mp3'])); }));
+    await Promise.all(['hit1', 'hit2', 'hit3', 'bell', 'crowd', 'music', 'click', 'whoosh', 'step', 'crack', 'coin', 'uiclick', 'swing1', 'swing2', 'swing3', 'step1', 'step2', 'step3', 'step4', 'step5'].map(async (k) => { sbuf[k] = await actx.decodeAudioData(b64ToBuf(A[k + '.mp3'])); }));
     sfx('music', 0.32, true); sfx('crowd', 0.25, true);
   } catch (e) { T.errors.push('audio:' + e); }
 }
@@ -996,6 +996,33 @@ function sfxSwing(vol = 0.5, whiff = false) {
   T.swingSfx = (T.swingSfx || 0) + 1;
   if (whiff) T.whiffSfx = (T.whiffSfx || 0) + 1;
   sfx(k, vol, false, 1 + (Math.random() * 0.16 - 0.08));
+}
+// S8 footsteps (TIER 3 item 11, owner 2026-10-07): 5-step CC0 Kenney RPG Audio bank
+// (step1-5 = footstep03/00/08/06/09, chosen for spectral spread bright→dark). Random pick
+// per footfall with ±6% pitch jitter, volume sits under combat (0.28 player). Surface-
+// appropriate per district pitch — cheap and real, one bank: overpass 1.08 (hard deck),
+// industrial 0.88 (metal), yards/docks 0.94 (gravel/deck), everything else 1.0.
+// Enemy steps: silent beyond 10 units + global 380ms voice cap = no stampede. Counters
+// T.stepSfx (player) / T.stepEnemy (enemy) prove the playtest's sounds came from real movement.
+const STEP_KEYS = ['step1', 'step2', 'step3', 'step4', 'step5'];
+const STEP_DISTRICT_RATE = { overpass: 1.08, industrial: 0.88, yards: 0.94, docks: 0.94 };
+let lastEnemyStepT = 0;
+function sfxFootstep(dist, enemy) {
+  const k = STEP_KEYS[Math.floor(Math.random() * STEP_KEYS.length)];
+  const rate = (STEP_DISTRICT_RATE[(mission && mission.district) || 'neon'] || 1) * (1 + (Math.random() * 0.12 - 0.06));
+  let vol;
+  if (enemy) {
+    if (dist > 10) return; // far enemies are silent
+    const now = performance.now();
+    if (now - lastEnemyStepT < 380) return; // stampede guard
+    lastEnemyStepT = now;
+    vol = Math.max(0.05, 0.20 * (1 - dist / 10));
+    T.stepEnemy = (T.stepEnemy || 0) + 1;
+  } else {
+    vol = 0.28;
+    T.stepSfx = (T.stepSfx || 0) + 1;
+  }
+  sfx(k, vol, false, rate);
 }
 let paused = false, pushT = 0;
 const pushPos = new THREE.Vector3();
@@ -3768,6 +3795,7 @@ function enemyAI(e, dt) {
   if (e.boss) { bossAI(e, dt, dx, dz, adx, adz); return; }
   if (e.ai === 'walk') {
     const sp = e.spd;
+    const epx0 = e.px, epz0 = e.pz; // S8: stride-track ACTUAL ground covered (below)
     e.px += Math.sign(dx) * Math.min(adx, sp * dt);
     e.pz += Math.sign(dz) * Math.min(adz, sp * 0.8 * dt);
     // separation from other enemies
@@ -3776,6 +3804,11 @@ function enemyAI(e, dt) {
       const sx = e.px - o.px, sz = e.pz - o.pz, d = Math.hypot(sx, sz);
       if (d > 0.01 && d < 0.8) { e.px += sx / d * dt * 1.5; e.pz += sz / d * dt * 1.5; }
     }
+    // S8 footsteps: enemy footfalls — 1.9-unit stride on ACTUAL ground covered (like the
+    // player), sfxFootstep culls far enemies (>10 units silent) and voice-caps globally.
+    // Fighting/windup/recover states are silent.
+    e.stepAcc = (e.stepAcc || 0) + Math.hypot(e.px - epx0, e.pz - epz0);
+    if (e.stepAcc >= 1.9) { e.stepAcc -= 1.9; sfxFootstep(Math.hypot(dx, dz), true); }
     e.root.rotation.y = dx > 0 ? Math.PI / 2 : -Math.PI / 2;
     e.aiT -= dt;
     if (adx < 1.35 && adz < 0.65 && e.aiT <= 0) {
@@ -4257,6 +4290,18 @@ function playerUpdate(dt) {
   }
   const spdNow = Math.hypot(mx, mz);
   const wantRun = spdNow > 0.6 && p.dodgeT <= 0 && p.busy <= 0 && (p.airT || 0) <= 0 && (p.knockT || 0) <= 0;
+  // S8 footsteps: stride-tracked footfalls from REAL locomotion only — idle is silent, and
+  // the accumulator tracks ACTUAL ground covered per frame (not intended velocity), so
+  // pushing against a wall/collider makes no foot-skate sound. 1.9 units per stride
+  // (≈2.3 steps/sec at the 4.4 u/s run speed).
+  {
+    const moved = Math.hypot(p.px - (p._stepPx ?? p.px), p.pz - (p._stepPz ?? p.pz));
+    p._stepPx = p.px; p._stepPz = p.pz;
+    if (wantRun && moved > 0) {
+      p.stepAcc = (p.stepAcc || 0) + moved;
+      if (p.stepAcc >= 1.9) { p.stepAcc -= 1.9; sfxFootstep(0, false); }
+    } else if (!wantRun) p.stepAcc = 0;
+  }
   if (wantRun) {
     // OWNER 2026-10-07: run anim starts IMMEDIATELY on movement and its speed
     // tracks velocity every frame — no sliding, no foot-skate.
@@ -4812,6 +4857,10 @@ window.__cdtest = {
   doJump, doPunch, doHeavy, doSpecial, doTaunt, doDesperation, doStance, doTech, doGrapple, doDodge,
   swingDbg: () => ({ swing: T.swingSfx || 0, whiff: T.whiffSfx || 0 }), // S2 swing-whoosh tranche (owner 2026-10-07)
   swingClear: () => { T.swingSfx = 0; T.whiffSfx = 0; },
+  stepDbg: () => ({ step: T.stepSfx || 0, enemy: T.stepEnemy || 0, // S8 footsteps tranche (owner 2026-10-07)
+    district: (mission && mission.district) || 'none',
+    rate: (STEP_DISTRICT_RATE[(mission && mission.district) || 'neon'] || 1) }),
+  stepClear: () => { T.stepSfx = 0; T.stepEnemy = 0; },
   audioDbg: (ks) => (ks || []).map(k => ({ k, ok: !!(sbuf[k] && sbuf[k] instanceof AudioBuffer) })), // S2: prove swing SFX decoded
   dodgeTest: () => { // S3 dodge SFX tranche (owner 2026-10-07): verify dodge fires SFX hook + i-frames
     if (!player || state !== 'fight') return { ok: 0, why: 'no-fight' };
@@ -4919,6 +4968,7 @@ window.__cdtest = {
   stanceInfo: () => player ? { stance: player.stance || 0, name: (player.stance && fighterDef().stance) ? fighterDef().stance.name : 'BALANCED', dmg: +player.dmgMult.toFixed(2), spd: +player.spd.toFixed(2) } : null,
   step: (dt) => { playerUpdate(dt || 1 / 60); }, // drive the real physics deterministically
   estep: (dt) => { for (const e of enemies.slice()) enemyAI(e, dt || 1 / 60); }, // drive enemy AI deterministically (test only)
+  estepN: (n, dt) => { for (let i = 0; i < (n || 60); i++) for (const e of enemies.slice()) enemyAI(e, dt || 1 / 60); return true; }, // batch estep (test only)
   dbg: () => player ? { st: state, mo: missionOver, en: ended, hp: player.hp, busy: player.busy, airT: player.airT, py: player.py, vy: player.vy, frames: dbgFrames } : null,
   setStick: (dx, dy) => { stick.dx = dx; stick.dy = dy; },
   playerPos: () => player ? { px: +player.px.toFixed(2), pz: +player.pz.toFixed(2), py: +(player.py || 0).toFixed(2), airT: +(player.airT || 0).toFixed(2) } : null,
