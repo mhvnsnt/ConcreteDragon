@@ -631,7 +631,8 @@ const PB_TITLES = ['NIGHTMARE', 'IRON', 'BLOOD', 'RUSTED', 'HOWLING', 'VENOM', '
 function procBoss(n) {
   const R = seedPRNG(n * 104729 + 7);
   const bases = ['kingpin', 'sledge', 'viper', 'rust', 'dragon', 'pumpkinking', 'foreman', 'warden'];
-  const b0 = BOSSES.find((x) => x.id === bases[Math.floor(R() * bases.length)]);
+  const baseId = bases[Math.floor(R() * bases.length)]; // pick ONCE, outside find (calling R() inside the predicate re-rolls per element and usually matches nothing -> crash)
+  const b0 = BOSSES.find((x) => x.id === baseId);
   const title = PB_TITLES[Math.floor(R() * PB_TITLES.length)];
   const pool = ['slam', 'flurry', 'charge', 'summon', 'shoot'];
   const pats = [];
@@ -978,14 +979,30 @@ async function unlockAudio() {
   if (actx) return;
   try {
     actx = new (window.AudioContext || window.webkitAudioContext)();
-    await Promise.all(['hit1', 'hit2', 'hit3', 'bell', 'crowd', 'music', 'click', 'whoosh', 'step', 'crack', 'coin', 'uiclick', 'swing1', 'swing2', 'swing3'].map(async (k) => { sbuf[k] = await actx.decodeAudioData(b64ToBuf(A[k + '.mp3'])); }));
-    sfx('music', 0.32, true); sfx('crowd', 0.25, true);
+    await Promise.all(['hit1', 'hit2', 'hit3', 'bell', 'crowd', 'music', 'click', 'whoosh', 'step', 'crack', 'coin', 'uiclick', 'swing1', 'swing2', 'swing3',
+      'boss-kingpin', 'boss-sledge', 'boss-viper', 'boss-rust', 'boss-dragon', 'boss-pumpkinking', 'boss-carmilla', 'boss-foreman', 'boss-warden', 'boss-endless'].map(async (k) => { sbuf[k] = await actx.decodeAudioData(b64ToBuf(A[k + '.mp3'])); }));
+    musicStage(); sfx('crowd', 0.25, true);
   } catch (e) { T.errors.push('audio:' + e); }
 }
 function sfx(k, vol = 1, loop = false, rate = 1) {
   if (!actx || !sbuf[k] || muted) return null;
   const s = actx.createBufferSource(); s.buffer = sbuf[k]; s.loop = loop; s.playbackRate.value = rate;
   const g = actx.createGain(); g.gain.value = vol; s.connect(g).connect(actx.destination); s.start(); return s;
+}
+// ---------- music manager (boss music lane, owner 2026-10-09) ----------
+// Exactly one looping music source at a time: stage loop <-> per-boss track.
+// musicKey tracks intent so re-requests are no-ops and mute-state stays in sfx.
+let musicNode = null, musicKey = 'music';
+function musicPlay(k, vol = 0.32) {
+  if (k === musicKey && musicNode) return;
+  if (musicNode) { try { musicNode.stop(); } catch (e) {} musicNode = null; }
+  musicKey = k;
+  musicNode = sfx(k, vol, true);
+}
+function musicStage() { musicPlay('music', 0.32); }
+function musicBoss(bossId) {
+  const static_ = BOSSES.some((x) => x.id === bossId);
+  musicPlay('boss-' + (static_ ? bossId : 'endless'), 0.34);
 }
 // S2 swing whooshes (TIER 3 item 10, owner 2026-10-07): dedicated attack-swing SFX from Kenney RPG
 // Audio (CC0 1.0) — swing1/knifeSlice, swing2/knifeSlice2, swing3/chop — distinct from the generic
@@ -2857,6 +2874,7 @@ function spawnBoss(bossId, bx) {
   banner('⚠ ' + b.name + ' ⚠');
   $('bossWrap').style.display = 'block'; $('bossName').textContent = b.name + ' — ' + b.intro;
   sfx('bell', 0.9);
+  musicBoss(b.id); // boss music lane (owner 2026-10-09): this boss's own track
   setHud();
   return e;
 }
@@ -3481,6 +3499,7 @@ function killEnemy(e) {
   if (e.boss) {
     slowmo = 0.3; slowmoT = 1.1; shake = 0.6; hitstop = 0.12; // boss KO = biggest moment
     $('bossWrap').style.display = 'none';
+    musicStage(); // boss down -> back to the stage loop
     banner('BOSS DOWN!');
   } else {
     slowmo = 0.35; slowmoT = 0.7; shake = 0.45; hitstop = 0.09;
@@ -4121,6 +4140,7 @@ function recordGrade(mission, stats) {
 }
 function missionComplete(win) {
   if (ended) return; ended = true; missionOver = true;
+  musicStage(); // mission over (win or player death mid-boss-fight) -> stage loop
   $('touch').classList.remove('on');
   for (const e of enemies) hideWarn(e);
   const stats = { kills, maxCombo, cash: cashRun, dist: distWalked, waveBonus: 0, dmgTaken, time: gameTime };
@@ -4785,6 +4805,8 @@ window.__cdtest = {
   // wave-5 batch 2 debug hooks (harvest mechanics)
   dbgRecruit: () => { if (player) { player.crew = (player.crew || 0) + 1; player.crewT = 0.1; } return player ? player.crew : 0; },
   dbgRadical: () => { if (player) { player.energy = energyMax(); player.busy = 0; doTaunt(); } return player ? { rad: +(player.radicalT || 0).toFixed(1), dmg: +player.dmgMult.toFixed(2), base: +player.baseDmgMult.toFixed(2) } : null; },
+  musicDbg: () => ({ key: musicKey, playing: !!musicNode, decoded: Object.keys(sbuf).filter((k) => k.startsWith('boss-')).length }),
+  dbgKillBoss: () => { const b = bossRef; if (b && b.hp > 0) { landHit(b, 999999, 'DBG', 0, 0, false, false); return b.boss.id; } return null; },
   dbgFocusHold: () => { hvyPressT = performance.now() - 500; return true; },
   dbgFocusWhy: () => ({ pressT: Math.round(hvyPressT), now: Math.round(performance.now()),
     state, missionOver, ended, busy: player ? player.busy : 'noplayer', hp: player ? player.hp : 0,
