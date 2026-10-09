@@ -35,7 +35,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#150f2a;touch-action:n
 #pbar{left:10px}#pbar i{background:linear-gradient(90deg,#3cf,#4fd1ff)}
 #ebar{right:10px}#ebar i{background:linear-gradient(90deg,#ff3d6b,#ffb03d);margin-left:auto}
 .lbl{position:absolute;top:calc(max(14px,env(safe-area-inset-top)) + 30px);font-size:15px;letter-spacing:2px;text-shadow:0 2px 0 #000}
-#pname{left:14px}#ename{right:14px;text-align:right}
+#pname{left:14px}#wpnBadge{left:14px;top:64px;color:#ffd166;display:none;font-size:13px;text-shadow:0 0 6px #000}#ename{right:14px;text-align:right}
 #cash{position:absolute;top:calc(max(14px,env(safe-area-inset-top)) + 50px);left:14px;font-size:17px;color:#ffd166;text-shadow:0 2px 0 #000;letter-spacing:2px}
 #score{position:absolute;top:calc(max(14px,env(safe-area-inset-top)) + 74px);left:14px;font-size:15px;color:#7af0ff;text-shadow:0 2px 0 #000;letter-spacing:2px;font-family:'Bungee','Anton',Arial,sans-serif}
 #score.pop{animation:scorePop .18s ease-out}
@@ -301,7 +301,7 @@ body.cine #cineSkip{display:block}
 </head><body>
 <canvas id="c"></canvas>
 <div id="hud">
-  <div class="bar" id="pbar"><i id="pghost" class="ghost" style="width:100%"></i><i id="php" style="width:100%"></i></div><div class="lbl" id="pname">You</div>
+  <div class="bar" id="pbar"><i id="pghost" class="ghost" style="width:100%"></i><i id="php" style="width:100%"></i></div><div class="lbl" id="pname">You</div><div class="lbl" id="wpnBadge" style="display:none"></div>
   <div class="bar" id="ebar"><i id="eghost" class="ghost" style="width:100%"></i><i id="ehp" style="width:100%"></i></div><div class="lbl" id="ename"></div>
   <div id="progWrap"><div id="prog"></div></div>
   <button id="pauseBtn">❚❚</button>
