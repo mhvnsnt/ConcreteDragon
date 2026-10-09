@@ -207,64 +207,104 @@
   "file": "props/k_tire.glb",
   "source": "Kenney Car Kit (CC0 1.0) — kenney.nl"
  },
- {
+{
   "file": "roads.glb",
   "source": "Kenney city-kit-roads (CC0 1.0) — overpass district props"
- },
- {
+},
+{
   "file": "industrial.glb",
   "source": "Kenney city-kit-industrial (CC0 1.0) — factory district props"
- },
- {
+},
+{
   "file": "counter.mp3",
   "source": "Kenney RPG Audio (CC0 1.0) [metalPot3.ogg]"
- },
- {
+},
+{
   "file": "vfx/circle.png",
   "source": "Kenney Particle Pack (CC0 1.0) — kenney.nl"
- },
- {
+},
+{
   "file": "vfx/dirt.png",
   "source": "Kenney Particle Pack (CC0 1.0) — kenney.nl"
- },
- {
+},
+{
   "file": "vfx/fire.png",
   "source": "Kenney Particle Pack (CC0 1.0) — kenney.nl"
- },
- {
+},
+{
   "file": "vfx/flame.png",
   "source": "Kenney Particle Pack (CC0 1.0) — kenney.nl"
- },
- {
+},
+{
   "file": "vfx/flare.png",
   "source": "Kenney Particle Pack (CC0 1.0) — kenney.nl"
- },
- {
+},
+{
   "file": "vfx/light.png",
   "source": "Kenney Particle Pack (CC0 1.0) — kenney.nl"
- },
- {
+},
+{
   "file": "vfx/magic.png",
   "source": "Kenney Particle Pack (CC0 1.0) — kenney.nl"
- },
- {
+},
+{
   "file": "vfx/muzzle.png",
   "source": "Kenney Particle Pack (CC0 1.0) — kenney.nl"
- },
- {
+},
+{
   "file": "vfx/smoke.png",
   "source": "Kenney Particle Pack (CC0 1.0) — kenney.nl"
- },
- {
+},
+{
   "file": "vfx/spark.png",
   "source": "Kenney Particle Pack (CC0 1.0) — kenney.nl"
- },
- {
+},
+{
   "file": "vfx/star.png",
   "source": "Kenney Particle Pack (CC0 1.0) — kenney.nl"
- },
- {
+},
+{
   "file": "vfx/twirl.png",
   "source": "Kenney Particle Pack (CC0 1.0) — kenney.nl"
- }
+},
+{
+  "file": "boss-kingpin.mp3",
+  "source": "Original composition — Orion Enterprises LLC (synth-composed 2026-10-09, boss music lane)"
+},
+{
+  "file": "boss-sledge.mp3",
+  "source": "Original composition — Orion Enterprises LLC (synth-composed 2026-10-09, boss music lane)"
+},
+{
+  "file": "boss-viper.mp3",
+  "source": "Original composition — Orion Enterprises LLC (synth-composed 2026-10-09, boss music lane)"
+},
+{
+  "file": "boss-rust.mp3",
+  "source": "Original composition — Orion Enterprises LLC (synth-composed 2026-10-09, boss music lane)"
+},
+{
+  "file": "boss-dragon.mp3",
+  "source": "Original composition — Orion Enterprises LLC (synth-composed 2026-10-09, boss music lane)"
+},
+{
+  "file": "boss-pumpkinking.mp3",
+  "source": "Original composition — Orion Enterprises LLC (synth-composed 2026-10-09, boss music lane)"
+},
+{
+  "file": "boss-carmilla.mp3",
+  "source": "Original composition — Orion Enterprises LLC (synth-composed 2026-10-09, boss music lane)"
+},
+{
+  "file": "boss-foreman.mp3",
+  "source": "Original composition — Orion Enterprises LLC (synth-composed 2026-10-09, boss music lane)"
+},
+{
+  "file": "boss-warden.mp3",
+  "source": "Original composition — Orion Enterprises LLC (synth-composed 2026-10-09, boss music lane)"
+},
+{
+  "file": "boss-endless.mp3",
+  "source": "Original composition — Orion Enterprises LLC (synth-composed 2026-10-09, boss music lane)"
+}
 ]
