@@ -13,3 +13,23 @@ fs.mkdirSync('dist', { recursive: true });
 fs.writeFileSync('dist/concrete-dragon.html', html);
 const kb = (n) => (n / 1024 / 1024).toFixed(2) + ' MB';
 console.log('js bundle', kb(js.length), '| html', kb(Buffer.byteLength(html)));
+// M9 PWA: stamp SW cache version + ship manifest/sw/icons next to the built HTML
+// so the deploy step can publish them at the site root (required for SW scope).
+let pwaVer = 'dev';
+try { pwaVer = fs.readFileSync('../game/version.txt', 'utf8').trim(); } catch (e) {}
+try {
+  const { execSync } = await import('node:child_process');
+  pwaVer += '-' + execSync('git rev-parse --short HEAD', { encoding: 'utf8' }).trim();
+} catch (e) { pwaVer += '-' + new Date().toISOString().slice(0, 10).replace(/-/g, ''); }
+const copyDir = (src, dst) => {
+  fs.mkdirSync(dst, { recursive: true });
+  for (const f of fs.readdirSync(src, { withFileTypes: true })) {
+    const s = src + '/' + f.name, d = dst + '/' + f.name;
+    if (f.isDirectory()) copyDir(s, d);
+    else fs.writeFileSync(d, fs.readFileSync(s));
+  }
+};
+copyDir('pwa', 'dist/pwa');
+const swPath = 'dist/pwa/sw.js';
+fs.writeFileSync(swPath, fs.readFileSync(swPath, 'utf8').replace(/__CD_PWA_VERSION__/g, () => pwaVer));
+console.log('pwa shipped, sw cache version', pwaVer);
