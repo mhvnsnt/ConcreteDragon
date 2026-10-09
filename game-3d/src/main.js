@@ -1809,8 +1809,13 @@ function doDojoMove(id) {
     setTimeout(() => {
       if (state !== 'fight' || missionOver || ended) return;
       for (const e of enemies.slice()) {
-        if (e.hp > 0 && Math.abs(e.px - player.px) < 2.6 && Math.abs(e.pz - player.pz) < 1.8)
+        if (e.hp > 0 && Math.abs(e.px - player.px) < 2.6 && Math.abs(e.pz - player.pz) < 1.8) {
+          // CONTACT COLLISION: spinning body hitbox vs hurtbox
+          const sc = limbContact(player, e, 'body');
+          if (!sc) continue;
+          resolveStrikeContact(player, e, sc, { knockback: 0.3 });
           landHit(e, Math.round(28 * player.dmgMult), mv.name, 0.08, 0.5, false, false);
+        }
       }
       damageDestructibles(2.6); sparkFX(player.px, 1.2, player.pz, 0xffe14d, 16);
     }, 180);
@@ -1822,6 +1827,10 @@ function doDojoMove(id) {
       if (state !== 'fight' || missionOver || ended) return;
       for (const e of enemies.slice()) {
         if (e.hp > 0 && Math.abs(e.px - player.px) < 2.2 && Math.abs(e.pz - player.pz) < 1.4) {
+          // CONTACT COLLISION: tackling body hitbox vs hurtbox
+          const tc = limbContact(player, e, 'body');
+          if (!tc) continue;
+          resolveStrikeContact(player, e, tc, { knockback: 0.3 });
           landHit(e, Math.round(32 * player.dmgMult), mv.name, 0.09, 0.6, false, false);
           e.px = clamp(e.px + dir * 2.5, 0.5, 1e6); syncPos(e);
         }
@@ -1833,7 +1842,9 @@ function doDojoMove(id) {
     sfx('whoosh', 0.8, false, 1.1);
     setTimeout(() => {
       if (state !== 'fight' || missionOver || ended) return;
-      const t = nearestEnemy(2.0);
+      const hit = strikeHit(player, 'hand', 2.0); // CONTACT COLLISION: hand hitbox vs hurtbox
+      const t = hit && hit.target;
+      if (t) resolveStrikeContact(player, t, hit, { knockback: 0.3 });
       if (t && !t.boss) landHit(t, Math.round(26 * player.dmgMult), mv.name, 0.09, 0.5, true, false);
       else if (t) landHit(t, Math.round(26 * player.dmgMult), mv.name, 0.09, 0.5, false, false);
       sparkFX(player.px + dir, 1.4, player.pz, 0x7af0ff, 12);
@@ -3172,6 +3183,8 @@ function doFinisher(t) {
   const fd = fighterDef(), fin = fd.fin || 'launch';
   const bdmg = Math.round(26 * player.dmgMult);
   const sp = screenPos(t.root.position.clone().add(new THREE.Vector3(0, 2.2, 0)));
+  // CONTACT COLLISION: finisher strikes separate on contact — limb ends AT the hurtbox.
+  const finContact = (limb, kb) => { const c = limbContact(player, t, limb); if (c) resolveStrikeContact(player, t, c, { knockback: kb }); };
   if (fin === 'blink') { // GHOST: teleport behind, unseen strike
     sparkFX(player.px, 1.1, player.pz, 0x9a7bff, 12);
     player.px = clamp(t.px - player.face * 0.9, 0.5, mission.len === Infinity ? 1e6 : mission.len - 1.5);
@@ -3179,24 +3192,30 @@ function doFinisher(t) {
     player.root.position.set(player.px, 0, player.pz);
     sparkFX(player.px, 1.1, player.pz, 0x9a7bff, 12);
     flash('#9a7bff');
+    finContact('hand', 0.3);
     landHit(t, bdmg, 'BLINK STRIKE', 0.1, 0.4, false, false);
   } else if (fin === 'slam') { // BRICK: AOE curb stomp
     for (const o of enemies) if (o.hp > 0 && Math.abs(o.px - t.px) < 2.4 && Math.abs(o.pz - t.pz) < 1.7) landHit(o, bdmg, 'CURB STOMP', 0.08, 0.5, true, false);
     shake=Math.max(shake,0.5);
   } else if (fin === 'gavel') { // KINGPIN: heavy single, long hit-stop
+    finContact('hand', 0.4);
     landHit(t, Math.round(bdmg * 1.2), 'GAVEL DROP', 0.16, 0.6, false, false);
     addHitstop(0.14);
   } else if (fin === 'demo') { // SLEDGE: far knockback wreckage
+    finContact('body', 0.5);
     landHit(t, Math.round(34 * player.dmgMult), 'DEMOLITION', 0.1, 0.7, true, false);
     shake=Math.max(shake,0.55);
   } else if (fin === 'dot') { // VIPER: venom keeps chewing
+    finContact('hand', 0.2);
     landHit(t, Math.round(bdmg * 0.7), 'FANG BARB', 0.06, 0.3, false, false);
     t.dotT = 3; t.dotDps = 9 * player.dmgMult;
     popText('VENOM!', 'spc', sp.x, sp.y - 40);
   } else if (fin === 'cyclone') { // DUST: extended air juggle
+    finContact('foot', 0.3);
     landHit(t, bdmg, 'CYCLONE LIFT', 0.08, 0.4, true, false);
     t.airT = Math.max(t.airT || 0, 0.9);
   } else { // KID BLUE: classic pop-up launcher
+    finContact('hand', 0.3);
     landHit(t, bdmg, 'LAUNCHER', 0.08, 0.4, true, false);
   }
   popText(fd.finname, 'spc', sp.x, sp.y - 70);
@@ -3251,12 +3270,15 @@ function doPunch() {
   sfxSwing(0.5); // S2: dedicated swing whoosh on the swing
   setTimeout(() => {
     if (state !== 'fight' || missionOver || ended) return;
+    const limb = clip.indexOf('Kick') >= 0 ? 'foot' : 'hand'; // CONTACT COLLISION: strike limb hitbox
     if (ce && ce.hp > 0) {
       // PARRY vs COUNTER: stick toward the attacker = parry (stagger + free energy); else counter
       const toward = Math.sign(ce.px - player.px) || 1;
       if (dx * toward > 0.5) { doParry(ce); return; }
       ce.windup = 0; hideWarn(ce);
       const bfx = blessFx();
+      const cc = limbContact(player, ce, limb);
+      if (cc) resolveStrikeContact(player, ce, cc, { knockback: 0.35 });
       landHit(ce, Math.round(dmg * player.dmgMult * 2 * (1 + (bfx.counterDmg || 0) + (save.up_counter || 0) * 0.1)), 'COUNTER', 0.12, 0.35, false, true);
       buzz(30); // F10 haptics: counter is a big moment
       const duo = blessDuo(); // SUNDAY SERVICE: counters trigger a shockwave
@@ -3271,8 +3293,10 @@ function doPunch() {
       }
       return;
     }
-    const t = nearestEnemy(range);
-    if (t) {
+    const hit = strikeHit(player, limb, range); // CONTACT COLLISION: hitbox vs hurtbox, not distance
+    if (hit) {
+      resolveStrikeContact(player, hit.target, hit, { knockback: 0.18 });
+      const t = hit.target;
       if (t.airborne) { t.vy = Math.max(t.vy, 2.2); landHit(t, Math.round(dmg * player.dmgMult * 0.6), 'JUGGLE', 0.03, 0.12, false, false); }
       else if (launcher) doFinisher(t);
       else landHit(t, Math.round(dmg * player.dmgMult * (1 + (blessFx().punchDmg || 0))), label, hs, sh, false, false);
@@ -3304,6 +3328,10 @@ function doBlitz() {
     for (const e of enemies) {
       if (e.hp <= 0 || e.dead) continue;
       if (e.px > xa && e.px < xb && Math.abs(e.pz - player.pz) < 1.25) {
+        // CONTACT COLLISION: swept body hitbox along the lunge path vs hurtbox
+        const c = sweptBodyContact(player, e, player.blitzX0 ?? player.px, player.blitzX1 ?? player.px);
+        if (!c) continue;
+        resolveStrikeContact(player, e, c, { knockback: 0.3 });
         landHit(e, Math.round(24 * player.dmgMult * (1 + (bfx.punchDmg || 0))), (fd.blitzname || 'BLITZ'), 0.08, 0.35, false, false);
         blitzHit = true;
       }
@@ -3320,8 +3348,10 @@ function releaseFocus() {
   sfxSwing(0.6); // S2: dedicated swing whoosh
   setTimeout(() => {
     if (state !== 'fight' || missionOver || ended) return;
-    const t = nearestEnemy(2.4);
-    if (t) {
+    const hit = strikeHit(player, 'foot', 2.4); // CONTACT COLLISION: foot hitbox vs hurtbox
+    if (hit) {
+      resolveStrikeContact(player, hit.target, hit, { knockback: 0.35 });
+      const t = hit.target;
       landHit(t, Math.round(34 * player.dmgMult), 'FOCUS', 0.1, 0.4, false, false);
       if (!t.boss && t.hp > 0) { t.ai = 'recover'; t.aiT = 2.4; playAnim(t, 'Hit_A', {}); } // crumple
     } else sfxSwing(0.8, true); // S2: whiff
@@ -3366,6 +3396,13 @@ function doGrapple() {
   sparkFX(t.px, 1.2, t.pz, 0xffd166, 24);
   setTimeout(() => {
     if (state !== 'fight' || missionOver || ended) return;
+    // CONTACT COLLISION: positional lock — the victim is held at a fixed offset in front
+    // of the attacker for the slam; bodies never interpenetrate.
+    if (t.hp > 0) {
+      t.px = clamp(player.px + (player.face || 1) * 0.85, 0.5, mission.len === Infinity ? 1e6 : mission.len - 1.5);
+      t.pz = player.pz || 0;
+      syncPos(t);
+    }
     landHit(t, Math.round(48 * player.dmgMult), wname, 0.12, 0.8, true, false);
     damageDestructibles(2.4);
   }, 300);
@@ -3436,16 +3473,29 @@ function doJumpAttack() {
   playAnim(player, 'Melee_Unarmed_Attack_Kick', { ts: 2.4, fade: 0.03 });
   player.vy = Math.min(player.vy, -2); // fast fall into the kick
   sfxSwing(0.55); // S2: dedicated swing whoosh
-  const hitR = 2.3;
-  let hitAny = false;
+  // CONTACT COLLISION: the foot hitbox is live during the fall — contact is checked
+  // per-frame in frame() until the kick lands or the window expires (hit once).
+  player.diveKick = { t: 0.7, hit: false };
+  damageDestructibles(2.3);
+}
+function updateDiveKick(dt) {
+  const dk = player && player.diveKick;
+  if (!dk || state !== 'fight' || missionOver || ended) { if (player) player.diveKick = null; return; }
+  dk.t -= dt;
+  const landed = (player.py || 0) <= 0.02 && player.vy >= 0;
+  if (dk.t <= 0 || landed) { player.diveKick = null; if (!dk.hitAny) sfxSwing(0.8, true); return; } // S2: whiff
   for (const e of enemies.slice()) {
-    if (e.hp > 0 && Math.abs(e.px - player.px) < hitR && Math.abs(e.pz - player.pz) < 1.6) {
-      landHit(e, Math.round(18 * player.dmgMult), 'DIVE KICK', 0.07, 0.3, false, false);
-      hitAny = true;
-    }
+    if (e.hp <= 0) continue;
+    if (Math.abs(e.px - player.px) > 2.3 || Math.abs((e.pz || 0) - (player.pz || 0)) > 1.6) continue;
+    const c = limbContact(player, e, 'foot');
+    if (!c) continue;
+    dk.hitAny = true;
+    resolveStrikeContact(player, e, c, { knockback: 0.3 });
+    landHit(e, Math.round(18 * player.dmgMult), 'DIVE KICK', 0.07, 0.3, false, false);
+    shake = Math.max(shake, 0.3);
+    player.diveKick = null;
+    return;
   }
-  damageDestructibles(hitR);
-  if (hitAny) { shake = Math.max(shake, 0.3); } else sfxSwing(0.8, true); // S2: whiff
 }
 function doStanceFin(fd) {
   // Stance-exclusive finisher: only available in stance mode (double-tap TAUNT). Style, not power: a tradeoff move.
@@ -3465,12 +3515,21 @@ function doStanceFin(fd) {
     burst(player.root.position.clone().add(new THREE.Vector3(dir * 1.2, 1.2, 0)), 24, fin.color, 6);
     for (let i = 0; i < 5; i++) setTimeout(() => {
       if (state !== 'fight' || missionOver || ended) return;
-      const t = nearestEnemy(2.6);
-      if (t && Math.sign(t.px - player.px) === dir) { landHit(t, Math.round(11 * player.dmgMult), fin.name, 0.05, 0.25, false, false); sfx('hit2', 0.9, false, 0.7); }
+      const hit = strikeHit(player, 'hand', 2.6); // CONTACT COLLISION: palm hitbox vs hurtbox
+      const t = hit && hit.target;
+      if (t && Math.sign(t.px - player.px) === dir) {
+        resolveStrikeContact(player, t, hit, { knockback: 0.15 });
+        landHit(t, Math.round(11 * player.dmgMult), fin.name, 0.05, 0.25, false, false); sfx('hit2', 0.9, false, 0.7);
+      }
     }, i * 90);
   } else if (fin.kind === 'blinkback') { // GHOST: blink through nearest, strike from behind
     const t = nearestEnemy(6);
-    if (t) { player.px = t.px - dir * 1.4; burst(player.root.position.clone().add(new THREE.Vector3(0, 1.2, 0)), 26, fin.color, 7); landHit(t, Math.round(34 * player.dmgMult), fin.name, 0.1, 0.5, false, false); }
+    if (t) {
+      player.px = t.px - dir * 1.4; burst(player.root.position.clone().add(new THREE.Vector3(0, 1.2, 0)), 26, fin.color, 7);
+      const bc = limbContact(player, t, 'hand'); // CONTACT COLLISION: separate on contact
+      if (bc) resolveStrikeContact(player, t, bc, { knockback: 0.25 });
+      landHit(t, Math.round(34 * player.dmgMult), fin.name, 0.1, 0.5, false, false);
+    }
     else popText('NO TARGET', '', innerWidth / 2, innerHeight * 0.4);
   } else if (fin.kind === 'spin') { // BRICK: 360 wrecking spin
     burst(player.root.position.clone().add(new THREE.Vector3(0, 1.0, 0)), 34, fin.color, 7); shake = 0.6;
@@ -3485,22 +3544,31 @@ function doStanceFin(fd) {
     hitAll(2.8, 1.8, 38, fin.name, true); damageDestructibles(2.8);
   } else if (fin.kind === 'linedash') { // VIPER: coil through the line
     const dist = 4.6;
+    const lx0 = player.px;
     player.px = clamp(player.px + dir * dist, 0.5, mission.len === Infinity ? 1e6 : mission.len - 1.5);
     burst(player.root.position.clone().add(new THREE.Vector3(0, 1.0, 0)), 30, fin.color, 6);
     vfxSpecial(player.root.position.clone().add(new THREE.Vector3(0, 1.0, 0)), 'flame'); // wave 17
     for (const e of enemies.slice()) {
-      if (e.hp > 0 && Math.abs(e.px - (player.px - dir * dist / 2)) < dist / 2 + 0.8 && Math.abs(e.pz - player.pz) < 1.6)
+      if (e.hp > 0 && Math.abs(e.px - (player.px - dir * dist / 2)) < dist / 2 + 0.8 && Math.abs(e.pz - player.pz) < 1.6) {
+        // CONTACT COLLISION: swept body hitbox along the dash vs hurtbox
+        const lc = sweptBodyContact(player, e, lx0, player.px);
+        if (!lc) continue;
+        resolveStrikeContact(player, e, lc, { knockback: 0.3 });
         landHit(e, Math.round(28 * player.dmgMult), fin.name, 0.08, 0.35, false, false);
+      }
     }
   } else if (fin.kind === 'storm') { // DUST: sandstorm closes in
     burst(player.root.position.clone().add(new THREE.Vector3(0, 1.2, 0)), 44, fin.color, 8); shake = 0.55;
     vfxSpecial(player.root.position.clone().add(new THREE.Vector3(0, 1.2, 0)), 'flame'); // wave 17
     hitAll(3.4, 2.4, 26, fin.name, false); damageDestructibles(3.4);
   } else if (fin.kind === 'launcher') { // JACK: rising gourd uppercut
-    const t = nearestEnemy(2.6);
+    const hit = strikeHit(player, 'hand', 2.6); // CONTACT COLLISION: uppercut hitbox vs hurtbox
     burst(player.root.position.clone().add(new THREE.Vector3(0, 1.6, 0)), 30, fin.color, 7);
     vfxSpecial(player.root.position.clone().add(new THREE.Vector3(0, 1.6, 0)), 'flame'); // wave 17
-    if (t) landHit(t, Math.round(36 * player.dmgMult), fin.name, 0.12, 0.7, true, false);
+    if (hit) {
+      resolveStrikeContact(player, hit.target, hit, { knockback: 0.3 });
+      landHit(hit.target, Math.round(36 * player.dmgMult), fin.name, 0.12, 0.7, true, false);
+    }
     else popText('WHIFF', '', innerWidth / 2, innerHeight * 0.4);
   }
   setHud(); ev('stancefin', { kind: fin.kind });
@@ -3517,12 +3585,15 @@ function doHeavy() {
     sfxSwing(0.6); // S2: dedicated swing whoosh
     setTimeout(() => {
       if (state !== 'fight' || missionOver || ended) return;
-      const t = nearestEnemy(2.4);
+      const hit = strikeHit(player, 'foot', 2.4); // CONTACT COLLISION: foot hitbox vs hurtbox
+      const t = hit && hit.target;
       if (t && !t.boss) {
+        resolveStrikeContact(player, t, hit, { knockback: 0.4 });
         landHit(t, Math.round(20 * player.dmgMult), 'DUST LAUNCHER', 0.09, 0.5, true, false);
         const sp = screenPos(t.root.position.clone().add(new THREE.Vector3(0, 2.4, 0)));
         popText('DUST LAUNCHER!', 'spc', sp.x, sp.y);
       } else if (t) {
+        resolveStrikeContact(player, t, hit, { knockback: 0.4 });
         landHit(t, Math.round(20 * player.dmgMult), 'DUST LAUNCHER', 0.09, 0.5, false, false);
       } else sfxSwing(0.8, true); // S2: whiff
       if (t) buzz(25); // F10 haptics
@@ -3540,6 +3611,8 @@ function doHeavy() {
     addSlowmo(0.5, 0.35); shake = 0.7;
     setTimeout(() => {
       if (state !== 'fight' || missionOver || ended) return;
+      const hc = limbContact(player, heatT, 'foot'); // CONTACT COLLISION: separate if overlapping
+      if (hc) resolveStrikeContact(player, heatT, hc, { knockback: 0.4 });
       landHit(heatT, Math.round(55 * player.dmgMult), 'HEAT', 0.12, 0.8, true, false);
       buzz(35); // F10 haptics: HEAT finisher is a big moment
       sparkFX(heatT.px, 1.2, heatT.pz, 0xff6a00, 20);
@@ -3555,8 +3628,12 @@ function doHeavy() {
   sfxSwing(0.55); // S2: dedicated swing whoosh (heavy had none)
   setTimeout(() => {
     if (state !== 'fight' || missionOver || ended) return;
-    const t = nearestEnemy(2.2);
-    if (t) { landHit(t, Math.round(24 * player.dmgMult), 'HEAVY', 0.09, 0.4, false, false); buzz(25); } // F10 haptics
+    const hit = strikeHit(player, 'foot', 2.2); // CONTACT COLLISION: foot hitbox vs hurtbox
+    if (hit) {
+      resolveStrikeContact(player, hit.target, hit, { knockback: 0.35 });
+      landHit(hit.target, Math.round(24 * player.dmgMult), 'HEAVY', 0.09, 0.4, false, false);
+      buzz(25); // F10 haptics
+    } (Contact collision: hitboxes + hurtboxes + strike contact resolution)
     else sfxSwing(0.8, true); // S2: whiff
     damageDestructibles(1.9);
   }, 230);
@@ -3655,8 +3732,13 @@ function doDesperation() {
   burst(player.root.position.clone().add(new THREE.Vector3(0, 1, 0)), 30, 0xff4d4d, 6);
   vfxSpecial(player.root.position.clone().add(new THREE.Vector3(0, 1, 0)), 'flame'); // wave 17: panic-button desperation
   for (const e of enemies.slice()) {
-    if (e.hp > 0 && Math.abs(e.px - player.px) < 2.6 && Math.abs(e.pz - player.pz) < 1.8)
+    if (e.hp > 0 && Math.abs(e.px - player.px) < 2.6 && Math.abs(e.pz - player.pz) < 1.8) {
+      // CONTACT COLLISION: spinning body hitbox vs hurtbox
+      const dc = limbContact(player, e, 'body');
+      if (!dc) continue;
+      resolveStrikeContact(player, e, dc, { knockback: 0.35 });
       landHit(e, Math.round(26 * player.dmgMult), 'DESPERATION', 0.08, 0.35, false, false);
+    }
   }
   damageDestructibles(2.6);
   setHud(); ev('desperation', {});
@@ -3670,12 +3752,18 @@ function doSpecial2(fd) {
   const kind = { kidblue: 'dash', viper: 'dash', ghost: 'blink', brick: 'slam', kingpin: 'slam', sledge: 'slam' }[fd.id] || 'slam';
   if (kind === 'dash') {
     const dir = player.face || 1, dist = 4.2;
+    const sx0 = player.px;
     player.px = clamp(player.px + dir * dist, 0.5, mission.len === Infinity ? 1e6 : mission.len - 1.5);
     burst(player.root.position.clone().add(new THREE.Vector3(0, 1, 0)), 30, 0xff4fd8, 6);
     vfxSpecial(player.root.position.clone().add(new THREE.Vector3(0, 1, 0)), 'magic'); // wave 17: dash special
     for (const e of enemies.slice()) {
-      if (e.hp > 0 && Math.abs(e.px - (player.px - dir * dist / 2)) < dist / 2 + 0.8 && Math.abs(e.pz - player.pz) < 1.6)
+      if (e.hp > 0 && Math.abs(e.px - (player.px - dir * dist / 2)) < dist / 2 + 0.8 && Math.abs(e.pz - player.pz) < 1.6) {
+        // CONTACT COLLISION: swept body hitbox along the dash vs hurtbox
+        const sc = sweptBodyContact(player, e, sx0, player.px);
+        if (!sc) continue;
+        resolveStrikeContact(player, e, sc, { knockback: 0.3 });
         landHit(e, Math.round(30 * player.dmgMult), sp.name, 0.08, 0.35, false, false);
+      }
     }
   } else if (kind === 'blink') {
     const near = enemies.filter((e) => e.hp > 0).sort((a, b) =>
@@ -3683,6 +3771,8 @@ function doSpecial2(fd) {
     for (const e of near) {
       burst(e.root.position.clone().add(new THREE.Vector3(0, 1.2, 0)), 18, 0x7af0ff, 5);
       vfxSpecial(e.root.position.clone().add(new THREE.Vector3(0, 1.2, 0)), 'magic'); // wave 17: blink special
+      const bc = limbContact(player, e, 'hand'); // CONTACT COLLISION: separate on contact
+      if (bc) resolveStrikeContact(player, e, bc, { knockback: 0.25 });
       landHit(e, Math.round(26 * player.dmgMult), sp.name, 0.06, 0.25, false, false);
     }
     if (!near.length) popText('NO TARGET', '', innerWidth / 2, innerHeight * 0.4);
@@ -4191,9 +4281,11 @@ function enemyStrike(e) {
   for (let i = 0; i < hits; i++) {
     setTimeout(() => {
       if (!e || e.hp <= 0 || state !== 'fight' || missionOver || ended || !player || player.hp <= 0) return;
-      const dx = Math.abs(player.px - e.px), dz = Math.abs(player.pz - e.pz);
-      if (dx < 1.7 && dz < 0.85) {
+      // CONTACT COLLISION: fist hitbox vs player hurtbox (not a distance radius)
+      const c = strikeHitsPlayer(e, 'hand', 1.7, 0.85);
+      if (c) {
         if (player.dodgeT > 0) { nearMiss(e); return; }
+        resolveStrikeContact(e, player, c, { knockback: 0.22 });
         let dmg = Math.round(14 * e.dmgMult);
         if (e.move === 'knife') dmg = Math.round(dmg * 1.3);
         if (e.move === 'uppercut') dmg = Math.round(dmg * 1.25);
@@ -4208,16 +4300,24 @@ function enemyStrike(e) {
 function sigHitPlayer(e, rx, rz, dmg, label, delay, opts = {}) {
   setTimeout(() => {
     if (!e || e.hp <= 0 || state !== 'fight' || missionOver || ended || !player || player.hp <= 0) return;
-    const dx = Math.abs(player.px - e.px), dz = Math.abs(player.pz - e.pz);
-    if (dx < rx && dz < rz) {
-      if (player.dodgeT > 0) { nearMiss(e); return; }
-      hurtPlayer(dmg);
-      const sp = screenPos(player.root.position.clone().add(new THREE.Vector3(0, 1.6, 0)));
-      popText(label, 'spc', sp.x, sp.y - 50);
-      if (opts.slow) { player.slowT = opts.slow; }
-      if (opts.heal) { e.hp = Math.min(e.maxHp, e.hp + Math.round(dmg * opts.heal)); }
-      if (opts.burst) { const bp = e.root.position.clone().add(new THREE.Vector3(0, 1.2, 0)); burst(bp, 22, opts.burst, 6); shake = Math.max(shake, 0.45); }
+    // CONTACT COLLISION: opts.limb = physical strike → hitbox vs hurtbox.
+    // No limb (AOE/shockwave/scream) → keeps the original radius check.
+    let contact = null;
+    if (opts.limb) {
+      contact = strikeHitsPlayer(e, opts.limb, rx, rz);
+      if (!contact) return;
+    } else {
+      const dx = Math.abs(player.px - e.px), dz = Math.abs(player.pz - e.pz);
+      if (!(dx < rx && dz < rz)) return;
     }
+    if (player.dodgeT > 0) { nearMiss(e); return; }
+    if (contact) resolveStrikeContact(e, player, contact, { knockback: 0.28 });
+    hurtPlayer(dmg);
+    const sp = screenPos(player.root.position.clone().add(new THREE.Vector3(0, 1.6, 0)));
+    popText(label, 'spc', sp.x, sp.y - 50);
+    if (opts.slow) { player.slowT = opts.slow; }
+    if (opts.heal) { e.hp = Math.min(e.maxHp, e.hp + Math.round(dmg * opts.heal)); }
+    if (opts.burst) { const bp = e.root.position.clone().add(new THREE.Vector3(0, 1.2, 0)); burst(bp, 22, opts.burst, 6); shake = Math.max(shake, 0.45); }
   }, delay);
 }
 function execEnemySig(e) {
@@ -4226,30 +4326,30 @@ function execEnemySig(e) {
   const base = Math.round(14 * e.dmgMult);
   if (id === 'curbcheck') { // STREET THUG: heavy overhand, big shake
     playAnim(e, 'Melee_Unarmed_Attack_Kick', { ts: 1.3 });
-    sigHitPlayer(e, 1.8, 0.9, Math.round(base * 1.6), 'CURB CHECK', 320, { burst: 0xffb03d });
+    sigHitPlayer(e, 1.8, 0.9, Math.round(base * 1.6), 'CURB CHECK', 320, { burst: 0xffb03d, limb: 'foot' });
   } else if (id === 'debtcollector') { // BIG RICO: wide shoulder-slam AOE
     playAnim(e, 'Melee_Unarmed_Attack_Kick', { ts: 1.1 });
     sfx('hit3', 0.9, false, 0.8);
-    sigHitPlayer(e, 2.4, 1.4, Math.round(base * 1.3), 'DEBT COLLECTOR', 380, { burst: 0x9a6bff });
+    sigHitPlayer(e, 2.4, 1.4, Math.round(base * 1.3), 'DEBT COLLECTOR', 380, { burst: 0x9a6bff, limb: 'body' });
   } else if (id === 'hundredhands') { // JABBER: 4-hit rapid flurry
     playAnim(e, 'Melee_Unarmed_Attack_Punch_A', { ts: 2.6 });
-    for (let i = 0; i < 4; i++) sigHitPlayer(e, 1.6, 0.8, Math.round(base * 0.55), i === 3 ? 'HUNDRED HANDS' : '', 200 + i * 170);
+    for (let i = 0; i < 4; i++) sigHitPlayer(e, 1.6, 0.8, Math.round(base * 0.55), i === 3 ? 'HUNDRED HANDS' : '', 200 + i * 170, { limb: 'hand' });
   } else if (id === 'freighttrain') { // HEAVY D: signature charge, hits on pass
     banner('FREIGHT TRAIN');
     e.chargeT = 0.7; e.chargeDx = dir; e.chargeHit = false; e.chargeDmg = Math.round(base * 1.5);
     playAnim(e, 'Running_A', { ts: 2.6 }); sfx('hit2', 1, false, 0.6);
   } else if (id === 'shivrain') { // STRAY: double knife slash, second cuts deeper
     playAnim(e, 'Melee_Unarmed_Attack_Punch_A', { ts: 2.2 });
-    sigHitPlayer(e, 1.7, 0.85, Math.round(base * 0.9), '', 220);
-    sigHitPlayer(e, 1.7, 0.85, Math.round(base * 1.6), 'SHIV RAIN', 460, { burst: 0xd8d8e8 });
+    sigHitPlayer(e, 1.7, 0.85, Math.round(base * 0.9), '', 220, { limb: 'hand' });
+    sigHitPlayer(e, 1.7, 0.85, Math.round(base * 1.6), 'SHIV RAIN', 460, { burst: 0xd8d8e8, limb: 'hand' });
   } else if (id === 'harvestmoon') { // JACK: leaping slam, pumpkin shockwave ring
     playAnim(e, 'Melee_Unarmed_Attack_Kick', { ts: 1.2 });
     sfx('hit3', 1, false, 0.7);
-    sigHitPlayer(e, 2.3, 1.3, Math.round(base * 1.4), 'HARVEST MOON', 400, { burst: 0xff7a1a });
+    sigHitPlayer(e, 2.3, 1.3, Math.round(base * 1.4), 'HARVEST MOON', 400, { burst: 0xff7a1a, limb: 'body' });
   } else if (id === 'gravebite') { // ROTTEN: lunge bite, drains life
     playAnim(e, 'Melee_Unarmed_Attack_Punch_A', { ts: 1.8 });
     sfx('hit2', 0.9, false, 0.8);
-    sigHitPlayer(e, 2.0, 1.0, Math.round(base * 1.2), 'GRAVEBITE', 300, { burst: 0x7a9a5a, heal: 0.4 });
+    sigHitPlayer(e, 2.0, 1.0, Math.round(base * 1.2), 'GRAVEBITE', 300, { burst: 0x7a9a5a, heal: 0.4, limb: 'head' });
   } else if (id === 'hellfirearc') { // HELLION: fire wave projectile
     playAnim(e, 'Melee_Unarmed_Attack_Punch_A', { ts: 1.4 });
     banner('HELLFIRE ARC');
@@ -4287,7 +4387,7 @@ function execEnemySig(e) {
     banner('DUNK SHOT');
     playAnim(e, 'Melee_Unarmed_Attack_Kick', { ts: 1.6 });
     sfx('hit3', 0.9, false, 0.8);
-    sigHitPlayer(e, 2.2, 1.4, Math.round(base * 1.5), 'DUNK SHOT', 380, { burst: 0xff8c1a });
+    sigHitPlayer(e, 2.2, 1.4, Math.round(base * 1.5), 'DUNK SHOT', 380, { burst: 0xff8c1a, limb: 'body' });
   } else if (id === 'crossover') { // STREET BALLER: ankle-breaker dash-through
     playAnim(e, 'Melee_Unarmed_Attack_Punch_A', { ts: 2.4 });
     e.chargeT = 0.45; e.chargeDx = dir; e.chargeHit = false; e.chargeDmg = Math.round(base * 1.2);
@@ -4345,8 +4445,13 @@ function execPattern(e) {
     shake = 0.5; hitstop = 0.06; sfx('hit3', 1);
     setTimeout(() => {
       if (!e || e.hp <= 0 || state !== 'fight' || missionOver || ended || !player || player.hp <= 0) return;
-      const dx = Math.abs(player.px - e.px), dz = Math.abs(player.pz - e.pz);
-      if (dx < 2.5 && dz < 1.5) { if (player.dodgeT > 0) nearMiss(e); else hurtPlayer(Math.round(22 * e.dmgMult)); }
+      // CONTACT COLLISION: slam body hitbox vs player hurtbox
+      const sc = strikeHitsPlayer(e, 'body', 2.5, 1.5);
+      if (sc) {
+        if (player.dodgeT > 0) { nearMiss(e); return; }
+        resolveStrikeContact(e, player, sc, { knockback: 0.35 });
+        hurtPlayer(Math.round(22 * e.dmgMult));
+      }
     }, 200);
   } else if (pat === 'charge') {
     e.chargeT = 0.7; e.chargeDx = Math.sign(player.px - e.px) || 1; e.chargeHit = false;
@@ -4360,8 +4465,13 @@ function execPattern(e) {
     let n = 0;
     const iv = setInterval(() => {
       if (n++ >= 4 || !e || e.hp <= 0 || state !== 'fight' || missionOver || ended || !player || player.hp <= 0) { clearInterval(iv); return; }
-      const dx = Math.abs(player.px - e.px), dz = Math.abs(player.pz - e.pz);
-      if (dx < 1.9 && dz < 0.95) { if (player.dodgeT > 0) nearMiss(e); else hurtPlayer(Math.round(9 * e.dmgMult)); }
+      // CONTACT COLLISION: fist hitbox vs player hurtbox
+      const fc = strikeHitsPlayer(e, 'hand', 1.9, 0.95);
+      if (fc) {
+        if (player.dodgeT > 0) { nearMiss(e); return; }
+        resolveStrikeContact(e, player, fc, { knockback: 0.2 });
+        hurtPlayer(Math.round(9 * e.dmgMult));
+      }
     }, 230);
   }
   e.ai = 'recover'; e.aiT = 1.3;
@@ -4630,7 +4740,11 @@ function playerUpdate(dt) {
     p.root.rotation.y += dt * 16 * p.face;
     for (const e of enemies) {
       if (!e.dead && e.hp > 0 && !p.spinHit.has(e) && Math.abs(e.px - p.px) < 1.6 && Math.abs(e.pz - p.pz) < 1.25) {
+        // CONTACT COLLISION: spinning body hitbox vs hurtbox
+        const sc = limbContact(p, e, 'body');
+        if (!sc) continue;
         p.spinHit.add(e);
+        resolveStrikeContact(p, e, sc, { knockback: 0.3 });
         landHit(e, Math.round((p.spinDmg || 16) * p.dmgMult), p.spinName || 'SPIN', 0.05, 0.3, false, false);
       }
     }
@@ -4680,8 +4794,16 @@ function playerUpdate(dt) {
   for (const e of enemies) {
     if (e.chargeT > 0 && e.hp > 0) {
       e.px += e.chargeDx * 8 * dt; syncPos(e); e.chargeT -= dt;
-      if (!e.chargeHit && Math.abs(e.px - p.px) < 1.15 && Math.abs(e.pz - p.pz) < 0.9) {
+      // CONTACT COLLISION: charging body hitbox vs player hurtbox (not a distance radius).
+      // The charge STOPS at contact — the attacker never passes through the defender.
+      const cc = limbContact(e, p, 'body');
+      if (!e.chargeHit && cc) {
         e.chargeHit = true;
+        // stop the charge at contact: back off to just touching
+        e.px -= e.chargeDx * (cc.pen + 0.05);
+        e.chargeT = Math.min(e.chargeT, 0.12);
+        syncPos(e);
+        resolveStrikeContact(e, p, cc, { knockback: 0.45 });
         if (p.dodgeT > 0) nearMiss(e); else hurtPlayer(e.chargeDmg || Math.round(20 * e.dmgMult));
       }
       if (e.chargeT <= 0) { e.chargeHit = false; e.ai = 'recover'; e.aiT = 1.0; playAnim(e, 'Melee_Unarmed_Idle', { loop: true }); }
@@ -4834,6 +4956,8 @@ function doMotionSpecial(kind, free) {
       if (e) {
         player.px = clamp(e.px - player.face * 1.15, 0.5, 1e6); player.pz = e.pz; syncPos(player);
         sparkFX(player.px, 1.1, player.pz, pr.color, 14);
+        const tc = limbContact(player, e, 'hand'); // CONTACT COLLISION: separate on contact
+        if (tc) resolveStrikeContact(player, e, tc, { knockback: 0.25 });
         landHit(e, Math.round(pr.dmg * dmgM), pr.name, 0.09, 0.45, false, false);
       }
       present();
@@ -4848,6 +4972,10 @@ function doMotionSpecial(kind, free) {
         sfx(220, 0.25, 'sawtooth', 0.5);
         setTimeout(() => {
           if (state !== 'fight' || !e || e.hp <= 0) return;
+          // CONTACT COLLISION: positional lock — victim held at fixed offset, no interpenetration
+          e.px = clamp(player.px + player.face * 0.95, 0.5, 1e6); e.pz = player.pz || 0; syncPos(e);
+          const gc = limbContact(player, e, 'hand');
+          if (gc) resolveStrikeContact(player, e, gc, { knockback: 0.3 });
           landHit(e, Math.round(pr.dmg * player.dmgMult), pr.name, 0.12, 0.6, true, false);
           for (const o of enemies) { if (o !== e && !o.dead && o.hp > 0 && Math.abs(o.px - e.px) < 2.2 && Math.abs(o.pz - e.pz) < 1.6) landHit(o, Math.round(20 * player.dmgMult), 'SHOCKWAVE', 0.06, 0.35, false, false); }
           burst(new THREE.Vector3(e.px, 0.4, e.pz), 18, pr.color, 5);
@@ -5085,6 +5213,221 @@ function resolveBodyCollision() {
   }
   for (const f of bs) syncPos(f);
 }
+// CONTACT COLLISION (owner 2026-10-09 — the no-collision incident): real hitboxes + hurtboxes.
+// PR #12 separates body CENTERS on the ground plane. This layer adds the brawler-standard
+// system on top:
+//   - HURTBOXES: head sphere + torso capsule per fighter, positioned from LIVE bone/joint
+//     positions every frame (bounding-box fallback for creature rigs without named bones).
+//   - HITBOXES: spheres at the striking limb, ACTIVE ONLY during strike frames. Every
+//     strike's hit detection now tests hitbox-vs-hurtbox instead of a distance radius.
+//   - On contact: the hit registers through the normal path (damage + hit-stop + VFX),
+//     the defender is knocked back CLEAR of the hitbox, and the attacker's advance stops.
+//     The fist ends AT the face, never inside the head.
+//   - Always-on guard (resolveHurtboxContact): head/head and head/torso hurtboxes can
+//     never interpenetrate between any two fighters, enforced every frame.
+// Zero interpenetration of any body part, ever.
+function bindCombatBones(f) {
+  if (f._bones) return f._bones;
+  const B = {};
+  const cand = { head: [], handR: [], handL: [], footR: [], footL: [], chest: [], hips: [] };
+  f.root.traverse((o) => {
+    if (!o.isBone) return;
+    const n = (o.name || '').toLowerCase();
+    if (n === 'head') cand.head.unshift(o); else if (n.includes('head')) cand.head.push(o);
+    else if (n === 'hand.r' || n === 'hand_r') cand.handR.unshift(o);
+    else if (n === 'hand.l' || n === 'hand_l') cand.handL.unshift(o);
+    else if (n.includes('hand') && (n.includes('.r') || n.includes('_r') || n.includes('right'))) cand.handR.push(o);
+    else if (n.includes('hand') && (n.includes('.l') || n.includes('_l') || n.includes('left'))) cand.handL.push(o);
+    else if (n.includes('hand')) { if (!cand.handR.length) cand.handR.push(o); else cand.handL.push(o); }
+    else if (n === 'foot.r' || n === 'foot_r') cand.footR.unshift(o);
+    else if (n === 'foot.l' || n === 'foot_l') cand.footL.unshift(o);
+    else if (n.includes('foot') && (n.includes('.r') || n.includes('_r') || n.includes('right'))) cand.footR.push(o);
+    else if (n.includes('foot') && (n.includes('.l') || n.includes('_l') || n.includes('left'))) cand.footL.push(o);
+    else if (n === 'chest') cand.chest.unshift(o); else if (n === 'spine') cand.chest.push(o);
+    else if (n === 'hips') cand.hips.unshift(o); else if (n === 'pelvis') cand.hips.push(o);
+  });
+  for (const k of Object.keys(cand)) if (cand[k].length) B[k] = cand[k][0];
+  f._bones = B;
+  return B;
+}
+const _hbTmp = new THREE.Vector3();
+function hurtboxes(f) {
+  // Head sphere + torso capsule from live joint positions. Never null.
+  const sc = f.sc || 1, px = f.px || 0, py = f.py || 0, pz = f.pz || 0;
+  const B = bindCombatBones(f);
+  let head, torso;
+  if (B.head) {
+    B.head.getWorldPosition(_hbTmp);
+    head = { c: _hbTmp.clone(), r: 0.24 * sc };
+  } else {
+    const h = 1.8 * sc;
+    head = { c: new THREE.Vector3(px, py + h * 0.82, pz), r: 0.20 * sc };
+  }
+  if (B.hips && B.chest) {
+    const a = B.hips.getWorldPosition(new THREE.Vector3());
+    const b = B.chest.getWorldPosition(new THREE.Vector3());
+    torso = { a, b, r: 0.32 * sc };
+  } else {
+    const h = 1.8 * sc;
+    torso = {
+      a: new THREE.Vector3(px, py + h * 0.32, pz),
+      b: new THREE.Vector3(px, py + h * 0.66, pz),
+      r: 0.30 * sc,
+    };
+  }
+  return { head, torso };
+}
+function strikeHitboxes(f, limb) {
+  // Hitbox spheres at the striking limb, from live bone positions. Active during
+  // strike frames only — callers (strikeHit/strikeHitsPlayer) invoke at strike moments.
+  // limb: 'hand' | 'foot' | 'head' | 'body'
+  const sc = f.sc || 1;
+  const B = bindCombatBones(f);
+  const out = [];
+  const push = (b, r) => { if (b) { b.getWorldPosition(_hbTmp); out.push({ c: _hbTmp.clone(), r: r * sc }); } };
+  if (limb === 'hand') { push(B.handR, 0.27); push(B.handL, 0.27); }
+  else if (limb === 'foot') { push(B.footR, 0.30); push(B.footL, 0.30); }
+  else if (limb === 'head') { push(B.head, 0.30); }
+  else if (limb === 'body') {
+    const hb = hurtboxes(f);
+    out.push({ c: hb.torso.a.clone().lerp(hb.torso.b, 0.5), r: hb.torso.r + 0.12 * sc });
+  }
+  if (!out.length) {
+    // No usable bones (odd creature rig): sphere in front of the fighter.
+    const face = f.face || 1;
+    out.push({ c: new THREE.Vector3((f.px || 0) + face * 0.7 * sc, (f.py || 0) + 1.1 * sc, f.pz || 0), r: 0.5 * sc });
+  }
+  return out;
+}
+function hurtboxPenetration(f, hc, hr) {
+  // Deepest penetration of hitbox sphere (hc, hr) into f's hurtboxes.
+  // Returns { pen, nx, ny, nz } — pen > 0 means contact; (n) points from the
+  // defender's hurtbox TOWARD the hitbox (i.e. toward the attacker).
+  const hb = hurtboxes(f);
+  let best = 0, bx = 1, by = 0, bz = 0;
+  { // head sphere
+    const dx = hc.x - hb.head.c.x, dy = hc.y - hb.head.c.y, dz = hc.z - hb.head.c.z;
+    const d = Math.sqrt(dx * dx + dy * dy + dz * dz);
+    const pen = (hr + hb.head.r) - d;
+    if (pen > best) { best = pen; const l = d > 1e-4 ? d : 1; bx = dx / l; by = dy / l; bz = dz / l; }
+  }
+  { // torso capsule: distance from hitbox center to segment
+    const a = hb.torso.a, b = hb.torso.b;
+    const abx = b.x - a.x, aby = b.y - a.y, abz = b.z - a.z;
+    const len2 = abx * abx + aby * aby + abz * abz || 1e-6;
+    const t = Math.max(0, Math.min(1, ((hc.x - a.x) * abx + (hc.y - a.y) * aby + (hc.z - a.z) * abz) / len2));
+    const cx = a.x + abx * t, cy = a.y + aby * t, cz = a.z + abz * t;
+    const dx = hc.x - cx, dy = hc.y - cy, dz = hc.z - cz;
+    const d = Math.sqrt(dx * dx + dy * dy + dz * dz);
+    const pen = (hr + hb.torso.r) - d;
+    if (pen > best) { best = pen; const l = d > 1e-4 ? d : 1; bx = dx / l; by = dy / l; bz = dz / l; }
+  }
+  return { pen: best, nx: bx, ny: by, nz: bz };
+}
+// Strike detection: hitbox (live limb bones) vs hurtboxes. Drop-in for nearestEnemy(range)
+// at strike moments. Returns { target, pen, nx, ny, nz } for the best-overlapping foe, or null.
+function limbContact(attacker, defender, limb) {
+  // Best hitbox-vs-hurtbox contact of attacker's limb vs a single defender; null if no overlap.
+  const boxes = strikeHitboxes(attacker, limb);
+  let best = null;
+  for (const hb of boxes) {
+    const { pen, nx, ny, nz } = hurtboxPenetration(defender, hb.c, hb.r);
+    if (pen > 0 && (!best || pen > best.pen)) best = { pen, nx, ny, nz };
+  }
+  return best;
+}
+function strikeHit(attacker, limb, range) {
+  const boxes = strikeHitboxes(attacker, limb);
+  let best = null;
+  for (const e of enemies) {
+    if (e === attacker || e.hp <= 0) continue;
+    const rd = Math.abs(e.px - attacker.px) + Math.abs((e.pz || 0) - (attacker.pz || 0)) * 0.7;
+    if (rd > range + 0.6) continue; // too far to even try (keeps old whiff behavior)
+    const c = limbContact(attacker, e, limb);
+    if (c && (!best || c.pen > best.pen)) best = { target: e, pen: c.pen, nx: c.nx, ny: c.ny, nz: c.nz };
+  }
+  return best;
+}
+// Enemy strike vs the player. Drop-in for the dx/dz distance check. Returns contact or null.
+function strikeHitsPlayer(e, limb, rx, rz) {
+  if (!player || player.hp <= 0) return null;
+  const r = Math.max(rx || 1.7, rz || 0.85);
+  const rd = Math.abs(player.px - e.px) + Math.abs((player.pz || 0) - (e.pz || 0)) * 0.7;
+  if (rd > r + 0.6) return null;
+  return limbContact(e, player, limb);
+}
+// Swept body hitbox for dash-through attacks (blitz, charges): tests the attacker's
+// torso capsule at samples along the path x0→x1 vs the defender's hurtboxes.
+function sweptBodyContact(attacker, defender, x0, x1) {
+  const sc = attacker.sc || 1;
+  const y = (attacker.py || 0) + 1.0 * sc, z = attacker.pz || 0;
+  const r = 0.42 * sc;
+  let best = null;
+  for (let s = 0; s <= 4; s++) {
+    const x = x0 + (x1 - x0) * (s / 4);
+    const { pen, nx, ny, nz } = hurtboxPenetration(defender, { x, y, z }, r);
+    if (pen > 0 && (!best || pen > best.pen)) best = { pen, nx, ny, nz };
+  }
+  return best;
+}
+// On a confirmed hit: separate the bodies so the striking limb ends AT the hurtbox,
+// never inside it. Pushes the defender away from the attacker (bosses budge less),
+// adds hit knockback, and stops the attacker's advance for this attack.
+function resolveStrikeContact(attacker, defender, contact, opts = {}) {
+  const w = defender.boss ? 0.65 : 1; // bosses are heavy
+  const push = ((contact && contact.pen) || 0) + 0.07;
+  if (contact && (contact.nx !== undefined)) {
+    defender.px -= contact.nx * push * w;
+    defender.pz = (defender.pz || 0) - contact.nz * push * w;
+  }
+  const kb = opts.knockback || 0;
+  if (kb > 0) {
+    const dir = Math.sign(defender.px - attacker.px) || (attacker.face || 1) || 1;
+    defender.px += dir * kb * w;
+  }
+  defender.px = clamp(defender.px, 0.5, mission.len === Infinity ? 1e6 : mission.len - 1.5);
+  syncPos(defender);
+  attacker.contactStop = true; // this attack's forward advance ends at contact
+}
+function separateHurtboxes(a, b) {
+  // Always-on guard: a and b are live fighters; their head/head and head/torso
+  // hurtboxes must never overlap. Mass-weighted ground-plane push (matches PR #12).
+  const ha = hurtboxes(a), hb = hurtboxes(b);
+  const ma = a === player ? 3 : (a.boss ? 5 : 1);
+  const mb = b === player ? 3 : (b.boss ? 5 : 1);
+  const tw = ma + mb;
+  const pushPair = (ca, ra, cb, rb) => {
+    let dx = cb.x - ca.x, dy = cb.y - ca.y, dz = cb.z - ca.z;
+    let d = Math.sqrt(dx * dx + dy * dy + dz * dz);
+    const min = ra + rb;
+    if (d >= min) return;
+    if (d < 1e-4) { dx = 1; dy = 0; dz = 0; d = 1; }
+    const push = min - d, nx = dx / d, nz = dz / d;
+    // separate on the ground plane (heads bob; keep y out of it)
+    a.px -= nx * push * (mb / tw); a.pz = (a.pz || 0) - nz * push * (mb / tw);
+    b.px += nx * push * (ma / tw); b.pz = (b.pz || 0) + nz * push * (ma / tw);
+  };
+  pushPair(ha.head.c, ha.head.r, hb.head.c, hb.head.r); // head vs head
+  // head vs torso capsule: closest point on capsule segment to the other head
+  const headVsTorso = (head, torso, self, other, ms, mo) => {
+    const A = torso.a, Bc = torso.b;
+    const abx = Bc.x - A.x, aby = Bc.y - A.y, abz = Bc.z - A.z;
+    const len2 = abx * abx + aby * aby + abz * abz || 1e-6;
+    const t = Math.max(0, Math.min(1, ((head.c.x - A.x) * abx + (head.c.y - A.y) * aby + (head.c.z - A.z) * abz) / len2));
+    pushPair(head.c, head.r, { x: A.x + abx * t, y: A.y + aby * t, z: A.z + abz * t }, torso.r);
+  };
+  headVsTorso(ha.head, hb.torso);
+  headVsTorso(hb.head, ha.torso);
+}
+function resolveHurtboxContact() {
+  const fs = [];
+  if (player && player.hp > 0) fs.push(player);
+  for (const e of enemies) if (e.hp > 0) fs.push(e);
+  for (let i = 0; i < fs.length; i++) {
+    for (let j = i + 1; j < fs.length; j++) separateHurtboxes(fs[i], fs[j]);
+  }
+  for (const f of fs) syncPos(f);
+}
 function frame(dt, doRender = true) {
   const RR = () => { if (doRender) renderer.render(scene, camera); };
   if (paused) { RR(); return; }
@@ -5111,6 +5454,8 @@ function frame(dt, doRender = true) {
     director(dt);
     for (const e of enemies.slice()) enemyAI(e, dt);
     resolveBodyCollision(); // OBVIOUS-DEFECT LAW: no interpenetration, ever
+    resolveHurtboxContact(); // CONTACT COLLISION: head/torso hurtboxes never overlap, ever
+    updateDiveKick(dt); // CONTACT COLLISION: live foot hitbox during dive-kick fall
     for (const e of enemies) positionWarn(e);
     for (const e of enemies) if (e.dotT > 0 && e.hp > 0 && !e.dead) { e.dotT -= dt; e.hp -= e.dotDps * dt; sparkFX(e.px, 1.2, e.pz, 0x7cff6b, 1); if (e.hp <= 0) killEnemy(e); }
     if (comboT > 0 && (comboT -= dt) <= 0) { combo = 0; setHud(); }
