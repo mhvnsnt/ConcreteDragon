@@ -28,17 +28,19 @@ INK = (38, 35, 43, 255)        # #26232b — the game's ink line color
 WHITE = (245, 242, 235, 255)
 HL = (255, 255, 255, 200)      # highlight white
 
-FIGHTERS = ["rook", "vex"]
+FIGHTERS = ["rook", "vex", "brick", "sable", "juno", "mack", "iris", "hollow_point"]
 
 # Face landmarks, eyeballed from the shipped head.png art (256x256 canvas).
+# Wave-3 fighters share rook's face geometry (same joint layout by design);
+# only the skin tone differs. Overlays therefore fit all eight fighters.
+_ROOK_GEO = {
+    "face_c": (128, 150), "face_r": 95,
+    "eye_l": (88, 155), "eye_r": (168, 155), "erx": 17, "ery": 19,
+    "brow_y": 122, "mouth_y": 210,
+    "hair_top": 20, "hair_bot": 112,   # baked hair vertical span
+}
 LAND = {
-    "rook": {
-        "skin": (242, 184, 128, 255),
-        "face_c": (128, 150), "face_r": 95,
-        "eye_l": (88, 155), "eye_r": (168, 155), "erx": 17, "ery": 19,
-        "brow_y": 122, "mouth_y": 210,
-        "hair_top": 20, "hair_bot": 112,   # baked hair vertical span
-    },
+    "rook": {**_ROOK_GEO, "skin": (242, 184, 128, 255)},
     "vex": {
         "skin": (201, 141, 94, 255),
         "face_c": (128, 145), "face_r": 100,
@@ -46,14 +48,30 @@ LAND = {
         "brow_y": 117, "mouth_y": 205,
         "hair_top": 15, "hair_bot": 118,
     },
+    # Wave-3 fighters share rook's face geometry (same joint layout by design);
+    # only the skin tone differs. Overlays therefore fit all eight fighters.
+    "brick":        {**_ROOK_GEO, "skin": (225, 170, 120, 255)},
+    "sable":        {**_ROOK_GEO, "skin": (140, 95, 65, 255)},
+    "juno":         {**_ROOK_GEO, "skin": (240, 200, 150, 255)},
+    "mack":         {**_ROOK_GEO, "skin": (205, 150, 110, 255)},
+    "iris":         {**_ROOK_GEO, "skin": (230, 180, 140, 255)},
+    "hollow_point": {**_ROOK_GEO, "skin": (200, 205, 195, 255)},
 }
 
 # Hand/foot regions on the arm_f / leg_s canvases (where the baked hand/foot is).
+# Wave-3 fighters were drawn to the same boxes (verified on the contact sheet).
+_ROOK_LIMB = {"hand": (60, 148, 200, 248), "wrist": (95, 138, 162, 172),
+              "foot": (58, 148, 198, 238)}
 LIMB = {
-    "rook": {"hand": (60, 148, 200, 248), "wrist": (95, 138, 162, 172),
-             "foot": (58, 148, 198, 238)},
+    "rook": dict(_ROOK_LIMB),
     "vex":  {"hand": (75, 138, 182, 238), "wrist": (100, 128, 158, 162),
              "foot": (62, 138, 192, 238)},
+    "brick":        dict(_ROOK_LIMB),
+    "sable":        dict(_ROOK_LIMB),
+    "juno":         dict(_ROOK_LIMB),
+    "mack":         dict(_ROOK_LIMB),
+    "iris":         dict(_ROOK_LIMB),
+    "hollow_point": dict(_ROOK_LIMB),
 }
 
 
@@ -640,6 +658,159 @@ def p_wristpad_leather(f):
     for yy in (y0 + 10, (y0 + y1) / 2, y1 - 10):
         d.line([x0 + 6, yy, x1 - 6, yy], fill=(70, 44, 24, 255), width=3)
     return img
+# ------------------------------------------------------------------
+# Item catalog. Reconstructed 2026-10-09 from assets/customize/catalog.json
+# (the WIP merge dropped these tables; catalog.json is the source of truth).
+# spec: slot / name / rarity / unlock / canvases / desc.
+CATALOG = {
+    "skimask_ink": {"slot": "headgear", "name": "Ink Ski Mask", "rarity": "Street",
+        "unlock": {"type": "shop", "price": 150},
+        "canvases": ["head"], "desc": "Full-face ink balaclava. Nobody knows."},
+    "bandana_crimson": {"slot": "headgear", "name": "Crimson Bandana", "rarity": "Street",
+        "unlock": {"type": "shop", "price": 150},
+        "canvases": ["head"], "desc": "Barrio colors, tied tight."},
+    "hoodie_up": {"slot": "headgear", "name": "Up Hoodie", "rarity": "Street",
+        "unlock": {"type": "shop", "price": 200},
+        "canvases": ["head", "torso"], "desc": "Hood up. Neon downtown uniform."},
+    "mohawk_ink": {"slot": "headgear", "name": "Ink Mohawk", "rarity": "Street",
+        "unlock": {"type": "shop", "price": 200},
+        "canvases": ["head"], "desc": "Shaved sides, lightning attitude."},
+    "hockey_mask": {"slot": "headgear", "name": "Rink Mask", "rarity": "Rare",
+        "unlock": {"type": "shop", "price": 450},
+        "canvases": ["head"], "desc": "Goalie mask, street rules."},
+    "puffer_hood": {"slot": "headgear", "name": "Rust Puffer Hood", "rarity": "Rare",
+        "unlock": {"type": "shop", "price": 450},
+        "canvases": ["head", "torso"], "desc": "Rust-belt winter armor."},
+    "hoodvest": {"slot": "headgear", "name": "Hooded Vest", "rarity": "Rare",
+        "unlock": {"type": "shop", "price": 400},
+        "canvases": ["head", "torso"], "desc": "Sleeveless. Arms stay free."},
+    "locs_long": {"slot": "headgear", "name": "Long Locs", "rarity": "Rare",
+        "unlock": {"type": "shop", "price": 400},
+        "canvases": ["head"], "desc": "Crown weight, worn long."},
+    "fade_design": {"slot": "headgear", "name": "Lightning Fade", "rarity": "Epic",
+        "unlock": {"type": "shop", "price": 800},
+        "canvases": ["head"], "desc": "Fade with the bolt carved in."},
+    "lucha_barrio": {"slot": "headgear", "name": "Barrio Lucha", "rarity": "Epic",
+        "unlock": {"type": "shop", "price": 900},
+        "canvases": ["head"], "desc": "Generic lucha pattern \u2014 teal and pink diamonds."},
+    "wolf_head": {"slot": "headgear", "name": "Wolf Head", "rarity": "Epic",
+        "unlock": {"type": "season", "season": "halloween"},
+        "canvases": ["head"], "desc": "Halloween season reward. Hunt at full moon."},
+    "tiger_head": {"slot": "headgear", "name": "Tiger Head", "rarity": "Legendary",
+        "unlock": {"type": "boss", "boss": 3},
+        "canvases": ["head"], "desc": "Beat the zone-3 boss to wear the stripes."},
+    "gloves_neon": {"slot": "gloves", "name": "Neon Synthetics", "rarity": "Street",
+        "unlock": {"type": "shop", "price": 200},
+        "canvases": ["arm_f"], "desc": "Hot pink / cyan fight synthetics."},
+    "gloves_work": {"slot": "gloves", "name": "Work Leather", "rarity": "Street",
+        "unlock": {"type": "shop", "price": 200},
+        "canvases": ["arm_f"], "desc": "Industrial leather. Built to last."},
+    "gloves_canvas": {"slot": "gloves", "name": "Boardwalk Canvas", "rarity": "Rare",
+        "unlock": {"type": "shop", "price": 450},
+        "canvases": ["arm_f"], "desc": "Canvas wraps, boardwalk edition."},
+    "gloves_gold": {"slot": "gloves", "name": "Gold-Trim", "rarity": "Epic",
+        "unlock": {"type": "shop", "price": 850},
+        "canvases": ["arm_f"], "desc": "Black and gold. Championship energy."},
+    "gloves_dragon": {"slot": "gloves", "name": "Dragon-Scale", "rarity": "Legendary",
+        "unlock": {"type": "boss", "boss": 5},
+        "canvases": ["arm_f"], "desc": "Scale plating. Endgame hands."},
+    "kicks_canvas": {"slot": "kicks", "name": "Boardwalk Hi-Tops", "rarity": "Street",
+        "unlock": {"type": "shop", "price": 200},
+        "canvases": ["leg_s"], "desc": "Canvas hi-tops, pier-tested."},
+    "kicks_workboot": {"slot": "kicks", "name": "Work Boots", "rarity": "Street",
+        "unlock": {"type": "shop", "price": 200},
+        "canvases": ["leg_s"], "desc": "Steel attitude, leather boots."},
+    "kicks_neon": {"slot": "kicks", "name": "Neon Runners", "rarity": "Rare",
+        "unlock": {"type": "shop", "price": 450},
+        "canvases": ["leg_s"], "desc": "Downtown after dark."},
+    "kicks_gold": {"slot": "kicks", "name": "Gold Hi-Tops", "rarity": "Epic",
+        "unlock": {"type": "shop", "price": 850},
+        "canvases": ["leg_s"], "desc": "Black and gold, laced tight."},
+    "chain_dogtags": {"slot": "accessory", "name": "Dog Tags", "rarity": "Street",
+        "unlock": {"type": "shop", "price": 150},
+        "canvases": ["torso"], "desc": "Stamped steel. Earned, not bought. (Bought.)"},
+    "wristpad_neon": {"slot": "accessory", "name": "Neon Wrist Pads", "rarity": "Street",
+        "unlock": {"type": "shop", "price": 150},
+        "canvases": ["arm_f"], "desc": "Wrap the wrists, protect the money-makers."},
+    "chain_curb": {"slot": "accessory", "name": "Curb Chain", "rarity": "Rare",
+        "unlock": {"type": "shop", "price": 500},
+        "canvases": ["torso"], "desc": "Chunky gold curb links."},
+    "wristpad_leather": {"slot": "accessory", "name": "Leather Wraps", "rarity": "Rare",
+        "unlock": {"type": "shop", "price": 400},
+        "canvases": ["arm_f"], "desc": "Old-school leather wrist wraps."},
+    "medal_saint": {"slot": "accessory", "name": "Saint Medallion", "rarity": "Epic",
+        "unlock": {"type": "season", "season": "takeover"},
+        "canvases": ["torso"], "desc": "Season-pass relic. Blessed by the block."},
+    "paint_cornerman": {"slot": "facepaint", "name": "Cornerman Stripes", "rarity": "Street",
+        "unlock": {"type": "shop", "price": 150},
+        "canvases": ["head"], "desc": "Fight-night tape stripes."},
+    "paint_war": {"slot": "facepaint", "name": "War Paint", "rarity": "Rare",
+        "unlock": {"type": "shop", "price": 400},
+        "canvases": ["head"], "desc": "Black band, red slashes. Business."},
+    "paint_tag": {"slot": "facepaint", "name": "Cheek Tag", "rarity": "Rare",
+        "unlock": {"type": "shop", "price": 400},
+        "canvases": ["head"], "desc": "Wildstyle CD on the cheek."},
+    "paint_sugarskull": {"slot": "facepaint", "name": "Sugar Skull", "rarity": "Epic",
+        "unlock": {"type": "season", "season": "halloween"},
+        "canvases": ["head"], "desc": "Day of the Dead. Halloween season reward."},
+    "eyes_amber": {"slot": "eyes", "name": "Amber Eyes", "rarity": "Rare",
+        "unlock": {"type": "shop", "price": 350},
+        "canvases": ["head"], "desc": "Predator amber."},
+    "eyes_ice": {"slot": "eyes", "name": "Ice Eyes", "rarity": "Rare",
+        "unlock": {"type": "shop", "price": 350},
+        "canvases": ["head"], "desc": "Glacier stare."},
+    "eyes_violet": {"slot": "eyes", "name": "Violet Eyes", "rarity": "Epic",
+        "unlock": {"type": "shop", "price": 750},
+        "canvases": ["head"], "desc": "Neon-district violet."},
+    "eyes_hollow": {"slot": "eyes", "name": "Hollow Glow", "rarity": "Legendary",
+        "unlock": {"type": "boss", "boss": 7},
+        "canvases": ["head"], "desc": "Hollow Point's glow. Boss-tier eyes."},
+}
+
+PAINTERS = {
+    "skimask_ink": "p_skimask",
+    "bandana_crimson": "p_bandana",
+    "hoodie_up": "p_hoodie",
+    "mohawk_ink": "p_mohawk",
+    "hockey_mask": "p_hockey",
+    "puffer_hood": "p_puffer",
+    "hoodvest": "p_hoodvest",
+    "locs_long": "p_locs",
+    "fade_design": "p_fade",
+    "lucha_barrio": "p_lucha",
+    "wolf_head": "p_wolf",
+    "tiger_head": "p_tiger",
+    "gloves_neon": "p_gloves_neon",
+    "gloves_work": "p_gloves_work",
+    "gloves_canvas": "p_gloves_canvas",
+    "gloves_gold": "p_gloves_gold",
+    "gloves_dragon": "p_gloves_dragon",
+    "kicks_canvas": "p_kicks_canvas",
+    "kicks_workboot": "p_kicks_workboot",
+    "kicks_neon": "p_kicks_neon",
+    "kicks_gold": "p_kicks_gold",
+    "chain_dogtags": "p_chain_dogtags",
+    "wristpad_neon": "p_wristpad_neon",
+    "chain_curb": "p_chain_curb",
+    "wristpad_leather": "p_wristpad_leather",
+    "medal_saint": "p_medal_saint",
+    "paint_cornerman": "p_paint_cornerman",
+    "paint_war": "p_paint_war",
+    "paint_tag": "p_paint_tag",
+    "paint_sugarskull": "p_paint_sugarskull",
+    "eyes_amber": "p_eyes_amber",
+    "eyes_ice": "p_eyes_ice",
+    "eyes_violet": "p_eyes_violet",
+    "eyes_hollow": "p_eyes_hollow",
+}
+
+TORSO_PAINTERS = {
+    "hoodie_up": "p_hoodie_torso",
+    "puffer_hood": "p_puffer_torso",
+    "hoodvest": "p_hoodvest_torso",
+}
+
+
 def write_catalog():
     out = {"schema": 1, "slots": ["headgear", "gloves", "kicks", "accessory", "facepaint", "eyes"],
            "rarities": ["Street", "Rare", "Epic", "Legendary"],
