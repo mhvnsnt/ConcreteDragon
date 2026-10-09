@@ -173,7 +173,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: concrete-dragon-3d
-          path: game-3d/dist/concrete-dragon.html
+          path: |
+            game-3d/dist/concrete-dragon.html
+            game-3d/dist/pwa
 
   deploy-web:
     needs: [build, build-3d]
@@ -190,7 +192,11 @@ jobs:
       - name: Publish as index.html
         run: |
           mv web/concrete-dragon.html web/index.html
-          ls -la web/
+          # M9 PWA: manifest + service worker + icons must live at the site root
+          # for the SW scope to cover the game.
+          mv web/pwa/* web/
+          rmdir web/pwa
+          ls -la web/ web/icons/
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4

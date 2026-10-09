@@ -47,6 +47,7 @@ const save = {
   best_wave: 0, selected: 'kidblue', skins: {}, tex: {},
   unlocked: ['kidblue', 'ghost', 'brick'], missionsDone: [],
   daily: { date: '', score: 0 }, dailyBest: null, boards: {}, seenHint: false,
+  bestScore: {}, // PRESENTATION: best arcade score per mission id
   muted: false, quality: 'auto', difficulty: 'normal', circuitN: 0, blessings: [], rep: 0, goldCards: [],
   haptics: true,
   gearInv: {}, gearTier: {}, gearEq: {}, charm: null, charmsUnlocked: [],
@@ -89,6 +90,9 @@ const FIGHTERS = [
     grapple: { range: 2.0, dmgMul: 1.0, chains: null }, name: 'KID BLUE', tag: 'Balanced brawler. Big heart, bigger hands.', hp: 100, dmg: 1.0, spd: 1.0, unlock: { type: 'start' },
     spc2: { name: 'DRAGON RUSH', cost: 35, desc: 'Shoulder-first dash through the whole pack.' },
     qcf: { name: "DRAGON'S BREATH", sigkind: 'fireball', kind: 'fire', dmg: 30, speed: 9.5, color: 0xff7a2a, desc: 'Fireball', tag: 'Fireball projectile — 25 energy' },
+    ki: { name: 'DRAGON PALM', dmg: 9, speed: 15, color: 0xff7a2a, cost: 5 },
+    wave: { name: 'DRAGON WAVE', dmg: 24, speed: 7.5, color: 0xff7a2a, cost: 15 },
+    spin: { name: 'DRAGON CYCLONE', dmg: 18, color: 0xff7a2a, dur: 0.62, cost: 20 },
     bfname: 'STREET DASH', blitzname: 'DRAGON BLITZ', duname: 'SKY UPPER',
     mega: { name: "DRAGON'S JUDGMENT" },
     stance: { name: "RUSH STANCE", dmg: 0.85, spd: 1.25, desc: "All hands, no brakes. Faster, lighter hits." },
@@ -110,6 +114,7 @@ const FIGHTERS = [
       ['TAG SPOT', 'TAUNT near a glowing wall', 'Spray the wall (3s, vulnerable). Big cash + 15 REP.'],
       ['GRAPPLE', 'GRP near a foe', 'Basic grab: suplex slam. On a staggered foe: DRAGON SUPLEX finisher.'],
       ['COMBO ROUTE', 'JAB > CROSS > DUST LAUNCHER', 'Pop them up, juggle in the air. Balanced and reliable.'],
+      ['BLOCK', 'HOLD DDG / hold L', 'Guard stance: damage becomes chip. Heavies still hurt.'],
       ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
       ['DRAGON RUSH', '↓ + SPC (50 meter)', 'Shoulder dash straight through the pack.'],
     ] },
@@ -118,6 +123,9 @@ const FIGHTERS = [
     grapple: { range: 2.0, dmgMul: 0.85, chains: null }, name: 'GHOST', tag: 'Fast striker. Blink and you lose.', hp: 85, dmg: 0.9, spd: 1.25, unlock: { type: 'start' },
     spc2: { name: 'BLINK FLURRY', cost: 35, desc: 'Blink between the 3 nearest enemies, striking each.' },
     qcf: { name: 'PHANTOM STEP', sigkind: 'teleport', dmg: 36, color: 0x9a7bff, desc: 'Blink behind the nearest enemy and strike', tag: 'Teleport strike — 25 energy' },
+    ki: { name: 'SPECTRAL BOLT', dmg: 8, speed: 16, color: 0x9a7bff, cost: 5 },
+    wave: { name: 'PHANTOM WAVE', dmg: 22, speed: 8, color: 0x9a7bff, cost: 15 },
+    spin: { name: 'GHOST CYCLONE', dmg: 16, color: 0x9a7bff, dur: 0.62, cost: 20 },
     bfname: 'PHASE STEP', blitzname: 'PHANTOM BLITZ', duname: 'WRAITH RISE',
     mega: { name: 'MIDNIGHT REQUIEM' },
     stance: { name: "WRAITH STANCE", dmg: 1.2, spd: 0.95, desc: "Blinks hit harder. Meaner, not faster." },
@@ -139,6 +147,7 @@ const FIGHTERS = [
       ['TAG SPOT', 'TAUNT near a glowing wall', 'Spray the wall (3s, vulnerable). Big cash + 15 REP.'],
       ['GRAPPLE', 'GRP near a foe', 'Quick snatch suplex — fast but light. On a staggered foe: PHANTOM DRIVER finisher.'],
       ['COMBO ROUTE', 'PHANTOM STEP > FANG FLICKER x3', 'Teleport in, blur them with speed. Never stand still.'],
+      ['BLOCK', 'HOLD DDG / hold L', 'Guard stance: damage becomes chip. Heavies still hurt.'],
       ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
       ['BLINK FLURRY', '↓ + SPC (50 meter)', 'Blink between the 3 nearest enemies.'],
     ] },
@@ -151,6 +160,9 @@ const FIGHTERS = [
     ] }, name: 'BRICK', tag: 'Walking wall. Hits like rent day.', hp: 135, dmg: 1.25, spd: 0.85, unlock: { type: 'start' },
     spc2: { name: 'SEISMIC SLAM', cost: 35, desc: 'Ground pound: shockwave launches everyone near.' },
     qcf: { name: 'RENT COLLECTION', sigkind: 'grab', dmg: 46, color: 0xffb02e, desc: 'Command grab — yank and slam', tag: 'Command grab — 25 energy' },
+    ki: { name: 'BRICK BAT', dmg: 12, speed: 12, color: 0xffb02e, cost: 6 },
+    wave: { name: 'SEISMIC WAVE', dmg: 28, speed: 6, color: 0xffb02e, cost: 18 },
+    spin: { name: 'WRECKING BALL', dmg: 22, color: 0xffb02e, dur: 0.7, cost: 25 },
     bfname: 'PAVEMENT RUSH', blitzname: 'BATTERING RAM', duname: 'HIGH-RISE',
     mega: { name: 'RENT DUE' },
     stance: { name: "PAYLOAD STANCE", dmg: 1.35, spd: 0.78, desc: "The wall walks forward." },
@@ -171,6 +183,7 @@ const FIGHTERS = [
       ['DUST LAUNCHER', '↓ + HVY', 'Universal overhead launcher. Pops them up for juggles.'],
       ['TAG SPOT', 'TAUNT near a glowing wall', 'Spray the wall (3s, vulnerable). Big cash + 15 REP.'],
       ['CHAIN GRAPPLE', 'GRP near a foe', 'Grab opens with knee strikes into RENT-A-POWERBOMB. GRP in the gold window to chain: EVICTION NOTICE, then FORECLOSURE (launcher).'],
+      ['BLOCK', 'HOLD DDG / hold L', 'Guard stance: damage becomes chip. Heavies still hurt.'],
       ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
       ['SEISMIC SLAM', '↓ + SPC (50 meter)', 'Ground pound launches everyone nearby.'],
     ] },
@@ -183,6 +196,9 @@ const FIGHTERS = [
     ] }, name: 'KINGPIN', tag: 'Used to run this block. Now he runs with you.', hp: 150, dmg: 1.3, spd: 0.9, unlock: { type: 'boss', boss: 'kingpin' },
     spc2: { name: "KINGPIN'S WRATH", cost: 35, desc: 'Royal beatdown: massive AOE around him.' },
     qcf: { name: 'ROYAL DECREE', sigkind: 'orb', kind: 'orb', dmg: 40, speed: 5, color: 0xffd166, desc: 'Slow explosive orb', tag: 'Explosive orb — 25 energy' },
+    ki: { name: "KING'S WRATH", dmg: 10, speed: 14, color: 0xffd166, cost: 6 },
+    wave: { name: 'EMPIRE WAVE', dmg: 26, speed: 7, color: 0xffd166, cost: 16 },
+    spin: { name: 'EXECUTIVE ORDER', dmg: 20, color: 0xffd166, dur: 0.62, cost: 22 },
     bfname: 'HOSTILE MARCH', blitzname: 'ROYAL CHARGE', duname: 'THRONE RISE',
     mega: { name: 'HOSTILE TAKEOVER' },
     stance: { name: "IRON THRONE", dmg: 1.2, spd: 0.92, desc: "Every decree lands heavier." },
@@ -203,6 +219,7 @@ const FIGHTERS = [
       ['DUST LAUNCHER', '↓ + HVY', 'Universal overhead launcher. Pops them up for juggles.'],
       ['TAG SPOT', 'TAUNT near a glowing wall', 'Spray the wall (3s, vulnerable). Big cash + 15 REP.'],
       ['CHAIN GRAPPLE', 'GRP near a foe', 'Grab opens with knee strikes into HOSTILE SUPLEX. GRP in the gold window to chain: ROYAL DECREE, then HOSTILE TAKEOVER (launcher).'],
+      ['BLOCK', 'HOLD DDG / hold L', 'Guard stance: damage becomes chip. Heavies still hurt.'],
       ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
       ["KINGPIN'S WRATH", '↓ + SPC (50 meter)', 'Massive shockwave around him.'],
     ] },
@@ -216,6 +233,9 @@ const FIGHTERS = [
     ] }, name: 'SLEDGE', tag: 'Yard enforcer. Swings first, talks never.', hp: 165, dmg: 1.45, spd: 0.8, unlock: { type: 'boss', boss: 'sledge' },
     spc2: { name: 'WRECKING SWING', cost: 35, desc: '360° swing that clears the whole circle.' },
     qcf: { name: 'IRON CYCLONE', sigkind: 'spin', dmg: 16, color: 0x80ed99, desc: 'Traveling spin — multi-hit', tag: 'Traveling spin — 25 energy' },
+    ki: { name: 'IRON JAB', dmg: 8, speed: 14, color: 0x80ed99, cost: 5 },
+    wave: { name: 'CYCLONE WAVE', dmg: 22, speed: 7, color: 0x80ed99, cost: 15 },
+    spin: { name: 'IRON CYCLONE', dmg: 16, color: 0x80ed99, dur: 0.62, cost: 20 },
     bfname: 'WRECKING RUSH', blitzname: 'SLEDGEHAMMER RUN', duname: 'CRANE UPPER',
     mega: { name: 'DEMOLITION DAY' },
     stance: { name: "DEMOLITION STANCE", dmg: 1.3, spd: 0.85, desc: "Swinging for the fences." },
@@ -236,6 +256,7 @@ const FIGHTERS = [
       ['DUST LAUNCHER', '↓ + HVY', 'Universal overhead launcher. Pops them up for juggles.'],
       ['TAG SPOT', 'TAUNT near a glowing wall', 'Spray the wall (3s, vulnerable). Big cash + 15 REP.'],
       ['CHAIN GRAPPLE', 'GRP near a foe', 'Grab opens with bodyshots into YARD TOSS. GRP in the gold window to chain: SCRAP SUPLEX, GIRDER GERMAN, then DEMOLITION DAY (launcher).'],
+      ['BLOCK', 'HOLD DDG / hold L', 'Guard stance: damage becomes chip. Heavies still hurt.'],
       ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
       ['WRECKING SWING', '↓ + SPC (50 meter)', '360° swing clears the whole circle.'],
     ] },
@@ -244,6 +265,9 @@ const FIGHTERS = [
     grapple: { range: 2.0, dmgMul: 0.9, chains: null }, name: 'VIPER', tag: 'Fast hands, faster mouth.', hp: 95, dmg: 1.05, spd: 1.35, unlock: { type: 'boss', boss: 'viper' },
     spc2: { name: 'VENOM DASH', cost: 35, desc: 'Serpent dash: strikes everything in a line.' },
     qcf: { name: "SERPENT'S WAKE", sigkind: 'groundwave', kind: 'fangwave', dmg: 26, speed: 9, color: 0x7cff6b, desc: 'Ground fang wave', tag: 'Ground fang wave — 25 energy' },
+    ki: { name: 'VENOM SPIT', dmg: 7, speed: 17, color: 0x7cff6b, cost: 4 },
+    wave: { name: 'SERPENT WAVE', dmg: 20, speed: 8.5, color: 0x7cff6b, cost: 14 },
+    spin: { name: 'COIL SPIN', dmg: 15, color: 0x7cff6b, dur: 0.6, cost: 18 },
     bfname: 'SERPENT DASH', blitzname: 'VIPER STRIKE', duname: 'COIL SPRING',
     mega: { name: "SERPENT'S COIL" },
     stance: { name: "COIL STANCE", dmg: 1.1, spd: 1.22, desc: "Strike from anywhere." },
@@ -264,6 +288,7 @@ const FIGHTERS = [
       ['DUST LAUNCHER', '↓ + HVY', 'Universal overhead launcher. Pops them up for juggles.'],
       ['TAG SPOT', 'TAUNT near a glowing wall', 'Spray the wall (3s, vulnerable). Big cash + 15 REP.'],
       ['GRAPPLE', 'GRP near a foe', 'Quick snatch suplex — fast but light. On a staggered foe: VENOM POWERBOMB finisher.'],
+      ['BLOCK', 'HOLD DDG / hold L', 'Guard stance: damage becomes chip. Heavies still hurt.'],
       ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
       ['VENOM DASH', '↓ + SPC (50 meter)', 'Dash in a line, striking everything.'],
     ] },
@@ -272,6 +297,9 @@ const FIGHTERS = [
     grapple: { range: 2.0, dmgMul: 0.85, chains: null }, name: 'DUST', tag: 'Quick hands. Gone before you blink.', hp: 80, dmg: 0.95, spd: 1.4, unlock: { type: 'boss', boss: 'rust' },
     spc2: { name: 'DUST DEVIL', cost: 35, desc: 'Spin into the pack: AOE hits while moving.' },
     qcf: { name: 'DESERT SPIKES', sigkind: 'erupt', dmg: 30, color: 0xd8b56b, desc: 'Spikes erupt under nearby enemies', tag: 'Ground eruption — 25 energy' },
+    ki: { name: 'SAND BLAST', dmg: 8, speed: 15, color: 0xd8b56b, cost: 5 },
+    wave: { name: 'DUST STORM', dmg: 23, speed: 7, color: 0xd8b56b, cost: 15 },
+    spin: { name: 'DESERT CYCLONE', dmg: 17, color: 0xd8b56b, dur: 0.62, cost: 20 },
     bfname: 'DUST RUSH', blitzname: 'DUST DEVIL', duname: 'HABOOB RISE',
     mega: { name: 'DUST BOWL' },
     stance: { name: "STORM STANCE", dmg: 1.05, spd: 1.3, desc: "Become the weather." },
@@ -296,6 +324,9 @@ const FIGHTERS = [
     unlock: { type: 'boss', boss: 'pumpkinking' }, head: 'pumpkin', tint: 0xe07b1f,
     spc2: { name: 'CANDLE RUSH', cost: 35, desc: 'Burning dash: leaves a fire trail through the pack.' },
     qcf: { name: 'PUMPKIN BOMB', sigkind: 'fireball', kind: 'fire', dmg: 34, speed: 8, color: 0xff7a1a, arc: 1, desc: 'Lobbed flaming pumpkin', tag: 'Lobbed pumpkin bomb — 25 energy' },
+    ki: { name: 'JACK-O-BOLT', dmg: 9, speed: 14, color: 0xff7a1a, cost: 5 },
+    wave: { name: 'HARVEST WAVE', dmg: 25, speed: 7, color: 0xff7a1a, cost: 16 },
+    spin: { name: 'PUMPKIN SPIN', dmg: 18, color: 0xff7a1a, dur: 0.62, cost: 20 },
     bfname: 'PATCH SPRINT', blitzname: 'HARVEST RUSH', duname: 'SCARECROW RISE',
     mega: { name: 'GREAT PUMPKIN' },
     stance: { name: "HARVEST STANCE", dmg: 1.25, spd: 0.9, desc: "The patch feeds on pain." },
@@ -318,6 +349,7 @@ const FIGHTERS = [
       ['GRAPPLE', 'GRP near a foe', 'Quick snatch suplex — fast but light. On a staggered foe: HARVEST SUPLEX finisher.'],
       ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
       ['CANDLE RUSH', '↓ + SPC (50 meter)', 'Burning dash through the pack.'],
+      ['BLOCK', 'HOLD DDG / hold L', 'Guard stance: damage becomes chip. Heavies still hurt.'],
     ] },
 ];
 // ---------- fighting-game move sets: motion inputs + energy costs per fighter ----------
@@ -2974,10 +3006,19 @@ function showResults(win, mission, stats) {
   $('resStats').innerHTML =
     `<div class="stat">${win ? 'CLEARED' : 'REACHED'} <b>${mission.name}</b></div>` +
     `<div class="stat"><b>${stats.kills}</b> K.O.s &nbsp;·&nbsp; BEST COMBO <b>${stats.maxCombo}</b></div>` +
+    `<div class="stat" style="color:#7af0ff">SCORE <b>${scoreRun.toLocaleString('en-US')}</b></div>` +
     (stats.dist ? `<div class="stat">DISTANCE <b>${Math.round(stats.dist)}m</b></div>` : '');
   if (win && mission.mods && mission.mods.length) {
     const mnames = mission.mods.map((id) => (MODIFIERS.find((m) => m.id === id) || {}).name).filter(Boolean);
     $('resStats').innerHTML += `<div class="stat" style="color:#ff9df0">WILDNESS ${mission.wild}: ${mnames.join(' · ')}</div>`;
+  }
+  // PRESENTATION: best arcade score per mission + NEW BEST callout
+  save.bestScore = save.bestScore || {};
+  const sbk = mission.id || 'unknown';
+  if (win && scoreRun > 0 && (!save.bestScore[sbk] || scoreRun > save.bestScore[sbk])) {
+    const isBest = (save.bestScore[sbk] || 0) > 0;
+    save.bestScore[sbk] = scoreRun; writeSave();
+    if (isBest) $('resStats').innerHTML += `<div class="stat" style="color:#ffe14d">★ NEW BEST SCORE ★</div>`;
   }
   $('cashLines').innerHTML =
     `<div>Fight cash <b>+$${stats.cash}</b></div>` +
@@ -2993,6 +3034,7 @@ let player = null, enemies = [], mission = null, missionR = Math.random;
 let spawnQueue = [], bossSpawned = false, bossRef = null, missionOver = false, ended = false;
 let gameTime = 0, combo = 0, comboT = 0, maxCombo = 0, atkIdx = 0, dmgTaken = 0, missionMaxHp = 100;
 let cashRun = 0, kills = 0, distWalked = 0, endlessT = 3, endlessTier = 0, endlessMuts = [];
+let scoreRun = 0; // PRESENTATION: arcade score for this mission
 function hint(on) { $('hint').style.opacity = on ? 1 : 0; }
 function awardCash(base, pos, tag, quiet) {
   const fever = (mission && mission.endless && (endlessMuts || []).includes('FEVER')) ? 2 : 1;
@@ -3002,6 +3044,15 @@ function awardCash(base, pos, tag, quiet) {
   const sp = pos ? screenPos(pos) : { x: innerWidth / 2, y: innerHeight * 0.45 };
   popText(txt, 'gold', sp.x + (Math.random() * 60 - 30), sp.y);
   if (!quiet) sfx('coin', 0.7, false, 1.15); // TIER 3 item 13: cash PICKUP collection passes quiet=true so the dedicated pickup chime replaces the generic coin (distinct, not layered)
+}
+// PRESENTATION: arcade score (refs SoR4 / Final Fight). Per-hit points by move weight,
+// combo multiplier (10+ = 1.5x, 20+ = 2x, 30+ = 3x), KO + style bonuses in killEnemy.
+function awardScore(base, quiet) {
+  const mult = combo >= 30 ? 3 : combo >= 20 ? 2 : combo >= 10 ? 1.5 : 1;
+  const pts = Math.max(1, Math.round(base * mult));
+  scoreRun += pts;
+  if (!quiet) { const el = $('score'); if (el) el.classList.add('pop'); setTimeout(() => el && el.classList.remove('pop'), 180); }
+  return pts;
 }
 function genDailySpawns(R, len) {
   const sp = []; const fams = ['thug', 'rico', 'jabber', 'heavyd'];
@@ -3084,12 +3135,14 @@ function startMission(id, node) {
   player.baseSpd = player.spd;
   player.px = 2; player.pz = 0; player.face = 1;
   player.energy = 50; player.dodgeT = 0; player.dodgeCD = 0; player.busy = 0; player.spinT = 0;
+  player.blocking = false; player.blockstunT = 0; // BLOCK (defense lane): fresh guard each mission
   player.animMove = false; player.stance = 0; // mixtape stance resets to balanced each mission
   playAnim(player, 'Melee_Unarmed_Idle', { loop: true });
   spawnQueue = mission.spawns.map((s) => Object.assign({}, s, { done: false })).sort((a, b) => a.at - b.at);
   bossSpawned = false; bossRef = null; missionOver = false; ended = false;
   gameTime = 0; combo = 0; comboT = 0; maxCombo = 0; atkIdx = 0; dmgTaken = 0; missionMaxHp = player.maxHp;
   cashRun = 0; kills = 0; distWalked = 0; endlessT = 3; endlessTier = 0; endlessMuts = [];
+  scoreRun = 0; // PRESENTATION: reset arcade score
   camX = 2;
   state = 'fight'; ev('mission_start', { id: mission.id });
   // ONE-HIT (Katana Zero): brief planning slow-mo at mission start — survey the room, then move
@@ -3183,6 +3236,8 @@ function spawnBoss(bossId, bx) {
   enemies.push(e); bossRef = e;
   bossBeat(b.name); // letterboxed boss entrance card
   banner('⚠ ' + b.name + ' ⚠');
+  // PRESENTATION: boss intro camera move — push in on the boss during the entrance card (SoR4)
+  pushT = 1.4; pushPos.copy(e.root.position);
   $('bossWrap').style.display = 'block'; $('bossName').textContent = b.name + ' — ' + b.intro;
   sfx('bell', 0.9);
   musicBoss(b.id); // boss music lane (owner 2026-10-09): this boss's own track
@@ -3264,7 +3319,7 @@ function doParry(e) {
   player.busy = 0.25; setHud(); ev('parry', {});
 }
 function doPunch() {
-  if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.busy > 0) return;
+  if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.busy > 0 || player.blocking) return;
   faceNearestEnemy();
   unlockAudio();
   T.taps++; hint(false); save.seenHint = true;
@@ -3409,7 +3464,7 @@ function doGrapple() {
   // Grapplers: after each recover, a timed GRP window chains the next link.
   // NOTE: the chain-window check MUST come before the busy guard — the window is a
   // deliberate opening (player.busy is held through it), and GRP inside it advances the chain.
-  if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.airT > 0) return;
+  if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.airT > 0 || player.blocking) return;
   if (player.grab && player.grab.phase === 'window') { chainNext(); return; }
   if (player.busy > 0) return;
   if (player.grab) return; // already grabbing
@@ -3634,7 +3689,7 @@ function updateGrapple(dt) {
 }
 function doTaunt() {
   // TMNT taunt: talk trash, build special meter. Pure addition — costs a beat of vulnerability.
-  if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.busy > 0 || player.airT > 0) return;
+  if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.busy > 0 || player.airT > 0 || player.blocking) return;
   unlockAudio();
   // JET SET RADIO: near a tag spot, TAUNT starts spraying instead of trash-talking
   const tag = nearestTagSpot(2.2);
@@ -3658,7 +3713,7 @@ function doTaunt() {
 function doStance() {
   // MIXTAPE STANCE SYSTEM (Double Dragon Neon): two switchable loadouts mid-fight.
   // Double-tap TAUNT swaps stances — trade damage for speed or vice versa. Style, not power: pure tradeoff.
-  if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.busy > 0 || player.airT > 0) return;
+  if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.busy > 0 || player.airT > 0 || player.blocking) return;
   unlockAudio();
   const fd = fighterDef();
   player.stance = player.stance ? 0 : 1;
@@ -3683,7 +3738,7 @@ function doStance() {
   setHud(); ev('stance', { stance: player.stance });
 }
 function doJump() {
-  if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.busy > 0) return;
+  if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.busy > 0 || player.blocking) return;
   if (player.airT > 0) return;
   unlockAudio();
   player.vy = 7.2; player.airT = 0.001; player.py = 0.001;
@@ -3798,7 +3853,7 @@ function doStanceFin(fd) {
   setHud(); ev('stancefin', { kind: fin.kind });
 }
 function doHeavy() {
-  if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.busy > 0) return;
+  if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.busy > 0 || player.blocking) return;
   faceNearestEnemy();
   unlockAudio(); T.taps++; hint(false);
   // DUST LAUNCHER (Guilty Gear): ↓+HVY = universal overhead launcher, same for every fighter.
@@ -3863,7 +3918,7 @@ function doHeavy() {
   }, 230);
 }
 function doSpecial() {
-  if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0) return;
+  if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.blocking) return;
   faceNearestEnemy();
   unlockAudio();
   const fd = fighterDef();
@@ -4031,6 +4086,42 @@ function doDodge() {
   T.dodgeSfx = (T.dodgeSfx || 0) + 1; // test hook
   ev('dodge', {});
 }
+// ---------- PLAYER BLOCK (defense lane; refs SoR4 / Yakuza / Def Jam) ----------
+// HOLD DDG (touch) or hold L (keyboard) = block stance. Tap = dodge (unchanged).
+// Blocking: negates most damage to chip, brief blockstun, can't move/attack while
+// holding. Can't block mid-attack (busy), while airborne, or while knocked down.
+let blockHoldT = 0, blockHoldTimer = null; // input hold detection
+function startBlock() {
+  if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0) return false;
+  if (player.blocking || player.busy > 0 || (player.airT || 0) > 0 || (player.knockT || 0) > 0) return false;
+  player.blocking = true;
+  faceNearestEnemy();
+  playAnim(player, 'Melee_Unarmed_Idle', { loop: true });
+  sparkFX(player.px, 1.1, player.pz, 0x7af0ff, 8);
+  T.blocks = (T.blocks || 0); // counter increments on blocked hits
+  ev('blockstart', {});
+  return true;
+}
+function stopBlock() {
+  if (!player || !player.blocking) return;
+  player.blocking = false;
+  blockHoldT = 0;
+  if (player.hp > 0 && state === 'fight') playAnim(player, 'Melee_Unarmed_Idle', { loop: true });
+  ev('blockend', {});
+}
+// DDG hold detection: tap (<220ms) = dodge, hold = block stance until release
+function ddgDown() {
+  if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0) return;
+  unlockAudio();
+  blockHoldT = performance.now();
+  clearTimeout(blockHoldTimer);
+  blockHoldTimer = setTimeout(() => { blockHoldTimer = null; startBlock(); }, 220);
+}
+function ddgUp() {
+  if (blockHoldTimer) { clearTimeout(blockHoldTimer); blockHoldTimer = null; doDodge(); }
+  else stopBlock();
+  blockHoldT = 0;
+}
 // ---------- G3: ENEMY BLOCK / DODGE (improve-loop c4; refs SoR4 / Final Fight / Urban Reign) ----------
 // Backlog finding: player offense was uncontested except by spacing — no enemy guards, no
 // sidesteps. Eligible enemies (grounded, not staggered, in walk/recover — windup is committed)
@@ -4096,6 +4187,14 @@ function landHit(e, dmg, label, hs, sh, launcher, counter) {
   if (Math.random() < critCh()) { dealt = Math.round(dealt * 1.6); critOn = true; }
   if (player && player.hp > 0 && player.hp < player.maxHp * 0.3) { dealt = Math.round(dealt * 1.25); lsOn = true; lastStandFx(); }
   e.hp -= dealt; combo++; comboT = 2.5; maxCombo = Math.max(maxCombo, combo); // SoR4 combo keep-alive: 2.5s rhythm
+  // PRESENTATION: arcade score per hit — move weight + juggle bonus (quiet: HUD pops on milestones/KOs)
+  const hitPts = counter ? 75 : (label === 'HEAVY' || label === 'HEAT' ? 25 : (label === 'LAUNCHER' || label === 'DUST LAUNCHER' ? 30 : 10));
+  awardScore(hitPts + (e.airborne ? 15 : 0), true);
+  if (combo === 10 || combo === 20 || combo === 30 || combo === 50) { // PRESENTATION: combo milestone callouts
+    const msp = screenPos(e.root.position.clone().add(new THREE.Vector3(0, 2.6, 0)));
+    popText(combo + ' HITS — ' + (combo >= 50 ? 'UNSTOPPABLE!' : combo >= 30 ? 'SAVAGE!' : combo >= 20 ? 'BRUTAL!' : 'RAMPAGE!'), 'big', msp.x, msp.y);
+    sfx('bell', 0.9, false, 1.2);
+  }
   // ANTI-INFINITE (Skullgirls Undizzy): same move 3x in one juggle = auto-drop with a "READ!" popup. Fairness by design.
   if (e.airborne) {
     e.jugSeq = e.jugSeq || [];
@@ -4150,6 +4249,7 @@ function killEnemy(e) {
   T.kos++; ev('ko', { name: e.name });
   hideWarn(e);
   playAnim(e, 'Death_A', { ts: 0.8, clamp: true });
+  let koHold = 900; // PRESENTATION: KO splash hold time (final blow holds longer)
   if (e.boss) {
     slowmo = 0.3; slowmoT = 1.1; shake = 0.6; hitstop = 0.12; // boss KO = biggest moment
     $('bossWrap').style.display = 'none';
@@ -4158,10 +4258,19 @@ function killEnemy(e) {
   } else {
     slowmo = 0.35; slowmoT = 0.7; shake = 0.45; hitstop = 0.09;
   }
+  // PRESENTATION: KO score bonus — style rank scales it, boss is the jackpot
+  awardScore(e.boss ? 1000 : 150 + styleRank * 50, true);
+  // PRESENTATION: FINAL BLOW — last enemy standing (or the boss) gets the dramatic
+  // slow-mo treatment: deeper freeze, longer hold, camera already pushing in (Yakuza heat moment)
+  const foesLeft = enemies.filter(x => x !== e && x.hp > 0).length;
+  if (e.boss || foesLeft === 0) {
+    slowmo = 0.15; slowmoT = e.boss ? 1.8 : 1.4; shake = 0.7; hitstop = 0.15;
+    koHold = 1400;
+  }
   sfx('bell', 0.8); flash('#ffffff');
   vfxKO(e.root.position.clone().add(new THREE.Vector3(0, 1, 0)), !!e.boss); // wave 17: Kenney ring+smoke+spark KO burst
   pushT = 0.85; pushPos.copy(e.root.position);
-  $('ko').classList.add('show'); setTimeout(() => $('ko').classList.remove('show'), 900); buzz(45); // F10 haptics
+  $('ko').classList.add('show'); setTimeout(() => $('ko').classList.remove('show'), koHold); buzz(45); // F10 haptics
   const base = e.boss ? 60 : (8 + Math.round(distWalked * 0.2)) * (e.golden ? 5 : 1);
   awardCash(base, e.root.position.clone());
   if (combo >= 5) awardCash(Math.min(combo, 20), e.root.position.clone().add(new THREE.Vector3(0, 0.4, 0)), 'COMBO');
@@ -4224,6 +4333,28 @@ function hurtPlayer(dmg) {
       sparkFX(player.px, 1.2, player.pz, 0x9a7bff, 18);
       ev('witchtime', {});
     }
+    return;
+  }
+  // PLAYER BLOCK (defense lane; refs SoR4/Yakuza/Def Jam): holding block while grounded
+  // reduces the hit to chip. Heavies still hurt through guard (chip scales with damage).
+  // Blockstun is tracked separately so holding block through a flurry keeps blocking —
+  // you can't be forced out of guard by chip alone. Uses the real Melee_Block_Hit
+  // clip for the reaction — never faked.
+  if (player.blocking && !((player.airT || 0) > 0)) {
+    const chip = Math.max(1, Math.round(dmg * 0.15));
+    player.hp -= chip;
+    T.blocks = (T.blocks || 0) + 1; ev('pblock', { chip, dmg });
+    playAnim(player, 'Melee_Block_Hit', { ts: 1.3 });
+    sparkFX(player.px + (player.face || 1) * 0.5, 1.2, player.pz, 0x7af0ff, 14);
+    const bsp = screenPos(player.root.position.clone().add(new THREE.Vector3(0, 2.0, 0)));
+    popText('BLOCKED -' + chip, 'spc', bsp.x, bsp.y - 20);
+    sfx('hit2', 0.5, false, 0.5); // pitched-down thud = block sound
+    player.blockstunT = 0.3; // holding guard through blockstun keeps blocking
+    player.busy = Math.max(player.busy, 0.15); // brief counter-pressure window
+    player.energy = clamp(player.energy + 3, 0, energyMax()); // defense rewarded, not punished
+    hitstop = 0.04; shake = Math.max(shake, 0.06);
+    setHud();
+    if (player.hp <= 0) { player.hp = 0; setHud(); playAnim(player, 'Death_A', { clamp: true }); missionOver = true; }
     return;
   }
   dmg = Math.max(1, Math.round(dmg * (1 - (blessFx().armor || 0)))); // IRON SKIN
@@ -4302,7 +4433,29 @@ function stickEnd(e) {
 }
 function setupInput() {
   const bind = (id, fn) => $(id).addEventListener('pointerdown', (e) => { e.stopPropagation(); e.preventDefault(); fn(); }, { passive: false });
-  bind('btnAtk', () => { if (player && player.knockT > 0) doTech(); else doPunch(); }); bind('btnDdg', doDodge); bind('btnSpc', doSpecial); bind('btnJmp', doJump);
+  bind('btnAtk', () => { if (player && player.knockT > 0) doTech(); else doPunch(); }); bind('btnJmp', doJump);
+  // BLOCK (defense lane): HOLD DDG = block stance, tap = dodge (unchanged)
+  { const el = $('btnDdg');
+    el.addEventListener('pointerdown', (e) => { e.stopPropagation(); e.preventDefault(); ddgDown(); }, { passive: false });
+    el.addEventListener('pointerup', (e) => { e.stopPropagation(); ddgUp(); }, { passive: false });
+    el.addEventListener('pointercancel', (e) => { e.stopPropagation(); ddgUp(); }, { passive: false });
+  }
+  // SPC (moves expansion): tap = special, double-tap = KI BLAST, hold = charge ENERGY WAVE
+  { const el = $('btnSpc'); let spcDownT = 0, spcLastTap = 0;
+    el.addEventListener('pointerdown', (e) => { e.stopPropagation(); e.preventDefault();
+      const now = performance.now();
+      if (now - spcLastTap < 300) { spcLastTap = 0; doKiBlast(); return; } // double-tap: ki blast
+      spcDownT = now;
+    }, { passive: false });
+    const spcUp = (e) => { e.stopPropagation();
+      if (waveCharging) { doWaveRelease(); }
+      else if (spcDownT > 0 && performance.now() - spcDownT < 350) { spcLastTap = performance.now(); doSpecial(); }
+      spcDownT = 0;
+    };
+    el.addEventListener('pointerup', spcUp, { passive: false });
+    el.addEventListener('pointercancel', spcUp, { passive: false });
+    setInterval(() => { if (spcDownT > 0 && !waveCharging && performance.now() - spcDownT > 350) doWaveStart(); }, 50);
+  }
   bind('btnGrp', doGrapple); // WRESTLING FINISHERS (No More Heroes): GRAPPLE on staggered foes
   // FOCUS (SFIV): HOLD HVY 0.45s = focus stance (absorb one hit), release = crumple strike; tap = normal heavy
   { const el = $('btnHvy');
@@ -4385,7 +4538,7 @@ function setupInput() {
     if (k === 'j') { if (player && player.knockT > 0) { doTech(); } else doPunch(); }
     if (k === 'g') doGrapple(); // WRESTLING FINISHERS: GRAPPLE on staggered foes
     if (k === 'k') doHeavy();
-    if (k === 'l') doDodge();
+    if (k === 'l' && !e.repeat) { ddgDown(); } // BLOCK (defense lane): hold L = block, tap = dodge
     if (k === 'u') doSpecial();
     if (k === 't') { const now = performance.now(); if (now - tauntKeyLastT < 350) { tauntKeyLastT = 0; doStance(); } else { tauntKeyLastT = now; doTaunt(); } }
     if (k === ' ') { e.preventDefault(); doJump(); }
@@ -4396,6 +4549,7 @@ function setupInput() {
     if ((k === 'arrowright' || k === 'd') && stick.dx > 0) stick.dx = 0;
     if ((k === 'arrowup' || k === 'w') && stick.dy < 0) stick.dy = 0;
     if ((k === 'arrowdown' || k === 's') && stick.dy > 0) stick.dy = 0;
+    if (k === 'l') ddgUp(); // BLOCK (defense lane): release L = stop block or dodge on tap
   });
   addEventListener('resize', resize);
 }
@@ -4879,6 +5033,11 @@ function playerUpdate(dt) {
   if (p.dodgeCD > 0) p.dodgeCD -= dt;
   if (p.blitzCD > 0) p.blitzCD -= dt;
   if (p.witchCD > 0) p.witchCD -= dt;
+  if (p.blockstunT > 0) p.blockstunT -= dt; // BLOCK (defense lane)
+  if (p.blocking) { // persistent guard shimmer so the stance reads clearly
+    p.guardFxT = (p.guardFxT || 0) - dt;
+    if (p.guardFxT <= 0) { p.guardFxT = 0.5; sparkFX(p.px, 1.1, p.pz, 0x7af0ff, 4); }
+  }
   // RADICAL MODE (TMNT): +30% dmg, +15% speed while active
   if (p.radicalT > 0) {
     p.radicalT -= dt;
@@ -4934,6 +5093,7 @@ function playerUpdate(dt) {
   const spd = 4.4 * (p.spd || 1) * (p.slowT > 0 ? 0.45 : 1) * (1 + (blessFx().moveSpd || 0));
   let mx = stick.dx * spd, mz = stick.dy * spd;
   if (p.dodgeT > 0) { mx = p.dodgeDx * 10; mz = p.dodgeDz * 10; }
+  if (p.blocking) { mx = 0; mz = 0; } // BLOCK (defense lane): holding guard roots you
   const maxX = mission.len === Infinity ? 1e6 : mission.len - 1.5;
   p.px = clamp(p.px + mx * dt, 0.5, maxX);
   p.pz = clamp(p.pz + mz * dt, -1.4, 1.4);
@@ -4958,10 +5118,9 @@ function playerUpdate(dt) {
     for (const pl of platforms) if (Math.abs(p.px - pl.x) < pl.w / 2 && Math.abs(p.pz - pl.z) < pl.d / 2) { over = true; break; }
     if (!over) { p.airT = 0.01; p.vy = 0; }
   }
-  if (p.spinT > 0) { // IRON CYCLONE: spinning travel, multi-hit
+  if (p.spinT > 0) { // SPIN: travel + multi-hit (rotation from real SpinAttack clip, not procedural)
     const maxX = mission.len === Infinity ? 1e6 : mission.len - 1.5;
     p.px = clamp(p.px + p.face * 9.5 * dt, 0.5, maxX);
-    p.root.rotation.y += dt * 16 * p.face;
     for (const e of enemies) {
       if (!e.dead && e.hp > 0 && !p.spinHit.has(e) && Math.abs(e.px - p.px) < 1.6 && Math.abs(e.pz - p.pz) < 1.25) {
         // CONTACT COLLISION: spinning body hitbox vs hurtbox
@@ -5084,7 +5243,7 @@ const projs = []; // {spr,x,y,z,vx,vy,vz,kind,dmg,from,color,pierce,life,arc,rad
 function fireProj(o) {
   const mat = new THREE.SpriteMaterial({ map: sparkTex, color: o.color, transparent: true, opacity: 1, depthWrite: false });
   const s = new THREE.Sprite(mat);
-  const sc = o.kind === 'beam' ? [1.9, 0.6] : o.kind === 'shock' ? [1.3, 0.55] : o.kind === 'orb' ? [1.15, 1.15] : [0.9, 0.9];
+  const sc = o.kind === 'beam' ? [1.9, 0.6] : o.kind === 'shock' ? [1.3, 0.55] : o.kind === 'orb' ? [1.15, 1.15] : o.kind === 'ki' ? [0.55, 0.55] : o.kind === 'wave' ? [1.7, 1.0] : [0.9, 0.9];
   s.scale.set(sc[0], sc[1], 1);
   s.position.set(o.x, o.y || 1.15, o.z);
   scene.add(s);
@@ -5114,6 +5273,8 @@ function updateProjs(dt) {
     p.spr.material.rotation += dt * 9;
     if (Math.random() < 0.45) sparkFX(p.x, p.y, p.z, p.color, 2);
     if (p.kind === 'fangwave' && Math.random() < 0.7) sparkFX(p.x, 0.18, p.z, p.color, 3);
+    if (p.kind === 'wave' && Math.random() < 0.8) { sparkFX(p.x, p.y, p.z, p.color, 4); sparkFX(p.x, p.y + 0.3, p.z, 0xffffff, 2); }
+    if (p.kind === 'ki' && Math.random() < 0.5) sparkFX(p.x, p.y, p.z, p.color, 2);
     let dead = p.life <= 0 || Math.abs(p.x) > 32 || Math.abs(p.z) > 15;
     if (!dead && p.from === 'p') {
       for (const e of enemies) {
@@ -5210,8 +5371,8 @@ function doMotionSpecial(kind, free) {
       }
       present();
     } else if (pr.sigkind === 'spin') {
-      playAnim(player, 'Melee_Unarmed_Attack_Punch_A', { once: true, dur: 0.5 });
-      player.busy = Math.max(player.busy, 0.55);
+      playAnim(player, 'SpinAttack', { once: true, dur: 0.62 });
+      player.busy = Math.max(player.busy, 0.62);
       player.spinT = 0.55; player.spinHit = new Set();
       player.spinName = pr.name; player.spinColor = pr.color; player.spinDmg = pr.dmg;
       sfx(300, 0.4, 'sawtooth', 0.4);
@@ -5246,6 +5407,111 @@ function doMotionSpecial(kind, free) {
     addHitstop(0.08); addSlowmo(0.35, 0.35);
   }
 }
+
+// Idle variant: occasionally switch to Idle_B for visual variety (moves expansion fill pass).
+function idleVariantTick(dt) {
+  if (!player || state !== 'fight' || player.busy > 0 || player.hp <= 0) return;
+  if (player.moveX !== 0 || player.knockT > 0) return; // only when truly idle
+  player.idleVT = (player.idleVT || 0) - dt;
+  if (player.idleVT <= 0) {
+    player.idleVT = 4 + Math.random() * 3;
+    const useB = Math.random() < 0.35;
+    const cur = useB ? 'Idle_B' : 'Melee_Unarmed_Idle';
+    if (player.idleCur !== cur) { player.idleCur = cur; playAnim(player, cur, { loop: true, fade: 0.4 }); }
+  }
+}
+
+// ---------- MOVES EXPANSION: ki blasts, energy waves, generalized spin ----------
+// Ki Blast: rapid-fire ki projectile (double-tap SPC). Spammable, low cost.
+function doKiBlast() {
+  if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.busy > 0) return;
+  const fd = fighterDef();
+  const ki = fd.ki || { name: 'KI BLAST', dmg: 8, speed: 14, color: 0x7af0ff, cost: 5 };
+  if (player.energy < ki.cost) { popText('NEED ENERGY', 'bad', innerWidth/2, innerHeight*0.4); return; }
+  player.energy -= ki.cost; setHud();
+  faceNearestEnemy(); unlockAudio();
+  player.busy = Math.max(player.busy, 0.22);
+  playAnim(player, 'KiBlast', { once: true, dur: 0.35 });
+  sfxSwing(0.4);
+  const sp = screenPos(player.root.position);
+  setTimeout(() => {
+    if (state !== 'fight' || missionOver || ended) return;
+    fireProj({ x: player.px + player.face * 0.8, z: player.pz, y: 1.15,
+      vx: player.face * ki.speed, kind: 'ki', label: ki.name,
+      dmg: Math.round(ki.dmg * player.dmgMult), color: ki.color,
+      fromPlayer: true, life: 1.2, radius: 0.35 });
+    popText(ki.name, 'spc', sp.x, sp.y - 70);
+  }, 120);
+  ev('kiblast', {});
+}
+
+// Energy Wave: hold SPC to charge (WaveCharge clip + growing glow), release to fire.
+// Charge levels 1-3 based on hold time. Piercing traveling wave.
+let waveChargeT = 0, waveCharging = false, waveChargeFx = null;
+function doWaveStart() {
+  if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.busy > 0) return;
+  if (player.energy < 15) return false;
+  waveCharging = true; waveChargeT = 0;
+  playAnim(player, 'WaveCharge', { loop: true, fade: 0.1 });
+  sfx(110, 0.3, 'sawtooth', 0.5);
+  return true;
+}
+function doWaveTick(dt) {
+  if (!waveCharging || !player) return;
+  waveChargeT += dt;
+  const lvl = Math.min(3, 1 + Math.floor(waveChargeT / 0.5));
+  // growing glow
+  if (Math.random() < 0.5) sparkFX(player.px + player.face * 0.6, 1.0, player.pz, 0x7af0ff, 2 + lvl);
+  if (waveChargeT > 1.6) doWaveRelease(); // auto-release at max
+}
+function doWaveRelease() {
+  if (!waveCharging) return;
+  waveCharging = false;
+  if (state !== 'fight' || !player || player.hp <= 0) return;
+  const fd = fighterDef();
+  const wv = fd.wave || { name: 'ENERGY WAVE', dmg: 22, speed: 7, color: 0x7af0ff, cost: 15 };
+  const lvl = Math.min(3, 1 + Math.floor(waveChargeT / 0.5));
+  const cost = wv.cost + (lvl - 1) * 10;
+  if (player.energy < cost) { popText('NEED ENERGY', 'bad', innerWidth/2, innerHeight*0.4); waveChargeT = 0; return; }
+  player.energy -= cost; setHud();
+  faceNearestEnemy();
+  player.busy = Math.max(player.busy, 0.4);
+  playAnim(player, 'WaveRelease', { once: true, dur: 0.4 });
+  addHitstop(0.06); shake = Math.max(shake, 0.3 + lvl * 0.15);
+  sfx(180, 0.5, 'sawtooth', 0.4);
+  const sp = screenPos(player.root.position);
+  popText(wv.name + ' LV' + lvl, 'spc', sp.x, sp.y - 80);
+  banner(wv.name, 'spc');
+  setTimeout(() => {
+    if (state !== 'fight' || missionOver || ended) return;
+    fireProj({ x: player.px + player.face * 0.9, z: player.pz, y: 1.0,
+      vx: player.face * wv.speed, kind: 'wave', label: wv.name,
+      dmg: Math.round(wv.dmg * lvl * player.dmgMult), color: wv.color,
+      fromPlayer: true, pierce: 99, life: 1.4, radius: 0.7 + lvl * 0.2 });
+    burst(player.root.position.clone().add(new THREE.Vector3(player.face, 1.0, 0)), 16, wv.color, 5);
+  }, 100);
+  waveChargeT = 0;
+  ev('energywave', { lvl });
+}
+
+// Generalized spin attack: real SpinAttack clip (baked 360, not procedural).
+// Any fighter can use via fd.spin config; lane 7 (movesets) assigns per character.
+function doSpinAttack(opts) {
+  if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.busy > 0) return;
+  const o = opts || (fighterDef().spin) || { name: 'SPIN ATTACK', dmg: 16, color: 0x80ed99, dur: 0.6, cost: 20 };
+  if (player.energy < (o.cost || 20)) { popText('NEED ENERGY', 'bad', innerWidth/2, innerHeight*0.4); return; }
+  player.energy -= (o.cost || 20); setHud();
+  faceNearestEnemy(); unlockAudio();
+  player.busy = Math.max(player.busy, o.dur || 0.6);
+  playAnim(player, 'SpinAttack', { once: true, dur: o.dur || 0.6 });
+  player.spinT = o.dur || 0.6; player.spinHit = new Set();
+  player.spinName = o.name; player.spinColor = o.color; player.spinDmg = o.dmg;
+  sfx(300, 0.4, 'sawtooth', 0.4);
+  const sp = screenPos(player.root.position);
+  popText(o.name, 'spc', sp.x, sp.y - 70);
+  ev('spinattack', {});
+}
+
 // ---------- MEGA SUPER (full energy, cinematic) ----------
 function doMega() {
   const fd = fighterDef();
@@ -5360,17 +5626,42 @@ function spcSegs() {
   if (!_spcSegs) { _spcSegs = []; const wrap = $('spc'); for (let i = 0; i < SPC_SEGS; i++) { const d = document.createElement('div'); d.className = 'spcSeg'; wrap.appendChild(d); _spcSegs.push(d); } }
   return _spcSegs;
 }
+// damage ghost bars (art-ui): white/red trailing bar drains slowly after damage (genre standard).
+// CSS transition animates the trail; on heal we snap the ghost (no transition) so it never lags growth.
+const _ghostLast = {};
+function ghostFill(id, ghostId, frac) {
+  const el = $(id), g = $(ghostId);
+  if (!el || !g) return;
+  el.style.width = Math.max(0, frac * 100) + '%';
+  const last = (_ghostLast[id] !== undefined) ? _ghostLast[id] : frac;
+  if (frac >= last - 0.001) {
+    g.style.transition = 'none';
+    g.style.width = Math.max(0, frac * 100) + '%';
+    void g.offsetWidth;
+    g.style.transition = '';
+  } else {
+    g.style.width = Math.max(0, frac * 100) + '%';
+  }
+  _ghostLast[id] = frac;
+}
 function setHud() {
   if (!player) return;
   const fd = fighterDef();
-  $('php').style.width = Math.max(0, player.hp / player.maxHp * 100) + '%';
+  ghostFill('php', 'pghost', Math.max(0, player.hp / player.maxHp));
   $('pname').textContent = fd.name + (player.stance && fd.stance ? ' — ' + fd.stance.name : '');
   const e = (bossRef && bossRef.hp > 0) ? bossRef : nearestEnemy(99);
-  if (e) { $('ehp').style.width = Math.max(0, e.hp / e.maxHp * 100) + '%'; $('ename').textContent = e.name; }
-  else { $('ehp').style.width = '0%'; $('ename').textContent = ''; }
+  if (e) { ghostFill('ehp', 'eghost', Math.max(0, e.hp / e.maxHp)); $('ename').textContent = e.name; }
+  else { ghostFill('ehp', 'eghost', 0); $('ename').textContent = ''; }
   $('cash').textContent = 'CASH: $' + (save.cash + cashRun);
-  $('combo').style.opacity = combo >= 2 ? 1 : 0;
-  $('combo').textContent = combo + ' HIT COMBO';
+  // PRESENTATION: arcade score HUD
+  const sc = $('score'); if (sc) sc.textContent = 'SCORE ' + scoreRun.toLocaleString('en-US');
+  const _cb = $('combo');
+  _cb.style.opacity = combo >= 2 ? 1 : 0;
+  const _ct = combo + ' HIT COMBO';
+  if (_cb.textContent !== _ct) { _cb.textContent = _ct; _cb.classList.remove('pop'); void _cb.offsetWidth; _cb.classList.add('pop'); }
+  // PRESENTATION: combo counter scales with heat — bigger combos read bigger
+  _cb.style.fontSize = (combo >= 30 ? 44 : combo >= 20 ? 38 : 32) + 'px';
+  _cb.style.color = combo >= 30 ? '#ff4d4d' : combo >= 20 ? '#ff9f1c' : '#ffe14d';
   const sr2 = $('styleRank');
   if (sr2) {
     sr2.style.opacity = styleRank >= 2 && combo >= 3 ? 1 : 0;
@@ -5387,7 +5678,7 @@ function setHud() {
   $('btnSpc').classList.toggle('ready', player.energy >= 60);
   const prog = mission && isFinite(mission.len) ? clamp(player.px / mission.len, 0, 1) : clamp(distWalked / 220, 0, 1);
   $('prog').style.width = (prog * 100) + '%';
-  if (bossRef && bossRef.hp > 0) $('bossHp').style.width = Math.max(0, bossRef.hp / bossRef.maxHp * 100) + '%';
+  if (bossRef && bossRef.hp > 0) ghostFill('bossHp', 'bghost', Math.max(0, bossRef.hp / bossRef.maxHp));
 }
 // ---------- layout ----------
 function resize() {
@@ -5665,6 +5956,8 @@ function frame(dt, doRender = true) {
   if (hitstop > 0) { hitstop -= dt; dt *= 0.05; }
   if (slowmoT > 0) { slowmoT -= dt; dt *= slowmo; }
   for (const f of fighters) { f.mixer.update(dt); if (f.busy > 0) f.busy -= dt; }
+  doWaveTick(dt); // MOVES EXPANSION: energy wave charge
+  idleVariantTick(dt); // MOVES EXPANSION: idle variants
 
   if (state === 'select' || state === 'title') {
     if (showcase && state === 'select') {
@@ -5754,8 +6047,8 @@ async function loadArenaProps() {
 }
 async function boot() {
   loadSave();
-  const [fg, am, ag, amv, agr, st, rd, ix] = await Promise.all(['fighter.glb', 'anim_melee.glb', 'anim_general.glb', 'anim_move.glb', 'anim_grapple.glb', 'street.glb', 'roads.glb', 'industrial.glb'].map(parse));
-  for (const g of [am, ag, amv, agr]) for (const c of g.animations) clips[c.name] = c;
+  const [fg, am, ag, amv, agr, amx, st, rd, ix] = await Promise.all(['fighter.glb', 'anim_melee.glb', 'anim_general.glb', 'anim_move.glb', 'anim_grapple.glb', 'anim_moves.glb', 'street.glb', 'roads.glb', 'industrial.glb'].map(parse));
+  for (const g of [am, ag, amv, agr, amx]) for (const c of g.animations) clips[c.name] = c;
   fighterTemplate = fg.scene;
   const names = new Set(); fighterTemplate.traverse((o) => names.add(o.name));
   for (const c of Object.values(clips)) c.tracks = c.tracks.filter((t) => names.has(t.name.split('.')[0]));
@@ -5786,6 +6079,12 @@ window.__cdtest = {
   gameTime: () => gameTime,
   playClipOnPlayer: (name) => { if (player && clips[name]) { playAnim(player, name, { loop: false, fade: 0.1, ts: 0.5 }); return true; } return false; },
   clipNames: () => Object.keys(clips),
+  clips: () => Object.keys(clips),
+  playClip: (name) => { if (player) playAnim(player, name, { once: true, dur: 0.6 }); return !!clips[name]; },
+  doKiBlast, doWaveStart, doWaveRelease, doSpinAttack,
+  killAll: () => { for (const e of [...enemies]) killEnemy(e, true); return enemies.length; },
+  setBusy: (v) => { if (player) player.busy = v; },
+  boneQuat: (bone) => { if (!player) return null; const b = player.root.getObjectByName(bone); if (!b) return null; const q = b.quaternion; return [q.x, q.y, q.z, q.w].map(v => +v.toFixed(3)); },
   tp: (x) => { if (player) player.px = x; },
   tp2: (x, z) => { if (player) { player.px = x; player.pz = z; } },
   projCount: () => projs.length,
@@ -5833,6 +6132,10 @@ window.__cdtest = {
       guardT: +(e.guardT || 0).toFixed(2), dodgeT: +(e.dodgeT || 0).toFixed(2), pzShift: +(e.pz - pz0).toFixed(2) };
   },
   dbgDodgeT: (v) => { if (player) player.dodgeT = v; return player.dodgeT; },
+  // BLOCK (defense lane) test hooks
+  dbgBlock: (on) => { if (player) { if (on) startBlock(); else stopBlock(); } return !!(player && player.blocking); },
+  dbgBlockHit: (dmg) => { const hp0 = player.hp, b0 = T.blocks || 0; hurtPlayer(dmg || 20); return { hp0, hp1: player.hp, chip: hp0 - player.hp, blocks: (T.blocks || 0) - b0 }; },
+  dbgSetBusy: (v) => { if (player) player.busy = v; return player ? player.busy : null },
   dbgEvents: () => T.events.map((e) => e.name),
   dbgPlayer: () => player ? { hp: player.hp, energy: Math.round(player.energy), px: +player.px.toFixed(2), witchCD: +(player.witchCD||0).toFixed(2), blitzCD: +(player.blitzCD||0).toFixed(2) } : null,
   dbgBoss: (id) => { const b = bossDef(id); return b ? { name: b.name, hp: b.hp, proc: !!b.proc, sig: b.sig ? b.sig.name : null } : null; },
@@ -5885,6 +6188,8 @@ window.__cdtest = {
   counterClear: () => { T.counterSfx = 0; T.counters = 0; },
   buzzDbg: () => ({ buzzN: T.buzzN || 0 }), // F10 haptics (improve-loop cycle 1, 2026-10-09)
   buzzClear: () => { T.buzzN = 0; },
+  scoreDbg: () => ({ score: scoreRun, combo, maxCombo }), // PRESENTATION: arcade score test hook
+  slowmoDbg: () => ({ slowmo, slowmoT, pushT }), // PRESENTATION: slow-mo + camera push test hook
   forceCounterWindup: () => { // S5 playtest: stage a foe mid-windup in counter range, neutral stick
     const e = enemies.find(x => x.hp > 0 && !x.boss);
     if (!e || !player) return false;
