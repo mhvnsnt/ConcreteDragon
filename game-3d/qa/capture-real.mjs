@@ -3,6 +3,7 @@
 import puppeteer from 'puppeteer-core';
 const CHROME = '/home/hatch/.cache/puppeteer/chrome/linux-131.0.6778.204/chrome-linux64/chrome';
 const SHOTS = '/home/hatch/workspace/concrete-dragon-itch/art/screenshots-real';
+const DIST = '/home/hatch/workspace/ConcreteDragon-suite/game-3d/dist/concrete-dragon.html';
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const errors = [];
 const browser = await puppeteer.launch({ executablePath: CHROME, headless: 'new', protocolTimeout: 180000,
@@ -12,7 +13,7 @@ await page.setViewport({ width: 844, height: 390, isMobile: true, hasTouch: true
 page.on('pageerror', (e) => errors.push('[pageerror] ' + e.message.slice(0, 160)));
 page.on('console', (m) => { if (m.type() === 'error') errors.push('[console.error] ' + m.text().slice(0, 160)); });
 const E = async (expr) => page.evaluate(new Function('const t = window.__cdtest; return (' + expr + ')'));
-await page.goto('file:///home/hatch/workspace/ConcreteDragon/game-3d/dist/concrete-dragon.html', { waitUntil: 'networkidle0', timeout: 120000 });
+await page.goto('file://' + DIST, { waitUntil: 'networkidle0', timeout: 120000 });
 let booted = false;
 for (let i = 0; i < 12; i++) { try { if ((await E('t.simDbg().st')) === 'title') { booted = true; break; } } catch(e){} await sleep(2000); }
 console.log('booted:', booted);
