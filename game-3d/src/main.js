@@ -12,6 +12,7 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { clone as skClone } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
+import seedrandom from './vendor/seedrandom.js'; // Y8 daily seeded run (wave 16, TIER 5 item 21): MIT © 2019 David Bau — see ASSETS_CREDITS.md
 
 const $ = (id) => document.getElementById(id);
 const b64ToBuf = (b64) => { const bin = atob(b64); const u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return u.buffer; };
@@ -21,6 +22,18 @@ const rnd = (a, b) => a + Math.random() * (b - a);
 // date-seeded PRNG for daily runs (mulberry32)
 function seedPRNG(seed) { let t = seed >>> 0; return function () { t += 0x6D2B79F5; let r = Math.imul(t ^ (t >>> 15), 1 | t); r ^= r + Math.imul(r ^ (r >>> 7), 61 | r); return ((r ^ (r >>> 14)) >>> 0) / 4294967296; }; }
 const todayStr = () => new Date().toISOString().slice(0, 10);
+// ---------- Y8 DAILY SEEDED RUN (wave 16, TIER 5 item 21) ----------
+// One integer seed per LOCAL day — the same run for every player that day.
+const localDateStr = (d) => { const x = d ? new Date(d) : new Date(); return x.getFullYear() + '-' + String(x.getMonth() + 1).padStart(2, '0') + String(x.getDate()).padStart(2, '0'); };
+function dailySeed(dateLike) { // YYYYMMDD integer; pure in dateLike → deterministic across page loads
+  const d = dateLike ? new Date(dateLike) : new Date();
+  return d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate();
+}
+const dayIndex = (dateLike) => Math.floor((dateLike ? new Date(dateLike).getTime() : Date.now()) / 86400000);
+const DAILY_DISTRICTS = ['neon', 'overpass', 'industrial']; // the 3 wired districts (street, overpass, industrial)
+const dailyDistrict = (dateLike) => DAILY_DISTRICTS[dayIndex(dateLike) % DAILY_DISTRICTS.length];
+const DAILY_MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+const dailyDateLabel = (dateLike) => { const d = dateLike ? new Date(dateLike) : new Date(); return DAILY_MONTHS[d.getMonth()] + ' ' + d.getDate(); }; // "OCT 9"
 
 // ---------- telemetry (debug/QA) ----------
 const T = window.__playable = { state: 'loading', taps: 0, hits: 0, counters: 0, kos: 0, events: [], errors: [] };
@@ -33,7 +46,7 @@ const save = {
   up_dodge: 0, up_magnet: 0, up_revive: 0, up_crit: 0, up_regen: 0, up_luck: 0, up_energy: 0, up_counter: 0, up_speed: 0,
   best_wave: 0, selected: 'kidblue', skins: {}, tex: {},
   unlocked: ['kidblue', 'ghost', 'brick'], missionsDone: [],
-  daily: { date: '', score: 0 }, boards: {}, seenHint: false,
+  daily: { date: '', score: 0 }, dailyBest: null, boards: {}, seenHint: false,
   muted: false, quality: 'auto', difficulty: 'normal', circuitN: 0, blessings: [], rep: 0, goldCards: [],
   gearInv: {}, gearTier: {}, gearEq: {}, charm: null, charmsUnlocked: [],
   assist: false, missionGrades: {}, scoutRoster: [], loadouts: {},
@@ -731,7 +744,7 @@ const MISSIONS = [
     card: 'He built the cell. Now fight him in it.', boss: 'warden', unlock: { type: 'mission', id: 'c2' }, reward: 'Unlocks WARDEN skin' },
   { id: 'endless', zone: 'zx', district: 'neon', name: 'ENDLESS SCRAP', len: Infinity, crowd: false, endless: true, card: 'How long can you hold the block?',
     spawns: [], boss: null, unlock: { type: 'mission', id: 'm1' }, reward: 'Survival ladder — how far can you walk?' },
-  { id: 'daily', zone: 'zx', district: 'neon', name: 'DAILY SCRAP', len: 70, crowd: false, daily: true, card: 'One shot. One leaderboard.',
+  { id: 'daily', zone: 'zx', district: 'neon', name: 'DAILY RUN', len: 220, crowd: false, daily: true, card: 'One seed. One block. Everyone runs it today.',
     spawns: [], boss: 'kingpin', unlock: { type: 'mission', id: 'm1' }, reward: 'Same seed for everyone today. One scored run.' },
 ];
 const missionDef = (id) => MISSIONS.find((m) => m.id === id);
@@ -1038,7 +1051,12 @@ function renderBoard() {
     r.innerHTML = `<span>${names[id]}</span><b>${best}</b>`;
     L.appendChild(r);
   }
-  if (save.daily.date) {
+  if (save.dailyBest && save.dailyBest.date) {
+    const db = save.dailyBest;
+    const r = document.createElement('div'); r.className = 'bline';
+    r.innerHTML = `<span>DAILY BEST — ${db.date}</span><b>wave ${db.wave} / score ${db.score}</b>`;
+    L.appendChild(r); any = true;
+  } else if (save.daily.date) {
     const r = document.createElement('div'); r.className = 'bline';
     r.innerHTML = `<span>Daily run</span><b>${save.daily.score}</b>`;
     L.appendChild(r); any = true;
@@ -1118,9 +1136,10 @@ function clearStreet() {
 }
 // buildLayout: zone parts 3/4 — maze-like pockets and platformer pieces (owner 2026-10-06)
 function buildLayout(kind, L, R, place, curb, K) {
+  const r2 = (a, b) => a + R() * (b - a); // wave-16: seeded range — layout/prop placement follows the mission seed
   if (kind === 'maze') {
     // winding fence pockets: dead-ends with bonus pickups + ambush spawns
-    for (let px = 14; px < L - 8; px += rnd(16, 24)) {
+    for (let px = 14; px < L - 8; px += r2(16, 24)) {
       const side = R() < 0.5 ? -1 : 1;
       const pz = side * (curb + 1.5);
       // U-shaped pocket: 3 dumpster walls (solid, block movement)
@@ -1136,8 +1155,8 @@ function buildLayout(kind, L, R, place, curb, K) {
     }
   } else if (kind === 'platform') {
     // raised platforms: jump up for vantage + bonus pickups (platformer beat-em-up)
-    for (let px = 12; px < L - 10; px += rnd(14, 20)) {
-      const pz = rnd(-1, 1), w = rnd(3, 5), d = rnd(1.6, 2.4), top = rnd(1.1, 1.9);
+    for (let px = 12; px < L - 10; px += r2(14, 20)) {
+      const pz = r2(-1, 1), w = r2(3, 5), d = r2(1.6, 2.4), top = r2(1.1, 1.9);
       const geo = new THREE.BoxGeometry(w, top, d);
       const mat = new THREE.MeshStandardMaterial({ color: 0x3a3348, roughness: 0.9 });
       const m = new THREE.Mesh(geo, mat);
@@ -1153,9 +1172,9 @@ function buildLayout(kind, L, R, place, curb, K) {
   } else if (kind === 'skyline') {
     // ZONE 6: multi-tier catwalk staircases — chained jumps, gaps, loot on the high steel
     let top = 0;
-    for (let px = 12; px < L - 12; px += rnd(7, 10)) {
-      top = Math.min(3.0, Math.max(0.9, top + (R() < 0.55 ? rnd(0.6, 1.0) : -rnd(0.4, 0.9))));
-      const pz = rnd(-1.2, 1.2), w = rnd(4, 6), d = rnd(2, 3);
+    for (let px = 12; px < L - 12; px += r2(7, 10)) {
+      top = Math.min(3.0, Math.max(0.9, top + (R() < 0.55 ? r2(0.6, 1.0) : -r2(0.4, 0.9))));
+      const pz = r2(-1.2, 1.2), w = r2(4, 6), d = r2(2, 3);
       const mat = new THREE.MeshStandardMaterial({ color: 0x4a3a28, roughness: 0.7, metalness: 0.35 });
       const m = new THREE.Mesh(new THREE.BoxGeometry(w, top, d), mat);
       m.position.set(px, top / 2 - 0.02, pz); m.castShadow = true; m.receiveShadow = true;
@@ -1186,20 +1205,20 @@ function buildLayout(kind, L, R, place, curb, K) {
     // open multidirectional plaza: central barricade cluster, four approach lanes, crowd ring
     const cx0 = L * 0.55;
     for (let i = 0; i < 6; i++) {
-      const a = (i / 6) * Math.PI * 2 + R() * 0.5, rr = rnd(1.5, 3.2);
+      const a = (i / 6) * Math.PI * 2 + R() * 0.5, rr = r2(1.5, 3.2);
       const nm = i % 2 ? 'tnt_crate' : 'box_A';
       place(nm, cx0 + Math.cos(a) * rr, Math.sin(a) * rr * 0.7, R() * 3, K);
     }
     place('dumpster', cx0, 0, R() * 3, K);
     // wave-6: street cafe wreckage — tables and chairs, all smashable
     for (let i = 0; i < 3; i++) {
-      const a = R() * Math.PI * 2, rr = rnd(4.5, 6.5);
+      const a = R() * Math.PI * 2, rr = r2(4.5, 6.5);
       placeProp('k_table', cx0 + Math.cos(a) * rr, Math.sin(a) * rr * 0.7, R() * 3, 1.6);
       placeProp('k_chair', cx0 + Math.cos(a) * (rr + 1.2), Math.sin(a) * (rr + 1.2) * 0.7, R() * 3, 1.6);
     }
     for (const sx of [-1, 1]) for (const sz of [-1, 1]) {
       place('streetlight', cx0 + sx * 9, sz * 5, 0, K);
-      if (R() < 0.6) place('trash_A', cx0 + sx * rnd(4, 7), sz * rnd(3, 5), R() * 3, K);
+      if (R() < 0.6) place('trash_A', cx0 + sx * r2(4, 7), sz * r2(3, 5), R() * 3, K);
     }
     if (R() < 0.7) spawnPickup('special', cx0 + 4, 0);
   }
@@ -1211,6 +1230,7 @@ function buildStreet(district, missionLen, seedFn) {
   const d = districtDef(district);
   applyDistrict(d, (mission && mission.circuitN || 0) * 31 + (mission && mission.id ? mission.id.length : 0) + 7);
   const R = seedFn || Math.random;
+  const r2 = (a, b) => a + R() * (b - a); // wave-16: seeded range — layout/prop placement follows the mission seed
   const parts = streetParts;
   const place = (name, x, z, ry = 0, sc = 1, tint = null) => placeProp(name, x, z, ry, sc, tint);
   const K = 2.2;
@@ -1228,13 +1248,13 @@ function buildStreet(district, missionLen, seedFn) {
     place(n, x + w / 2, curb - (b.max.z - b.min.z) * K / 2 - 0.3, 0, K, bTint); x += w + 0.05; bi++;
   }
   // props along the route
-  for (let px = 6; px < L; px += rnd(7, 13)) {
+  for (let px = 6; px < L; px += r2(7, 13)) {
     const side = R() < 0.5 ? -1 : 1;
     place('streetlight', px, side * (curb + 0.2), 0, K);
-    if (R() < 0.5) place('dumpster', px + rnd(-2, 2), side * (curb - 0.1), R() * 3, K);
-    if (R() < 0.4) place('trash_A', px + rnd(-3, 3), side * (curb + 0.4), R() * 3, K);
-    if (R() < 0.3) place('firehydrant', px + rnd(-3, 3), side * (curb + 0.5), 0, K);
-    if (R() < 0.35) place('box_A', px + rnd(-3, 3), side * (curb + 0.6), R() * 3, K);
+    if (R() < 0.5) place('dumpster', px + r2(-2, 2), side * (curb - 0.1), R() * 3, K);
+    if (R() < 0.4) place('trash_A', px + r2(-3, 3), side * (curb + 0.4), R() * 3, K);
+    if (R() < 0.3) place('firehydrant', px + r2(-3, 3), side * (curb + 0.5), 0, K);
+    if (R() < 0.35) place('box_A', px + r2(-3, 3), side * (curb + 0.6), R() * 3, K);
   }
   if (R() < 0.9) place('car_taxi', 14, curb + 1.2, Math.PI / 2, K);
   if (R() < 0.9) place('car_police', L - 16, curb + 1.3, -Math.PI / 2, K);
@@ -1253,6 +1273,7 @@ function buildRoads(district, missionLen, seedFn) {
   const d = districtDef(district);
   applyDistrict(d, (mission && mission.circuitN || 0) * 31 + (mission && mission.id ? mission.id.length : 0) + 11);
   const R = seedFn || Math.random;
+  const r2 = (a, b) => a + R() * (b - a); // wave-16: seeded range — layout/prop placement follows the mission seed
   const K = 2.2;
   const place = (name, x, z, ry = 0, sc = K, tint = null) => placeProp(name, x, z, ry, sc, tint, roadParts);
   const rb = new THREE.Box3().setFromObject(roadParts.road_seg);
@@ -1270,10 +1291,10 @@ function buildRoads(district, missionLen, seedFn) {
   for (let px = 8; px < L; px += 11) {
     const side = (Math.floor(px / 11) % 2 === 0) ? 1 : -1;
     place('lamp', px, side * (rw / 2 + 0.9), side > 0 ? Math.PI : 0);
-    if (R() < 0.55) place('fence', px + rnd(-3, 3), -side * (rw / 2 + 0.9), (side > 0 ? 0 : Math.PI) + rnd(-0.3, 0.3), 1.6);
-    if (R() < 0.4) place('worklight', px + rnd(-4, 4), side * (rw / 2 - 0.6), R() * 3, 1.4);
-    if (R() < 0.5) { const cx = px + rnd(-2, 2); place('cone', cx, rnd(-1, 1), R() * 3, 1.6); if (R() < 0.5) place('cone', cx + rnd(0.8, 1.4), rnd(-1, 1), R() * 3, 1.6); }
-    if (R() < 0.35) place('dumpster', px + rnd(-3, 3), side * (rw / 2 - 0.4), R() * 3);
+    if (R() < 0.55) place('fence', px + r2(-3, 3), -side * (rw / 2 + 0.9), (side > 0 ? 0 : Math.PI) + r2(-0.3, 0.3), 1.6);
+    if (R() < 0.4) place('worklight', px + r2(-4, 4), side * (rw / 2 - 0.6), R() * 3, 1.4);
+    if (R() < 0.5) { const cx = px + r2(-2, 2); place('cone', cx, r2(-1, 1), R() * 3, 1.6); if (R() < 0.5) place('cone', cx + r2(0.8, 1.4), r2(-1, 1), R() * 3, 1.6); }
+    if (R() < 0.35) place('dumpster', px + r2(-3, 3), side * (rw / 2 - 0.4), R() * 3);
   }
   place('hwy_sign', 16, rw / 2 + 1.2, 0);
   place('trafficlight', L * 0.55, rw / 2 + 0.6, Math.PI);
@@ -1295,6 +1316,7 @@ function buildIndustrial(district, missionLen, seedFn) {
   const d = districtDef(district);
   applyDistrict(d, (mission && mission.circuitN || 0) * 31 + (mission && mission.id ? mission.id.length : 0) + 13);
   const R = seedFn || Math.random;
+  const r2 = (a, b) => a + R() * (b - a); // wave-16: seeded range — layout/prop placement follows the mission seed
   const K = 2.2;
   const place = (name, x, z, ry = 0, sc = K, tint = null) => placeProp(name, x, z, ry, sc, tint, indParts);
   const L = isFinite(missionLen) ? missionLen + 30 : 220;
@@ -1303,17 +1325,17 @@ function buildIndustrial(district, missionLen, seedFn) {
   const chims = ['ind_chimney_s', 'ind_chimney_m', 'ind_chimney_l'];
   for (let x = 0; x < L; x += 24) {
     const side = (Math.floor(x / 24) % 2 === 0) ? 1 : -1;
-    place(blocks[Math.floor(R() * blocks.length)], x + rnd(-4, 4), side * rnd(12, 16),
-      (side > 0 ? Math.PI : 0) + rnd(-0.25, 0.25), 3.1);
-    if (R() < 0.6) place(chims[Math.floor(R() * chims.length)], x + rnd(-9, 9), -side * rnd(13, 17), R() * 3, 2.8);
-    if (R() < 0.45) place('ind_solar_l', x + rnd(-6, 6), side * rnd(10, 13), R() * 3, 2.6);
+    place(blocks[Math.floor(R() * blocks.length)], x + r2(-4, 4), side * r2(12, 16),
+      (side > 0 ? Math.PI : 0) + r2(-0.25, 0.25), 3.1);
+    if (R() < 0.6) place(chims[Math.floor(R() * chims.length)], x + r2(-9, 9), -side * r2(13, 17), R() * 3, 2.8);
+    if (R() < 0.45) place('ind_solar_l', x + r2(-6, 6), side * r2(10, 13), R() * 3, 2.6);
   }
   // container yard: stacks along the lane edges, fuel tanks, solar arrays
   for (let x = 10; x < L; x += 13) {
     if (R() < 0.75) place(['ind_container_a', 'ind_container_b', 'ind_container_c'][Math.floor(R() * 3)],
-      x + rnd(-3, 3), (R() < 0.5 ? -1 : 1) * rnd(4.5, 7), rnd(-0.15, 0.15));
-    if (R() < 0.4) place('ind_tank_large', x + rnd(-4, 4), (R() < 0.5 ? -1 : 1) * rnd(7, 10), R() * 3);
-    if (R() < 0.35) place('ind_solar', x + rnd(-3, 3), (R() < 0.5 ? -1 : 1) * rnd(3.2, 5), R() * 3, 2.4);
+      x + r2(-3, 3), (R() < 0.5 ? -1 : 1) * r2(4.5, 7), r2(-0.15, 0.15));
+    if (R() < 0.4) place('ind_tank_large', x + r2(-4, 4), (R() < 0.5 ? -1 : 1) * r2(7, 10), R() * 3);
+    if (R() < 0.35) place('ind_solar', x + r2(-3, 3), (R() < 0.5 ? -1 : 1) * r2(3.2, 5), R() * 3, 2.4);
   }
   place('ind_water_tower', L * 0.62, -9.5, 0.4, 3.0); // district landmark
   place('ind_windmill', 14, 13.5, 0.3, 3.2);
@@ -1357,7 +1379,9 @@ const colliders = [];    // {x, z, r, dead} — block player movement (owner bug
 const destructibles = []; // {mesh, px, pz, r, hp, maxHp, name, def, col}
 const platforms = [];     // {x, z, w, d, top} — jumpable platforms (zone 4, platformer layouts)
 // placeProp: ground-aligns via bounding box (BUG FIX 2026-10-06: cars sank), registers collision + destructible HP
+let layoutRec = null; // wave-16: when set, placeProp records name+position for the daily layout-hash determinism check
 function placeProp(name, x, z, ry = 0, sc = 2.2, tint = null, parts = null) {
+  if (layoutRec) layoutRec.push(name + '@' + x.toFixed(1) + ',' + z.toFixed(1) + ',' + ry.toFixed(2));
   const SP = parts || streetParts;
   const part = SP[name] || streetParts[name] || (name === 'tnt_crate' ? streetParts['box_A'] : null);
   if (!part) return null;
@@ -1426,6 +1450,7 @@ function destroyDestructible(d) {
   ev('smash', { name: d.name });
 }
 function spawnBreakables(district, missionLen, R) {
+  const r2 = (a, b) => a + R() * (b - a); // wave-16: seeded range — layout/prop placement follows the mission seed
   const L = isFinite(missionLen) ? missionLen : 200;
   const over = district === 'overpass', ind = district === 'industrial';
   const names = over ? ['barrier', 'cone', 'dumpster']
@@ -1433,9 +1458,9 @@ function spawnBreakables(district, missionLen, R) {
     : ['trash_A', 'trash_B', 'box_A', 'tnt_crate'];
   const P = over ? roadParts : ind ? indParts : null, SC = over ? 1.6 : 2.2;
   const step = (typeof hasMod === 'function' && mission && hasMod('party')) ? 5 : 9;
-  for (let px = 8; px < L; px += rnd(step, step + 7)) {
+  for (let px = 8; px < L; px += r2(step, step + 7)) {
     const nm = names[Math.floor(R() * names.length)];
-    placeProp(nm, px + rnd(-2, 2), rnd(-1.5, 1.5), R() * 3, SC, null, P);
+    placeProp(nm, px + r2(-2, 2), r2(-1.5, 1.5), R() * 3, SC, null, P);
   }
 }
 // ---------- pickups: health / cash / special (dropped by enemies + destructibles) ----------
@@ -2464,23 +2489,24 @@ function showMission() {
     list.appendChild(zh);
     if (!zUnlocked) continue;
     for (const m of MISSIONS.filter((x) => (x.zone || 'z1') === z.id)) {
-    const d = districtDef(m.district);
+    const d = districtDef(m.daily ? dailyDistrict() : m.district); // Y8: daily card shows today's rotated district
     const locked = !missionUnlocked(m);
-    const card = el('div', 'mcard panel9' + (locked ? ' locked' : ''));
+    const card = el('div', 'mcard panel9' + (locked ? ' locked' : '') + (m.daily ? ' dailyCard' : ''));
     card.appendChild(el('div', 'dn', d.name));
     card.appendChild(el('div', 'mn', m.name));
     const sw = el('div', 'sw'); sw.style.background = `linear-gradient(90deg, ${d.sw[0]}, ${d.sw[1]})`;
     card.appendChild(sw);
     let info = '';
     if (m.endless) info = 'Endless survival. Walk as far as you can.';
-    else if (m.daily) info = 'Seeded run — same for everyone today.';
+    else if (m.daily) info = '⚡ DAILY RUN — ' + dailyDateLabel() + ' · ' + d.name.toUpperCase() + '<br>One seed for everyone today. Same block, same thugs.';
     else info = `${m.spawns.reduce((a, s) => a + s.n, 0)} thugs · Boss: ${m.boss ? missionBossName(m) : '—'}`;
     card.appendChild(el('div', 'inf', info));
     const best = save.boards[m.id];
     if (best) card.appendChild(el('div', 'best', `BEST: ${best}`));
     card.appendChild(el('div', 'rw', locked ? '🔒 ' + (m.unlock.id ? 'Clear ' + missionDef(m.unlock.id).name : '') : '★ ' + m.reward));
     if (!locked) {
-      const go = el('button', 'go', m.daily && save.daily.date === todayStr() ? 'RETRY' : 'GO');
+      const ranToday = m.daily && save.daily.date === localDateStr();
+      const go = el('button', 'go' + (m.daily ? ' panel9g' : ''), m.daily ? (ranToday ? '⚡ DAILY RUN · RETRY' : '⚡ DAILY RUN') : 'GO');
       go.onclick = (e) => { e.stopPropagation(); unlockAudio(); sfx('uiclick', 0.8); startMission(m.id); };
       card.appendChild(go);
     }
@@ -2513,7 +2539,7 @@ function showMission() {
     }
     list.appendChild(card);
   }
-  $('dailyTag').textContent = 'DAILY SEED: ' + todayStr() + (save.daily.date === todayStr() ? ` · YOUR BEST: ${save.daily.score}` : '');
+  $('dailyTag').textContent = 'DAILY SEED ' + dailySeed() + ' · ' + localDateStr() + (save.daily.date === localDateStr() ? ` · YOUR BEST: ${save.daily.score}` : '');
   renderMeta(); showOnly('mission');
 }
 function missionBossName(m) { const b = bossDef(m.boss); return b ? b.name : ''; }
@@ -2680,9 +2706,10 @@ function awardCash(base, pos, tag) {
   popText(txt, 'gold', sp.x + (Math.random() * 60 - 30), sp.y);
   sfx('coin', 0.7, false, 1.15);
 }
-function genDailySpawns(R) {
+function genDailySpawns(R, len) {
   const sp = []; const fams = ['thug', 'rico', 'jabber', 'heavyd'];
-  for (let at = 10; at < 62; at += 10 + R() * 5) sp.push({ at: Math.round(at), fam: fams[Math.floor(R() * fams.length)], n: 2 + Math.floor(R() * 2) });
+  const L = isFinite(len) ? len : 200;
+  for (let at = 10; at < L - 20; at += 10 + R() * 5) sp.push({ at: Math.round(at), fam: fams[Math.floor(R() * fams.length)], n: 2 + Math.floor(R() * 2) });
   return sp;
 }
 // ---------- BRANCHING CIRCUIT MAP (Hades chamber-inspired): visible choices, visible rewards ----------
@@ -2730,9 +2757,12 @@ function startMission(id, node) {
   }
   let R = Math.random;
   if (mission.daily) {
-    const s = [...todayStr()].reduce((a, c) => a + c.charCodeAt(0), 0);
-    R = seedPRNG(s * 7919);
-    mission = Object.assign({}, mission, { spawns: genDailySpawns(R) });
+    // Y8 DAILY SEEDED RUN: one local-date seed/day for all players (vendored MIT seedrandom),
+    // district rotates neon → overpass → industrial, fixed 220-unit circuit.
+    const ds = dailySeed();
+    R = seedrandom(String(ds));
+    const dist = dailyDistrict();
+    mission = Object.assign({}, mission, { district: dist, len: 220, spawns: genDailySpawns(R, 220), dailyDate: localDateStr(), dailySeed: ds });
   }
   missionR = R;
   const wild = wildLevel();
@@ -2778,8 +2808,9 @@ function startMission(id, node) {
   // story beat: letterboxed mission card before the action (Nintendo-style)
   playCine({
     mode: 'card', dur: 2.3,
-    caps: [{ t: 0.15, html: '<div class="cc2">' + mission.name + '</div><div class="cc3">' + (mission.card || 'CLEAR THE BLOCK') + '</div>' }],
-    onDone: () => { const b = mission.boss && bossDef(mission.boss); banner(mission.name + ' — ' + (b ? 'BOSS: ' + b.name : 'CLEAR THE BLOCK'), 'gold'); sfx(196, 0.5, 'sawtooth', 0.4); },
+    caps: [{ t: 0.15, html: '<div class="cc2">' + mission.name + '</div><div class="cc3">' + (mission.card || 'CLEAR THE BLOCK') + '</div>' }]
+      .concat(mission.daily ? [{ t: 1.15, html: '<div class="cc3">⚡ DAILY RUN — ' + dailyDateLabel(mission.dailyDate) + ' · SEED ' + mission.dailySeed + '</div>' }] : []),
+    onDone: () => { const b = mission.boss && bossDef(mission.boss); banner((mission.daily ? '⚡ DAILY RUN — ' + dailyDateLabel(mission.dailyDate) + ' · ' : '') + mission.name + ' — ' + (b ? 'BOSS: ' + b.name : 'CLEAR THE BLOCK'), 'gold'); sfx(196, 0.5, 'sawtooth', 0.4); },
   });
   setHud();
 }
@@ -4128,8 +4159,13 @@ function missionComplete(win) {
     if (mission.purse) stats.cash += mission.purse; // m5+ purse missions pay a clear bonus
     if (mission.endless) stats.waveBonus = Math.round(distWalked * 0.5);
     if (mission.daily) {
+      // Y8 DAILY SEEDED RUN: per-day record counts runs by their START date (local).
+      const ds = mission.dailyDate || localDateStr();
       const score = kills * 100 + maxCombo * 10 + Math.round(distWalked);
-      if (save.daily.date !== todayStr() || score > save.daily.score) save.daily = { date: todayStr(), score };
+      if (save.daily.date !== ds || score > save.daily.score) save.daily = { date: ds, score };
+      const waves = spawnQueue.filter((s) => s.done).length;
+      const prev = save.dailyBest;
+      if (!prev || prev.date !== ds || score > prev.score) save.dailyBest = { date: ds, wave: waves, score, cash: stats.cash };
       save.boards.daily = 'SCORE ' + save.daily.score;
     }
     const bk = mission.endless ? 'DIST ' + Math.round(distWalked) + 'm' : 'KOs ' + kills + ' · COMBO ' + maxCombo;
@@ -4949,4 +4985,23 @@ window.__cdtest = {
   qcfKind: () => fighterDef().qcf.sigkind,
   texName: () => texVar(save.selected).id,
   setTex: (id) => { save.tex[save.selected] = id; writeSave(); refreshShowcase(); },
+  // wave-16 Y8 daily seeded run hooks (TIER 5 item 21)
+  dailySeed: (d) => dailySeed(d),
+  dailyDistrict: (d) => dailyDistrict(d),
+  dailyDateLabel: (d) => dailyDateLabel(d),
+  dailySpawnTable: (d) => genDailySpawns(seedrandom(String(dailySeed(d))), 220),
+  dailyBuild: (d) => { // rebuild the daily street exactly like startMission; returns spawn table + layout hash
+    const ds = dailySeed(d);
+    const R = seedrandom(String(ds));
+    const dist = dailyDistrict(d);
+    const spawns = genDailySpawns(R, 220);
+    layoutRec = [];
+    buildStreet(dist, 220, R);
+    spawnBreakables(dist, 220, R);
+    spawnTagSpots({ len: 220 }, R);
+    const rec = layoutRec; layoutRec = null;
+    clearStreet();
+    return { district: dist, seed: ds, spawns, hash: rec.join('|') };
+  },
+  dbgUnlockMission: (id) => { if (!save.missionsDone.includes(id)) { save.missionsDone.push(id); writeSave(); } return true; },
 };
