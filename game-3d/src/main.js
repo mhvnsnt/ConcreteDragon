@@ -2760,8 +2760,6 @@ function showMission() {
     if (best) card.appendChild(el('div', 'best', `BEST: ${best}`));
     card.appendChild(el('div', 'rw', locked ? '🔒 ' + (m.unlock.id ? 'Clear ' + missionDef(m.unlock.id).name : '') : '★ ' + m.reward));
     if (!locked) {
-      const go = el('button', 'go', m.daily && save.daily.date === todayStr() ? 'RETRY' : 'GO');
-      go.onclick = (e) => { e.stopPropagation(); unlockAudio(); sfxUiClick(0.8); startMission(m.id); };
       const ranToday = m.daily && save.daily.date === localDateStr();
       const go = el('button', 'go' + (m.daily ? ' panel9g' : ''), m.daily ? (ranToday ? '⚡ DAILY RUN · RETRY' : '⚡ DAILY RUN') : 'GO');
       go.onclick = (e) => { e.stopPropagation(); unlockAudio(); sfx('uiclick', 0.8); startMission(m.id); };
@@ -5234,6 +5232,22 @@ window.__cdtest = {
   showMission: () => showMission(),
   dbgBlitz: () => { doBlitz(); return player.blitzCD; },
   dbgHurt: (d) => hurtPlayer(d),
+  dbgG3: (mode) => { // TEST ONLY (improve-loop c4): one landHit vs a controlled foe, forcing the reaction
+    const e = enemies.find(x => x.hp > 0 && !x.boss);
+    if (!e || !player || state !== 'fight') return null;
+    e.ai = 'walk'; e.stagger = 0; e.airborne = false; e.launched = false; e.guardCD = 0; e.dodgeCD = 0;
+    e.guardT = 0; e.dodgeT = 0;
+    e.px = player.px + 2; e.pz = player.pz; syncPos(e);
+    const hp0 = Math.round(e.hp), g0 = T.guards || 0, d0 = T.dodges || 0, pz0 = e.pz;
+    const origRnd = Math.random;
+    if (mode === 'guard') { e.dodgeCD = 99; Math.random = () => 0.01; } // dodge disabled, guard passes
+    else if (mode === 'dodge') { Math.random = () => 0.001; } // dodge rolls first, passes
+    else if (mode === 'clean') { Math.random = () => 0.999; } // both fail
+    try { landHit(e, 20, 'jab', 0.03, 0.2, false, false); }
+    finally { Math.random = origRnd; }
+    return { hp0, hp1: Math.round(e.hp), guards: (T.guards || 0) - g0, dodges: (T.dodges || 0) - d0,
+      guardT: +(e.guardT || 0).toFixed(2), dodgeT: +(e.dodgeT || 0).toFixed(2), pzShift: +(e.pz - pz0).toFixed(2) };
+  },
   dbgDodgeT: (v) => { if (player) player.dodgeT = v; return player.dodgeT; },
   dbgEvents: () => T.events.map((e) => e.name),
   dbgPlayer: () => player ? { hp: player.hp, energy: Math.round(player.energy), px: +player.px.toFixed(2), witchCD: +(player.witchCD||0).toFixed(2), blitzCD: +(player.blitzCD||0).toFixed(2) } : null,
@@ -5445,8 +5459,6 @@ window.__cdtest = {
   step: (dt) => { playerUpdate(dt || 1 / 60); }, // drive the real physics deterministically
   estep: (dt) => { for (const e of enemies.slice()) enemyAI(e, dt || 1 / 60); }, // drive enemy AI deterministically (test only)
   estepN: (n, dt) => { for (let i = 0; i < (n || 60); i++) for (const e of enemies.slice()) enemyAI(e, dt || 1 / 60); return true; }, // batch estep (test only)
-  ff: (n, dt) => { // improve-loop C2: deterministic FULL-frame stepping for playtests (no render).
-}
   ff: (n, dt) => { // improve-loop: deterministic FULL-frame stepping for playtests (no render).
     // frame() covers playerUpdate + director + enemyAI + hitstop/combo timers + projectiles.
     // NOTE: hit resolution uses wall-clock setTimeout — after ff(), await a real sleep so
