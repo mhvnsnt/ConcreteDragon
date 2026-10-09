@@ -38,8 +38,15 @@ Wire in this order; playtest after each tier. Owner plays and vetoes — wire, d
    Re-verified by wave-8 playtest.
 9. **C5→U5 special meter** ✅ WIRED 2026-10-07 (verified in code — audit wave 8): energy meter in
    HUD (`spc` bar), SPC button gets `ready` glow at 60+ energy, assists/purchases gate on it.
-   Segmented-bar styling from `staging/ui/kenney-scifi` not yet applied — cosmetic polish only,
-   not a mechanic gap.
+   ✅ SEGMENTED-BAR STYLING APPLIED 2026-10-09 (tranche wave 18): meter is now 10 sci-fi
+   segment cells (skewed, gap-divided, lit = cyan→magenta gradient + glow, unlit = dim,
+   pulse at 60+ ready) instead of the continuous gradient fill. Note: `staging/ui/kenney-scifi`
+   was never staged in the repo, so the styling is rendered natively (CSS, same convention
+   as U13/U14/U15 SVG frames) — zero new assets, zero license surface. Playtest
+   `qa/playtest-energyseg.mjs` 13/13 PASS (0/30/65/100/45 → 0/3/7/10/5 lit cells,
+   `ready` classes flip at 60, zero page/console errors), shots in `game-3d/shots-energyseg/`
+   (driver eyes-on: skewed lit/unlit cells at all levels, full-HUD context shot clean).
+   Decision doc `docs/TRANCHE_WAVE18_ENERGYSEG.md`.
 
 ## TIER 3 — audio gaps (all CC0, staged)
 10. **S2 whooshes** ✅ WIRED 2026-10-07 (tranche wave 10): `swing1.mp3` (knifeSlice),

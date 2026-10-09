@@ -4588,6 +4588,16 @@ function bossBeat(name) {
   setTimeout(() => { letterbox(false); $('cineCap').classList.remove('on'); }, 1400);
 }
 // ---------- HUD ----------
+// TIER 2 item 9 (segmented energy-bar styling, owner 2026-10-09): the ENERGY meter is
+// 10 sci-fi segment cells (skewed, gap-divided) instead of a continuous gradient fill.
+// Lit count is rounded so segments flip discretely; at 60+ energy the wrap pulses and
+// the SPC button glows (existing 'ready' contract).
+const SPC_SEGS = 10;
+let _spcSegs = null;
+function spcSegs() {
+  if (!_spcSegs) { _spcSegs = []; const wrap = $('spc'); for (let i = 0; i < SPC_SEGS; i++) { const d = document.createElement('div'); d.className = 'spcSeg'; wrap.appendChild(d); _spcSegs.push(d); } }
+  return _spcSegs;
+}
 function setHud() {
   if (!player) return;
   const fd = fighterDef();
@@ -4608,7 +4618,10 @@ function setHud() {
   // LAST STAND edge glow persists while dangerous
   const lse = $('lsEdge');
   if (lse) lse.style.opacity = (player.hp > 0 && player.hp < player.maxHp * 0.3) ? '1' : '0';
-  $('spc').style.width = clamp(player.energy / energyMax() * 100, 0, 100) + '%';
+  const segs = spcSegs(); const litSegs = Math.round(clamp(player.energy / energyMax(), 0, 1) * SPC_SEGS);
+  for (let i = 0; i < segs.length; i++) segs[i].classList.toggle('lit', i < litSegs);
+  $('spcWrap').classList.toggle('ready', player.energy >= 60);
+  T.energySeg = litSegs; // playtest counter (wave 18)
   $('btnSpc').classList.toggle('ready', player.energy >= 60);
   const prog = mission && isFinite(mission.len) ? clamp(player.px / mission.len, 0, 1) : clamp(distWalked / 220, 0, 1);
   $('prog').style.width = (prog * 100) + '%';
@@ -4811,6 +4824,7 @@ window.__cdtest = {
   hurt: (n) => { if (player) hurtPlayer(n); },
   doJump, doPunch, doHeavy, doSpecial, doTaunt, doDesperation, doStance, doTech, doGrapple, doDodge,
   swingDbg: () => ({ swing: T.swingSfx || 0, whiff: T.whiffSfx || 0 }), // S2 swing-whoosh tranche (owner 2026-10-07)
+  energySegDbg: () => T.energySeg || 0, // TIER 2 item 9 segmented energy bar (wave 18, owner 2026-10-09)
   swingClear: () => { T.swingSfx = 0; T.whiffSfx = 0; },
   audioDbg: (ks) => (ks || []).map(k => ({ k, ok: !!(sbuf[k] && sbuf[k] instanceof AudioBuffer) })), // S2: prove swing SFX decoded
   dodgeTest: () => { // S3 dodge SFX tranche (owner 2026-10-07): verify dodge fires SFX hook + i-frames
