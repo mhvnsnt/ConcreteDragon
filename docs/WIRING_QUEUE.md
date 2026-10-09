@@ -56,7 +56,17 @@ Wire in this order; playtest after each tier. Owner plays and vetoes — wire, d
 12. **S5 counter SFX** — distinct crack/chime on counter (currently silent).
 13. **S6/S7 UI + pickup** — `kenney_ui-audio.zip` clicks; pickup chime on cash.
 14. **S1 layering** — layer rpg-audio impacts under existing synth hits (±5% pitch).
-15. **S15 mixing** — music/sfx buses; music ducks under big hits.
+15. **S15 mixing** ✅ WIRED 2026-10-08 (tranche wave 15): dedicated `musicGain` /
+    `sfxGain` buses in `game-3d/src/main.js` — looped music + crowd ambience ride the music
+    bus, every one-shot SFX rides the sfx bus (routed by loop flag inside `sfx()`, optional
+    explicit `bus` param for exceptions). `duckMusic()` dips the music bus to ~40%
+    (KO ~35%) on heavy hits / launchers / finishers / KO inside `landHit()`, ramping back
+    to full over ~0.6s — subtle, never mutes, never touches the sfx bus. Light punches
+    (`shake <= 0.25`) do not duck. `__cdtest`: `musicBusLevel()`, `mixDbg()/mixClear()`,
+    `forceBigHit()/forceLauncherHit()/forceKOHit()`, `dbgFoePassive()`, `dbgStickDown()`.
+    No new assets; CC0 manifest untouched. Playtest `game-3d/qa/playtest-mixing.mjs`
+    26/26 PASS, zero errors, shots in `game-3d/shots-mixing/` (eyes-on verified).
+    Decision doc `docs/TRANCHE_WAVE15_MIXING.md`.
 
 ## WIRED 2026-10-06 (beat-em-up worker)
 - U6 pause menu ✅ (resume/restart/quit + difficulty + move list)
