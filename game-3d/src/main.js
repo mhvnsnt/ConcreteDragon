@@ -2347,6 +2347,17 @@ function ptex(zoneHex, pattern) {
 function pmat(zoneHex, pattern) {
   return new THREE.MeshStandardMaterial({ map: ptex(zoneHex, pattern), roughness: 0.65, metalness: 0.08 });
 }
+// ---------- pendantChain (chain-pendant orientation fix, owner 2026-10-09) ----------
+// The chain ring sits tilted at the neck base; the medallion hangs straight DOWN with its
+// face normal +Z (vertical, facing the viewer) — never tipped back like the old
+// (0,-0.3,0.12) rx=1.2 build. pendantBuild(p, zones) adds the medallion facing +Z.
+function pendantChain(g, M, zones, drop, pendantBuild) {
+  g.add(pmesh(new THREE.TorusGeometry(0.14, 0.02, 8, 24), pmat(zones.metal, 'leather'), 0, -0.05, 0.08, 1.02));
+  const p = new THREE.Group();
+  p.position.set(0, -0.05 - drop, 0.17);
+  pendantBuild(p, zones);
+  g.add(p);
+}
 // Each part: id, name, slot, bones (named bones, parented like PART_HEADS), off, build(g, M).
 const PART_DEFS = [
   // ---- head ----
@@ -2356,11 +2367,21 @@ const PART_DEFS = [
   { id: 'goggles', name: 'Goggles', slot: 'head', rar: 'rare', bones: ['head'], build(g, M) { g.add(pmesh(new THREE.CylinderGeometry(0.055, 0.055, 0.04, 12), M.metal, -0.075, 0.03, 0.11, Math.PI / 2)); g.add(pmesh(new THREE.CylinderGeometry(0.055, 0.055, 0.04, 12), M.metal, 0.075, 0.03, 0.11, Math.PI / 2)); g.add(pmesh(new THREE.TorusGeometry(0.14, 0.015, 8, 20), M.accent, 0, 0.03, 0, Math.PI / 2)); } },
   { id: 'topknot', name: 'Topknot', slot: 'head', rar: 'street', bones: ['head'], build(g, M) { g.add(pmesh(new THREE.CylinderGeometry(0.04, 0.05, 0.14, 10), M.secondary, 0, 0.18, 0)); } },
   { id: 'headphones', name: 'Headphones', slot: 'head', rar: 'rare', bones: ['head'], build(g, M) { g.add(pmesh(new THREE.TorusGeometry(0.16, 0.03, 8, 20, Math.PI), M.primary, 0, 0.02, 0)); g.add(pmesh(new THREE.CylinderGeometry(0.06, 0.06, 0.05, 10), M.accent, -0.16, 0, 0, 0, 0, Math.PI / 2)); g.add(pmesh(new THREE.CylinderGeometry(0.06, 0.06, 0.05, 10), M.accent, 0.16, 0, 0, 0, 0, Math.PI / 2)); } },
+  // ---- head: CD masks (street flavor — ski masks, bandanas, hockey, generic lucha, beast) ----
+  { id: 'skimask', name: 'Ski Mask', slot: 'head', rar: 'street', bones: ['head'], build(g, M, zones) { g.add(pmesh(new THREE.SphereGeometry(0.155, 14, 12), pmat(zones.primary, 'mask'), 0, 0, 0.015, 0, 0, 0, 1, 1.04, 0.96)); g.add(pmesh(new THREE.BoxGeometry(0.2, 0.045, 0.03), pmat(zones.secondary, 'patchwork'), 0, 0.035, 0.13)); } },
+  { id: 'bandana', name: 'Bandana', slot: 'head', rar: 'street', bones: ['head'], build(g, M, zones) { g.add(pmesh(new THREE.SphereGeometry(0.155, 14, 10), pmat(zones.secondary, 'patchwork'), 0, -0.055, 0.025, 0, 0, 0, 1, 0.55, 1)); g.add(pmesh(new THREE.BoxGeometry(0.07, 0.05, 0.04), pmat(zones.accent, 'patchwork'), 0, -0.02, -0.145)); } },
+  { id: 'hockeymask', name: 'Hockey Mask', slot: 'head', rar: 'epic', bones: ['head'], build(g, M, zones) { g.add(pmesh(new THREE.CylinderGeometry(0.145, 0.145, 0.22, 14, 1, true, -0.95, 1.9), pmat(zones.metal, 'leather'), 0, 0.0, 0.005)); g.add(pmesh(new THREE.BoxGeometry(0.06, 0.03, 0.02), pmat(zones.primary, 'patchwork'), -0.055, 0.035, 0.135)); g.add(pmesh(new THREE.BoxGeometry(0.06, 0.03, 0.02), pmat(zones.primary, 'patchwork'), 0.055, 0.035, 0.135)); g.add(pmesh(new THREE.BoxGeometry(0.02, 0.1, 0.02), pmat(zones.primary, 'patchwork'), 0, -0.045, 0.138)); } },
+  { id: 'luchamask', name: 'Lucha Mask', slot: 'head', rar: 'rare', bones: ['head'], build(g, M, zones) { g.add(pmesh(new THREE.SphereGeometry(0.155, 14, 12), pmat(zones.primary, 'mask'), 0, 0, 0.015, 0, 0, 0, 1, 1.04, 0.96)); g.add(pmesh(new THREE.TorusGeometry(0.042, 0.014, 8, 18), pmat(zones.accent, 'patchwork'), -0.062, 0.035, 0.125)); g.add(pmesh(new THREE.TorusGeometry(0.042, 0.014, 8, 18), pmat(zones.accent, 'patchwork'), 0.062, 0.035, 0.125)); } },
+  { id: 'beastmask', name: 'Beast Mask', slot: 'head', rar: 'legendary', bones: ['head'], build(g, M, zones) { g.add(pmesh(new THREE.SphereGeometry(0.16, 14, 12), pmat(zones.secondary, 'leather'), 0, 0.01, 0.01, 0, 0, 0, 1, 1.02, 0.96)); g.add(pmesh(new THREE.ConeGeometry(0.07, 0.14, 10), pmat(zones.metal, 'leather'), 0, -0.045, 0.17, 1.35)); g.add(pmesh(new THREE.ConeGeometry(0.045, 0.11, 8), pmat(zones.primary, 'patchwork'), -0.09, 0.15, 0.01)); g.add(pmesh(new THREE.ConeGeometry(0.045, 0.11, 8), pmat(zones.primary, 'patchwork'), 0.09, 0.15, 0.01)); } },
+  // ---- head: CD hoods (street silhouettes — up-hoodies, puffer hoods) ----
+  { id: 'hoodieup', name: 'Hood Up', slot: 'head', rar: 'street', bones: ['head'], build(g, M, zones) { g.add(pmesh(new THREE.TorusGeometry(0.15, 0.062, 10, 22), pmat(zones.primary, 'patchwork'), 0, 0.03, -0.075, 1.25)); g.add(pmesh(new THREE.BoxGeometry(0.24, 0.06, 0.06), pmat(zones.secondary, 'patchwork'), 0, -0.085, -0.115, 0.35)); } },
+  { id: 'pufferhood', name: 'Puffer Hood', slot: 'head', rar: 'rare', bones: ['head'], build(g, M, zones) { g.add(pmesh(new THREE.TorusGeometry(0.17, 0.085, 10, 22), pmat(zones.accent, 'leather'), 0, 0.0, -0.02, 1.35)); g.add(pmesh(new THREE.TorusGeometry(0.19, 0.022, 8, 22), pmat(zones.metal, 'patchwork'), 0, 0.0, 0.02, 1.35)); } },
   // ---- torso: Street Fighter clothing + Gundam armor ----
   { id: 'givest', name: 'Gi Vest', slot: 'torso', rar: 'street', bones: ['chest'], build(g, M) { g.add(pmesh(new THREE.BoxGeometry(0.5, 0.5, 0.34), M.primary, 0, -0.05, 0)); g.add(pmesh(new THREE.BoxGeometry(0.44, 0.08, 0.3), M.accent, 0, -0.3, 0)); } },
   { id: 'jacket', name: 'Street Jacket', slot: 'torso', rar: 'street', bones: ['chest'], build(g, M) { g.add(pmesh(new THREE.BoxGeometry(0.52, 0.55, 0.36), M.secondary, 0, -0.02, 0)); g.add(pmesh(new THREE.BoxGeometry(0.04, 0.5, 0.02), M.accent, 0, -0.02, 0.19)); } },
   { id: 'chestplate', name: 'Gundam Chestplate', slot: 'torso', rar: 'rare', bones: ['chest'], build(g, M) { g.add(pmesh(new THREE.BoxGeometry(0.46, 0.4, 0.1), M.metal, 0, -0.02, 0.16)); g.add(pmesh(new THREE.BoxGeometry(0.3, 0.06, 0.12), M.accent, 0, -0.14, 0.16)); } },
   { id: 'straps', name: 'Harness Straps', slot: 'torso', rar: 'street', bones: ['chest'], build(g, M) { g.add(pmesh(new THREE.BoxGeometry(0.1, 0.55, 0.36), M.accent, -0.14, -0.02, 0)); g.add(pmesh(new THREE.BoxGeometry(0.1, 0.55, 0.36), M.accent, 0.14, -0.02, 0)); g.add(pmesh(new THREE.BoxGeometry(0.44, 0.1, 0.36), M.accent, 0, -0.25, 0)); } },
+  { id: 'hoodedvest', name: 'Hooded Vest', slot: 'torso', rar: 'street', bones: ['chest'], build(g, M, zones) { g.add(pmesh(new THREE.BoxGeometry(0.52, 0.52, 0.36), pmat(zones.primary, 'patchwork'), 0, -0.04, 0)); g.add(pmesh(new THREE.TorusGeometry(0.15, 0.06, 10, 22), pmat(zones.secondary, 'patchwork'), 0, 0.24, -0.1, 1.35)); } },
   { id: 'chestchains', name: 'Chest Chains', slot: 'torso', rar: 'rare', bones: ['chest'], build(g, M) { g.add(pmesh(new THREE.BoxGeometry(0.5, 0.03, 0.02), M.metal, 0, -0.05, 0.18, 0, 0, 0.6)); g.add(pmesh(new THREE.BoxGeometry(0.5, 0.03, 0.02), M.metal, 0, -0.05, 0.18, 0, 0, -0.6)); } },
   // ---- arms ----
   { id: 'bracer', name: 'Bracers', slot: 'arms', rar: 'street', bones: ['lowerarm.l', 'lowerarm.r'], build(g, M) { g.add(pmesh(new THREE.CylinderGeometry(0.085, 0.095, 0.2, 10), M.secondary, 0, -0.02, 0)); } },
