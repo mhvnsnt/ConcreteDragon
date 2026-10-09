@@ -2294,48 +2294,48 @@ function pmesh(geo, mat, x, y, z, rx, ry, rz, sx, sy, sz) {
 // Each part: id, name, slot, bones (named bones, parented like PART_HEADS), off, build(g, M).
 const PART_DEFS = [
   // ---- head ----
-  { id: 'headband', name: 'Headband', slot: 'head', bones: ['head'], build(g, M) { g.add(pmesh(new THREE.TorusGeometry(0.145, 0.032, 10, 24), M.accent, 0, 0.04, 0, Math.PI / 2)); } },
-  { id: 'beanie', name: 'Beanie', slot: 'head', bones: ['head'], build(g, M) { g.add(pmesh(new THREE.CylinderGeometry(0.145, 0.158, 0.12, 14), M.primary, 0, 0.12, 0)); g.add(pmesh(new THREE.SphereGeometry(0.06, 10, 8), M.accent, 0, 0.2, 0)); } },
-  { id: 'visor', name: 'Street Visor', slot: 'head', bones: ['head'], build(g, M) { g.add(pmesh(new THREE.BoxGeometry(0.26, 0.06, 0.14), M.secondary, 0, 0.07, 0.1)); g.add(pmesh(new THREE.BoxGeometry(0.28, 0.025, 0.16), M.secondary, 0, 0.045, 0.2)); } },
-  { id: 'goggles', name: 'Goggles', slot: 'head', bones: ['head'], build(g, M) { g.add(pmesh(new THREE.CylinderGeometry(0.055, 0.055, 0.04, 12), M.metal, -0.075, 0.03, 0.11, Math.PI / 2)); g.add(pmesh(new THREE.CylinderGeometry(0.055, 0.055, 0.04, 12), M.metal, 0.075, 0.03, 0.11, Math.PI / 2)); g.add(pmesh(new THREE.TorusGeometry(0.14, 0.015, 8, 20), M.accent, 0, 0.03, 0, Math.PI / 2)); } },
-  { id: 'topknot', name: 'Topknot', slot: 'head', bones: ['head'], build(g, M) { g.add(pmesh(new THREE.CylinderGeometry(0.04, 0.05, 0.14, 10), M.secondary, 0, 0.18, 0)); } },
-  { id: 'headphones', name: 'Headphones', slot: 'head', bones: ['head'], build(g, M) { g.add(pmesh(new THREE.TorusGeometry(0.16, 0.03, 8, 20, Math.PI), M.primary, 0, 0.02, 0)); g.add(pmesh(new THREE.CylinderGeometry(0.06, 0.06, 0.05, 10), M.accent, -0.16, 0, 0, 0, 0, Math.PI / 2)); g.add(pmesh(new THREE.CylinderGeometry(0.06, 0.06, 0.05, 10), M.accent, 0.16, 0, 0, 0, 0, Math.PI / 2)); } },
+  { id: 'headband', name: 'Headband', slot: 'head', rar: 'street', bones: ['head'], build(g, M) { g.add(pmesh(new THREE.TorusGeometry(0.145, 0.032, 10, 24), M.accent, 0, 0.04, 0, Math.PI / 2)); } },
+  { id: 'beanie', name: 'Beanie', slot: 'head', rar: 'street', bones: ['head'], build(g, M) { g.add(pmesh(new THREE.CylinderGeometry(0.145, 0.158, 0.12, 14), M.primary, 0, 0.12, 0)); g.add(pmesh(new THREE.SphereGeometry(0.06, 10, 8), M.accent, 0, 0.2, 0)); } },
+  { id: 'visor', name: 'Street Visor', slot: 'head', rar: 'street', bones: ['head'], build(g, M) { g.add(pmesh(new THREE.BoxGeometry(0.26, 0.06, 0.14), M.secondary, 0, 0.07, 0.1)); g.add(pmesh(new THREE.BoxGeometry(0.28, 0.025, 0.16), M.secondary, 0, 0.045, 0.2)); } },
+  { id: 'goggles', name: 'Goggles', slot: 'head', rar: 'rare', bones: ['head'], build(g, M) { g.add(pmesh(new THREE.CylinderGeometry(0.055, 0.055, 0.04, 12), M.metal, -0.075, 0.03, 0.11, Math.PI / 2)); g.add(pmesh(new THREE.CylinderGeometry(0.055, 0.055, 0.04, 12), M.metal, 0.075, 0.03, 0.11, Math.PI / 2)); g.add(pmesh(new THREE.TorusGeometry(0.14, 0.015, 8, 20), M.accent, 0, 0.03, 0, Math.PI / 2)); } },
+  { id: 'topknot', name: 'Topknot', slot: 'head', rar: 'street', bones: ['head'], build(g, M) { g.add(pmesh(new THREE.CylinderGeometry(0.04, 0.05, 0.14, 10), M.secondary, 0, 0.18, 0)); } },
+  { id: 'headphones', name: 'Headphones', slot: 'head', rar: 'rare', bones: ['head'], build(g, M) { g.add(pmesh(new THREE.TorusGeometry(0.16, 0.03, 8, 20, Math.PI), M.primary, 0, 0.02, 0)); g.add(pmesh(new THREE.CylinderGeometry(0.06, 0.06, 0.05, 10), M.accent, -0.16, 0, 0, 0, 0, Math.PI / 2)); g.add(pmesh(new THREE.CylinderGeometry(0.06, 0.06, 0.05, 10), M.accent, 0.16, 0, 0, 0, 0, Math.PI / 2)); } },
   // ---- torso: Street Fighter clothing + Gundam armor ----
-  { id: 'givest', name: 'Gi Vest', slot: 'torso', bones: ['chest'], build(g, M) { g.add(pmesh(new THREE.BoxGeometry(0.5, 0.5, 0.34), M.primary, 0, -0.05, 0)); g.add(pmesh(new THREE.BoxGeometry(0.44, 0.08, 0.3), M.accent, 0, -0.3, 0)); } },
-  { id: 'jacket', name: 'Street Jacket', slot: 'torso', bones: ['chest'], build(g, M) { g.add(pmesh(new THREE.BoxGeometry(0.52, 0.55, 0.36), M.secondary, 0, -0.02, 0)); g.add(pmesh(new THREE.BoxGeometry(0.04, 0.5, 0.02), M.accent, 0, -0.02, 0.19)); } },
-  { id: 'chestplate', name: 'Gundam Chestplate', slot: 'torso', bones: ['chest'], build(g, M) { g.add(pmesh(new THREE.BoxGeometry(0.46, 0.4, 0.1), M.metal, 0, -0.02, 0.16)); g.add(pmesh(new THREE.BoxGeometry(0.3, 0.06, 0.12), M.accent, 0, -0.14, 0.16)); } },
-  { id: 'straps', name: 'Harness Straps', slot: 'torso', bones: ['chest'], build(g, M) { g.add(pmesh(new THREE.BoxGeometry(0.1, 0.55, 0.36), M.accent, -0.14, -0.02, 0)); g.add(pmesh(new THREE.BoxGeometry(0.1, 0.55, 0.36), M.accent, 0.14, -0.02, 0)); g.add(pmesh(new THREE.BoxGeometry(0.44, 0.1, 0.36), M.accent, 0, -0.25, 0)); } },
-  { id: 'chestchains', name: 'Chest Chains', slot: 'torso', bones: ['chest'], build(g, M) { g.add(pmesh(new THREE.BoxGeometry(0.5, 0.03, 0.02), M.metal, 0, -0.05, 0.18, 0, 0, 0.6)); g.add(pmesh(new THREE.BoxGeometry(0.5, 0.03, 0.02), M.metal, 0, -0.05, 0.18, 0, 0, -0.6)); } },
+  { id: 'givest', name: 'Gi Vest', slot: 'torso', rar: 'street', bones: ['chest'], build(g, M) { g.add(pmesh(new THREE.BoxGeometry(0.5, 0.5, 0.34), M.primary, 0, -0.05, 0)); g.add(pmesh(new THREE.BoxGeometry(0.44, 0.08, 0.3), M.accent, 0, -0.3, 0)); } },
+  { id: 'jacket', name: 'Street Jacket', slot: 'torso', rar: 'street', bones: ['chest'], build(g, M) { g.add(pmesh(new THREE.BoxGeometry(0.52, 0.55, 0.36), M.secondary, 0, -0.02, 0)); g.add(pmesh(new THREE.BoxGeometry(0.04, 0.5, 0.02), M.accent, 0, -0.02, 0.19)); } },
+  { id: 'chestplate', name: 'Gundam Chestplate', slot: 'torso', rar: 'rare', bones: ['chest'], build(g, M) { g.add(pmesh(new THREE.BoxGeometry(0.46, 0.4, 0.1), M.metal, 0, -0.02, 0.16)); g.add(pmesh(new THREE.BoxGeometry(0.3, 0.06, 0.12), M.accent, 0, -0.14, 0.16)); } },
+  { id: 'straps', name: 'Harness Straps', slot: 'torso', rar: 'street', bones: ['chest'], build(g, M) { g.add(pmesh(new THREE.BoxGeometry(0.1, 0.55, 0.36), M.accent, -0.14, -0.02, 0)); g.add(pmesh(new THREE.BoxGeometry(0.1, 0.55, 0.36), M.accent, 0.14, -0.02, 0)); g.add(pmesh(new THREE.BoxGeometry(0.44, 0.1, 0.36), M.accent, 0, -0.25, 0)); } },
+  { id: 'chestchains', name: 'Chest Chains', slot: 'torso', rar: 'rare', bones: ['chest'], build(g, M) { g.add(pmesh(new THREE.BoxGeometry(0.5, 0.03, 0.02), M.metal, 0, -0.05, 0.18, 0, 0, 0.6)); g.add(pmesh(new THREE.BoxGeometry(0.5, 0.03, 0.02), M.metal, 0, -0.05, 0.18, 0, 0, -0.6)); } },
   // ---- arms ----
-  { id: 'bracer', name: 'Bracers', slot: 'arms', bones: ['lowerarml', 'lowerarmr'], build(g, M) { g.add(pmesh(new THREE.CylinderGeometry(0.085, 0.095, 0.2, 10), M.secondary, 0, -0.02, 0)); } },
-  { id: 'elbowpad', name: 'Elbow Pads', slot: 'arms', bones: ['lowerarml', 'lowerarmr'], build(g, M) { g.add(pmesh(new THREE.SphereGeometry(0.1, 10, 8), M.primary, 0, 0.1, -0.02, 0, 0, 0, 1, 0.8, 1)); } },
-  { id: 'gauntlet', name: 'Gauntlet', slot: 'arms', bones: ['lowerarml', 'lowerarmr'], build(g, M) { g.add(pmesh(new THREE.BoxGeometry(0.17, 0.2, 0.17), M.metal, 0, -0.06, 0)); } },
-  { id: 'handtape', name: 'Hand Tape', slot: 'arms', bones: ['handl', 'handr'], build(g, M) { g.add(pmesh(new THREE.CylinderGeometry(0.075, 0.075, 0.12, 10), M.accent, 0, -0.04, 0)); } },
+  { id: 'bracer', name: 'Bracers', slot: 'arms', rar: 'street', bones: ['lowerarm.l', 'lowerarm.r'], build(g, M) { g.add(pmesh(new THREE.CylinderGeometry(0.085, 0.095, 0.2, 10), M.secondary, 0, -0.02, 0)); } },
+  { id: 'elbowpad', name: 'Elbow Pads', slot: 'arms', rar: 'street', bones: ['lowerarm.l', 'lowerarm.r'], build(g, M) { g.add(pmesh(new THREE.SphereGeometry(0.1, 10, 8), M.primary, 0, 0.1, -0.02, 0, 0, 0, 1, 0.8, 1)); } },
+  { id: 'gauntlet', name: 'Gauntlet', slot: 'arms', rar: 'rare', bones: ['lowerarm.l', 'lowerarm.r'], build(g, M) { g.add(pmesh(new THREE.BoxGeometry(0.17, 0.2, 0.17), M.metal, 0, -0.06, 0)); } },
+  { id: 'handtape', name: 'Hand Tape', slot: 'arms', rar: 'street', bones: ['hand.l', 'hand.r'], build(g, M) { g.add(pmesh(new THREE.CylinderGeometry(0.075, 0.075, 0.12, 10), M.accent, 0, -0.04, 0)); } },
   // ---- legs ----
-  { id: 'kneepad', name: 'Knee Pads', slot: 'legs', bones: ['lowerlegl', 'lowerlegr'], build(g, M) { g.add(pmesh(new THREE.SphereGeometry(0.105, 10, 8), M.primary, 0, 0.16, 0.03, 0, 0, 0, 1, 0.85, 0.7)); } },
-  { id: 'thighstrap', name: 'Thigh Straps', slot: 'legs', bones: ['upperlegl', 'upperlegr'], build(g, M) { g.add(pmesh(new THREE.TorusGeometry(0.115, 0.028, 8, 18), M.accent, 0, -0.1, 0, Math.PI / 2)); } },
-  { id: 'shinguard', name: 'Shin Guards', slot: 'legs', bones: ['lowerlegl', 'lowerlegr'], build(g, M) { g.add(pmesh(new THREE.CylinderGeometry(0.09, 0.1, 0.24, 10), M.metal, 0, -0.05, 0)); } },
-  { id: 'cargopad', name: 'Cargo Plates', slot: 'legs', bones: ['upperlegl', 'upperlegr'], build(g, M) { g.add(pmesh(new THREE.BoxGeometry(0.2, 0.24, 0.06), M.secondary, 0, -0.08, 0.12)); } },
+  { id: 'kneepad', name: 'Knee Pads', slot: 'legs', rar: 'street', bones: ['lowerleg.l', 'lowerleg.r'], build(g, M) { g.add(pmesh(new THREE.SphereGeometry(0.105, 10, 8), M.primary, 0, 0.16, 0.03, 0, 0, 0, 1, 0.85, 0.7)); } },
+  { id: 'thighstrap', name: 'Thigh Straps', slot: 'legs', rar: 'street', bones: ['upperleg.l', 'upperleg.r'], build(g, M) { g.add(pmesh(new THREE.TorusGeometry(0.115, 0.028, 8, 18), M.accent, 0, -0.1, 0, Math.PI / 2)); } },
+  { id: 'shinguard', name: 'Shin Guards', slot: 'legs', rar: 'rare', bones: ['lowerleg.l', 'lowerleg.r'], build(g, M) { g.add(pmesh(new THREE.CylinderGeometry(0.09, 0.1, 0.24, 10), M.metal, 0, -0.05, 0)); } },
+  { id: 'cargopad', name: 'Cargo Plates', slot: 'legs', rar: 'rare', bones: ['upperleg.l', 'upperleg.r'], build(g, M) { g.add(pmesh(new THREE.BoxGeometry(0.2, 0.24, 0.06), M.secondary, 0, -0.08, 0.12)); } },
   // ---- boots ----
-  { id: 'toecap', name: 'Toe Caps', slot: 'boots', bones: ['footl', 'footr'], build(g, M) { g.add(pmesh(new THREE.BoxGeometry(0.17, 0.09, 0.12), M.metal, 0, -0.02, 0.1)); } },
-  { id: 'thicksole', name: 'Thick Soles', slot: 'boots', bones: ['footl', 'footr'], build(g, M) { g.add(pmesh(new THREE.BoxGeometry(0.18, 0.06, 0.26), M.secondary, 0, -0.09, 0.03)); } },
-  { id: 'hightop', name: 'High Tops', slot: 'boots', bones: ['footl', 'footr'], build(g, M) { g.add(pmesh(new THREE.CylinderGeometry(0.095, 0.105, 0.16, 10), M.primary, 0, 0.06, -0.02)); } },
-  { id: 'anklestrap', name: 'Ankle Straps', slot: 'boots', bones: ['footl', 'footr'], build(g, M) { g.add(pmesh(new THREE.TorusGeometry(0.1, 0.025, 8, 16), M.accent, 0, 0.05, 0, Math.PI / 2)); } },
+  { id: 'toecap', name: 'Toe Caps', slot: 'boots', rar: 'street', bones: ['foot.l', 'foot.r'], build(g, M) { g.add(pmesh(new THREE.BoxGeometry(0.17, 0.09, 0.12), M.metal, 0, -0.02, 0.1)); } },
+  { id: 'thicksole', name: 'Thick Soles', slot: 'boots', rar: 'street', bones: ['foot.l', 'foot.r'], build(g, M) { g.add(pmesh(new THREE.BoxGeometry(0.18, 0.06, 0.26), M.secondary, 0, -0.09, 0.03)); } },
+  { id: 'hightop', name: 'High Tops', slot: 'boots', rar: 'street', bones: ['foot.l', 'foot.r'], build(g, M) { g.add(pmesh(new THREE.CylinderGeometry(0.095, 0.105, 0.16, 10), M.primary, 0, 0.06, -0.02)); } },
+  { id: 'anklestrap', name: 'Ankle Straps', slot: 'boots', rar: 'street', bones: ['foot.l', 'foot.r'], build(g, M) { g.add(pmesh(new THREE.TorusGeometry(0.1, 0.025, 8, 16), M.accent, 0, 0.05, 0, Math.PI / 2)); } },
   // ---- shoulders: Gundam armor + vehicle parts ----
-  { id: 'pauldron', name: 'Pauldrons', slot: 'shoulders', bones: ['upperarml', 'upperarmr'], off: [0, 0.14, 0], build(g, M) { g.add(pmesh(new THREE.SphereGeometry(0.14, 12, 10), M.primary, 0, 0, 0, 0, 0, 0, 1.1, 0.75, 1.1)); } },
-  { id: 'spikepad', name: 'Spike Pads', slot: 'shoulders', bones: ['upperarml', 'upperarmr'], off: [0, 0.14, 0], build(g, M) { g.add(pmesh(new THREE.BoxGeometry(0.2, 0.06, 0.2), M.secondary, 0, -0.02, 0)); g.add(pmesh(new THREE.ConeGeometry(0.06, 0.14, 10), M.metal, 0, 0.08, 0)); } },
-  { id: 'shoulderfin', name: 'Gundam Fins', slot: 'shoulders', bones: ['upperarml', 'upperarmr'], off: [0, 0.14, 0], build(g, M) { g.add(pmesh(new THREE.BoxGeometry(0.03, 0.22, 0.12), M.accent, 0, 0.08, -0.04)); } },
-  { id: 'tirepad', name: 'Tire Pads', slot: 'shoulders', bones: ['upperarml', 'upperarmr'], off: [0, 0.14, 0], build(g, M) { g.add(pmesh(new THREE.TorusGeometry(0.11, 0.045, 10, 20), M.secondary, 0, 0, 0, Math.PI / 2)); } },
+  { id: 'pauldron', name: 'Pauldrons', slot: 'shoulders', rar: 'rare', bones: ['upperarm.l', 'upperarm.r'], off: [0, 0.14, 0], build(g, M) { g.add(pmesh(new THREE.SphereGeometry(0.14, 12, 10), M.primary, 0, 0, 0, 0, 0, 0, 1.1, 0.75, 1.1)); } },
+  { id: 'spikepad', name: 'Spike Pads', slot: 'shoulders', rar: 'rare', bones: ['upperarm.l', 'upperarm.r'], off: [0, 0.14, 0], build(g, M) { g.add(pmesh(new THREE.BoxGeometry(0.2, 0.06, 0.2), M.secondary, 0, -0.02, 0)); g.add(pmesh(new THREE.ConeGeometry(0.06, 0.14, 10), M.metal, 0, 0.08, 0)); } },
+  { id: 'shoulderfin', name: 'Gundam Fins', slot: 'shoulders', rar: 'rare', bones: ['upperarm.l', 'upperarm.r'], off: [0, 0.14, 0], build(g, M) { g.add(pmesh(new THREE.BoxGeometry(0.03, 0.22, 0.12), M.accent, 0, 0.08, -0.04)); } },
+  { id: 'tirepad', name: 'Tire Pads', slot: 'shoulders', rar: 'rare', bones: ['upperarm.l', 'upperarm.r'], off: [0, 0.14, 0], build(g, M) { g.add(pmesh(new THREE.TorusGeometry(0.11, 0.045, 10, 20), M.secondary, 0, 0, 0, Math.PI / 2)); } },
   // ---- back: vehicle-inspired mechanical ----
-  { id: 'cape', name: 'Cape', slot: 'back', bones: ['chest'], off: [0, 0, -0.24], build(g, M) { const m = pmesh(new THREE.PlaneGeometry(0.55, 0.75), M.primary, 0, -0.55, -0.02, 0.12); m.material = m.material.clone(); m.material.side = THREE.DoubleSide; g.add(m); } },
-  { id: 'jetpack', name: 'Jetpack', slot: 'back', bones: ['chest'], off: [0, 0, -0.24], build(g, M) { g.add(pmesh(new THREE.BoxGeometry(0.42, 0.5, 0.2), M.metal, 0, -0.1, 0)); g.add(pmesh(new THREE.CylinderGeometry(0.07, 0.09, 0.18, 10), M.secondary, -0.12, -0.42, 0)); g.add(pmesh(new THREE.CylinderGeometry(0.07, 0.09, 0.18, 10), M.secondary, 0.12, -0.42, 0)); g.add(pmesh(new THREE.CylinderGeometry(0.05, 0.05, 0.04, 10), M.accent, -0.12, -0.52, 0)); g.add(pmesh(new THREE.CylinderGeometry(0.05, 0.05, 0.04, 10), M.accent, 0.12, -0.52, 0)); } },
-  { id: 'exhaustpipes', name: 'Exhaust Pipes', slot: 'back', bones: ['chest'], off: [0, 0, -0.26], build(g, M) { g.add(pmesh(new THREE.CylinderGeometry(0.05, 0.05, 0.4, 10), M.metal, -0.14, -0.05, 0, 0.3)); g.add(pmesh(new THREE.CylinderGeometry(0.05, 0.05, 0.4, 10), M.metal, 0.14, -0.05, 0, 0.3)); } },
-  { id: 'cratepack', name: 'Supply Crate', slot: 'back', bones: ['chest'], off: [0, 0, -0.28], build(g, M) { g.add(pmesh(new THREE.BoxGeometry(0.4, 0.34, 0.24), M.secondary, 0, -0.15, 0)); g.add(pmesh(new THREE.BoxGeometry(0.42, 0.05, 0.26), M.accent, 0, 0.04, 0)); } },
+  { id: 'cape', name: 'Cape', slot: 'back', rar: 'rare', bones: ['chest'], off: [0, 0, -0.24], build(g, M) { const m = pmesh(new THREE.PlaneGeometry(0.55, 0.75), M.primary, 0, -0.55, -0.02, 0.12); m.material = m.material.clone(); m.material.side = THREE.DoubleSide; g.add(m); } },
+  { id: 'jetpack', name: 'Jetpack', slot: 'back', rar: 'rare', bones: ['chest'], off: [0, 0, -0.24], build(g, M) { g.add(pmesh(new THREE.BoxGeometry(0.42, 0.5, 0.2), M.metal, 0, -0.1, 0)); g.add(pmesh(new THREE.CylinderGeometry(0.07, 0.09, 0.18, 10), M.secondary, -0.12, -0.42, 0)); g.add(pmesh(new THREE.CylinderGeometry(0.07, 0.09, 0.18, 10), M.secondary, 0.12, -0.42, 0)); g.add(pmesh(new THREE.CylinderGeometry(0.05, 0.05, 0.04, 10), M.accent, -0.12, -0.52, 0)); g.add(pmesh(new THREE.CylinderGeometry(0.05, 0.05, 0.04, 10), M.accent, 0.12, -0.52, 0)); } },
+  { id: 'exhaustpipes', name: 'Exhaust Pipes', slot: 'back', rar: 'rare', bones: ['chest'], off: [0, 0, -0.26], build(g, M) { g.add(pmesh(new THREE.CylinderGeometry(0.05, 0.05, 0.4, 10), M.metal, -0.14, -0.05, 0, 0.3)); g.add(pmesh(new THREE.CylinderGeometry(0.05, 0.05, 0.4, 10), M.metal, 0.14, -0.05, 0, 0.3)); } },
+  { id: 'cratepack', name: 'Supply Crate', slot: 'back', rar: 'street', bones: ['chest'], off: [0, 0, -0.28], build(g, M) { g.add(pmesh(new THREE.BoxGeometry(0.4, 0.34, 0.24), M.secondary, 0, -0.15, 0)); g.add(pmesh(new THREE.BoxGeometry(0.42, 0.05, 0.26), M.accent, 0, 0.04, 0)); } },
   // ---- accessory ----
-  { id: 'neckchain', name: 'Neck Chain', slot: 'accessory', bones: ['chest'], build(g, M) { g.add(pmesh(new THREE.TorusGeometry(0.16, 0.022, 8, 22), M.metal, 0, -0.3, 0.12, 1.2)); } },
-  { id: 'medal', name: 'Street Medal', slot: 'accessory', bones: ['chest'], build(g, M) { g.add(pmesh(new THREE.BoxGeometry(0.08, 0.12, 0.02), M.secondary, 0, -0.26, 0.17)); g.add(pmesh(new THREE.CylinderGeometry(0.05, 0.05, 0.02, 12), M.accent, 0, -0.36, 0.17, Math.PI / 2)); } },
-  { id: 'shackle', name: 'Shackle', slot: 'accessory', bones: ['wristr'], build(g, M) { g.add(pmesh(new THREE.TorusGeometry(0.08, 0.025, 8, 18), M.metal, 0, 0, 0)); } },
-  { id: 'cornermic', name: 'Corner Mic', slot: 'accessory', bones: ['head'], build(g, M) { g.add(pmesh(new THREE.CylinderGeometry(0.012, 0.012, 0.14, 8), M.metal, 0.12, -0.04, 0.06, 0.4, 0, 0.5)); g.add(pmesh(new THREE.SphereGeometry(0.025, 8, 6), M.accent, 0.155, -0.1, 0.1)); } },
+  { id: 'neckchain', name: 'Neck Chain', slot: 'accessory', rar: 'rare', bones: ['chest'], build(g, M) { g.add(pmesh(new THREE.TorusGeometry(0.16, 0.022, 8, 22), M.metal, 0, -0.3, 0.12, 1.2)); } },
+  { id: 'medal', name: 'Street Medal', slot: 'accessory', rar: 'rare', bones: ['chest'], build(g, M) { g.add(pmesh(new THREE.BoxGeometry(0.08, 0.12, 0.02), M.secondary, 0, -0.26, 0.17)); g.add(pmesh(new THREE.CylinderGeometry(0.05, 0.05, 0.02, 12), M.accent, 0, -0.36, 0.17, Math.PI / 2)); } },
+  { id: 'shackle', name: 'Shackle', slot: 'accessory', rar: 'street', bones: ['wrist.r'], build(g, M) { g.add(pmesh(new THREE.TorusGeometry(0.08, 0.025, 8, 18), M.metal, 0, 0, 0)); } },
+  { id: 'cornermic', name: 'Corner Mic', slot: 'accessory', rar: 'street', bones: ['head'], build(g, M) { g.add(pmesh(new THREE.CylinderGeometry(0.012, 0.012, 0.14, 8), M.metal, 0.12, -0.04, 0.06, 0.4, 0, 0.5)); g.add(pmesh(new THREE.SphereGeometry(0.025, 8, 6), M.accent, 0.155, -0.1, 0.1)); } },
 ];
 // swatch set for the customize color pickers (LEGO-blocked hues + metal tones)
 const ZONE_SWATCHES = [0xd1403c, 0xff5a5a, 0xff8c42, 0xffb03d, 0xffd166, 0xd8b56b, 0x4fd1ff, 0x2e7dd1, 0x39d353, 0x4dff88, 0x9a4dff, 0xff4fd8, 0x8a7f6a, 0x9aa4b2, 0x6a7078, 0x2b2b38, 0xf0f0ff, 0x0f0f14, 0xd9a066, 0xe8c39a];
@@ -2356,13 +2356,13 @@ function bodyTint(fid) {
   if (lo.zones.skin != null) return lo.zones.skin;
   return skinTint(fid);
 }
-function attachPart(f, pid, M) {
+function attachPart(f, pid, M, zones) {
   const p = PART_DEFS.find((x) => x.id === pid); if (!p) return;
   for (const bn of p.bones) {
-    const bone = f.root.getObjectByName(bn); if (!bone) continue;
+    const bone = f.root.getObjectByName(bn); if (!bone) { console.warn('[customizer] bone not found:', bn, pid); continue; }
     const g = new THREE.Group(); g.name = 'cpart_' + pid;
     if (p.off) g.position.set(p.off[0], p.off[1], p.off[2]);
-    p.build(g, M);
+    p.build(g, M, zones, bn);
     bone.add(g);
   }
 }
@@ -2379,7 +2379,7 @@ function applyFighterCosmetics(f, fid) {
     let pid = lo.parts[slot];
     if (!pid || pid === 'none') pid = (s && s.parts) ? s.parts[slot] : null;
     if (!pid || pid === 'none') continue;
-    attachPart(f, pid, M); ids.push(pid);
+    attachPart(f, pid, M, zones); ids.push(pid);
   }
   f.partIds = ids;
 }
