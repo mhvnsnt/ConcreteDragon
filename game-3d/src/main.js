@@ -4632,22 +4632,28 @@ function resolveBodyCollision() {
   const bs = [];
   if (player && player.hp > 0) bs.push(player);
   for (const e of enemies) { if (e.hp > 0 && !e.airborne) bs.push(e); }
-  for (let i = 0; i < bs.length; i++) {
-    for (let j = i + 1; j < bs.length; j++) {
-      const a = bs[i], b = bs[j];
-      const min = (a.boss ? BOSS_BODY_R : BODY_R) + (b.boss ? BOSS_BODY_R : BODY_R);
-      let dx = b.px - a.px, dz = (b.pz || 0) - (a.pz || 0);
-      let d = Math.hypot(dx, dz);
-      if (d >= min) continue;
-      if (d < 1e-4) { dx = 1; dz = 0; d = 1; } // exact stack: pick an axis
-      const push = min - d, nx = dx / d, nz = dz / d;
-      // mass: player 3, boss 5, thug 1 — heavier moves less (bosses shove, thugs don't)
-      const ma = a === player ? 3 : (a.boss ? 5 : 1);
-      const mb = b === player ? 3 : (b.boss ? 5 : 1);
-      const tw = ma + mb;
-      a.px -= nx * push * (mb / tw); a.pz = (a.pz || 0) - nz * push * (mb / tw);
-      b.px += nx * push * (ma / tw); b.pz = (b.pz || 0) + nz * push * (ma / tw);
+  // iterate: one pairwise pass can leave chain residuals when 3+ bodies converge
+  for (let pass = 0; pass < 3; pass++) {
+    let clean = true;
+    for (let i = 0; i < bs.length; i++) {
+      for (let j = i + 1; j < bs.length; j++) {
+        const a = bs[i], b = bs[j];
+        const min = (a.boss ? BOSS_BODY_R : BODY_R) + (b.boss ? BOSS_BODY_R : BODY_R);
+        let dx = b.px - a.px, dz = (b.pz || 0) - (a.pz || 0);
+        let d = Math.hypot(dx, dz);
+        if (d >= min) continue;
+        clean = false;
+        if (d < 1e-4) { dx = 1; dz = 0; d = 1; } // exact stack: pick an axis
+        const push = min - d, nx = dx / d, nz = dz / d;
+        // mass: player 3, boss 5, thug 1 — heavier moves less (bosses shove, thugs don't)
+        const ma = a === player ? 3 : (a.boss ? 5 : 1);
+        const mb = b === player ? 3 : (b.boss ? 5 : 1);
+        const tw = ma + mb;
+        a.px -= nx * push * (mb / tw); a.pz = (a.pz || 0) - nz * push * (mb / tw);
+        b.px += nx * push * (ma / tw); b.pz = (b.pz || 0) + nz * push * (ma / tw);
+      }
     }
+    if (clean) break;
   }
   for (const f of bs) syncPos(f);
 }
