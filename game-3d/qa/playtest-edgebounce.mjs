@@ -3,7 +3,7 @@
 // with reflected velocity (back into juggle range), enemy stays in-bounds and airborne.
 // Zero page/console errors required. Screenshots -> game-3d/shots-edgebounce/
 import puppeteer from 'puppeteer-core';
-const CHROME = process.env.CHROME_PATH || '/home/hatch/.cache/ms-playwright/chromium-1194/chrome-linux/chrome';
+const CHROME = process.env.CHROME_PATH || '/home/hatch/.cache/puppeteer/chrome/linux-131.0.6778.204/chrome-linux64/chrome';
 const SHOTS = '/home/hatch/workspace/ConcreteDragon/game-3d/shots-edgebounce';
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const errors = [];
