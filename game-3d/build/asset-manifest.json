@@ -4,6 +4,10 @@
   "source": "KayKit Character Animations 1.1 (CC0 1.0)"
  },
  {
+  "file": "anim_grapple.glb",
+  "source": "Wrestling mocap (FenceThrow, Taunt) retargeted to game rig via Blender — clips: Throw_Fence, Taunt_Yakuza"
+ },
+ {
   "file": "anim_melee.glb",
   "source": "KayKit Character Animations 1.1 (CC0 1.0)"
  },
