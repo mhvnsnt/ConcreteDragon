@@ -3061,6 +3061,7 @@ function startMission(id, node) {
   player.baseSpd = player.spd;
   player.px = 2; player.pz = 0; player.face = 1;
   player.energy = 50; player.dodgeT = 0; player.dodgeCD = 0; player.busy = 0; player.spinT = 0;
+  player.blocking = false; player.blockstunT = 0; // BLOCK (defense lane): fresh guard each mission
   player.animMove = false; player.stance = 0; // mixtape stance resets to balanced each mission
   playAnim(player, 'Melee_Unarmed_Idle', { loop: true });
   spawnQueue = mission.spawns.map((s) => Object.assign({}, s, { done: false })).sort((a, b) => a.at - b.at);
@@ -3420,7 +3421,7 @@ function doGrapple() {
 }
 function doTaunt() {
   // TMNT taunt: talk trash, build special meter. Pure addition — costs a beat of vulnerability.
-  if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.busy > 0 || player.airT > 0) || player.blocking return;
+  if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.busy > 0 || player.airT > 0 || player.blocking) return;
   unlockAudio();
   // JET SET RADIO: near a tag spot, TAUNT starts spraying instead of trash-talking
   const tag = nearestTagSpot(2.2);
@@ -3444,7 +3445,7 @@ function doTaunt() {
 function doStance() {
   // MIXTAPE STANCE SYSTEM (Double Dragon Neon): two switchable loadouts mid-fight.
   // Double-tap TAUNT swaps stances — trade damage for speed or vice versa. Style, not power: pure tradeoff.
-  if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.busy > 0 || player.airT > 0) || player.blocking return;
+  if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.busy > 0 || player.airT > 0 || player.blocking) return;
   unlockAudio();
   const fd = fighterDef();
   player.stance = player.stance ? 0 : 1;
@@ -4732,6 +4733,10 @@ function playerUpdate(dt) {
   if (p.blitzCD > 0) p.blitzCD -= dt;
   if (p.witchCD > 0) p.witchCD -= dt;
   if (p.blockstunT > 0) p.blockstunT -= dt; // BLOCK (defense lane)
+  if (p.blocking) { // persistent guard shimmer so the stance reads clearly
+    p.guardFxT = (p.guardFxT || 0) - dt;
+    if (p.guardFxT <= 0) { p.guardFxT = 0.5; sparkFX(p.px, 1.1, p.pz, 0x7af0ff, 4); }
+  }
   // RADICAL MODE (TMNT): +30% dmg, +15% speed while active
   if (p.radicalT > 0) {
     p.radicalT -= dt;
@@ -5681,6 +5686,7 @@ window.__cdtest = {
   // BLOCK (defense lane) test hooks
   dbgBlock: (on) => { if (player) { if (on) startBlock(); else stopBlock(); } return !!(player && player.blocking); },
   dbgBlockHit: (dmg) => { const hp0 = player.hp, b0 = T.blocks || 0; hurtPlayer(dmg || 20); return { hp0, hp1: player.hp, chip: hp0 - player.hp, blocks: (T.blocks || 0) - b0 }; },
+  dbgSetBusy: (v) => { if (player) player.busy = v; return player ? player.busy : null },
   dbgEvents: () => T.events.map((e) => e.name),
   dbgPlayer: () => player ? { hp: player.hp, energy: Math.round(player.energy), px: +player.px.toFixed(2), witchCD: +(player.witchCD||0).toFixed(2), blitzCD: +(player.blitzCD||0).toFixed(2) } : null,
   dbgBoss: (id) => { const b = bossDef(id); return b ? { name: b.name, hp: b.hp, proc: !!b.proc, sig: b.sig ? b.sig.name : null } : null; },
