@@ -46,7 +46,7 @@ Page URL will be: `https://<owner-username>.itch.io/concrete-dragon`
 
 **What's in the build:**
 - 🥊 **Two fighters:** ROOK (balanced boxer — big gloves, big heart) and VEX (fast kickboxer — blink and you're down)
-- 👊 **One-thumb controls:** TAP = punch · SWIPE = heavy · SWIPE UP = launch · HOLD = block · TWO FINGERS = special
+- 👊 **One-thumb controls:** TAP = punch · SWIPE = heavy · SWIPE UP = launch · HOLD HVY = focus (absorb one hit, release for a crumple strike) · TWO FINGERS = special
 - 🌊 **Wave survival:** beat the punk, the next one walks in
 - 💰 **Cash + special meter:** earn cash, charge your special, chase the KO
 - 📱 **Play two ways:** right here in your browser, or download the Android APK below

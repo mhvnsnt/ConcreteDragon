@@ -22,7 +22,7 @@ the `game-3d/` Three.js build (CI change 2026-10-06). See Build Log §12.
 
 **Pick fighter → pick mode → 3-minute fight → earn cash/parts → upgrade fighter → queue again.**
 
-The demo already proves the fight: side-view canvas brawler, tap = jab, swipe = heavy, hold = block, special meter. The full game keeps this control scheme and layers depth (see §3).
+The demo already proves the fight: side-view canvas brawler, tap = jab, swipe = heavy, hold heavy = focus (absorb one hit, release = crumple strike), special meter. The full game keeps this control scheme and layers depth (see §3).
 
 **Session structure**:
 - Fight: 90-180 seconds.
