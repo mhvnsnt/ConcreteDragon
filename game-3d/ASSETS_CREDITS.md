@@ -44,3 +44,9 @@ node build.mjs        # -> dist/concrete-dragon.html (single self-contained HTML
 ```
 
 The 3D models are CC0 KayKit mannequins tinted per fighter/skin. No real-person likenesses, no ripped meshes, no proprietary IP.
+
+## PWA icons (M9, wave 19)
+`pwa/icons/` (icon-192/512, icon-maskable-512, apple-touch-icon-180) are
+center-crops/resizes of the Concrete Dragon cover art staged for the itch.io
+listing (`~/workspace/concrete-dragon-itch/art/cover-630x500.png`) — original
+AI-generated art commissioned for this project, no third-party IP.
