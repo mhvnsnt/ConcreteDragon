@@ -1896,7 +1896,7 @@ function throwWeapon() {
   streetGroup.add(mesh);
   thrownWpns.push({ mesh, type: w.type, dmg: d.throwDmg, px: player.px + dir * 0.5, pz: player.pz, vx: 11 * dir, life: 1.4, spin: 0 });
   player.busy = 0.35;
-  playAnim(player, 'Melee_Unarmed_Attack_Punch_A', { ts: 2.2, fade: 0.05 });
+  playAnim(player, 'Melee_Unarmed_Attack_Punch_B', { ts: 2.2, fade: 0.05 }); // real hook clip (anim_moves.glb)
   sfxSwing(0.7);
   const sp = screenPos(mesh.position.clone()); popText(d.name + ' THROWN!', 'big', sp.x, sp.y);
   ev('weapon_throw', { type: w.type });
