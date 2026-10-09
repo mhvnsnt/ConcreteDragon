@@ -87,6 +87,9 @@ const FIGHTERS = [
   { id: 'kidblue', wrestle: 'DRAGON SUPLEX', name: 'KID BLUE', tag: 'Balanced brawler. Big heart, bigger hands.', hp: 100, dmg: 1.0, spd: 1.0, unlock: { type: 'start' },
     spc2: { name: 'DRAGON RUSH', cost: 35, desc: 'Shoulder-first dash through the whole pack.' },
     qcf: { name: "DRAGON'S BREATH", sigkind: 'fireball', kind: 'fire', dmg: 30, speed: 9.5, color: 0xff7a2a, desc: 'Fireball', tag: 'Fireball projectile — 25 energy' },
+    ki: { name: 'DRAGON PALM', dmg: 9, speed: 15, color: 0xff7a2a, cost: 5 },
+    wave: { name: 'DRAGON WAVE', dmg: 24, speed: 7.5, color: 0xff7a2a, cost: 15 },
+    spin: { name: 'DRAGON CYCLONE', dmg: 18, color: 0xff7a2a, dur: 0.62, cost: 20 },
     bfname: 'STREET DASH', blitzname: 'DRAGON BLITZ', duname: 'SKY UPPER',
     mega: { name: "DRAGON'S JUDGMENT" },
     stance: { name: "RUSH STANCE", dmg: 0.85, spd: 1.25, desc: "All hands, no brakes. Faster, lighter hits." },
@@ -113,6 +116,9 @@ const FIGHTERS = [
   { id: 'ghost', wrestle: 'PHANTOM DRIVER', name: 'GHOST', tag: 'Fast striker. Blink and you lose.', hp: 85, dmg: 0.9, spd: 1.25, unlock: { type: 'start' },
     spc2: { name: 'BLINK FLURRY', cost: 35, desc: 'Blink between the 3 nearest enemies, striking each.' },
     qcf: { name: 'PHANTOM STEP', sigkind: 'teleport', dmg: 36, color: 0x9a7bff, desc: 'Blink behind the nearest enemy and strike', tag: 'Teleport strike — 25 energy' },
+    ki: { name: 'SPECTRAL BOLT', dmg: 8, speed: 16, color: 0x9a7bff, cost: 5 },
+    wave: { name: 'PHANTOM WAVE', dmg: 22, speed: 8, color: 0x9a7bff, cost: 15 },
+    spin: { name: 'GHOST CYCLONE', dmg: 16, color: 0x9a7bff, dur: 0.62, cost: 20 },
     bfname: 'PHASE STEP', blitzname: 'PHANTOM BLITZ', duname: 'WRAITH RISE',
     mega: { name: 'MIDNIGHT REQUIEM' },
     stance: { name: "WRAITH STANCE", dmg: 1.2, spd: 0.95, desc: "Blinks hit harder. Meaner, not faster." },
@@ -139,6 +145,9 @@ const FIGHTERS = [
   { id: 'brick', wrestle: 'RENT-A-POWERBOMB', name: 'BRICK', tag: 'Walking wall. Hits like rent day.', hp: 135, dmg: 1.25, spd: 0.85, unlock: { type: 'start' },
     spc2: { name: 'SEISMIC SLAM', cost: 35, desc: 'Ground pound: shockwave launches everyone near.' },
     qcf: { name: 'RENT COLLECTION', sigkind: 'grab', dmg: 46, color: 0xffb02e, desc: 'Command grab — yank and slam', tag: 'Command grab — 25 energy' },
+    ki: { name: 'BRICK BAT', dmg: 12, speed: 12, color: 0xffb02e, cost: 6 },
+    wave: { name: 'SEISMIC WAVE', dmg: 28, speed: 6, color: 0xffb02e, cost: 18 },
+    spin: { name: 'WRECKING BALL', dmg: 22, color: 0xffb02e, dur: 0.7, cost: 25 },
     bfname: 'PAVEMENT RUSH', blitzname: 'BATTERING RAM', duname: 'HIGH-RISE',
     mega: { name: 'RENT DUE' },
     stance: { name: "PAYLOAD STANCE", dmg: 1.35, spd: 0.78, desc: "The wall walks forward." },
@@ -165,6 +174,9 @@ const FIGHTERS = [
   { id: 'kingpin', wrestle: 'HOSTILE SUPLEX', name: 'KINGPIN', tag: 'Used to run this block. Now he runs with you.', hp: 150, dmg: 1.3, spd: 0.9, unlock: { type: 'boss', boss: 'kingpin' },
     spc2: { name: "KINGPIN'S WRATH", cost: 35, desc: 'Royal beatdown: massive AOE around him.' },
     qcf: { name: 'ROYAL DECREE', sigkind: 'orb', kind: 'orb', dmg: 40, speed: 5, color: 0xffd166, desc: 'Slow explosive orb', tag: 'Explosive orb — 25 energy' },
+    ki: { name: "KING'S WRATH", dmg: 10, speed: 14, color: 0xffd166, cost: 6 },
+    wave: { name: 'EMPIRE WAVE', dmg: 26, speed: 7, color: 0xffd166, cost: 16 },
+    spin: { name: 'EXECUTIVE ORDER', dmg: 20, color: 0xffd166, dur: 0.62, cost: 22 },
     bfname: 'HOSTILE MARCH', blitzname: 'ROYAL CHARGE', duname: 'THRONE RISE',
     mega: { name: 'HOSTILE TAKEOVER' },
     stance: { name: "IRON THRONE", dmg: 1.2, spd: 0.92, desc: "Every decree lands heavier." },
@@ -191,6 +203,9 @@ const FIGHTERS = [
   { id: 'sledge', wrestle: 'DEMOLITION DRIVER', name: 'SLEDGE', tag: 'Yard enforcer. Swings first, talks never.', hp: 165, dmg: 1.45, spd: 0.8, unlock: { type: 'boss', boss: 'sledge' },
     spc2: { name: 'WRECKING SWING', cost: 35, desc: '360° swing that clears the whole circle.' },
     qcf: { name: 'IRON CYCLONE', sigkind: 'spin', dmg: 16, color: 0x80ed99, desc: 'Traveling spin — multi-hit', tag: 'Traveling spin — 25 energy' },
+    ki: { name: 'IRON JAB', dmg: 8, speed: 14, color: 0x80ed99, cost: 5 },
+    wave: { name: 'CYCLONE WAVE', dmg: 22, speed: 7, color: 0x80ed99, cost: 15 },
+    spin: { name: 'IRON CYCLONE', dmg: 16, color: 0x80ed99, dur: 0.62, cost: 20 },
     bfname: 'WRECKING RUSH', blitzname: 'SLEDGEHAMMER RUN', duname: 'CRANE UPPER',
     mega: { name: 'DEMOLITION DAY' },
     stance: { name: "DEMOLITION STANCE", dmg: 1.3, spd: 0.85, desc: "Swinging for the fences." },
@@ -217,6 +232,9 @@ const FIGHTERS = [
   { id: 'viper', wrestle: 'VENOM POWERBOMB', name: 'VIPER', tag: 'Fast hands, faster mouth.', hp: 95, dmg: 1.05, spd: 1.35, unlock: { type: 'boss', boss: 'viper' },
     spc2: { name: 'VENOM DASH', cost: 35, desc: 'Serpent dash: strikes everything in a line.' },
     qcf: { name: "SERPENT'S WAKE", sigkind: 'groundwave', kind: 'fangwave', dmg: 26, speed: 9, color: 0x7cff6b, desc: 'Ground fang wave', tag: 'Ground fang wave — 25 energy' },
+    ki: { name: 'VENOM SPIT', dmg: 7, speed: 17, color: 0x7cff6b, cost: 4 },
+    wave: { name: 'SERPENT WAVE', dmg: 20, speed: 8.5, color: 0x7cff6b, cost: 14 },
+    spin: { name: 'COIL SPIN', dmg: 15, color: 0x7cff6b, dur: 0.6, cost: 18 },
     bfname: 'SERPENT DASH', blitzname: 'VIPER STRIKE', duname: 'COIL SPRING',
     mega: { name: "SERPENT'S COIL" },
     stance: { name: "COIL STANCE", dmg: 1.1, spd: 1.22, desc: "Strike from anywhere." },
@@ -243,6 +261,9 @@ const FIGHTERS = [
   { id: 'dust', wrestle: 'DUST DEVIL DRIVER', name: 'DUST', tag: 'Quick hands. Gone before you blink.', hp: 80, dmg: 0.95, spd: 1.4, unlock: { type: 'boss', boss: 'rust' },
     spc2: { name: 'DUST DEVIL', cost: 35, desc: 'Spin into the pack: AOE hits while moving.' },
     qcf: { name: 'DESERT SPIKES', sigkind: 'erupt', dmg: 30, color: 0xd8b56b, desc: 'Spikes erupt under nearby enemies', tag: 'Ground eruption — 25 energy' },
+    ki: { name: 'SAND BLAST', dmg: 8, speed: 15, color: 0xd8b56b, cost: 5 },
+    wave: { name: 'DUST STORM', dmg: 23, speed: 7, color: 0xd8b56b, cost: 15 },
+    spin: { name: 'DESERT CYCLONE', dmg: 17, color: 0xd8b56b, dur: 0.62, cost: 20 },
     bfname: 'DUST RUSH', blitzname: 'DUST DEVIL', duname: 'HABOOB RISE',
     mega: { name: 'DUST BOWL' },
     stance: { name: "STORM STANCE", dmg: 1.05, spd: 1.3, desc: "Become the weather." },
@@ -264,6 +285,9 @@ const FIGHTERS = [
     unlock: { type: 'boss', boss: 'pumpkinking' }, head: 'pumpkin', tint: 0xe07b1f,
     spc2: { name: 'CANDLE RUSH', cost: 35, desc: 'Burning dash: leaves a fire trail through the pack.' },
     qcf: { name: 'PUMPKIN BOMB', sigkind: 'fireball', kind: 'fire', dmg: 34, speed: 8, color: 0xff7a1a, arc: 1, desc: 'Lobbed flaming pumpkin', tag: 'Lobbed pumpkin bomb — 25 energy' },
+    ki: { name: 'JACK-O-BOLT', dmg: 9, speed: 14, color: 0xff7a1a, cost: 5 },
+    wave: { name: 'HARVEST WAVE', dmg: 25, speed: 7, color: 0xff7a1a, cost: 16 },
+    spin: { name: 'PUMPKIN SPIN', dmg: 18, color: 0xff7a1a, dur: 0.62, cost: 20 },
     bfname: 'PATCH SPRINT', blitzname: 'HARVEST RUSH', duname: 'SCARECROW RISE',
     mega: { name: 'GREAT PUMPKIN' },
     stance: { name: "HARVEST STANCE", dmg: 1.25, spd: 0.9, desc: "The patch feeds on pain." },
@@ -5044,6 +5068,19 @@ function doMotionSpecial(kind, free) {
   }
 }
 
+// Idle variant: occasionally switch to Idle_B for visual variety (moves expansion fill pass).
+function idleVariantTick(dt) {
+  if (!player || state !== 'fight' || player.busy > 0 || player.hp <= 0) return;
+  if (player.moveX !== 0 || player.knockT > 0) return; // only when truly idle
+  player.idleVT = (player.idleVT || 0) - dt;
+  if (player.idleVT <= 0) {
+    player.idleVT = 4 + Math.random() * 3;
+    const useB = Math.random() < 0.35;
+    const cur = useB ? 'Idle_B' : 'Melee_Unarmed_Idle';
+    if (player.idleCur !== cur) { player.idleCur = cur; playAnim(player, cur, { loop: true, fade: 0.4 }); }
+  }
+}
+
 // ---------- MOVES EXPANSION: ki blasts, energy waves, generalized spin ----------
 // Ki Blast: rapid-fire ki projectile (double-tap SPC). Spammable, low cost.
 function doKiBlast() {
@@ -5555,6 +5592,7 @@ function frame(dt, doRender = true) {
   if (slowmoT > 0) { slowmoT -= dt; dt *= slowmo; }
   for (const f of fighters) { f.mixer.update(dt); if (f.busy > 0) f.busy -= dt; }
   doWaveTick(dt); // MOVES EXPANSION: energy wave charge
+  idleVariantTick(dt); // MOVES EXPANSION: idle variants
 
   if (state === 'select' || state === 'title') {
     if (showcase && state === 'select') {
@@ -5672,6 +5710,12 @@ boot().catch((e) => { T.errors.push(String(e && e.stack || e)); console.error(e)
 // QA hook (test automation only — drives the real game systems, no mocks)
 window.__cdtest = {
   startMission, state: () => state,
+  clips: () => Object.keys(clips),
+  playClip: (name) => { if (player) playAnim(player, name, { once: true, dur: 0.6 }); return !!clips[name]; },
+  doKiBlast, doWaveStart, doWaveRelease, doSpinAttack,
+  killAll: () => { for (const e of [...enemies]) killEnemy(e, true); return enemies.length; },
+  setBusy: (v) => { if (player) player.busy = v; },
+  boneQuat: (bone) => { if (!player) return null; const b = player.root.getObjectByName(bone); if (!b) return null; const q = b.quaternion; return [q.x, q.y, q.z, q.w].map(v => +v.toFixed(3)); },
   tp: (x) => { if (player) player.px = x; },
   tp2: (x, z) => { if (player) { player.px = x; player.pz = z; } },
   projCount: () => projs.length,
