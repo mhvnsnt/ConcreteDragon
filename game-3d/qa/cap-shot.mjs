@@ -7,7 +7,7 @@ import path from 'node:path';
 const CHROME = '/home/hatch/.cache/puppeteer/chrome/linux-131.0.6778.204/chrome-linux64/chrome';
 const HTML = 'file:///home/hatch/workspace/ConcreteDragon-video/game-3d/dist/concrete-dragon.html';
 const OUTBASE = '/home/hatch/workspace/concrete-dragon-launch/videos/raw';
-const W = 1280, H = 720, FPS = 30;
+const W = 960, H = 540, FPS = 30, CAP_FPS = 15; // capture at 15fps, minterpolate to 30 in assembly
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 const shotName = process.argv[2] || 'smoke';
@@ -35,17 +35,23 @@ await sleep(1500);
 // run the shot's setup
 await shot.setup(E, page, sleep);
 
-// capture frames: stepRender(1/30) + screenshot per frame
+// capture frames: stepRender(2/30) per capture = 15fps source, minterpolate to 30 in assembly
 const frames = shot.frames;
-console.log(`capturing ${frames} frames for ${shotName}...`);
+const step = 2; // sim frames per capture
+const captures = Math.ceil(frames / step);
+console.log(`capturing ${captures} frames (15fps source) for ${shotName}...`);
 const t0 = Date.now();
-for (let f = 0; f < frames; f++) {
-  if (shot.onFrame) await shot.onFrame(E, f);
-  await E('t.stepRender(1/30)');
-  // periodic wall-clock settle for hit-resolution timeouts
-  if (f % 30 === 0 && f > 0) await sleep(120);
-  await page.screenshot({ path: path.join(OUT, `f${String(f).padStart(5,'0')}.png`) });
-  if (f % 60 === 0) console.log(`  frame ${f}/${frames} (${((Date.now()-t0)/1000).toFixed(0)}s)`);
+for (let f = 0; f < captures; f++) {
+  const simF = f * step;
+  if (shot.onFrame) await shot.onFrame(E, simF);
+  await E(`t.stepRender(${step}/30)`);
+  try {
+    await page.screenshot({ path: path.join(OUT, `f${String(f).padStart(5,'0')}.jpg`), type: 'jpeg', quality: 85 });
+  } catch (e) {
+    await sleep(2000);
+    await page.screenshot({ path: path.join(OUT, `f${String(f).padStart(5,'0')}.jpg`), type: 'jpeg', quality: 85 });
+  }
+  if (f % 40 === 0) console.log(`  frame ${f}/${captures} (${((Date.now()-t0)/1000).toFixed(0)}s)`);
 }
-console.log(`done ${shotName}: ${frames} frames in ${((Date.now()-t0)/1000).toFixed(0)}s, errors:`, errs.length ? errs.slice(0,5) : 'none');
+console.log(`done ${shotName}: ${captures} captures in ${((Date.now()-t0)/1000).toFixed(0)}s, errors:`, errs.length ? errs.slice(0,5) : 'none');
 await browser.close();
