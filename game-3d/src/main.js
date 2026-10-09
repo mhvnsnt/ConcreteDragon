@@ -5389,12 +5389,12 @@ function resolveStrikeContact(attacker, defender, contact, opts = {}) {
   }
   defender.px = clamp(defender.px, 0.5, mission.len === Infinity ? 1e6 : mission.len - 1.5);
   syncPos(defender);
-  attacker.contactStop = true; // this attack's forward advance ends at contact
 }
-function separateHurtboxes(a, b) {
+function separateHurtboxes(a, b, ha, hb) {
   // Always-on guard: a and b are live fighters; their head/head and head/torso
   // hurtboxes must never overlap. Mass-weighted ground-plane push (matches PR #12).
-  const ha = hurtboxes(a), hb = hurtboxes(b);
+  // ha/hb are precomputed hurtboxes (pass explicitly to avoid recompute).
+  ha = ha || hurtboxes(a); hb = hb || hurtboxes(b);
   const ma = a === player ? 3 : (a.boss ? 5 : 1);
   const mb = b === player ? 3 : (b.boss ? 5 : 1);
   const tw = ma + mb;
@@ -5426,8 +5426,10 @@ function resolveHurtboxContact() {
   const fs = [];
   if (player && player.hp > 0) fs.push(player);
   for (const e of enemies) if (e.hp > 0) fs.push(e);
+  // compute hurtboxes once per fighter (not per pair)
+  const hbs = fs.map((f) => hurtboxes(f));
   for (let i = 0; i < fs.length; i++) {
-    for (let j = i + 1; j < fs.length; j++) separateHurtboxes(fs[i], fs[j]);
+    for (let j = i + 1; j < fs.length; j++) separateHurtboxes(fs[i], fs[j], hbs[i], hbs[j]);
   }
   for (const f of fs) syncPos(f);
 }
