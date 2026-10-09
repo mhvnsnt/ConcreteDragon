@@ -2291,6 +2291,62 @@ function pmesh(geo, mat, x, y, z, rx, ry, rz, sx, sy, sz) {
   if (sx || sy || sz) m.scale.set(sx || 1, sy || 1, sz || 1);
   m.castShadow = true; return m;
 }
+// ---------- LOOK LAW (owner 2026-10-08): every NEW part carries a painted multi-piece
+// texture, never flat. ptex paints a 128x128 canvas from the fighter's resolved zone hex
+// (per-fighter tint identity preserved), with patchwork pieces, 2px dark ink outlines and
+// one highlight streak. pmat wraps it in MeshStandardMaterial. Cached per hex+pattern.
+// Existing flat zoneMat parts are grandfathered — do not rework them.
+const ptexCache = {};
+function shade(hex, f) {
+  const r = (hex >> 16) & 255, g = (hex >> 8) & 255, b = hex & 255;
+  const m = (v) => Math.max(0, Math.min(255, Math.round(v * f)));
+  return '#' + (((m(r) << 16) | (m(g) << 8) | m(b)) >>> 0).toString(16).padStart(6, '0');
+}
+function ptex(zoneHex, pattern) {
+  const key = (zoneHex >>> 0).toString(16) + ':' + (pattern || 'patchwork');
+  if (ptexCache[key]) return ptexCache[key];
+  const c = document.createElement('canvas'); c.width = c.height = 128;
+  const g = c.getContext('2d');
+  const R = (a, b) => a + Math.random() * (b - a);
+  g.fillStyle = shade(zoneHex, 1); g.fillRect(0, 0, 128, 128);
+  if (pattern === 'razor') {
+    // painted razor lines: thin diagonal lighter cuts (buzz cuts, masked trims)
+    g.strokeStyle = shade(zoneHex, 1.55); g.lineWidth = 2;
+    for (let i = -4; i < 10; i++) { g.beginPath(); g.moveTo(i * 22, -4); g.lineTo(i * 22 + 46, 132); g.stroke(); }
+  } else if (pattern === 'mask') {
+    // two-tone diagonal blocks (lucha masks, visors)
+    g.fillStyle = shade(zoneHex, 0.68);
+    g.beginPath(); g.moveTo(0, 128); g.lineTo(128, 0); g.lineTo(128, 128); g.closePath(); g.fill();
+    g.fillStyle = shade(zoneHex, 1.38);
+    g.beginPath(); g.moveTo(0, 0); g.lineTo(62, 0); g.lineTo(0, 62); g.closePath(); g.fill();
+  } else if (pattern === 'leather') {
+    // creases: darker weathered streaks (gloves, boots)
+    for (let i = 0; i < 7; i++) {
+      g.strokeStyle = shade(zoneHex, 0.76); g.lineWidth = 3; g.beginPath();
+      const y = R(0, 128); g.moveTo(-4, y);
+      g.bezierCurveTo(40, y + R(-14, 14), 90, y + R(-14, 14), 132, y + R(-8, 8)); g.stroke();
+    }
+  } else {
+    // patchwork pieces: darker/lighter shards of the zone color (street garments)
+    for (let i = 0; i < 6; i++) {
+      g.fillStyle = shade(zoneHex, R(0.7, 1.35));
+      g.fillRect(R(-10, 96), R(-10, 96), R(28, 72), R(28, 72));
+    }
+  }
+  // 2px dark ink outlines
+  g.strokeStyle = 'rgba(12,8,4,0.85)'; g.lineWidth = 2;
+  g.strokeRect(1, 1, 126, 126);
+  for (let i = 0; i < 3; i++) g.strokeRect(R(8, 78), R(8, 78), R(24, 50), R(24, 50));
+  // one highlight streak
+  g.strokeStyle = 'rgba(255,255,255,0.28)'; g.lineWidth = 6;
+  g.beginPath(); g.moveTo(14, 112); g.lineTo(62, 28); g.stroke();
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  ptexCache[key] = t; return t;
+}
+function pmat(zoneHex, pattern) {
+  return new THREE.MeshStandardMaterial({ map: ptex(zoneHex, pattern), roughness: 0.65, metalness: 0.08 });
+}
 // Each part: id, name, slot, bones (named bones, parented like PART_HEADS), off, build(g, M).
 const PART_DEFS = [
   // ---- head ----
