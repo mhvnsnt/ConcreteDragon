@@ -141,7 +141,7 @@
  },
  {
   "file": "parts/witch.glb",
-  "source": "Quaternius (CC-BY 4.0) \u2014 attribution: Quaternius"
+  "source": "Quaternius (CC-BY 4.0) — attribution: Quaternius"
  },
  {
   "file": "parts/vampire-bat.glb",
@@ -149,19 +149,19 @@
  },
  {
   "file": "parts/carmilla.glb",
-  "source": "JellyLion via OpenGameArt (CC-BY 4.0) \u2014 attribution: JellyLion"
+  "source": "JellyLion via OpenGameArt (CC-BY 4.0) — attribution: JellyLion"
  },
  {
   "file": "parts/ghost-happy.glb",
-  "source": "JellyLion via OpenGameArt (CC-BY 4.0) \u2014 attribution: JellyLion"
+  "source": "JellyLion via OpenGameArt (CC-BY 4.0) — attribution: JellyLion"
  },
  {
   "file": "parts/ghost-sad.glb",
-  "source": "JellyLion via OpenGameArt (CC-BY 4.0) \u2014 attribution: JellyLion"
+  "source": "JellyLion via OpenGameArt (CC-BY 4.0) — attribution: JellyLion"
  },
  {
   "file": "parts/skull.glb",
-  "source": "JellyLion via OpenGameArt (CC-BY 4.0) \u2014 attribution: JellyLion"
+  "source": "JellyLion via OpenGameArt (CC-BY 4.0) — attribution: JellyLion"
  },
  {
   "file": "parts/basketball-tulio.glb",
@@ -177,47 +177,94 @@
  },
  {
   "file": "props/k_cone.glb",
-  "source": "Kenney City Kit Roads (CC0 1.0) \u2014 kenney.nl"
+  "source": "Kenney City Kit Roads (CC0 1.0) — kenney.nl"
  },
  {
   "file": "props/k_barrier.glb",
-  "source": "Kenney City Kit Roads (CC0 1.0) \u2014 kenney.nl"
+  "source": "Kenney City Kit Roads (CC0 1.0) — kenney.nl"
  },
  {
   "file": "props/k_fence.glb",
-  "source": "Kenney City Kit Roads (CC0 1.0) \u2014 kenney.nl"
+  "source": "Kenney City Kit Roads (CC0 1.0) — kenney.nl"
  },
  {
   "file": "props/k_lamppost.glb",
-  "source": "Kenney City Kit Roads (CC0 1.0) \u2014 kenney.nl"
+  "source": "Kenney City Kit Roads (CC0 1.0) — kenney.nl"
  },
  {
   "file": "props/k_chair.glb",
-  "source": "Kenney Furniture Kit (CC0 1.0) \u2014 kenney.nl"
+  "source": "Kenney Furniture Kit (CC0 1.0) — kenney.nl"
  },
  {
   "file": "props/k_table.glb",
-  "source": "Kenney Furniture Kit (CC0 1.0) \u2014 kenney.nl"
+  "source": "Kenney Furniture Kit (CC0 1.0) — kenney.nl"
  },
  {
   "file": "props/k_trafficone.glb",
-  "source": "Kenney Car Kit (CC0 1.0) \u2014 kenney.nl"
+  "source": "Kenney Car Kit (CC0 1.0) — kenney.nl"
  },
  {
   "file": "props/k_tire.glb",
-  "source": "Kenney Car Kit (CC0 1.0) \u2014 kenney.nl"
+  "source": "Kenney Car Kit (CC0 1.0) — kenney.nl"
  },
-{
-    "file": "roads.glb",
-    "source": "Kenney city-kit-roads (CC0 1.0) \u2014 overpass district props"
-  },
-{
-    "file": "industrial.glb",
-    "source": "Kenney city-kit-industrial (CC0 1.0) \u2014 factory district props"
-  }
-,
+ {
+  "file": "roads.glb",
+  "source": "Kenney city-kit-roads (CC0 1.0) — overpass district props"
+ },
+ {
+  "file": "industrial.glb",
+  "source": "Kenney city-kit-industrial (CC0 1.0) — factory district props"
+ },
  {
   "file": "counter.mp3",
   "source": "Kenney RPG Audio (CC0 1.0) [metalPot3.ogg]"
+ },
+ {
+  "file": "vfx/circle.png",
+  "source": "Kenney Particle Pack (CC0 1.0) — kenney.nl"
+ },
+ {
+  "file": "vfx/dirt.png",
+  "source": "Kenney Particle Pack (CC0 1.0) — kenney.nl"
+ },
+ {
+  "file": "vfx/fire.png",
+  "source": "Kenney Particle Pack (CC0 1.0) — kenney.nl"
+ },
+ {
+  "file": "vfx/flame.png",
+  "source": "Kenney Particle Pack (CC0 1.0) — kenney.nl"
+ },
+ {
+  "file": "vfx/flare.png",
+  "source": "Kenney Particle Pack (CC0 1.0) — kenney.nl"
+ },
+ {
+  "file": "vfx/light.png",
+  "source": "Kenney Particle Pack (CC0 1.0) — kenney.nl"
+ },
+ {
+  "file": "vfx/magic.png",
+  "source": "Kenney Particle Pack (CC0 1.0) — kenney.nl"
+ },
+ {
+  "file": "vfx/muzzle.png",
+  "source": "Kenney Particle Pack (CC0 1.0) — kenney.nl"
+ },
+ {
+  "file": "vfx/smoke.png",
+  "source": "Kenney Particle Pack (CC0 1.0) — kenney.nl"
+ },
+ {
+  "file": "vfx/spark.png",
+  "source": "Kenney Particle Pack (CC0 1.0) — kenney.nl"
+ },
+ {
+  "file": "vfx/star.png",
+  "source": "Kenney Particle Pack (CC0 1.0) — kenney.nl"
+ },
+ {
+  "file": "vfx/twirl.png",
+  "source": "Kenney Particle Pack (CC0 1.0) — kenney.nl"
  }
 ]

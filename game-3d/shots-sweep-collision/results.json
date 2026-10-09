@@ -1,0 +1,69 @@
+{
+ "walkIn": [
+  {
+   "t": 0.5,
+   "min": 0.88,
+   "pair": "player/STREET THUG",
+   "n": 4
+  },
+  {
+   "t": 1,
+   "min": 0.89,
+   "pair": "player/STREET THUG",
+   "n": 4
+  },
+  {
+   "t": 1.5,
+   "min": 0.89,
+   "pair": "player/STREET THUG",
+   "n": 4
+  },
+  {
+   "t": 2,
+   "min": 0.89,
+   "pair": "player/STREET THUG",
+   "n": 4
+  },
+  {
+   "t": 2.5,
+   "min": 0.88,
+   "pair": "STREET THUG/STREET THUG",
+   "n": 4
+  },
+  {
+   "t": 3,
+   "min": 0.89,
+   "pair": "player/STREET THUG",
+   "n": 4
+  },
+  {
+   "t": 3.5,
+   "min": 0.89,
+   "pair": "player/STREET THUG",
+   "n": 4
+  },
+  {
+   "t": 4,
+   "min": 0.88,
+   "pair": "STREET THUG/STREET THUG",
+   "n": 4
+  },
+  {
+   "t": 4.5,
+   "min": 0.89,
+   "pair": "player/STREET THUG",
+   "n": 4
+  },
+  {
+   "t": 5,
+   "min": 0.88,
+   "pair": "STREET THUG/STREET THUG",
+   "n": 4
+  }
+ ],
+ "teleport": {
+  "min": 0.9,
+  "pair": "player/STREET THUG",
+  "n": 4
+ }
+}

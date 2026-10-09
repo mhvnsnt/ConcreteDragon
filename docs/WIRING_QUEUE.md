@@ -157,7 +157,14 @@ Wire in this order; playtest after each tier. Owner plays and vetoes — wire, d
 
 ## TIER 6 — feel + variety
 24. **F6 camera push-in** on KO (slow-mo already HAVE).
-25. **VFX variety** — `kenney_particle-pack.zip` sparks/smoke for KO bursts, special VFX (A9).
+25. **VFX variety** — ✅ WIRED 2026-10-09 (wave 17): `kenney_particle-pack.zip` sparks/smoke for KO bursts, special VFX (A9).
+    12 sprites (circle/dirt/fire/flame/flare/light/magic/muzzle/smoke/spark/star/twirl, 128px) extracted to
+    `game-3d/build/assets/vfx/`, manifest-registered + credited. Pooled billboard bursts in `main.js`:
+    KO ring+smoke+spark (`vfxKO` in killEnemy), muzzle/star hit pops on every landed hit (`vfxImpact` in
+    landHit), flame/magic special VFX (DESPERATION, BURST, doSpecial2, stance finishers, signatures,
+    MEGA SUPER), smoke/dirt on edge-bounce wall thuds. lowFx halves burst counts. Playtest
+    `qa/playtest-vfx.mjs` 17/17 PASS, zero errors, 6 proof shots eyes-on verified. Doc:
+    `docs/TRANCHE_WAVE17_VFX.md`.
 26. **U13/U14/U15** — wire staged OFL fonts, 9-slice panels, icons across all menus/HUD.
 
 ## DEFERRED (needs design or later phase)

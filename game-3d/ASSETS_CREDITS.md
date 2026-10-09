@@ -20,6 +20,7 @@ Every asset in `game-3d/build/assets/` is **CC0 1.0 (public domain)**. No royalt
 | `pickup.mp3` (mouseclick1) | Kenney — UI Audio (CC0 1.0) — cash-pickup chime (S6/S7, 2026-10-08) |
 | `hitlayer1.mp3` (metalPot2), `hitlayer2.mp3` (dropLeather), `hitlayer3.mp3` (doorClose_2) | Kenney — RPG Audio (CC0 1.0) |
 | `src/vendor/seedrandom.js` (bundled into the game JS) | **seedrandom.js — MIT License © 2019 David Bau** (vendored verbatim from `game/assets/staging/systems/seedrandom.js`; powers the Y8 daily seeded run — one seed/day for all players) |
+| `vfx/*.png` (circle, dirt, fire, flame, flare, light, magic, muzzle, smoke, spark, star, twirl — 128px) | Kenney — Particle Pack (CC0 1.0) — billboard sprite bursts (wave 17 VFX tranche) |
 
 ## UI kit (embedded in `src/template.html` as data URIs — no external files)
 

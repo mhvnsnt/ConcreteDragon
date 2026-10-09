@@ -1,0 +1,2120 @@
+[
+ {
+  "t": 0,
+  "p": {
+   "busy": 0,
+   "stance": 0,
+   "hp": 100,
+   "state": "fight",
+   "fid": "kidblue",
+   "hasFin": true,
+   "face": 1,
+   "animMove": false,
+   "animTs": 1,
+   "px": 2
+  },
+  "dbg": {
+   "hp": 100,
+   "energy": 51,
+   "px": 2,
+   "witchCD": 0,
+   "blitzCD": 0
+  },
+  "foes": [
+   {
+    "hp": 70,
+    "px": 10.8,
+    "pz": -0.6,
+    "ai": "walk",
+    "wu": 0,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 70,
+    "px": 12.4,
+    "pz": -1,
+    "ai": "walk",
+    "wu": 0,
+    "name": "STREET THUG"
+   }
+  ],
+  "info": {
+   "px": 2,
+   "hp": 100,
+   "foes": 2,
+   "boss": 0,
+   "cash": 0,
+   "kills": 0
+  },
+  "st": "fight",
+  "fps": 6
+ },
+ {
+  "t": 0.5,
+  "p": {
+   "busy": 0,
+   "stance": 0,
+   "hp": 100,
+   "state": "fight",
+   "fid": "kidblue",
+   "hasFin": true,
+   "face": 1,
+   "animMove": true,
+   "animTs": 1,
+   "px": 2.64
+  },
+  "dbg": {
+   "hp": 100,
+   "energy": 51,
+   "px": 2.64,
+   "witchCD": 0,
+   "blitzCD": 0
+  },
+  "foes": [
+   {
+    "hp": 70,
+    "px": 10.6,
+    "pz": -0.4,
+    "ai": "walk",
+    "wu": 0,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 70,
+    "px": 12.2,
+    "pz": -0.9,
+    "ai": "walk",
+    "wu": 0,
+    "name": "STREET THUG"
+   }
+  ],
+  "info": {
+   "px": 2.6,
+   "hp": 100,
+   "foes": 2,
+   "boss": 0,
+   "cash": 0,
+   "kills": 0
+  },
+  "st": "fight",
+  "fps": 2
+ },
+ {
+  "t": 5.7,
+  "p": {
+   "busy": 0,
+   "stance": 0,
+   "hp": 100,
+   "state": "fight",
+   "fid": "kidblue",
+   "hasFin": true,
+   "face": 1,
+   "animMove": true,
+   "animTs": 1,
+   "px": 4.75
+  },
+  "dbg": {
+   "hp": 100,
+   "energy": 54,
+   "px": 4.75,
+   "witchCD": 0,
+   "blitzCD": 0
+  },
+  "foes": [
+   {
+    "hp": 70,
+    "px": 9.8,
+    "pz": 0,
+    "ai": "walk",
+    "wu": 0,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 70,
+    "px": 11.4,
+    "pz": -0.2,
+    "ai": "walk",
+    "wu": 0,
+    "name": "STREET THUG"
+   }
+  ],
+  "info": {
+   "px": 4.7,
+   "hp": 100,
+   "foes": 2,
+   "boss": 0,
+   "cash": 0,
+   "kills": 0
+  },
+  "st": "fight",
+  "fps": 2
+ },
+ {
+  "t": 10,
+  "p": {
+   "busy": 0,
+   "stance": 0,
+   "hp": 100,
+   "state": "fight",
+   "fid": "kidblue",
+   "hasFin": true,
+   "face": 1,
+   "animMove": true,
+   "animTs": 1,
+   "px": 6.47
+  },
+  "dbg": {
+   "hp": 100,
+   "energy": 56,
+   "px": 6.47,
+   "witchCD": 0,
+   "blitzCD": 0
+  },
+  "foes": [
+   {
+    "hp": 70,
+    "px": 9.2,
+    "pz": 0,
+    "ai": "walk",
+    "wu": 0,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 70,
+    "px": 10.8,
+    "pz": 0,
+    "ai": "walk",
+    "wu": 0,
+    "name": "STREET THUG"
+   }
+  ],
+  "info": {
+   "px": 6.5,
+   "hp": 100,
+   "foes": 2,
+   "boss": 0,
+   "cash": 0,
+   "kills": 0
+  },
+  "st": "fight",
+  "fps": 2
+ },
+ {
+  "t": 14.8,
+  "p": {
+   "busy": 0,
+   "stance": 0,
+   "hp": 100,
+   "state": "fight",
+   "fid": "kidblue",
+   "hasFin": true,
+   "face": 1,
+   "animMove": true,
+   "animTs": 1,
+   "px": 8.23
+  },
+  "dbg": {
+   "hp": 100,
+   "energy": 58,
+   "px": 8.23,
+   "witchCD": 0,
+   "blitzCD": 0
+  },
+  "foes": [
+   {
+    "hp": 70,
+    "px": 8.8,
+    "pz": 0,
+    "ai": "windup",
+    "wu": 0.75,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 70,
+    "px": 10.2,
+    "pz": 0,
+    "ai": "walk",
+    "wu": 0,
+    "name": "STREET THUG"
+   }
+  ],
+  "info": {
+   "px": 8.2,
+   "hp": 100,
+   "foes": 2,
+   "boss": 0,
+   "cash": 0,
+   "kills": 0
+  },
+  "st": "fight",
+  "fps": 0
+ },
+ {
+  "t": 20,
+  "p": {
+   "busy": 0,
+   "stance": 0,
+   "hp": 100,
+   "state": "fight",
+   "fid": "kidblue",
+   "hasFin": true,
+   "face": 1,
+   "animMove": false,
+   "animTs": 2.6,
+   "px": 10.76
+  },
+  "dbg": {
+   "hp": 100,
+   "energy": 67,
+   "px": 10.76,
+   "witchCD": 0,
+   "blitzCD": 0
+  },
+  "foes": [
+   {
+    "hp": 52,
+    "px": 8.8,
+    "pz": 0,
+    "ai": "windup",
+    "wu": 0.5,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 70,
+    "px": 10.1,
+    "pz": 0,
+    "ai": "windup",
+    "wu": 0.7,
+    "name": "STREET THUG"
+   }
+  ],
+  "info": {
+   "px": 10.8,
+   "hp": 100,
+   "foes": 2,
+   "boss": 0,
+   "cash": 0,
+   "kills": 0
+  },
+  "st": "fight",
+  "fps": 2
+ },
+ {
+  "t": 25.3,
+  "p": {
+   "busy": 0,
+   "stance": 0,
+   "hp": 100,
+   "state": "fight",
+   "fid": "kidblue",
+   "hasFin": true,
+   "face": 1,
+   "animMove": true,
+   "animTs": 1,
+   "px": 12.58
+  },
+  "dbg": {
+   "hp": 100,
+   "energy": 69,
+   "px": 12.58,
+   "witchCD": 0,
+   "blitzCD": 0
+  },
+  "foes": [
+   {
+    "hp": 52,
+    "px": 8.8,
+    "pz": 0,
+    "ai": "windup",
+    "wu": 0.15,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 70,
+    "px": 10.1,
+    "pz": 0,
+    "ai": "windup",
+    "wu": 0.35,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 70,
+    "px": 19.7,
+    "pz": 0,
+    "ai": "walk",
+    "wu": 0,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 70,
+    "px": 21.3,
+    "pz": 0.3,
+    "ai": "walk",
+    "wu": 0,
+    "name": "STREET THUG"
+   }
+  ],
+  "info": {
+   "px": 12.6,
+   "hp": 100,
+   "foes": 4,
+   "boss": 0,
+   "cash": 0,
+   "kills": 0
+  },
+  "st": "fight",
+  "fps": 2
+ },
+ {
+  "t": 28.9,
+  "p": {
+   "busy": 0,
+   "stance": 0,
+   "hp": 100,
+   "state": "fight",
+   "fid": "kidblue",
+   "hasFin": true,
+   "face": 1,
+   "animMove": true,
+   "animTs": 1,
+   "px": 14.04
+  },
+  "dbg": {
+   "hp": 100,
+   "energy": 70,
+   "px": 14.04,
+   "witchCD": 0,
+   "blitzCD": 0
+  },
+  "foes": [
+   {
+    "hp": 52,
+    "px": 8.8,
+    "pz": 0,
+    "ai": "recover",
+    "wu": 0,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 70,
+    "px": 10.1,
+    "pz": 0,
+    "ai": "recover",
+    "wu": 0,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 70,
+    "px": 19.1,
+    "pz": 0.2,
+    "ai": "walk",
+    "wu": 0,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 70,
+    "px": 20.7,
+    "pz": 0.2,
+    "ai": "walk",
+    "wu": 0,
+    "name": "STREET THUG"
+   }
+  ],
+  "info": {
+   "px": 14,
+   "hp": 100,
+   "foes": 4,
+   "boss": 0,
+   "cash": 0,
+   "kills": 0
+  },
+  "st": "fight",
+  "fps": 0
+ },
+ {
+  "t": 32.4,
+  "p": {
+   "busy": 0,
+   "stance": 0,
+   "hp": 100,
+   "state": "fight",
+   "fid": "kidblue",
+   "hasFin": true,
+   "face": 1,
+   "animMove": true,
+   "animTs": 1,
+   "px": 15.36
+  },
+  "dbg": {
+   "hp": 100,
+   "energy": 72,
+   "px": 15.36,
+   "witchCD": 0,
+   "blitzCD": 0
+  },
+  "foes": [
+   {
+    "hp": 52,
+    "px": 8.8,
+    "pz": 0,
+    "ai": "recover",
+    "wu": 0,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 70,
+    "px": 10.1,
+    "pz": 0,
+    "ai": "recover",
+    "wu": 0,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 70,
+    "px": 18.7,
+    "pz": 0.2,
+    "ai": "walk",
+    "wu": 0,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 70,
+    "px": 20.3,
+    "pz": 0.2,
+    "ai": "walk",
+    "wu": 0,
+    "name": "STREET THUG"
+   }
+  ],
+  "info": {
+   "px": 15.4,
+   "hp": 100,
+   "foes": 4,
+   "boss": 0,
+   "cash": 0,
+   "kills": 0
+  },
+  "st": "fight",
+  "fps": 2
+ },
+ {
+  "t": 36.7,
+  "p": {
+   "busy": 0,
+   "stance": 0,
+   "hp": 100,
+   "state": "fight",
+   "fid": "kidblue",
+   "hasFin": true,
+   "face": 1,
+   "animMove": true,
+   "animTs": 1,
+   "px": 17.12
+  },
+  "dbg": {
+   "hp": 100,
+   "energy": 74,
+   "px": 17.12,
+   "witchCD": 0,
+   "blitzCD": 0
+  },
+  "foes": [
+   {
+    "hp": 52,
+    "px": 8.8,
+    "pz": 0,
+    "ai": "recover",
+    "wu": 0,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 70,
+    "px": 10.1,
+    "pz": 0,
+    "ai": "recover",
+    "wu": 0,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 70,
+    "px": 18.1,
+    "pz": 0.2,
+    "ai": "windup",
+    "wu": 0.7,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 70,
+    "px": 19.6,
+    "pz": 0.2,
+    "ai": "walk",
+    "wu": 0,
+    "name": "STREET THUG"
+   }
+  ],
+  "info": {
+   "px": 17.1,
+   "hp": 100,
+   "foes": 4,
+   "boss": 0,
+   "cash": 0,
+   "kills": 0
+  },
+  "st": "fight",
+  "fps": 2
+ },
+ {
+  "t": 41.1,
+  "p": {
+   "busy": 0,
+   "stance": 0,
+   "hp": 100,
+   "state": "fight",
+   "fid": "kidblue",
+   "hasFin": true,
+   "face": 1,
+   "animMove": true,
+   "animTs": 1,
+   "px": 20.55
+  },
+  "dbg": {
+   "hp": 100,
+   "energy": 84,
+   "px": 20.55,
+   "witchCD": 0,
+   "blitzCD": 0
+  },
+  "foes": [
+   {
+    "hp": 52,
+    "px": 8.9,
+    "pz": 0.1,
+    "ai": "walk",
+    "wu": 0,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 70,
+    "px": 10.1,
+    "pz": 0,
+    "ai": "walk",
+    "wu": 0,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 52,
+    "px": 18.1,
+    "pz": 0.2,
+    "ai": "windup",
+    "wu": 0.3,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 70,
+    "px": 19.4,
+    "pz": 0.3,
+    "ai": "windup",
+    "wu": 0.65,
+    "name": "STREET THUG"
+   }
+  ],
+  "info": {
+   "px": 20.5,
+   "hp": 100,
+   "foes": 4,
+   "boss": 0,
+   "cash": 0,
+   "kills": 0
+  },
+  "st": "fight",
+  "fps": 2
+ },
+ {
+  "t": 45,
+  "p": {
+   "busy": 0,
+   "stance": 0,
+   "hp": 100,
+   "state": "fight",
+   "fid": "kidblue",
+   "hasFin": true,
+   "face": 1,
+   "animMove": true,
+   "animTs": 1,
+   "px": 22.26
+  },
+  "dbg": {
+   "hp": 100,
+   "energy": 86,
+   "px": 22.26,
+   "witchCD": 0,
+   "blitzCD": 0
+  },
+  "foes": [
+   {
+    "hp": 52,
+    "px": 9.5,
+    "pz": 0.6,
+    "ai": "walk",
+    "wu": 0,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 70,
+    "px": 10.7,
+    "pz": 0.5,
+    "ai": "walk",
+    "wu": 0,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 52,
+    "px": 18.1,
+    "pz": 0.2,
+    "ai": "recover",
+    "wu": -0.03,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 70,
+    "px": 19.4,
+    "pz": 0.3,
+    "ai": "windup",
+    "wu": 0.26,
+    "name": "STREET THUG"
+   }
+  ],
+  "info": {
+   "px": 22.3,
+   "hp": 100,
+   "foes": 4,
+   "boss": 0,
+   "cash": 0,
+   "kills": 0
+  },
+  "st": "fight",
+  "fps": 2
+ },
+ {
+  "t": 49.5,
+  "p": {
+   "busy": 0,
+   "stance": 0,
+   "hp": 100,
+   "state": "fight",
+   "fid": "kidblue",
+   "hasFin": true,
+   "face": 1,
+   "animMove": true,
+   "animTs": 1,
+   "px": 24.02
+  },
+  "dbg": {
+   "hp": 100,
+   "energy": 88,
+   "px": 24.02,
+   "witchCD": 0,
+   "blitzCD": 0
+  },
+  "foes": [
+   {
+    "hp": 52,
+    "px": 10.2,
+    "pz": 0.7,
+    "ai": "walk",
+    "wu": 0,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 70,
+    "px": 11.3,
+    "pz": 0.7,
+    "ai": "walk",
+    "wu": 0,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 52,
+    "px": 18.1,
+    "pz": 0.2,
+    "ai": "recover",
+    "wu": -0.03,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 70,
+    "px": 19.4,
+    "pz": 0.3,
+    "ai": "recover",
+    "wu": -0.04,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 100,
+    "px": 31.8,
+    "pz": 0.4,
+    "ai": "walk",
+    "wu": 0,
+    "name": "BIG RICO"
+   },
+   {
+    "hp": 100,
+    "px": 33.4,
+    "pz": 0.7,
+    "ai": "walk",
+    "wu": 0,
+    "name": "BIG RICO"
+   }
+  ],
+  "info": {
+   "px": 24,
+   "hp": 100,
+   "foes": 6,
+   "boss": 0,
+   "cash": 0,
+   "kills": 0
+  },
+  "st": "fight",
+  "fps": 2
+ },
+ {
+  "t": 53,
+  "p": {
+   "busy": 0,
+   "stance": 0,
+   "hp": 100,
+   "state": "fight",
+   "fid": "kidblue",
+   "hasFin": true,
+   "face": 1,
+   "animMove": true,
+   "animTs": 1,
+   "px": 25.78
+  },
+  "dbg": {
+   "hp": 100,
+   "energy": 90,
+   "px": 25.78,
+   "witchCD": 0,
+   "blitzCD": 0
+  },
+  "foes": [
+   {
+    "hp": 52,
+    "px": 10.8,
+    "pz": 0.7,
+    "ai": "walk",
+    "wu": 0,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 70,
+    "px": 12,
+    "pz": 0.7,
+    "ai": "walk",
+    "wu": 0,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 52,
+    "px": 18.1,
+    "pz": 0.2,
+    "ai": "recover",
+    "wu": -0.03,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 70,
+    "px": 19.4,
+    "pz": 0.3,
+    "ai": "recover",
+    "wu": -0.04,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 100,
+    "px": 31.2,
+    "pz": 0.7,
+    "ai": "walk",
+    "wu": 0,
+    "name": "BIG RICO"
+   },
+   {
+    "hp": 100,
+    "px": 32.8,
+    "pz": 0.7,
+    "ai": "walk",
+    "wu": 0,
+    "name": "BIG RICO"
+   }
+  ],
+  "info": {
+   "px": 25.8,
+   "hp": 100,
+   "foes": 6,
+   "boss": 0,
+   "cash": 0,
+   "kills": 0
+  },
+  "st": "fight",
+  "fps": 2
+ },
+ {
+  "t": 57.4,
+  "p": {
+   "busy": 0,
+   "stance": 0,
+   "hp": 100,
+   "state": "fight",
+   "fid": "kidblue",
+   "hasFin": true,
+   "face": 1,
+   "animMove": true,
+   "animTs": 1,
+   "px": 27.76
+  },
+  "dbg": {
+   "hp": 100,
+   "energy": 92,
+   "px": 27.76,
+   "witchCD": 0,
+   "blitzCD": 0
+  },
+  "foes": [
+   {
+    "hp": 52,
+    "px": 11.5,
+    "pz": 0.7,
+    "ai": "walk",
+    "wu": 0,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 70,
+    "px": 12.7,
+    "pz": 0.7,
+    "ai": "walk",
+    "wu": 0,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 52,
+    "px": 18.1,
+    "pz": 0.2,
+    "ai": "recover",
+    "wu": -0.03,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 70,
+    "px": 19.4,
+    "pz": 0.3,
+    "ai": "walk",
+    "wu": -0.04,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 100,
+    "px": 30.6,
+    "pz": 0.7,
+    "ai": "walk",
+    "wu": 0,
+    "name": "BIG RICO"
+   },
+   {
+    "hp": 100,
+    "px": 32.2,
+    "pz": 0.7,
+    "ai": "walk",
+    "wu": 0,
+    "name": "BIG RICO"
+   }
+  ],
+  "info": {
+   "px": 27.8,
+   "hp": 100,
+   "foes": 6,
+   "boss": 0,
+   "cash": 0,
+   "kills": 0
+  },
+  "st": "fight",
+  "fps": 4
+ },
+ {
+  "t": 61.7,
+  "p": {
+   "busy": 0,
+   "stance": 0,
+   "hp": 100,
+   "state": "fight",
+   "fid": "kidblue",
+   "hasFin": true,
+   "face": 1,
+   "animMove": true,
+   "animTs": 1,
+   "px": 29.65
+  },
+  "dbg": {
+   "hp": 100,
+   "energy": 94,
+   "px": 29.65,
+   "witchCD": 0,
+   "blitzCD": 0
+  },
+  "foes": [
+   {
+    "hp": 52,
+    "px": 12.2,
+    "pz": 0.7,
+    "ai": "walk",
+    "wu": 0,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 70,
+    "px": 13.4,
+    "pz": 0.7,
+    "ai": "walk",
+    "wu": 0,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 52,
+    "px": 18.3,
+    "pz": 0.4,
+    "ai": "walk",
+    "wu": -0.03,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 70,
+    "px": 20.1,
+    "pz": 0.7,
+    "ai": "walk",
+    "wu": -0.04,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 100,
+    "px": 30.2,
+    "pz": 0.7,
+    "ai": "windup",
+    "wu": 0.6,
+    "name": "BIG RICO"
+   },
+   {
+    "hp": 100,
+    "px": 31.6,
+    "pz": 0.7,
+    "ai": "walk",
+    "wu": 0,
+    "name": "BIG RICO"
+   }
+  ],
+  "info": {
+   "px": 29.7,
+   "hp": 100,
+   "foes": 6,
+   "boss": 0,
+   "cash": 0,
+   "kills": 0
+  },
+  "st": "fight",
+  "fps": 2
+ },
+ {
+  "t": 65.2,
+  "p": {
+   "busy": 0,
+   "stance": 0,
+   "hp": 100,
+   "state": "fight",
+   "fid": "kidblue",
+   "hasFin": true,
+   "face": 1,
+   "animMove": true,
+   "animTs": 2.6,
+   "px": 32.67
+  },
+  "dbg": {
+   "hp": 100,
+   "energy": 100,
+   "px": 32.67,
+   "witchCD": 0,
+   "blitzCD": 0
+  },
+  "foes": [
+   {
+    "hp": 52,
+    "px": 12.7,
+    "pz": 0.7,
+    "ai": "walk",
+    "wu": 0,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 70,
+    "px": 13.9,
+    "pz": 0.7,
+    "ai": "walk",
+    "wu": 0,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 52,
+    "px": 18.8,
+    "pz": 0.7,
+    "ai": "walk",
+    "wu": -0.03,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 70,
+    "px": 20.6,
+    "pz": 0.7,
+    "ai": "walk",
+    "wu": -0.04,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 82,
+    "px": 30.2,
+    "pz": 0.7,
+    "ai": "windup",
+    "wu": 0.3,
+    "name": "BIG RICO"
+   },
+   {
+    "hp": 100,
+    "px": 31.5,
+    "pz": 0.7,
+    "ai": "windup",
+    "wu": 0.5,
+    "name": "BIG RICO"
+   }
+  ],
+  "info": {
+   "px": 32.7,
+   "hp": 100,
+   "foes": 6,
+   "boss": 0,
+   "cash": 0,
+   "kills": 0
+  },
+  "st": "fight",
+  "fps": 2
+ },
+ {
+  "t": 68.8,
+  "p": {
+   "busy": 0,
+   "stance": 0,
+   "hp": 100,
+   "state": "fight",
+   "fid": "kidblue",
+   "hasFin": true,
+   "face": 1,
+   "animMove": true,
+   "animTs": 1,
+   "px": 34.21
+  },
+  "dbg": {
+   "hp": 100,
+   "energy": 100,
+   "px": 34.21,
+   "witchCD": 0,
+   "blitzCD": 0
+  },
+  "foes": [
+   {
+    "hp": 52,
+    "px": 13.3,
+    "pz": 0.7,
+    "ai": "walk",
+    "wu": 0,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 70,
+    "px": 14.4,
+    "pz": 0.7,
+    "ai": "walk",
+    "wu": 0,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 52,
+    "px": 19.4,
+    "pz": 0.7,
+    "ai": "walk",
+    "wu": -0.03,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 70,
+    "px": 21.1,
+    "pz": 0.7,
+    "ai": "walk",
+    "wu": -0.04,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 82,
+    "px": 30.2,
+    "pz": 0.7,
+    "ai": "recover",
+    "wu": 0,
+    "name": "BIG RICO"
+   },
+   {
+    "hp": 100,
+    "px": 31.5,
+    "pz": 0.7,
+    "ai": "windup",
+    "wu": 0.15,
+    "name": "BIG RICO"
+   },
+   {
+    "hp": 60,
+    "px": 41.5,
+    "pz": -0.4,
+    "ai": "walk",
+    "wu": 0,
+    "name": "JABBER"
+   },
+   {
+    "hp": 60,
+    "px": 43,
+    "pz": -0.1,
+    "ai": "walk",
+    "wu": 0,
+    "name": "JABBER"
+   }
+  ],
+  "info": {
+   "px": 34.2,
+   "hp": 100,
+   "foes": 8,
+   "boss": 0,
+   "cash": 0,
+   "kills": 0
+  },
+  "st": "fight",
+  "fps": 2
+ },
+ {
+  "t": 72,
+  "p": {
+   "busy": 0,
+   "stance": 0,
+   "hp": 100,
+   "state": "fight",
+   "fid": "kidblue",
+   "hasFin": true,
+   "face": 1,
+   "animMove": true,
+   "animTs": 1,
+   "px": 35.75
+  },
+  "dbg": {
+   "hp": 100,
+   "energy": 100,
+   "px": 35.75,
+   "witchCD": 0,
+   "blitzCD": 0
+  },
+  "foes": [
+   {
+    "hp": 52,
+    "px": 13.8,
+    "pz": 0.7,
+    "ai": "walk",
+    "wu": 0,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 70,
+    "px": 15,
+    "pz": 0.7,
+    "ai": "walk",
+    "wu": 0,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 52,
+    "px": 19.9,
+    "pz": 0.7,
+    "ai": "walk",
+    "wu": -0.03,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 70,
+    "px": 21.7,
+    "pz": 0.7,
+    "ai": "walk",
+    "wu": -0.04,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 82,
+    "px": 30.2,
+    "pz": 0.7,
+    "ai": "recover",
+    "wu": 0,
+    "name": "BIG RICO"
+   },
+   {
+    "hp": 100,
+    "px": 31.5,
+    "pz": 0.7,
+    "ai": "recover",
+    "wu": -0.05,
+    "name": "BIG RICO"
+   },
+   {
+    "hp": 60,
+    "px": 40.7,
+    "pz": 0.2,
+    "ai": "walk",
+    "wu": 0,
+    "name": "JABBER"
+   },
+   {
+    "hp": 60,
+    "px": 42.3,
+    "pz": 0.5,
+    "ai": "walk",
+    "wu": 0,
+    "name": "JABBER"
+   }
+  ],
+  "info": {
+   "px": 35.8,
+   "hp": 100,
+   "foes": 8,
+   "boss": 0,
+   "cash": 0,
+   "kills": 0
+  },
+  "st": "fight",
+  "fps": 2
+ },
+ {
+  "t": 78.1,
+  "p": {
+   "busy": 0,
+   "stance": 0,
+   "hp": 100,
+   "state": "fight",
+   "fid": "kidblue",
+   "hasFin": true,
+   "face": 1,
+   "animMove": true,
+   "animTs": 1,
+   "px": 37.51
+  },
+  "dbg": {
+   "hp": 100,
+   "energy": 100,
+   "px": 37.51,
+   "witchCD": 0,
+   "blitzCD": 0
+  },
+  "foes": [
+   {
+    "hp": 52,
+    "px": 14.4,
+    "pz": 0.7,
+    "ai": "walk",
+    "wu": 0,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 70,
+    "px": 15.6,
+    "pz": 0.7,
+    "ai": "walk",
+    "wu": 0,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 52,
+    "px": 20.6,
+    "pz": 0.7,
+    "ai": "walk",
+    "wu": -0.03,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 70,
+    "px": 22.3,
+    "pz": 0.7,
+    "ai": "walk",
+    "wu": -0.04,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 82,
+    "px": 30.2,
+    "pz": 0.7,
+    "ai": "recover",
+    "wu": 0,
+    "name": "BIG RICO"
+   },
+   {
+    "hp": 100,
+    "px": 31.5,
+    "pz": 0.7,
+    "ai": "recover",
+    "wu": -0.05,
+    "name": "BIG RICO"
+   },
+   {
+    "hp": 60,
+    "px": 39.8,
+    "pz": 0.7,
+    "ai": "walk",
+    "wu": 0,
+    "name": "JABBER"
+   },
+   {
+    "hp": 60,
+    "px": 41.4,
+    "pz": 0.7,
+    "ai": "walk",
+    "wu": 0,
+    "name": "JABBER"
+   }
+  ],
+  "info": {
+   "px": 37.5,
+   "hp": 100,
+   "foes": 8,
+   "boss": 0,
+   "cash": 0,
+   "kills": 0
+  },
+  "st": "fight",
+  "fps": 4
+ },
+ {
+  "t": 81.3,
+  "p": {
+   "busy": 0,
+   "stance": 0,
+   "hp": 100,
+   "state": "fight",
+   "fid": "kidblue",
+   "hasFin": true,
+   "face": 1,
+   "animMove": true,
+   "animTs": 1,
+   "px": 39.19
+  },
+  "dbg": {
+   "hp": 100,
+   "energy": 100,
+   "px": 39.19,
+   "witchCD": 0,
+   "blitzCD": 0
+  },
+  "foes": [
+   {
+    "hp": 52,
+    "px": 15.1,
+    "pz": 0.7,
+    "ai": "walk",
+    "wu": 0,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 70,
+    "px": 16.3,
+    "pz": 0.7,
+    "ai": "walk",
+    "wu": 0,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 52,
+    "px": 21.2,
+    "pz": 0.7,
+    "ai": "walk",
+    "wu": -0.03,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 70,
+    "px": 22.9,
+    "pz": 0.7,
+    "ai": "walk",
+    "wu": -0.04,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 82,
+    "px": 30.4,
+    "pz": 0.7,
+    "ai": "walk",
+    "wu": 0,
+    "name": "BIG RICO"
+   },
+   {
+    "hp": 100,
+    "px": 31.5,
+    "pz": 0.7,
+    "ai": "walk",
+    "wu": -0.05,
+    "name": "BIG RICO"
+   },
+   {
+    "hp": 60,
+    "px": 39.4,
+    "pz": 0.7,
+    "ai": "windup",
+    "wu": 0.56,
+    "name": "JABBER"
+   },
+   {
+    "hp": 60,
+    "px": 40.6,
+    "pz": 0.7,
+    "ai": "walk",
+    "wu": 0,
+    "name": "JABBER"
+   }
+  ],
+  "info": {
+   "px": 39.2,
+   "hp": 100,
+   "foes": 8,
+   "boss": 0,
+   "cash": 0,
+   "kills": 0
+  },
+  "st": "fight",
+  "fps": 2
+ },
+ {
+  "t": 84.5,
+  "p": {
+   "busy": 0,
+   "stance": 0,
+   "hp": 100,
+   "state": "fight",
+   "fid": "kidblue",
+   "hasFin": true,
+   "face": 1,
+   "animMove": true,
+   "animTs": 2.6,
+   "px": 42.22
+  },
+  "dbg": {
+   "hp": 100,
+   "energy": 100,
+   "px": 42.22,
+   "witchCD": 0,
+   "blitzCD": 0
+  },
+  "foes": [
+   {
+    "hp": 52,
+    "px": 15.5,
+    "pz": 0.7,
+    "ai": "walk",
+    "wu": 0,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 70,
+    "px": 16.7,
+    "pz": 0.7,
+    "ai": "walk",
+    "wu": 0,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 52,
+    "px": 21.7,
+    "pz": 0.7,
+    "ai": "walk",
+    "wu": -0.03,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 70,
+    "px": 23.4,
+    "pz": 0.7,
+    "ai": "walk",
+    "wu": -0.04,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 82,
+    "px": 30.8,
+    "pz": 0.7,
+    "ai": "walk",
+    "wu": 0,
+    "name": "BIG RICO"
+   },
+   {
+    "hp": 100,
+    "px": 31.9,
+    "pz": 0.7,
+    "ai": "walk",
+    "wu": -0.05,
+    "name": "BIG RICO"
+   },
+   {
+    "hp": 42,
+    "px": 39.4,
+    "pz": 0.7,
+    "ai": "windup",
+    "wu": 0.26,
+    "name": "JABBER"
+   },
+   {
+    "hp": 60,
+    "px": 40.5,
+    "pz": 0.7,
+    "ai": "windup",
+    "wu": 0.5,
+    "name": "JABBER"
+   }
+  ],
+  "info": {
+   "px": 42.2,
+   "hp": 100,
+   "foes": 8,
+   "boss": 0,
+   "cash": 0,
+   "kills": 0
+  },
+  "st": "fight",
+  "fps": 2
+ },
+ {
+  "t": 88.1,
+  "p": {
+   "busy": 0,
+   "stance": 0,
+   "hp": 100,
+   "state": "fight",
+   "fid": "kidblue",
+   "hasFin": true,
+   "face": 1,
+   "animMove": true,
+   "animTs": 1,
+   "px": 43.76
+  },
+  "dbg": {
+   "hp": 100,
+   "energy": 100,
+   "px": 43.76,
+   "witchCD": 0,
+   "blitzCD": 0
+  },
+  "foes": [
+   {
+    "hp": 52,
+    "px": 16.1,
+    "pz": 0.7,
+    "ai": "walk",
+    "wu": 0,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 70,
+    "px": 17.3,
+    "pz": 0.7,
+    "ai": "walk",
+    "wu": 0,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 52,
+    "px": 22.2,
+    "pz": 0.7,
+    "ai": "walk",
+    "wu": -0.03,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 70,
+    "px": 24,
+    "pz": 0.7,
+    "ai": "walk",
+    "wu": -0.04,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 82,
+    "px": 31.3,
+    "pz": 0.7,
+    "ai": "walk",
+    "wu": 0,
+    "name": "BIG RICO"
+   },
+   {
+    "hp": 100,
+    "px": 32.4,
+    "pz": 0.7,
+    "ai": "walk",
+    "wu": -0.05,
+    "name": "BIG RICO"
+   },
+   {
+    "hp": 42,
+    "px": 39.4,
+    "pz": 0.7,
+    "ai": "recover",
+    "wu": -0.04,
+    "name": "JABBER"
+   },
+   {
+    "hp": 60,
+    "px": 40.5,
+    "pz": 0.7,
+    "ai": "windup",
+    "wu": 0.15,
+    "name": "JABBER"
+   }
+  ],
+  "info": {
+   "px": 43.8,
+   "hp": 100,
+   "foes": 8,
+   "boss": 0,
+   "cash": 0,
+   "kills": 0
+  },
+  "st": "fight",
+  "fps": 2
+ },
+ {
+  "t": 91.4,
+  "p": {
+   "busy": 0,
+   "stance": 0,
+   "hp": 100,
+   "state": "fight",
+   "fid": "kidblue",
+   "hasFin": true,
+   "face": 1,
+   "animMove": true,
+   "animTs": 1,
+   "px": 45.3
+  },
+  "dbg": {
+   "hp": 100,
+   "energy": 100,
+   "px": 45.3,
+   "witchCD": 0,
+   "blitzCD": 0
+  },
+  "foes": [
+   {
+    "hp": 52,
+    "px": 16.7,
+    "pz": 0.7,
+    "ai": "walk",
+    "wu": 0,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 70,
+    "px": 17.9,
+    "pz": 0.7,
+    "ai": "walk",
+    "wu": 0,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 52,
+    "px": 22.8,
+    "pz": 0.7,
+    "ai": "walk",
+    "wu": -0.03,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 70,
+    "px": 24.5,
+    "pz": 0.7,
+    "ai": "walk",
+    "wu": -0.04,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 82,
+    "px": 31.8,
+    "pz": 0.7,
+    "ai": "walk",
+    "wu": 0,
+    "name": "BIG RICO"
+   },
+   {
+    "hp": 100,
+    "px": 32.9,
+    "pz": 0.7,
+    "ai": "walk",
+    "wu": -0.05,
+    "name": "BIG RICO"
+   },
+   {
+    "hp": 42,
+    "px": 39.4,
+    "pz": 0.7,
+    "ai": "recover",
+    "wu": -0.04,
+    "name": "JABBER"
+   },
+   {
+    "hp": 60,
+    "px": 40.5,
+    "pz": 0.7,
+    "ai": "recover",
+    "wu": 0,
+    "name": "JABBER"
+   },
+   {
+    "hp": 420,
+    "px": 52.8,
+    "pz": 0.4,
+    "ai": "walk",
+    "wu": 0,
+    "name": "KINGPIN"
+   }
+  ],
+  "info": {
+   "px": 45.3,
+   "hp": 100,
+   "foes": 9,
+   "boss": 420,
+   "cash": 0,
+   "kills": 0
+  },
+  "st": "fight",
+  "fps": 2
+ },
+ {
+  "t": 94.6,
+  "p": {
+   "busy": 0,
+   "stance": 0,
+   "hp": 100,
+   "state": "fight",
+   "fid": "kidblue",
+   "hasFin": true,
+   "face": 1,
+   "animMove": true,
+   "animTs": 1,
+   "px": 46.82
+  },
+  "dbg": {
+   "hp": 100,
+   "energy": 100,
+   "px": 46.82,
+   "witchCD": 0,
+   "blitzCD": 0
+  },
+  "foes": [
+   {
+    "hp": 52,
+    "px": 17.2,
+    "pz": 0.7,
+    "ai": "walk",
+    "wu": 0,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 70,
+    "px": 18.4,
+    "pz": 0.7,
+    "ai": "walk",
+    "wu": 0,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 52,
+    "px": 23.4,
+    "pz": 0.7,
+    "ai": "walk",
+    "wu": -0.03,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 70,
+    "px": 25.1,
+    "pz": 0.7,
+    "ai": "walk",
+    "wu": -0.04,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 82,
+    "px": 32.3,
+    "pz": 0.7,
+    "ai": "walk",
+    "wu": 0,
+    "name": "BIG RICO"
+   },
+   {
+    "hp": 100,
+    "px": 33.4,
+    "pz": 0.7,
+    "ai": "walk",
+    "wu": -0.05,
+    "name": "BIG RICO"
+   },
+   {
+    "hp": 42,
+    "px": 39.4,
+    "pz": 0.7,
+    "ai": "recover",
+    "wu": -0.04,
+    "name": "JABBER"
+   },
+   {
+    "hp": 60,
+    "px": 40.5,
+    "pz": 0.7,
+    "ai": "recover",
+    "wu": 0,
+    "name": "JABBER"
+   },
+   {
+    "hp": 420,
+    "px": 52.2,
+    "pz": 0.7,
+    "ai": "walk",
+    "wu": 0,
+    "name": "KINGPIN"
+   }
+  ],
+  "info": {
+   "px": 46.8,
+   "hp": 100,
+   "foes": 9,
+   "boss": 420,
+   "cash": 0,
+   "kills": 0
+  },
+  "st": "fight",
+  "fps": 0
+ },
+ {
+  "t": 97.1,
+  "p": {
+   "busy": 0,
+   "stance": 0,
+   "hp": 100,
+   "state": "fight",
+   "fid": "kidblue",
+   "hasFin": true,
+   "face": 1,
+   "animMove": true,
+   "animTs": 1,
+   "px": 48.1
+  },
+  "dbg": {
+   "hp": 100,
+   "energy": 100,
+   "px": 48.1,
+   "witchCD": 0,
+   "blitzCD": 0
+  },
+  "foes": [
+   {
+    "hp": 52,
+    "px": 17.7,
+    "pz": 0.8,
+    "ai": "walk",
+    "wu": 0,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 70,
+    "px": 18.9,
+    "pz": 0.8,
+    "ai": "walk",
+    "wu": 0,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 52,
+    "px": 23.8,
+    "pz": 0.8,
+    "ai": "walk",
+    "wu": -0.03,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 70,
+    "px": 25.6,
+    "pz": 0.8,
+    "ai": "walk",
+    "wu": -0.04,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 82,
+    "px": 32.7,
+    "pz": 0.8,
+    "ai": "walk",
+    "wu": 0,
+    "name": "BIG RICO"
+   },
+   {
+    "hp": 100,
+    "px": 33.8,
+    "pz": 0.8,
+    "ai": "walk",
+    "wu": -0.05,
+    "name": "BIG RICO"
+   },
+   {
+    "hp": 42,
+    "px": 39.4,
+    "pz": 0.7,
+    "ai": "recover",
+    "wu": -0.04,
+    "name": "JABBER"
+   },
+   {
+    "hp": 60,
+    "px": 40.5,
+    "pz": 0.7,
+    "ai": "recover",
+    "wu": 0,
+    "name": "JABBER"
+   },
+   {
+    "hp": 420,
+    "px": 51.8,
+    "pz": 0.8,
+    "ai": "walk",
+    "wu": 0,
+    "name": "KINGPIN"
+   }
+  ],
+  "info": {
+   "px": 48.1,
+   "hp": 100,
+   "foes": 9,
+   "boss": 420,
+   "cash": 0,
+   "kills": 0
+  },
+  "st": "fight",
+  "fps": 0
+ },
+ {
+  "t": 99.7,
+  "p": {
+   "busy": 0,
+   "stance": 0,
+   "hp": 100,
+   "state": "fight",
+   "fid": "kidblue",
+   "hasFin": true,
+   "face": 1,
+   "animMove": true,
+   "animTs": 1,
+   "px": 49.42
+  },
+  "dbg": {
+   "hp": 100,
+   "energy": 100,
+   "px": 49.42,
+   "witchCD": 0,
+   "blitzCD": 0
+  },
+  "foes": [
+   {
+    "hp": 52,
+    "px": 18.2,
+    "pz": 0.8,
+    "ai": "walk",
+    "wu": 0,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 70,
+    "px": 19.4,
+    "pz": 0.8,
+    "ai": "walk",
+    "wu": 0,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 52,
+    "px": 24.3,
+    "pz": 0.8,
+    "ai": "walk",
+    "wu": -0.03,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 70,
+    "px": 26,
+    "pz": 0.8,
+    "ai": "walk",
+    "wu": -0.04,
+    "name": "STREET THUG"
+   },
+   {
+    "hp": 82,
+    "px": 33.1,
+    "pz": 0.8,
+    "ai": "walk",
+    "wu": 0,
+    "name": "BIG RICO"
+   },
+   {
+    "hp": 100,
+    "px": 34.2,
+    "pz": 0.8,
+    "ai": "walk",
+    "wu": -0.05,
+    "name": "BIG RICO"
+   },
+   {
+    "hp": 42,
+    "px": 39.4,
+    "pz": 0.7,
+    "ai": "recover",
+    "wu": -0.04,
+    "name": "JABBER"
+   },
+   {
+    "hp": 60,
+    "px": 41,
+    "pz": 0.8,
+    "ai": "walk",
+    "wu": 0,
+    "name": "JABBER"
+   },
+   {
+    "hp": 420,
+    "px": 51.3,
+    "pz": 0.8,
+    "ai": "walk",
+    "wu": 0,
+    "name": "KINGPIN"
+   }
+  ],
+  "info": {
+   "px": 49.4,
+   "hp": 100,
+   "foes": 9,
+   "boss": 420,
+   "cash": 0,
+   "kills": 0
+  },
+  "st": "fight",
+  "fps": 2
+ }
+]
