@@ -17,6 +17,10 @@ page.on('pageerror', (e) => errors.push('[pageerror] ' + e.message.slice(0, 200)
 page.on('console', (m) => { if (m.type() === 'error') errors.push('[console.error] ' + m.text().slice(0, 200)); });
 const E = async (expr) => page.evaluate(new Function('const t = window.__cdtest; return (' + expr + ')'));
 await page.goto('file:///home/hatch/workspace/ConcreteDragon/game-3d/dist/concrete-dragon.html', { waitUntil: 'networkidle0', timeout: 120000 });
+let booted = false;
+for (let i = 0; i < 15; i++) { try { if ((await E('t.simDbg().st')) === 'title') { booted = true; break; } } catch (e) {} await sleep(2000); }
+console.log('boot:', booted ? 'PASS' : 'FAIL');
+if (!booted) { await browser.close(); process.exit(1); }
 await page.tap('#tapStart'); await sleep(800);
 await E('t.skipCine()'); await sleep(400);
 const bless = await page.$('.blessCard');
