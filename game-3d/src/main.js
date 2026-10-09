@@ -4972,6 +4972,7 @@ window.__cdtest = {
     texOk: VFXTEX.filter((n) => !!(vfxTex[n] && vfxTex[n].image && vfxTex[n].image.width)).length,
     live: vfxLive.length, pool: vfxPool.length }),
   vfxClear: () => { T.vfxKo = T.vfxHit = T.vfxSpc = T.vfxDust = 0; return true; },
+  vfxLowFx: (on) => { lowFx = !!on; return { lowFx, q: vfxQ() }; }, // prove the low-quality burst cap
   dodgeTest: () => { // S3 dodge SFX tranche (owner 2026-10-07): verify dodge fires SFX hook + i-frames
     if (!player || state !== 'fight') return { ok: 0, why: 'no-fight' };
     player.dodgeCD = 0; player.busy = 0; lastDodgeTap = 0; // single tap: dodge, not double-tap desperation
