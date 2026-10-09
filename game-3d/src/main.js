@@ -974,18 +974,38 @@ function procMission(n) {
 
 // ---------- audio (nothing plays before first user gesture) ----------
 let actx = null; const sbuf = {}; let muted = false;
+// S15 MIXING (owner 2026-10-08, wave 15): dedicated buses. Music + ambience ride the MUSIC
+// bus; every one-shot effect rides the SFX bus. Big hits DUCK the music bus (dip + recover);
+// the duck is subtle only — it never mutes and never touches the sfx bus.
+let musicBus = null, sfxBus = null;
+const MIX_BUS_FULL = 1, MIX_DUCK_DEPTH = 0.4, MIX_DUCK_RECOVER = 0.6;
+function duckMusic(depth = MIX_DUCK_DEPTH) {
+  if (!musicBus || !actx || muted) return;
+  T.ducks = (T.ducks || 0) + 1; // test hook
+  const t = actx.currentTime;
+  musicBus.gain.cancelScheduledValues(t);
+  musicBus.gain.setValueAtTime(musicBus.gain.value, t);
+  musicBus.gain.linearRampToValueAtTime(depth, t + 0.05); // quick dip
+  musicBus.gain.linearRampToValueAtTime(MIX_BUS_FULL, t + 0.05 + MIX_DUCK_RECOVER); // ramp back over ~0.6s
+}
 async function unlockAudio() {
   if (actx) return;
   try {
     actx = new (window.AudioContext || window.webkitAudioContext)();
+    musicBus = actx.createGain(); musicBus.gain.value = MIX_BUS_FULL; musicBus.connect(actx.destination);
+    sfxBus = actx.createGain(); sfxBus.gain.value = 1; sfxBus.connect(actx.destination);
     await Promise.all(['hit1', 'hit2', 'hit3', 'bell', 'crowd', 'music', 'click', 'whoosh', 'step', 'crack', 'coin', 'uiclick', 'swing1', 'swing2', 'swing3'].map(async (k) => { sbuf[k] = await actx.decodeAudioData(b64ToBuf(A[k + '.mp3'])); }));
     sfx('music', 0.32, true); sfx('crowd', 0.25, true);
   } catch (e) { T.errors.push('audio:' + e); }
 }
-function sfx(k, vol = 1, loop = false, rate = 1) {
+function sfx(k, vol = 1, loop = false, rate = 1, bus) {
   if (!actx || !sbuf[k] || muted) return null;
   const s = actx.createBufferSource(); s.buffer = sbuf[k]; s.loop = loop; s.playbackRate.value = rate;
-  const g = actx.createGain(); g.gain.value = vol; s.connect(g).connect(actx.destination); s.start(); return s;
+  const g = actx.createGain(); g.gain.value = vol;
+  const dest = bus || (loop ? musicBus : sfxBus) || actx.destination;
+  s.connect(g).connect(dest); s.start();
+  T.sfxCount = (T.sfxCount || 0) + 1; // S15 test hook: proves SFX still fire
+  return s;
 }
 // S2 swing whooshes (TIER 3 item 10, owner 2026-10-07): dedicated attack-swing SFX from Kenney RPG
 // Audio (CC0 1.0) — swing1/knifeSlice, swing2/knifeSlice2, swing3/chop — distinct from the generic
@@ -3471,7 +3491,9 @@ function landHit(e, dmg, label, hs, sh, launcher, counter) {
   } else if (!e.airborne) {
     playAnim(e, Math.random() < 0.5 ? 'Hit_A' : 'Hit_B', { ts: 1.4, fade: 0.04 });
   }
-  if (e.hp <= 0) killEnemy(e);
+  if (e.hp <= 0) { killEnemy(e); duckMusic(0.35); } // S15: KO = biggest moment, deeper dip
+  // S15 MIXING: heavy hit / launcher / finisher lands -> duck the music bus (subtle, never mute)
+  else if (label === 'HEAVY' || label === 'HEAT' || label === 'DUST LAUNCHER' || label === 'LAUNCHER' || sh >= 0.4) duckMusic();
   setHud();
 }
 function killEnemy(e) {
@@ -4813,6 +4835,32 @@ window.__cdtest = {
   swingDbg: () => ({ swing: T.swingSfx || 0, whiff: T.whiffSfx || 0 }), // S2 swing-whoosh tranche (owner 2026-10-07)
   swingClear: () => { T.swingSfx = 0; T.whiffSfx = 0; },
   audioDbg: (ks) => (ks || []).map(k => ({ k, ok: !!(sbuf[k] && sbuf[k] instanceof AudioBuffer) })), // S2: prove swing SFX decoded
+  // S15 MIXING tranche (owner 2026-10-08, wave 15): music/sfx bus test hooks
+  musicBusLevel: () => musicBus ? +musicBus.gain.value.toFixed(3) : -1, // 1.0 = full music, dips toward 0.35-0.4 under big hits
+  mixDbg: () => ({ level: musicBus ? +musicBus.gain.value.toFixed(3) : -1, ducks: T.ducks || 0, sfx: T.sfxCount || 0 }),
+  mixClear: () => { T.ducks = 0; T.sfxCount = 0; return true; },
+  forceBigHit: () => { // S15: deterministic heavy hit on a live non-boss foe (same landHit path as doHeavy)
+    const e = enemies.find(x => x.hp > 0 && !x.boss);
+    if (!e) return { ok: 0, why: 'no-enemy' };
+    e.hp = Math.max(e.hp, 300);
+    try { landHit(e, 30, 'HEAVY', 0.08, 0.5, false, false); } catch (err) { return { ok: 0, why: 'threw' }; }
+    return { ok: 1, ducks: T.ducks || 0 };
+  },
+  forceLauncherHit: () => { // S15: deterministic DUST LAUNCHER (same landHit call as doHeavy's ↓+HVY branch)
+    const e = enemies.find(x => x.hp > 0 && !x.boss);
+    if (!e) return { ok: 0, why: 'no-enemy' };
+    e.hp = Math.max(e.hp, 300);
+    try { landHit(e, 20, 'DUST LAUNCHER', 0.09, 0.5, true, false); } catch (err) { return { ok: 0, why: 'threw' }; }
+    return { ok: 1, airborne: !!e.airborne, ducks: T.ducks || 0 };
+  },
+  forceKOHit: () => { // S15: deterministic KO via landHit (drives killEnemy + the deeper duck)
+    const e = enemies.find(x => x.hp > 0 && !x.boss);
+    if (!e) return { ok: 0, why: 'no-enemy' };
+    try { landHit(e, 99999, 'HEAVY', 0.09, 0.6, false, false); } catch (err) { return { ok: 0, why: 'threw' }; }
+    return { ok: 1, dead: e.hp <= 0, ducks: T.ducks || 0 };
+  },
+  dbgFoePassive: () => { let n = 0; for (const e of enemies) if (!e.boss && e.hp > 0) { e.ai = 'recover'; e.aiT = 999; n++; } return n; }, // passive punching bag (still a real enemy, takes real hits)
+  dbgStickDown: (v) => { stick.dy = v ? 1 : 0; return stick.dy; }, // S15: hold stick down so doHeavy takes the real DUST LAUNCHER path
   dodgeTest: () => { // S3 dodge SFX tranche (owner 2026-10-07): verify dodge fires SFX hook + i-frames
     if (!player || state !== 'fight') return { ok: 0, why: 'no-fight' };
     player.dodgeCD = 0; player.busy = 0; lastDodgeTap = 0; // single tap: dodge, not double-tap desperation
