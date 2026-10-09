@@ -636,8 +636,21 @@ const PATCH_NOTES = [
 function renderPatchNotes() {
   const pn = $('patchNotes');
   if (!pn) return;
+  // Digestible: show latest only, tap to expand older notes
+  const [latestD, latestT] = PATCH_NOTES[0];
+  const older = PATCH_NOTES.slice(1);
   pn.innerHTML = '<div class="subtitle" style="margin-top:12px">WHAT\'S NEW</div>' +
-    PATCH_NOTES.map(([d, t]) => `<div style="font-size:12px;line-height:1.5;margin:4px 0"><b style="color:#ffd166">${d}</b> — ${t}</div>`).join('');
+    `<div style="font-size:12px;line-height:1.5;margin:4px 0"><b style="color:#ffd166">${latestD}</b> — ${latestT}</div>` +
+    (older.length ? `<div id="pnOlder" style="display:none">` +
+      older.map(([d, t]) => `<div style="font-size:12px;line-height:1.5;margin:4px 0"><b style="color:#ffd166">${d}</b> — ${t}</div>`).join('') +
+      `</div><div id="pnToggle" style="font-size:11px;color:#4fd1ff;margin:6px 0;cursor:pointer;letter-spacing:1px">+ ${older.length} OLDER</div>` : '');
+  const tg = $('pnToggle');
+  if (tg) tg.onclick = () => {
+    const o = $('pnOlder');
+    const open = o.style.display !== 'none';
+    o.style.display = open ? 'none' : 'block';
+    tg.textContent = open ? `+ ${older.length} OLDER` : '− HIDE';
+  };
 }
 // ---------- INFINITE BOSSES (owner 2026-10-06): data-driven boss generation ----------
 // procBoss(n) scales a base boss template into an endless challenger.
