@@ -2359,6 +2359,17 @@ function pendantChain(g, M, zones, drop, pendantBuild) {
   g.add(p);
 }
 // Each part: id, name, slot, bones (named bones, parented like PART_HEADS), off, build(g, M).
+// ---------- GEAR-SLOT MAP (suite tech → CD design gear slots, GAME_DESIGN.md §4) ----------
+// Suite item          CD gear slot      PART_DEFS slot(s)            notes
+// chain pendant fix   CHAINS (accessory) 'accessory' (chest bone)    cosmetic-only, zero stats
+// gloves / wrist      GEAR GLOVES        'arms' (hand.l/r, wrist.l/r, lowerarm.l/r)
+// jackets / hoods     GEAR JACKET        'torso' (chest) + 'head' (hoods live in head slot)
+// kicks               GEAR BOOTS         'boots' (foot.l/r)
+// masks               (no design slot)   'head'                     street-flavor masks
+// hairstyles          (no design slot)   'head'                     painted-texture hair
+// Face paint + eye color are out of scope for the Three.js customizer (Godot skins
+// pipeline, see docs/CUSTOMIZER_SUITE_CD.md). Cosmetic-only, zero stats — do NOT
+// touch GEAR/stat code.
 const PART_DEFS = [
   // ---- head ----
   { id: 'headband', name: 'Headband', slot: 'head', rar: 'street', bones: ['head'], build(g, M) { g.add(pmesh(new THREE.TorusGeometry(0.145, 0.032, 10, 24), M.accent, 0, 0.04, 0, Math.PI / 2)); } },
@@ -2585,6 +2596,8 @@ function renderScoutRow() {
   sr.appendChild(el('div', 'scoutMeta', 'Recruited crew: ' + scoutTotalRecruits() + ' / 10 for half-price scouts'));
 }
 // ---------- CUSTOMIZE UI (owner 2026-10-07): part + color pickers on the live 3D turntable ----------
+// rarity badge colors: street #9a9a9a grey · rare #4fa3ff blue · epic #c77dff purple · legendary #ffd166 gold
+const RAR_COLOR = { street: '#9a9a9a', rare: '#4fa3ff', epic: '#c77dff', legendary: '#ffd166' };
 let customizing = false;
 function openCustomize() { customizing = true; renderCustomize(); $('customOv').classList.remove('hidden'); }
 function closeCustomize() { customizing = false; $('customOv').classList.add('hidden'); }
@@ -2610,16 +2623,21 @@ function renderCustomize() {
     const cur = lo.parts[slot] || 'none';
     const scoutD = (save.scoutRoster || []).find((x) => x.id === fid);
     const genPid = scoutD && scoutD.parts ? scoutD.parts[slot] : null;
-    const mk = (pid, name, gen) => {
-      const btn = el('button', 'partBtn' + (cur === pid ? ' sel' : ''), (gen ? '★ ' : '') + name);
+    const mk = (pid, name, gen, rar) => {
+      const dot = rar ? '<span style="color:' + (RAR_COLOR[rar] || '#9a9a9a') + '">●</span> ' : '';
+      const btn = el('button', 'partBtn' + (cur === pid ? ' sel' : ''), (gen ? '★ ' : '') + dot + name);
       if (gen) btn.title = 'Seeded generated part';
+      if (rar) btn.title = ((gen ? 'Seeded generated part · ' : '') + 'Rarity: ' + rar);
       btn.onclick = () => setPart(fid, slot, pid);
       return btn;
     };
     row.appendChild(mk('none', 'NONE'));
-    for (const p of PART_DEFS.filter((x) => x.slot === slot)) row.appendChild(mk(p.id, p.name, genPid === p.id && cur === 'none'));
+    for (const p of PART_DEFS.filter((x) => x.slot === slot)) row.appendChild(mk(p.id, p.name, genPid === p.id && cur === 'none', p.rar));
     b.appendChild(row);
   }
+  const leg = el('div', 'czLegend');
+  leg.innerHTML = 'RARITY: ' + ['street', 'rare', 'epic', 'legendary'].map((r) => '<span style="color:' + RAR_COLOR[r] + '">●</span> ' + r).join('  ');
+  b.appendChild(leg);
   for (const zn of PART_ZONES) {
     const row = el('div', 'czRow');
     row.appendChild(el('div', 'czLab', zn.toUpperCase()));
