@@ -2,7 +2,7 @@
 // Verifies: boot, mission start, combat hits, destructible smash + cash pickup, boss spawn.
 // Zero page/console errors required. Screenshots -> game-3d/shots-industrial/
 import puppeteer from 'puppeteer-core';
-const CHROME = '/home/hatch/.cache/puppeteer/chrome/linux-154.0.8037.57/chrome-linux64/chrome';
+const CHROME = '/home/hatch/.cache/puppeteer/chrome/linux-131.0.6778.204/chrome-linux64/chrome';
 const SHOTS = '/home/hatch/workspace/ConcreteDragon/game-3d/shots-industrial';
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const errors = [];
