@@ -5377,6 +5377,8 @@ window.__cdtest = {
   estep: (dt) => { for (const e of enemies.slice()) enemyAI(e, dt || 1 / 60); }, // drive enemy AI deterministically (test only)
   estepN: (n, dt) => { for (let i = 0; i < (n || 60); i++) for (const e of enemies.slice()) enemyAI(e, dt || 1 / 60); return true; }, // batch estep (test only)
   ff: (n, dt) => { // improve-loop C2: deterministic FULL-frame stepping for playtests (no render).
+}
+  ff: (n, dt) => { // improve-loop: deterministic FULL-frame stepping for playtests (no render).
     // frame() covers playerUpdate + director + enemyAI + hitstop/combo timers + projectiles.
     // NOTE: hit resolution uses wall-clock setTimeout — after ff(), await a real sleep so
     // pending hit timeouts fire, then sample. Positions are read fresh inside the timeout.

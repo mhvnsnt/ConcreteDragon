@@ -1,0 +1,54 @@
+{
+ "checklist": {
+  "hudPresent": {
+   "hp": true,
+   "score": false,
+   "canvas": true
+  },
+  "walk": {
+   "movedRight": 4.4,
+   "minPy": 0,
+   "samples": 6
+  },
+  "collision": {
+   "minDist": 0,
+   "interpenetrates": true
+  },
+  "hitsConnect": {
+   "hits": 5,
+   "of": 6,
+   "hpTrace": [
+    {
+     "hp0": 70,
+     "hp1": 61
+    },
+    {
+     "hp0": 61,
+     "hp1": 41
+    },
+    {
+     "hp0": 41,
+     "hp1": 41
+    },
+    {
+     "hp0": 41,
+     "hp1": 11
+    },
+    {
+     "hp0": 11,
+     "hp1": 2
+    },
+    {
+     "hp0": 2,
+     "hp1": 0
+    }
+   ]
+  },
+  "foeAggression": {
+   "windups": 6,
+   "playerHp": 0
+  }
+ },
+ "notes": [],
+ "errors": []
+}

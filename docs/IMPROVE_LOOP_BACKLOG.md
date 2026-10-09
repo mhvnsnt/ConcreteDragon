@@ -19,6 +19,28 @@ in order with conflict resolution between merges, or be rebased. Do not batch-me
   Verified: `qa/playtest-haptics.mjs` (buzz counter fires on all four sites, vibrate
   stub proves the settings toggle gates the call path, zero page/console errors).
 
+## Cycle 2 (2026-10-09) — shipped
+- **G1 body collision** (owner gap-audit directive): circle colliders + separation
+  for player/thugs/bosses (`resolveBodyCollision()` in `frame()`), iterate up to
+  3x to kill chain residuals. Verified by `qa/sweep-collision.mjs` before/after.
+  Branch `improveloop-c2`, PR #12 OPEN.
+
+## Cycle 3 (2026-10-09) — watchdog-resumed, shipped
+- **G2 copy fix** (no-false-advertising law): itch page draft + GAME_DESIGN.md said
+  "HOLD = block" — the game has no block; HOLD HVY is focus-charge (absorb one
+  hit, release = crumple strike). Copy now describes focus accurately.
+- **ff() hook ported to main** so every cycle can playtest off main
+  (`__cdtest.ff(n,dt)` drives full `frame()` without render).
+- **Playtest verification** (`qa/playtest-improveloop-c3.mjs`, shots + results.json
+  in `game-3d/shots-improveloop-c3/`, reviewed frame-by-frame): HUD present and
+  correct; feet never below ground (minPy=0); facing matches movement; 5/6
+  punches land (foe HP 70→0, combo popup, KO + cash reward); foes wind up and
+  attack a passive player to a legitimate KO (game-over screen renders with
+  stats); zero page/console errors. Collision interpenetration STILL PRESENT on
+  main — expected, fixed by c2 (PR #12, awaiting merge), not a regression.
+- Next: G3 enemies block/dodge (medium risk, touches enemyAI) is the top
+  remaining code gap; P2/P3/P4 stay deferred to pass 2.
+
 ## Ranked open backlog (not covered by any wave/PR)
 
 ### P1 — Boss theme music (S13)
