@@ -71,3 +71,55 @@ the weapon economy.
   (click `.blessCard`) like a player would, or results are invalid.
 - Busy-poll `playerDbg().busy`, never fixed sleeps (tranche pattern).
 - Eyes on screenshots every cycle; counters/hooks for audio-haptic verification.
+- LESSON (cycle 2): keyboard-driven playthroughs at 2fps are NOT real play —
+  discrete presses land between frames and held-direction + punch becomes a
+  lunge-dash (player blew from px=2 to px=53 untouched). Deterministic protocol:
+  dispatch real KeyboardEvents via evaluate (same handler path as players),
+  advance with `t.ff(n)`, then `await sleep()` in real time so wall-clock hit
+  timeouts resolve before sampling. The `ff` hook is committed in src (cycle 2)
+  so dist and source agree — never ship a phantom hook in dist again.
+
+## OBVIOUS-DEFECT LAW (owner 2026-10-09 — the no-collision incident)
+Standing, from the owner, effective immediately: if a reasonable player watching
+the game would call it a bug on sight, it IS a bug — fix it, don't ask, don't
+ship around it. Unless he explicitly approved it as a feature, it's a bug.
+Every playtest sweeps this checklist:
+1. character-vs-character collision — no interpenetration, ever
+2. feet never below the ground plane
+3. facing matches movement direction
+4. hits visibly connect (impact + reaction, no whiffing through bodies)
+5. no frozen/T-pose/idle-looking characters during action
+6. HUD/UI present and correct
+
+## Brawler-standards gap audit (owner directive 2026-10-09, cycle 2)
+Audited the shipped build against the genre (SoR4, Final Fight, Urban Reign,
+Def Jam, Yakuza). Verified PRESENT: hit-stop (scaled by moment), KO slow-mo,
+screen shake, knockback/launch + juggle physics, edge-bounce, dodge i-frames,
+focus armor (SFIV-style absorb on HOLD HVY), parry/counter system, grapple
+finishers on staggered foes, enemy signature moves + windup warns, wave
+director + spawn queues, endless mutators, boss intro card + boss HP bar,
+combo counter, cash economy, food/health pickups, special meter + shockwave,
+blitz lunges, difficulty select + rep scaling, tech recovery.
+Ranked gaps:
+
+### G1 — Body collision (P0, FIXED cycle 2)
+Circle colliders + separation for player/thugs/bosses (`resolveBodyCollision()`
+in `frame()`). Shipped build had only a weak enemy-enemy nudge in walk-state —
+player-vs-enemy had nothing, so fighters walked straight through each other
+(caught by owner in launch clips). Verified by qa/sweep-collision.mjs
+before/after.
+
+### G2 — Store copy says "HOLD = block"; game has no block (COPY FIX, no code)
+HOLD HVY is focus-charge (absorb one hit, release = crumple strike) — not a
+traditional block. The itch page draft advertises "HOLD = block". Per the
+no-false-advertising law, fix the copy to describe focus accurately. A true
+hold-block with chip damage is a design decision — logged, not built, until he
+asks. (Note: SoR4 itself ships no block button; focus-armor is a legit brawler
+answer — the bug is the copy, not the mechanic.)
+
+### G3 — Enemies never block or dodge
+Player offense is uncontested except by spacing — no enemy guards, no sidesteps.
+SoR4/Final Fight enemies block; without it, late-game difficulty can only scale
+via HP/damage numbers. Medium risk (touches enemyAI state machine).
+
+### (boss music — separate worker lane as of 2026-10-09, loop stays off it)
