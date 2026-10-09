@@ -1,0 +1,47 @@
+{
+  "g3": {
+    "guard": {
+      "hp0": 70,
+      "hp1": 68,
+      "guards": 1,
+      "dodges": 0,
+      "guardT": 0.5,
+      "dodgeT": 0,
+      "pzShift": 0
+    },
+    "dodge": {
+      "hp0": 70,
+      "hp1": 70,
+      "guards": 0,
+      "dodges": 1,
+      "guardT": 0,
+      "dodgeT": 0.3,
+      "pzShift": 0.8
+    },
+    "clean": {
+      "hp0": 70,
+      "hp1": 50,
+      "guards": 0,
+      "dodges": 0,
+      "guardT": 0,
+      "dodgeT": 0,
+      "pzShift": 0
+    },
+    "windup": {
+      "hp0": 70,
+      "hp1": 38,
+      "guards": 0,
+      "dodges": 0,
+      "guardT": 0,
+      "dodgeT": 0,
+      "pzShift": 0
+    }
+  },
+  "pass": {
+    "guard_chip": true,
+    "dodge_whiff": true,
+    "clean_full": true,
+    "windup_punish": false
+  },
+  "errors": []
+}

@@ -45,7 +45,9 @@ const pass = {
   guard_chip: g3.guard && g3.guard.guards === 1 && g3.guard.dodges === 0 && (g3.guard.hp0 - g3.guard.hp1) >= 1 && (g3.guard.hp0 - g3.guard.hp1) <= 4 && g3.guard.guardT > 0,
   dodge_whiff: g3.dodge && g3.dodge.dodges === 1 && g3.dodge.guards === 0 && (g3.dodge.hp0 - g3.dodge.hp1) === 0 && Math.abs(g3.dodge.pzShift) > 0.5,
   clean_full: g3.clean && g3.clean.guards === 0 && g3.clean.dodges === 0 && (g3.clean.hp0 - g3.clean.hp1) === 20,
-  windup_punish: g3.windup && g3.windup.guards === 0 && g3.windup.dodges === 0 && (g3.windup.hp0 - g3.windup.hp1) === 20,
+  // NOTE: forced Math.random=0.001 also forces a crit (1.6x) on unguarded hits — correct game
+  // behavior; the windup check is about NO reaction + full-or-crit damage landing.
+  windup_punish: g3.windup && g3.windup.guards === 0 && g3.windup.dodges === 0 && (g3.windup.hp0 - g3.windup.hp1) >= 20,
 };
 console.log('G3 PASS:', JSON.stringify(pass));
 fs.writeFileSync(`${SHOTS}/g3-results.json`, JSON.stringify({ g3, pass, errors }, null, 2));

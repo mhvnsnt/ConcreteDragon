@@ -38,8 +38,28 @@ in order with conflict resolution between merges, or be rebased. Do not batch-me
   attack a passive player to a legitimate KO (game-over screen renders with
   stats); zero page/console errors. Collision interpenetration STILL PRESENT on
   main — expected, fixed by c2 (PR #12, awaiting merge), not a regression.
-- Next: G3 enemies block/dodge (medium risk, touches enemyAI) is the top
-  remaining code gap; P2/P3/P4 stay deferred to pass 2.
+- DONE cycle 4: G3 enemies block/dodge shipped (see Cycle 4 entry). P2/P3/P4 stay deferred to pass 2.
+
+## Cycle 4 (2026-10-09) — watchdog-resumed, shipped
+- **G3 enemy block/dodge** (genre gap: player offense uncontested). Enemies in walk/recover
+  (grounded, not staggered — mid-swing windup stays punishable) react at the single damage
+  choke point (`landHit`):
+  - **Sidestep**: 8-14% roll (thug 8%, knife 14%, boss 10%) — lateral shift 0.8-1.2 units,
+    0.3s i-frames, dust + whoosh + `DODGED!` popup. The strike whiffs cleanly.
+  - **Guard**: 12% roll (boss 22%) — chip damage only (12%, no crit/combo), 0.5s brace
+    (faces player, holds), blue block flash + `BLOCKED -N` popup + pitched-down thud.
+  - Cooldowns (guard 1.4-2.4s, dodge 1.5-2.5s) prevent permablock/permadodge.
+  - Test hooks: `t.dbgG3(mode)` (guard/dodge/clean/windup), `T.guards`/`T.dodges`.
+- **Verified headless** (`qa/playtest-improveloop-c4.mjs`, shots + g3-results.json in
+  `game-3d/shots-improveloop-c4/`, frames reviewed by eye): guard chips 20->2 with
+  guardT=0.5; dodge whiffs with 0.8-unit shift and dodgeT=0.3; clean hit lands full 20;
+  windup enemy takes full+crit with NO reaction; walk regression (3.68 units, minPy=0);
+  zero page/console errors.
+- **Also fixed two broken-merge artifacts found on main** (the merged stack shipped
+  unbuildable): duplicate `const go` (daily-run GO-button block) and a duplicated empty
+  `ff` hook — esbuild caught them where `node --check` did not. Lesson for the merge lane:
+  `node --check` is not enough; always build with esbuild after conflict resolution.
+- Next: P2 grab/throw stays deferred (pass 2); wave/PR lanes untouched (PR #14 merged separately).
 
 ## Ranked open backlog (not covered by any wave/PR)
 

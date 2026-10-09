@@ -1,0 +1,18 @@
+{
+  "report": {
+    "checklist": {
+      "walk": {
+        "movedRight": 3.68,
+        "minPy": 0
+      },
+      "errors": []
+    },
+    "notes": []
+  },
+  "pass": {
+    "guard_chip": true,
+    "dodge_whiff": true,
+    "clean_full": true,
+    "windup_punish": false
+  }
+}
