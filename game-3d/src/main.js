@@ -35,6 +35,7 @@ const save = {
   unlocked: ['kidblue', 'ghost', 'brick'], missionsDone: [],
   daily: { date: '', score: 0 }, boards: {}, seenHint: false,
   muted: false, quality: 'auto', difficulty: 'normal', circuitN: 0, blessings: [], rep: 0, goldCards: [],
+  haptics: true,
   gearInv: {}, gearTier: {}, gearEq: {}, charm: null, charmsUnlocked: [],
   assist: false, missionGrades: {}, scoutRoster: [], loadouts: {},
 };
@@ -1003,6 +1004,14 @@ function sfxSwing(vol = 0.5, whiff = false) {
 function sfxCounter(vol = 0.85) {
   T.counterSfx = (T.counterSfx || 0) + 1;
   sfx('counter', vol, false, 1 + (Math.random() * 0.12 - 0.06));
+}
+// F10 HAPTICS (improve-loop cycle 1, 2026-10-09): mobile-feel vibration on big moments only
+// (KO / counter / heavy / player-hurt) — never on normal hits (feel law: snappy lights stay clean).
+// Default ON, toggle in settings (save.haptics). No-op where navigator.vibrate is absent.
+function buzz(ms) {
+  T.buzzN = (T.buzzN || 0) + 1;
+  if (save.haptics === false) return;
+  try { if (navigator.vibrate) navigator.vibrate(ms); } catch (e) { /* headless / desktop */ }
 }
 let paused = false, pushT = 0;
 const pushPos = new THREE.Vector3();
@@ -2978,6 +2987,7 @@ function doPunch() {
       ce.windup = 0; hideWarn(ce);
       const bfx = blessFx();
       landHit(ce, Math.round(dmg * player.dmgMult * 2 * (1 + (bfx.counterDmg || 0) + (save.up_counter || 0) * 0.1)), 'COUNTER', 0.12, 0.35, false, true);
+      buzz(30); // F10 haptics: counter is a big moment
       const duo = blessDuo(); // SUNDAY SERVICE: counters trigger a shockwave
       if (duo) {
         burst(player.root.position.clone().add(new THREE.Vector3(0, 1.0, 0)), 24, 0xffd166, 6);
@@ -3240,6 +3250,7 @@ function doHeavy() {
       } else if (t) {
         landHit(t, Math.round(20 * player.dmgMult), 'DUST LAUNCHER', 0.09, 0.5, false, false);
       } else sfxSwing(0.8, true); // S2: whiff
+      if (t) buzz(25); // F10 haptics
       damageDestructibles(2.0);
     }, 200);
     T.dustlaunch = (T.dustlaunch || 0) + 1; ev('dustlauncher', {});
@@ -3255,6 +3266,7 @@ function doHeavy() {
     setTimeout(() => {
       if (state !== 'fight' || missionOver || ended) return;
       landHit(heatT, Math.round(55 * player.dmgMult), 'HEAT', 0.12, 0.8, true, false);
+      buzz(35); // F10 haptics: HEAT finisher is a big moment
       sparkFX(heatT.px, 1.2, heatT.pz, 0xff6a00, 20);
       damageDestructibles(2.4);
     }, 250);
@@ -3269,7 +3281,7 @@ function doHeavy() {
   setTimeout(() => {
     if (state !== 'fight' || missionOver || ended) return;
     const t = nearestEnemy(2.2);
-    if (t) landHit(t, Math.round(24 * player.dmgMult), 'HEAVY', 0.09, 0.4, false, false);
+    if (t) { landHit(t, Math.round(24 * player.dmgMult), 'HEAVY', 0.09, 0.4, false, false); buzz(25); } // F10 haptics
     else sfxSwing(0.8, true); // S2: whiff
     damageDestructibles(1.9);
   }, 230);
@@ -3495,7 +3507,7 @@ function killEnemy(e) {
   }
   sfx('bell', 0.8); flash('#ffffff');
   pushT = 0.85; pushPos.copy(e.root.position);
-  $('ko').classList.add('show'); setTimeout(() => $('ko').classList.remove('show'), 900);
+  $('ko').classList.add('show'); setTimeout(() => $('ko').classList.remove('show'), 900); buzz(45); // F10 haptics
   const base = e.boss ? 60 : (8 + Math.round(distWalked * 0.2)) * (e.golden ? 5 : 1);
   awardCash(base, e.root.position.clone());
   if (combo >= 5) awardCash(Math.min(combo, 20), e.root.position.clone().add(new THREE.Vector3(0, 0.4, 0)), 'COMBO');
@@ -3561,7 +3573,7 @@ function hurtPlayer(dmg) {
     return;
   }
   dmg = Math.max(1, Math.round(dmg * (1 - (blessFx().armor || 0)))); // IRON SKIN
-  dmgTaken += dmg; player.hp -= dmg; combo = 0; shake = 0.3; hitstop = 0.05; flash('#ff2a2a'); sfx('hit2', 0.8, false, 0.7);
+  dmgTaken += dmg; player.hp -= dmg; combo = 0; shake = 0.3; hitstop = 0.05; flash('#ff2a2a'); sfx('hit2', 0.8, false, 0.7); buzz(50); // F10 haptics
   player.jugN = (player.jugN || 0) + 1; player.jugT = 2.5; // BURST (Guilty Gear): juggle tracking
   // RAGE METER (The TakeOver): damage taken builds rage; full bar = 8s +40% damage
   if (!(player.rageT > 0)) {
@@ -3680,6 +3692,10 @@ function setupInput() {
   $('restartBtn').addEventListener('click', (e) => { e.stopPropagation(); togglePause(false); startMission(mission.id); });
   $('quitBtn').addEventListener('click', (e) => { e.stopPropagation(); setPaused(false); $('pauseOv').classList.add('hidden'); showMission(); });
   $('muteBtn').addEventListener('click', (e) => { e.stopPropagation(); save.muted = !save.muted; e.target.textContent = save.muted ? 'OFF' : 'ON'; writeSave(); sfx('uiclick', 0.7); });
+  // F10 HAPTICS (improve-loop cycle 1, 2026-10-09)
+  $('hapticsBtn').textContent = save.haptics === false ? 'OFF' : 'ON';
+  $('hapticsBtn').title = 'HAPTICS: vibration on KO / counter / heavy / getting hit';
+  $('hapticsBtn').addEventListener('click', (e) => { e.stopPropagation(); save.haptics = !save.haptics; e.target.textContent = save.haptics ? 'ON' : 'OFF'; writeSave(); sfx('uiclick', 0.7); if (save.haptics) buzz(20); });
   $('qualityBtn').addEventListener('click', (e) => { e.stopPropagation(); save.quality = save.quality === 'auto' ? 'low' : save.quality === 'low' ? 'high' : 'auto'; e.target.textContent = save.quality.toUpperCase(); writeSave(); sfx('uiclick', 0.7); applyQuality(); });
   // CREDITS (CC-BY attributions — owner 2026-10-06)
   const CREDITS = [
@@ -4822,6 +4838,8 @@ window.__cdtest = {
   swingClear: () => { T.swingSfx = 0; T.whiffSfx = 0; },
   counterDbg: () => ({ counterSfx: T.counterSfx || 0, counters: T.counters || 0, hits: T.hits || 0 }), // S5 counter-SFX tranche (owner 2026-10-07)
   counterClear: () => { T.counterSfx = 0; T.counters = 0; },
+  buzzDbg: () => ({ buzzN: T.buzzN || 0 }), // F10 haptics (improve-loop cycle 1, 2026-10-09)
+  buzzClear: () => { T.buzzN = 0; },
   forceCounterWindup: () => { // S5 playtest: stage a foe mid-windup in counter range, neutral stick
     const e = enemies.find(x => x.hp > 0 && !x.boss);
     if (!e || !player) return false;
@@ -4836,6 +4854,11 @@ window.__cdtest = {
     const before = T.dodgeSfx || 0;
     try { doDodge(); } catch (err) { return { ok: 0, why: 'doDodge-threw' }; }
     return { ok: 1, sfxFired: (T.dodgeSfx || 0) > before, iFrames: player.dodgeT > 0 };
+  },
+  ff: (n, dt) => { // improve-loop playtest tooling (2026-10-09): fast-forward the FULL sim n frames
+    const N = Math.max(1, Math.min(600, n | 0 || 1)); // without rendering (headless is render-bound)
+    for (let i = 0; i < N; i++) frame(dt || 1 / 60, false);
+    return +gameTime.toFixed(2);
   },
   antiInfTest: () => {
     const e = enemies.find(x => x.hp > 0 && !x.boss);
