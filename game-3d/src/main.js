@@ -3701,6 +3701,7 @@ function doBlitz() {
   const fd = fighterDef(player.fid);
   const face = player.face || 1;
   player.blitzCD = 1.4; player.busy = 0.34;
+  player.dashFeelT = 0.4; // P8 DASH FEEL: camera FOV widen + drop + wobble during blitz
   const lunge = 2.6 * face;
   const x0 = player.px;
   startTravel(player, lunge, 0.14); // root-motion lunge: travels over the windup, not teleports
@@ -5570,6 +5571,7 @@ function playerUpdate(dt) {
   if (p.dodgeT > 0) p.dodgeT -= dt;
   if (p.dodgeCD > 0) p.dodgeCD -= dt;
   if (p.blitzCD > 0) p.blitzCD -= dt;
+  if (p.dashFeelT > 0) p.dashFeelT -= dt; // P8: dash-feel camera timer
   if (p.witchCD > 0) p.witchCD -= dt;
   if (p.throwSeq) updateThrowSeq(p, dt); // 4-beat throw: defender follows the hands
   if (p.blockstunT > 0) p.blockstunT -= dt; // BLOCK (defense lane)
@@ -6619,7 +6621,13 @@ function frame(dt, doRender = true) {
       camera.position.set(tx + (Math.random() - 0.5) * shake, 2.2 + (Math.random() - 0.5) * shake, 6.4);
       camera.lookAt(tx + 0.2, 1.1, pushPos.z);
     } else {
-      camera.position.set(camX + (Math.random() - 0.5) * shake, 2.6 + (Math.random() - 0.5) * shake, 7.6);
+      // P8 DASH FEEL (Gears roadie-run): blitz widens FOV 12%, drops camera, adds wobble — feels 2x faster for free
+      const dashK = player.dashFeelT > 0 ? Math.min(1, player.dashFeelT / 0.4) : 0;
+      const baseFov = innerHeight > innerWidth ? 52 : 40;
+      const targetFov = baseFov * (1 + dashK * 0.12);
+      if (Math.abs(camera.fov - targetFov) > 0.1) { camera.fov = targetFov; camera.updateProjectionMatrix(); }
+      const wob = dashK * 0.06;
+      camera.position.set(camX + (Math.random() - 0.5) * (shake + wob), 2.6 - dashK * 0.25 + (Math.random() - 0.5) * (shake + wob), 7.6);
       camera.lookAt(camX + 0.2, 1.25, 0);
     }
     shake *= Math.pow(0.002, dt);
@@ -6778,7 +6786,7 @@ window.__cdtest = {
   dbgBlockHit: (dmg) => { const hp0 = player.hp, b0 = T.blocks || 0; hurtPlayer(dmg || 20); return { hp0, hp1: player.hp, chip: hp0 - player.hp, blocks: (T.blocks || 0) - b0 }; },
   dbgSetBusy: (v) => { if (player) player.busy = v; return player ? player.busy : null },
   dbgEvents: () => T.events.map((e) => e.name),
-  dbgPlayer: () => player ? { hp: player.hp, energy: Math.round(player.energy), px: +player.px.toFixed(2), witchCD: +(player.witchCD||0).toFixed(2), blitzCD: +(player.blitzCD||0).toFixed(2) } : null,
+  dbgPlayer: () => player ? { hp: player.hp, energy: Math.round(player.energy), px: +player.px.toFixed(2), witchCD: +(player.witchCD||0).toFixed(2), blitzCD: +(player.blitzCD||0).toFixed(2), dashFeelT: +(player.dashFeelT||0).toFixed(2), fov: +camera.fov.toFixed(1) } : null,
   dbgBoss: (id) => { const b = bossDef(id); return b ? { name: b.name, hp: b.hp, proc: !!b.proc, sig: b.sig ? b.sig.name : null } : null; },
   seasonFams: () => { const s = activeSeason(); return s ? s.fams : []; },
   dbgBless: (ids) => { save.blessings = ids; writeSave(); return { fx: blessFx(), duo: blessDuo() ? blessDuo().name : null }; },
