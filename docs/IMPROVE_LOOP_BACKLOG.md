@@ -219,3 +219,51 @@ via HP/damage numbers. Medium risk (touches enemyAI state machine).
 **Gap:** character select crams options into a tiny thin bottom scroll window; menus generally dense and un-thumbable.
 **Work:** (1) character select redesign FIRST: big cards, paged or horizontal, human-sized touch targets; (2) paged menus everywhere (no vertical scroll marathons); (3) glanceable hierarchy, breathing room. Menu research track (cd-menu-ui-research) producing the full spec.
 **Risk:** medium (touches all menus). GLOBAL — applies to every game repo.
+
+### P15 — Hitstop retune (the #1 feel-per-line change)
+**Refs:** Street Fighter norm 9f lights / 13f heavies; Guilty Gear Xrd 7f/10f (see docs/RESEARCH_FIGHTER_MECHANICS.md). CD jab freezes ~2f.
+**Gap:** hitstop severely under-tuned; hits feel weightless.
+**Work:** retune `ATK` table toward 6-16f by move weight; accept cancels during hitstop (SF2 2-in-1 rule).
+**Risk:** low (table values).
+
+### P16 — SoR4 health rally (desperation rework)
+**Refs:** Streets of Rage 4 — desperation HP banked as recoverable green health if you keep attacking (see docs/RESEARCH_FIGHTER_MECHANICS.md).
+**Gap:** CD desperation costs 10% HP permanently — pure punishment.
+**Work:** bank the cost as rally health; attacking recovers it; taking hits loses it.
+**Risk:** low-medium.
+
+### P17 — Tekken counter-hit properties
+**Refs:** Tekken — counter-hits grant NEW properties (knockdown/stun/juggle), not just 2x damage (see docs/RESEARCH_FIGHTER_MECHANICS.md).
+**Gap:** CD counters are flat 2x damage.
+**Work:** CH launcher always launches; CH heavy crumples into grapple loop.
+**Risk:** low-medium.
+
+### P18 — Back attack input (SoR4)
+**Refs:** Streets of Rage 4 (see docs/RESEARCH_FIGHTER_MECHANICS.md).
+**Gap:** no hitting behind; jump is movement-only (also P4).
+**Work:** dedicated back-attack input; rear positional strikes.
+**Risk:** low-medium.
+
+### P19 — Juggle damage scaling + bound slam (Tekken)
+**Refs:** Tekken juggle scaling; Tekken 6 bound (one per combo) (see docs/RESEARCH_FIGHTER_MECHANICS.md).
+**Gap:** juggles likely unscaled; no bound extension.
+**Work:** scale juggle hits down per hit; one bound-slam extension per combo.
+**Risk:** medium.
+
+### P20 — Enemy AI rework: hover/commit + surround slots (owner #1 complaint)
+**Refs:** pliskin92/supergereinaction hover-vs-commit; SoR surround slots; 2-attacker cap; OpenBOR (see docs/RESEARCH_ENEMY_AI.md for links + diagnosis).
+**Gap:** enemies beeline to player's exact position (main.js ~4118-4141), no standoff/strafe/slots; strike gate (adz<0.65) slower than strafe so they trail forever; ROOKIE 1.45-3.1s recoveries; `setTimeout` hit delivery whiffs during hitstop.
+**Work:** per-enemy hesitate/slot/preferGap fields; attack director (2-token cap + 6 surround slots); walk→hover/commit/reposition; game-time delayed-hit queue replacing setTimeout; keep windup telegraph + aggro scalar.
+**Risk:** medium-high (touches enemyAI core). Fixes promo videos too.
+
+### P21 — Character select redesign (UX LAW flagship)
+**Refs:** SF6 character select as art; Zelda scrolling criticism; touch-target minimums 44px (see docs/RESEARCH_MENU_UI.md).
+**Gap:** tiny thin bottom scroll window; 112px cards; 34px skin dots; unbounded roster growth.
+**Work:** 3 swipeable pages, 6 big cards/page (150px+), page dots + arrows, scout crew to own sub-page, selection fanfare, 44px minimum touch targets.
+**Risk:** medium. Sets the pattern for all menus.
+
+### P22 — Paged mission select + menu art spec
+**Refs:** see docs/RESEARCH_MENU_UI.md.
+**Gap:** vertical scroll menus; plain text boxes; undifferentiated sounds.
+**Work:** one zone per page, horizontal mission cards, 56px GO button; graffiti headers, panel9 treatments, styled dialogs, per-action sounds, animated page indicators, idle-life backgrounds.
+**Risk:** medium.
