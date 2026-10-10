@@ -2811,6 +2811,15 @@ function popText(txt, cls, x, y) {
   const d = document.createElement('div'); d.className = 'pop ' + (cls || ''); d.textContent = txt;
   d.style.left = x + 'px'; d.style.top = y + 'px'; $('hud').appendChild(d); setTimeout(() => d.remove(), 900);
 }
+// CDCI3: comic-book hit words (Streets of Rage 2 steal) — rate-limited, no immediate repeats
+let powLastT = 0;
+const powRecent = [];
+function powOk() { const n = performance.now(); if (n - powLastT < 400) return false; powLastT = n; return true; }
+function powWord(list) {
+  let w = list[Math.floor(Math.random() * list.length)];
+  if (powRecent[powRecent.length - 1] === w && list.length > 1) w = list[(list.indexOf(w) + 1) % list.length];
+  powRecent.push(w); if (powRecent.length > 4) powRecent.shift(); return w;
+}
 function banner(txt, cls) {
   popText(txt, 'big ' + (cls || ''), innerWidth / 2, innerHeight * 0.3);
 }
@@ -3438,14 +3447,20 @@ function startMission(id, node) {
     sfx('bell', 1, false, 0.7);
   }
   showOnly(null);
-  $('touch').classList.add('on');
+  // CDCI3: mission card is a cinematic — hide combat HUD + touch until the action starts
+  // (same defect class as CDCI2's intro fix)
+  $('touch').classList.remove('on');
+  $('hud').style.display = 'none';
   $('bossWrap').style.display = 'none';
   // story beat: letterboxed mission card before the action (Nintendo-style)
   playCine({
     mode: 'card', dur: 2.3,
     caps: [{ t: 0.15, html: '<div class="cc2">' + mission.name + '</div><div class="cc3">' + (mission.card || 'CLEAR THE BLOCK') + '</div>' }]
       .concat(mission.daily ? [{ t: 1.15, html: '<div class="cc3">⚡ DAILY RUN — ' + dailyDateLabel(mission.dailyDate) + ' · SEED ' + mission.dailySeed + '</div>' }] : []),
-    onDone: () => { const b = mission.boss && bossDef(mission.boss); banner((mission.daily ? '⚡ DAILY RUN — ' + dailyDateLabel(mission.dailyDate) + ' · ' : '') + mission.name + ' — ' + (b ? 'BOSS: ' + b.name : 'CLEAR THE BLOCK'), 'gold'); sfx(196, 0.5, 'sawtooth', 0.4); },
+    onDone: () => {
+      $('touch').classList.add('on'); $('hud').style.display = 'block'; // restore for the fight
+      const b = mission.boss && bossDef(mission.boss); banner((mission.daily ? '⚡ DAILY RUN — ' + dailyDateLabel(mission.dailyDate) + ' · ' : '') + mission.name + ' — ' + (b ? 'BOSS: ' + b.name : 'CLEAR THE BLOCK'), 'gold'); sfx(196, 0.5, 'sawtooth', 0.4);
+    },
   });
   setHud();
 }
@@ -4725,6 +4740,10 @@ function landHit(e, dmg, label, hs, sh, launcher, counter) {
   if (counter) sfxCounter(0.85); // S5: counters get their own crack/chime, not the generic hit thud
   else sfx(['hit1', 'hit2', 'hit3'][Math.floor(Math.random() * 3)], 0.9, false, 0.9 + Math.random() * 0.2);
   const sp = screenPos(head); popText((critOn ? 'CRIT ' : '') + (lsOn ? 'LAST STAND ' : '') + (counter ? 'COUNTER! -' : '-') + dealt, counter ? 'big' : '', sp.x, sp.y - 30);
+  // CDCI3: comic-book hit words on significant hits — POW!/WHAM! for heavies, handled KOs in killEnemy
+  if (!counter && (label === 'HEAVY' || label === 'HEAT') && powOk()) {
+    popText(powWord(['POW!', 'WHAM!', 'SMASH!', 'BAM!', 'THWACK!']), 'pow', sp.x + rnd(-34, 34), sp.y - 78);
+  }
   if (counter) flash('#7af0ff');
   if (launcher && !e.boss) {
     e.airborne = true; e.vy = 5.2; e.ai = 'launched';
@@ -4777,6 +4796,8 @@ function killEnemy(e) {
   }
   sfx('bell', 0.8); flash('#ffffff');
   vfxKO(e.root.position.clone().add(new THREE.Vector3(0, 1, 0)), !!e.boss); // wave 17: Kenney ring+smoke+spark KO burst
+  // CDCI3: comic-book KO word — KRAKOOM!/SPLAT! erupts where the enemy went down
+  if (powOk()) { const kp = screenPos(e.root.position.clone().add(new THREE.Vector3(0, 2.4, 0))); popText(powWord(['KRAKOOM!', 'SPLAT!', 'BOP!', 'WHAMMO!', 'KAPOW!']), 'pow', kp.x + rnd(-24, 24), kp.y); }
   pushT = 0.85; pushPos.copy(e.root.position);
   $('ko').classList.add('show'); setTimeout(() => $('ko').classList.remove('show'), koHold); buzz(45); // F10 haptics
   const base = e.boss ? 60 : (8 + Math.round(distWalked * 0.2)) * (e.golden ? 5 : 1);
@@ -6732,6 +6753,13 @@ window.__cdtest = {
   // (duplicate spawnBoss removed — build fix 2026-10-09: the (id, bx) form below is the superset)
   spawnFam: (famId) => { if (player) return spawnEnemy(famId, 0, player.px + 3, 0); },
   dbgStrike: (range) => { const h = strikeHit(player, 'hand', range || 2.7); return h ? { hp: Math.round(h.target.hp), pen: +h.pen.toFixed(3) } : null; },
+  powTest: (label, lethal) => { // CDCI3 test hook: land a labeled hit on a fresh foe, report pow words
+    if (!player || state !== 'fight') return 'not-fighting';
+    const e = spawnEnemy('thug', 0, player.px + 2.2, 0); if (!e) return 'no-spawn';
+    e.ai = 'stunned'; e.aiT = 99;
+    landHit(e, lethal ? 99999 : 30, label || 'HEAVY', 0.09, 0.5, false, false);
+    return { powWords: document.querySelectorAll('.pop.pow').length, words: [...document.querySelectorAll('.pop.pow')].map(d => d.textContent), foeHp: Math.round(e.hp) };
+  },
   spawnFoeAt: (x) => { if (player) return spawnEnemy('thug', 0, x, 0); },
   foeHp: (i) => (enemies[i] ? enemies[i].hp : -1),
   boneNames: () => { const out = []; if (player && player.root) player.root.traverse(o => { if (o.isBone || o.isObject3D) out.push(o.name); }); return out; },
