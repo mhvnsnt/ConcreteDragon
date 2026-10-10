@@ -13,7 +13,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { clone as skClone } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import seedrandom from './vendor/seedrandom.js'; // Y8 daily seeded run (wave 16, TIER 5 item 21): MIT © 2019 David Bau — see ASSETS_CREDITS.md
-import { cdApplyAll, renderCDSection } from './cosmetics.js'; // Phase 2 suite (Track 2): district-flavored cosmetics, ink-painted parts
+import { cdApplyAll, renderCDSection, cdOwn } from './cosmetics.js'; // Phase 2 suite (Track 2): district-flavored cosmetics, ink-painted parts
 
 const $ = (id) => document.getElementById(id);
 const b64ToBuf = (b64) => { const bin = atob(b64); const u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return u.buffer; };
@@ -2549,7 +2549,9 @@ function renderCustomize() {
     b.appendChild(row);
   }
   // Phase 2 suite (Track 2): district-flavored unlockable cosmetics.
-  renderCDSection({ el, save, writeSave, sfx: sfxUiClick, refreshShowcase, rerender: renderCustomize, activeSeason }, b, fid);
+  // NOTE: pass the named sfx() (key,vol) — cosmetics.js calls ctx.sfx('deny',0.8)
+  // etc.; sfxUiClick(vol,rate) has the wrong signature.
+  renderCDSection({ el, save, writeSave, sfx, refreshShowcase, rerender: renderCustomize, activeSeason }, b, fid);
 }
 
 // ---------- species creatures: whole-body CC0 models as enemies/bosses ----------
@@ -6780,11 +6782,19 @@ window.__cdtest = {
   dbgParts: () => player ? (player.partIds || []).slice() : null,
   dbgShowcaseParts: () => showcase ? (showcase.partIds || []).slice() : null,
   dbgCustomize: () => { openCustomize(); return customizing; },
+  dbgCDParts: () => { const n = []; if (showcase) showcase.root.traverse((o) => { if (o.name.startsWith('cd_')) n.push(o.name); }); return n; },
+  dbgCDAttachInfo: () => { const out = []; if (!showcase) return out;
+    showcase.root.traverse((o) => { if (!o.name.startsWith('cd_')) return;
+      const wp = new THREE.Vector3(); o.getWorldPosition(wp);
+      out.push({ name: o.name, bone: o.parent ? o.parent.name : '?',
+        pos: [+wp.x.toFixed(3), +wp.y.toFixed(3), +wp.z.toFixed(3)] }); });
+    return out; },
   dbgCloseCustomize: () => { closeCustomize(); return customizing; },
   dbgSetPart: (slot, pid) => { setPart(save.selected, slot, pid); return (showcase ? showcase.partIds : []).slice(); },
   dbgSetZone: (zone, c) => { setZone(save.selected, zone, c); return fighterZones(save.selected); },
   dbgSetFighter: (id) => { const d = fighterDef(id); if (d && d.id === id) { save.selected = id; writeSave(); refreshShowcase(); } return fighterDef().id; },
   dbgCash: (v) => { save.cash = v; writeSave(); renderMeta(); return save.cash; },
+  dbgCDOwn: (id) => { cdOwn(id, { save, writeSave }); return true; },
   dbgRep: (r) => { save.rep = r; writeSave(); const d = effDiff(); return { hpMul: +d.hpMul.toFixed(2), dmgMul: +d.dmgMul.toFixed(2), cash: +repMult().cash.toFixed(2) }; },
   spawnCreature: (cid) => { if (player) { const e = makeCreatureRaw(cid, 0xffffff, player.px + 3, -Math.PI / 2, 1); if (e) { e.maxHp = e.hp = 200; e.dmgMult = 1; e.spd = 1.5; e.px = player.px + 3; e.pz = 0; e.ai = 'walk'; e.aiT = 1; syncPos(e); playAnim(e, 'Running_A', { loop: true }); enemies.push(e); } return e; } },
   hurt: (n) => { if (player) hurtPlayer(n); },

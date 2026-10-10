@@ -8,6 +8,12 @@ signal died(f: Fighter)
 
 const KIND_ROOK := 0
 const KIND_VEX := 1
+const KIND_BRICK := 2
+const KIND_SABLE := 3
+const KIND_JUNO := 4
+const KIND_MACK := 5
+const KIND_IRIS := 6
+const KIND_HOLLOW := 7
 
 ## Data-driven roster. kind -> definition. New fighters = new entries here
 ## (+ PNG set in assets/art/<art>/ + pivots.json entry). Skins are style-only.
@@ -18,6 +24,24 @@ const FIGHTER_DEFS := {
 	1: {"name": "VEX", "art": "vex", "skins": ["vex", "vex_crimson"],
 		"toughness": 0.9, "speed": 1.0,
 		"desc": "Fast kickboxer.\nBlink and you're down."},
+	2: {"name": "BRICK", "art": "brick", "skins": ["brick"],
+		"toughness": 1.5, "speed": 0.8,
+		"desc": "Grappler. Slow,\nhits like a truck."},
+	3: {"name": "SABLE", "art": "sable", "skins": ["sable"],
+		"toughness": 1.0, "speed": 1.0,
+		"desc": "Counter-fighter.\nPatience is a weapon."},
+	4: {"name": "JUNO", "art": "juno", "skins": ["juno"],
+		"toughness": 0.85, "speed": 1.25,
+		"desc": "Rushdown spark.\nNever stops moving."},
+	5: {"name": "MACK", "art": "mack", "skins": ["mack"],
+		"toughness": 1.1, "speed": 0.95,
+		"desc": "Weapon specialist.\nOld soldier, new war."},
+	6: {"name": "IRIS", "art": "iris", "skins": ["iris"],
+		"toughness": 0.8, "speed": 1.2,
+		"desc": "Acrobatic. Owns\nthe air above you."},
+	7: {"name": "HOLLOW POINT", "art": "hollow_point", "skins": ["hollow_point"],
+		"toughness": 1.3, "speed": 0.9,
+		"desc": "Boss-tier zoner.\nThe empty chamber."},
 }
 
 const MOVES := {
@@ -35,6 +59,24 @@ const PALETTES := {
 	1: {"skin": Color("c98d5e"), "hair": Color("2ec4b6"), "top": Color("7b2ff7"),
 		"shorts": Color("26232e"), "glove": Color("2ec4b6"), "shoe": Color("2ec4b6"),
 		"accent": Color("2ec4b6"), "line": Color("26232b")},
+	2: {"skin": Color("e1aa78"), "hair": Color("3c2d23"), "top": Color("aa3c32"),
+		"shorts": Color("3c3746"), "glove": Color("e1aa78"), "shoe": Color("46301e"),
+		"accent": Color("f5f2eb"), "line": Color("26232b")},
+	3: {"skin": Color("8c5f41"), "hair": Color("1e1c22"), "top": Color("5a5546"),
+		"shorts": Color("2d2d32"), "glove": Color("ebe6d7"), "shoe": Color("ebe6d7"),
+		"accent": Color("5a5546"), "line": Color("26232b")},
+	4: {"skin": Color("f0c896"), "hair": Color("ffaa28"), "top": Color("f58c28"),
+		"shorts": Color("32323c"), "glove": Color("c83c28"), "shoe": Color("f07828"),
+		"accent": Color("c82837"), "line": Color("26232b")},
+	5: {"skin": Color("cd966e"), "hair": Color("827d78"), "top": Color("6e7355"),
+		"shorts": Color("373a32"), "glove": Color("d2c8b4"), "shoe": Color("34383c"),
+		"accent": Color("4b4e3c"), "line": Color("26232b")},
+	6: {"skin": Color("e6b48c"), "hair": Color("7a4dff"), "top": Color("7a4dff"),
+		"shorts": Color("282d37"), "glove": Color("e6b48c"), "shoe": Color("2ec4b6"),
+		"accent": Color("2ec4b6"), "line": Color("26232b")},
+	7: {"skin": Color("c8cdc3"), "hair": Color("26232b"), "top": Color("2d2a37"),
+		"shorts": Color("1e1c24"), "glove": Color("2d2a37"), "shoe": Color("23212d"),
+		"accent": Color("7a4dff"), "line": Color("26232b")},
 }
 
 ## Street weapons (Yakuza-style): pick up, smash, they break. Pure depth

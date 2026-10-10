@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://5o4tj8eee2h3l"
-path=""
+uid="uid://dnaqftxmgndr8"
+path="res://.godot/imported/head.png-16a1532591c936ed176bf2014fb6f449.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/art/vex_crimson/head.png"
-dest_files=[]
+dest_files=["res://.godot/imported/head.png-16a1532591c936ed176bf2014fb6f449.ctex"]
 
 [params]
 

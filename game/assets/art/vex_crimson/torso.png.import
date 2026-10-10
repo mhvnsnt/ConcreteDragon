@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://nqg6e0lbza3gx"
-path=""
+uid="uid://b48kmttkbog6n"
+path="res://.godot/imported/torso.png-68c0c001a1566cd8022bb662eb4c276c.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/art/vex_crimson/torso.png"
-dest_files=[]
+dest_files=["res://.godot/imported/torso.png-68c0c001a1566cd8022bb662eb4c276c.ctex"]
 
 [params]
 

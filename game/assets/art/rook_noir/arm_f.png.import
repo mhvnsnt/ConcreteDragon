@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://y5okwoc65apng"
-path=""
+uid="uid://bx8dectoq2g3u"
+path="res://.godot/imported/arm_f.png-1f58b33eb63a92e09efb69ba8679f81f.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/art/rook_noir/arm_f.png"
-dest_files=[]
+dest_files=["res://.godot/imported/arm_f.png-1f58b33eb63a92e09efb69ba8679f81f.ctex"]
 
 [params]
 
