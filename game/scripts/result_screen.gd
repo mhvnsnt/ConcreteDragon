@@ -50,6 +50,8 @@ func _ready() -> void:
 	]
 	var total := cash + int(stats["wave"]) * 5
 	save.cash += int(stats["wave"]) * 5
+	# boss progression: every 5th wave is a boss; clearing wave N beats floor((N-1)/5)
+	save.bosses_beaten = maxi(save.bosses_beaten, int(int(stats["wave"]) - 1) / 5)
 	save.save_game()
 	var y := 260.0
 	for ln in lines:

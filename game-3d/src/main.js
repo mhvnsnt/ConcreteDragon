@@ -13,6 +13,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { clone as skClone } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import seedrandom from './vendor/seedrandom.js'; // Y8 daily seeded run (wave 16, TIER 5 item 21): MIT © 2019 David Bau — see ASSETS_CREDITS.md
+import { cdApplyAll, renderCDSection } from './cosmetics.js'; // Phase 2 suite (Track 2): district-flavored cosmetics, ink-painted parts
 
 const $ = (id) => document.getElementById(id);
 const b64ToBuf = (b64) => { const bin = atob(b64); const u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return u.buffer; };
@@ -698,8 +699,21 @@ const PATCH_NOTES = [
 function renderPatchNotes() {
   const pn = $('patchNotes');
   if (!pn) return;
+  // Digestible: show latest only, tap to expand older notes
+  const [latestD, latestT] = PATCH_NOTES[0];
+  const older = PATCH_NOTES.slice(1);
   pn.innerHTML = '<div class="subtitle" style="margin-top:12px">WHAT\'S NEW</div>' +
-    PATCH_NOTES.map(([d, t]) => `<div style="font-size:12px;line-height:1.5;margin:4px 0"><b style="color:#ffd166">${d}</b> — ${t}</div>`).join('');
+    `<div style="font-size:12px;line-height:1.5;margin:4px 0"><b style="color:#ffd166">${latestD}</b> — ${latestT}</div>` +
+    (older.length ? `<div id="pnOlder" style="display:none">` +
+      older.map(([d, t]) => `<div style="font-size:12px;line-height:1.5;margin:4px 0"><b style="color:#ffd166">${d}</b> — ${t}</div>`).join('') +
+      `</div><div id="pnToggle" style="font-size:11px;color:#4fd1ff;margin:6px 0;cursor:pointer;letter-spacing:1px">+ ${older.length} OLDER</div>` : '');
+  const tg = $('pnToggle');
+  if (tg) tg.onclick = () => {
+    const o = $('pnOlder');
+    const open = o.style.display !== 'none';
+    o.style.display = open ? 'none' : 'block';
+    tg.textContent = open ? `+ ${older.length} OLDER` : '− HIDE';
+  };
 }
 // ---------- INFINITE BOSSES (owner 2026-10-06): data-driven boss generation ----------
 // procBoss(n) scales a base boss template into an endless challenger.
@@ -2382,6 +2396,8 @@ function applyFighterCosmetics(f, fid) {
     attachPart(f, pid, M); ids.push(pid);
   }
   f.partIds = ids;
+  // Phase 2 suite (Track 2): CD catalog parts + face paint + eyes (style only — never power).
+  cdApplyAll(f, fid, { save, writeSave, activeSeason });
 }
 
 // ---------- SCOUT system (owner 2026-10-07): infinite procedurally generated fighters ----------
@@ -2532,6 +2548,8 @@ function renderCustomize() {
     }
     b.appendChild(row);
   }
+  // Phase 2 suite (Track 2): district-flavored unlockable cosmetics.
+  renderCDSection({ el, save, writeSave, sfx: sfxUiClick, refreshShowcase, rerender: renderCustomize, activeSeason }, b, fid);
 }
 
 // ---------- species creatures: whole-body CC0 models as enemies/bosses ----------
@@ -2599,14 +2617,22 @@ function makeFighterRaw(tint, x, face, scale = 1, tex = null) {
   mixer.addEventListener('finished', (e) => { if (e.action === f.cur && f.onDone) { const d = f.onDone; f.onDone = null; d(); } });
   fighters.push(f); return f;
 }
-function playAnim(f, name, { loop = false, fade = 0.08, ts = 1, done = null, clamp = false } = {}) {
+// Combat fix 2026-10-09: these clip names are referenced by combat code but DON'T EXIST in the
+// shipped KayKit GLBs (anim_melee/general/move only carry 9 clips). Without an alias the attack
+// fires with NO animation — the fighter visibly freezes while damage applies.
+const CLIP_FALLBACK = {
+  'Melee_Unarmed_Attack_Punch_B': 'Melee_Unarmed_Attack_Punch_A',
+  'Melee_Unarmed_Attack_Kick_A': 'Melee_Unarmed_Attack_Kick',
+};
+function playAnim(f, name, { loop = false, fade = 0.12, ts = 1, done = null, clamp = false } = {}) {
+  if (CLIP_FALLBACK[name]) name = CLIP_FALLBACK[name];
   let clip = null;
   if (f.creature) { // translate mannequin clip names to the creature's baked clips
     const role = CREATURE_ANIMROLE[name];
     const cname = role && f.creatureDef.clips[role];
     clip = (cname && f.creatureClips[cname]) || f.creatureClips[f.creatureDef.clips.idle] || null;
   } else clip = clips[name];
-  if (!clip) { if (typeof T !== 'undefined') T.missingClip = name; return; }
+  if (!clip) { if (typeof T !== 'undefined') { T.missingClip = name; T.missingClipCount = (T.missingClipCount || 0) + 1; } return; }
   const a = f.mixer.clipAction(clip);
   a.reset(); a.setLoop(loop ? THREE.LoopRepeat : THREE.LoopOnce, Infinity); a.clampWhenFinished = clamp || !loop; a.timeScale = ts;
   if (f.cur && f.cur !== a) a.crossFadeFrom(f.cur, fade, false);
@@ -3089,6 +3115,7 @@ function showMission() {
     if (best) card.appendChild(el('div', 'best', `BEST: ${best}`));
     card.appendChild(el('div', 'rw', locked ? '🔒 ' + (m.unlock.id ? 'Clear ' + missionDef(m.unlock.id).name : '') : '★ ' + m.reward));
     if (!locked) {
+      // (dead duplicate 'go' button removed — build fix 2026-10-09: it redeclared the binding below)
       const ranToday = m.daily && save.daily.date === localDateStr();
       const go = el('button', 'go' + (m.daily ? ' panel9g' : ''), m.daily ? (ranToday ? '⚡ DAILY RUN · RETRY' : '⚡ DAILY RUN') : 'GO');
       go.onclick = (e) => { e.stopPropagation(); unlockAudio(); sfx('uiclick', 0.8); startMission(m.id); };
@@ -3420,6 +3447,22 @@ function startMission(id, node) {
   setHud();
 }
 function syncPos(f) { f.root.position.x = f.px; f.root.position.z = f.pz; f.root.position.y = f.py || 0; }
+// ROOT MOTION (combat fix 2026-10-09): lunges/dashes used to set player.px INSTANTLY — a visible
+// teleport of 1.3–2.6 units with no travel. startTravel moves the root over time (integrated in
+// playerUpdate) so lunges read as lunges. Signature teleports (GHOST blink, linedash) stay instant
+// on purpose — they're the character, with burst FX to sell it.
+function startTravel(p, dist, dur) {
+  const maxX = mission.len === Infinity ? 1e6 : mission.len - 1.5;
+  p.travel = { from: p.px, to: clamp(p.px + dist, 0.5, maxX), t: 0, dur: Math.max(0.05, dur) };
+}
+// Smooth facing: turn toward the target angle at a capped rate instead of snapping rotation.y
+// instantly. Fast enough to aim before the impact delay lands, slow enough to see.
+function faceToward(f, want, dt, rate) {
+  let d = want - f.root.rotation.y;
+  while (d > Math.PI) d -= 2 * Math.PI;
+  while (d < -Math.PI) d += 2 * Math.PI;
+  f.root.rotation.y += THREE.MathUtils.clamp(d, -rate * dt, rate * dt);
+}
 function nearestEnemy(range) {
   let best = null, bd = range;
   for (const e of enemies) {
@@ -3429,15 +3472,14 @@ function nearestEnemy(range) {
   }
   return best;
 }
-// OWNER 2026-10-07: attacks snap to face the nearest enemy at press time,
-// so strikes aim correctly now that walking no longer magnet-faces enemies.
+// OWNER 2026-10-07: attacks pick the nearest enemy at press time, so strikes aim correctly now
+// that walking no longer magnet-faces enemies. Combat fix 2026-10-09: this no longer SNAPS
+// rotation.y instantly — it sets intent (p.face) and playerUpdate's busy-branch turns the model
+// toward the target smoothly, landing before the impact delay. Same aim, no visible snap.
 function faceNearestEnemy() {
   if (!player) return;
   const t = nearestEnemy(99);
-  if (t) {
-    player.face = t.px >= player.px ? 1 : -1;
-    player.root.rotation.y = player.face > 0 ? Math.PI / 2 : -Math.PI / 2;
-  }
+  if (t) player.face = t.px >= player.px ? 1 : -1;
   player.animMove = false; // run anim yields to the attack; state machine restarts it after
 }
 function nearestEnemyFront(range) {  let best = null, bd = range;
@@ -3472,7 +3514,7 @@ function spawnEnemy(famId, mi, bx, bz) {
   e.px = bx; e.pz = clamp(bz, -1.3, 1.3);
   e.ai = 'walk'; e.aiT = rnd(0.4, 1.2) / df.aggro; e.windup = 0; e.vy = 0; e.airborne = false; e.aggro = df.aggro;
   syncPos(e);
-  playAnim(e, 'Running_A', { loop: true });
+  playAnim(e, 'Spawn_Ground', { ts: 1.1 }); // combat fix: unused clip now used — spawn rise, then AI takes over
   enemies.push(e);
   return e;
 }
@@ -3487,7 +3529,7 @@ function spawnBoss(bossId, bx) {
   e.maxHp = e.hp = Math.round(b.hp * dfb.hpMul); e.dmgMult = b.dmg * dfb.dmgMul; e.spd = b.spd; e.aggro = dfb.aggro;
   e.px = bx; e.pz = 0; e.ai = 'walk'; e.patIdx = 0; e.patT = 2.2; e.vy = 0; e.airborne = false;
   syncPos(e);
-  playAnim(e, 'Running_A', { loop: true });
+  playAnim(e, 'Spawn_Ground', { ts: 1.1 }); // combat fix: unused clip now used — spawn rise, then AI takes over
   enemies.push(e); bossRef = e;
   bossBeat(b.name); // letterboxed boss entrance card
   banner('⚠ ' + b.name + ' ⚠');
@@ -3566,6 +3608,7 @@ function doFinisher(t) {
 function doParry(e) {
   e.windup = 0; hideWarn(e); e.stagger = 1.2;
   playAnim(e, 'Hit_A', { ts: 1.4 });
+  playAnim(player, 'Melee_Block_Hit', { ts: 1.8, fade: 0.04 }); // combat fix: unused clip now used — the block reads
   player.energy = clamp(player.energy + 20 * (1 + (blessFx().energyGain || 0)), 0, energyMax());
   sparkFX(player.px + player.face * 0.8, 1.2, player.pz, 0x7af0ff, 16);
   const sp = screenPos(player.root.position.clone().add(new THREE.Vector3(0, 2.0, 0)));
@@ -3607,8 +3650,8 @@ function doPunch() {
     [clip, ts, delay, dmg, label, hs, sh] = ATK[atkIdx % ATK.length]; atkIdx++;
     launcher = !ce && (atkIdx % 3 === 0);
   }
-  if (dash) player.px = clamp(player.px + dash, 0.5, mission.len === Infinity ? 1e6 : mission.len - 1.5);
-  if (retreat) player.px = clamp(player.px - retreat, 0.5, mission.len === Infinity ? 1e6 : mission.len - 1.5);
+  if (dash) startTravel(player, dash, 0.12); // root-motion lunge: travels, not teleports
+  if (retreat) startTravel(player, -retreat, 0.12);
   player.busy = delay + 0.12;
   playAnim(player, clip, { ts: ts * (player.spd || 1), fade: 0.05 });
   sfxSwing(0.5); // S2: dedicated swing whoosh on the swing
@@ -3657,8 +3700,8 @@ function doBlitz() {
   player.blitzCD = 1.4; player.busy = 0.34;
   const lunge = 2.6 * face;
   const x0 = player.px;
-  player.px = clamp(player.px + lunge, 0.5, mission.len === Infinity ? 1e6 : mission.len - 1.5);
-  player.blitzX0 = x0; player.blitzX1 = player.px;
+  startTravel(player, lunge, 0.14); // root-motion lunge: travels over the windup, not teleports
+  player.blitzX0 = x0; player.blitzX1 = player.travel ? player.travel.to : clamp(player.px + lunge, 0.5, mission.len === Infinity ? 1e6 : mission.len - 1.5);
   playAnim(player, 'Melee_Unarmed_Attack_Punch_A', { ts: 2.6 * (player.spd || 1), fade: 0.05 });
   sfxSwing(0.6); // S2: dedicated swing whoosh
   sparkFX(player.px + face * 0.6, 1.1, player.pz, 0xffd166, 10);
@@ -4205,7 +4248,8 @@ function doJump() {
   ev('jump', {});
 }
 function doJumpAttack() {
-  // AIR GAME: rising kick on the way up (juggle tool), dive kick on the way down (existing)
+  // AIR GAME: rising kick on the way up (juggle tool), dive kick on the way down
+  // (combat fix 2026-10-09: kick goes ACTIVE via hitbox check, not instantly at press)
   if (player.vy > 1) {
     player.busy = 0.3;
     playAnim(player, 'Melee_Unarmed_Attack_Kick', { ts: 1.8, fade: 0.05 });
@@ -4225,33 +4269,13 @@ function doJumpAttack() {
     return;
   }
   // dive kick: strike on the way down, small AOE
+  if (player.dive) return; // one dive per airtime
   player.busy = 0.35;
+  player.dive = { hit: new Set(), dur: 0.6 };
   playAnim(player, 'Melee_Unarmed_Attack_Kick', { ts: 2.4, fade: 0.03 });
   player.vy = Math.min(player.vy, -2); // fast fall into the kick
   sfxSwing(0.55); // S2: dedicated swing whoosh
-  // CONTACT COLLISION: the foot hitbox is live during the fall — contact is checked
-  // per-frame in frame() until the kick lands or the window expires (hit once).
-  player.diveKick = { t: 0.7, hit: false };
-  damageDestructibles(2.3);
-}
-function updateDiveKick(dt) {
-  const dk = player && player.diveKick;
-  if (!dk || state !== 'fight' || missionOver || ended) { if (player) player.diveKick = null; return; }
-  dk.t -= dt;
-  const landed = (player.py || 0) <= 0.02 && player.vy >= 0;
-  if (dk.t <= 0 || landed) { player.diveKick = null; if (!dk.hitAny) sfxSwing(0.8, true); return; } // S2: whiff
-  for (const e of enemies.slice()) {
-    if (e.hp <= 0) continue;
-    if (Math.abs(e.px - player.px) > 2.3 || Math.abs((e.pz || 0) - (player.pz || 0)) > 1.6) continue;
-    const c = limbContact(player, e, 'foot');
-    if (!c) continue;
-    dk.hitAny = true;
-    resolveStrikeContact(player, e, c, { knockback: 0.3 });
-    landHit(e, Math.round(18 * player.dmgMult), 'DIVE KICK', 0.07, 0.3, false, false);
-    shake = Math.max(shake, 0.3);
-    player.diveKick = null;
-    return;
-  }
+  T.dives = (T.dives || 0) + 1; // test hook
 }
 function doStanceFin(fd) {
   // Stance-exclusive finisher: only available in stance mode (double-tap TAUNT). Style, not power: a tradeoff move.
@@ -4732,6 +4756,7 @@ function killEnemy(e) {
     $('bossWrap').style.display = 'none';
     musicStage(); // boss down -> back to the stage loop
     banner('BOSS DOWN!');
+    save.bossesBeaten = (save.bossesBeaten || 0) + 1; writeSave(); // gates boss-tier cosmetics
   } else {
     slowmo = 0.35; slowmoT = 0.7; shake = 0.45; hitstop = 0.09;
   }
@@ -4967,6 +4992,7 @@ function setupInput() {
   $('againBtn').addEventListener('click', (e) => { e.stopPropagation(); unlockAudio(); sfxUiClick(0.8); showMission(); });
   $('rematchBtn').addEventListener('click', (e) => { e.stopPropagation(); unlockAudio(); sfxUiClick(0.8); if (mission) startMission(mission.id); }); // soul law: one-tap rematch
   $('backBtn').addEventListener('click', (e) => { e.stopPropagation(); sfxUiClick(0.8); showSelect(); });
+  $('selectBackBtn').addEventListener('click', (e) => { e.stopPropagation(); sfxUiClick(0.8); showTitle(); });
   $('pauseBtn').addEventListener('click', (e) => { e.stopPropagation(); togglePause(); });
   $('tauntBtn').addEventListener('click', (e) => {
     e.stopPropagation();
@@ -4977,6 +5003,7 @@ function setupInput() {
   $('resumeBtn').addEventListener('click', (e) => { e.stopPropagation(); togglePause(false); });
   $('restartBtn').addEventListener('click', (e) => { e.stopPropagation(); togglePause(false); startMission(mission.id); });
   $('quitBtn').addEventListener('click', (e) => { e.stopPropagation(); setPaused(false); $('pauseOv').classList.add('hidden'); showMission(); });
+  $('quitTitleBtn').addEventListener('click', (e) => { e.stopPropagation(); setPaused(false); $('pauseOv').classList.add('hidden'); showTitle(); });
   $('muteBtn').addEventListener('click', (e) => { e.stopPropagation(); save.muted = !save.muted; e.target.textContent = save.muted ? 'OFF' : 'ON'; writeSave(); sfxUiClick(0.7); });
   $('qualityBtn').addEventListener('click', (e) => { e.stopPropagation(); save.quality = save.quality === 'auto' ? 'low' : save.quality === 'low' ? 'high' : 'auto'; e.target.textContent = save.quality.toUpperCase(); writeSave(); sfxUiClick(0.7); applyQuality(); });
   $('muteBtn').addEventListener('click', (e) => { e.stopPropagation(); save.muted = !save.muted; e.target.textContent = save.muted ? 'OFF' : 'ON'; writeSave(); sfx('uiclick', 0.7); });
@@ -5619,6 +5646,12 @@ function playerUpdate(dt) {
   const maxX = mission.len === Infinity ? 1e6 : mission.len - 1.5;
   p.px = clamp(p.px + mx * dt, 0.5, maxX);
   p.pz = clamp(p.pz + mz * dt, -1.4, 1.4);
+  if (p.travel) { // ROOT MOTION: lunge travel integration (smoothstep over the windup)
+    const tr = p.travel; tr.t += dt;
+    const k = Math.min(1, tr.t / tr.dur), e = k * k * (3 - 2 * k);
+    p.px = clamp(tr.from + (tr.to - tr.from) * e, 0.5, maxX);
+    if (k >= 1) p.travel = null;
+  }
   for (const c of colliders) { // solid props block movement (owner bug report 2026-10-06)
     if (c.dead) continue;
     const cx = p.px - c.x, cz = p.pz - c.z, rr = c.r + 0.45;
@@ -5634,6 +5667,23 @@ function playerUpdate(dt) {
     if (p.py <= ground) { p.py = ground; p.airT = 0; p.vy = 0;
       burst(p.root.position.clone().add(new THREE.Vector3(0, 0.1, 0)), 8, 0x999999, 2);
       if (p.busy <= 0) playAnim(p, 'Melee_Unarmed_Idle', { loop: true });
+    }
+    if (p.dive) { // DIVE KICK active window: connects while FALLING near the ground
+      p.dive.dur -= dt;
+      if (p.vy < 0 && (p.py || 0) < 1.6) {
+        for (const e of enemies) {
+          if (e.hp > 0 && !p.dive.hit.has(e) && Math.abs(e.px - p.px) < 2.2 && Math.abs(e.pz - p.pz) < 1.6) {
+            p.dive.hit.add(e);
+            landHit(e, Math.round(18 * p.dmgMult), 'DIVE KICK', 0.07, 0.3, false, false);
+          }
+        }
+        damageDestructibles(2.2);
+      }
+      if (p.dive.dur <= 0 || (p.py || 0) <= 0.02 || p.airT <= 0) {
+        if (p.dive.hit.size === 0) sfxSwing(0.8, true); // S2: whiff — the kick missed
+        else shake = Math.max(shake, 0.3);
+        p.dive = null;
+      }
     }
   } else if ((p.py || 0) > 0) { // walked off a platform -> fall
     let over = false;
@@ -5665,9 +5715,12 @@ function playerUpdate(dt) {
       p.root.rotation.y = p.face > 0 ? Math.PI / 2 : -Math.PI / 2;
     }
   } else if (p.busy > 0) {
-    // mid-action: track nearest enemy so strikes aim correctly
+    // mid-action: track nearest enemy so strikes aim correctly — smooth turn, no snap
     const tgt = nearestEnemy(99);
-    if (tgt) { p.face = tgt.px >= p.px ? 1 : -1; p.root.rotation.y = p.face > 0 ? Math.PI / 2 : -Math.PI / 2; }
+    if (tgt) {
+      p.face = tgt.px >= p.px ? 1 : -1;
+      faceToward(p, p.face > 0 ? Math.PI / 2 : -Math.PI / 2, dt, 14);
+    }
   }
   const spdNow = Math.hypot(mx, mz);
   const wantRun = spdNow > 0.6 && p.dodgeT <= 0 && p.busy <= 0 && (p.airT || 0) <= 0 && (p.knockT || 0) <= 0;
@@ -6515,7 +6568,7 @@ function frame(dt, doRender = true) {
     for (const e of enemies.slice()) enemyAI(e, dt);
     resolveBodyCollision(); // OBVIOUS-DEFECT LAW: no interpenetration, ever
     resolveHurtboxContact(); // CONTACT COLLISION: head/torso hurtboxes never overlap, ever
-    updateDiveKick(dt); // CONTACT COLLISION: live foot hitbox during dive-kick fall
+    // (updateDiveKick removed in merge — branch uses player.dive active window instead)
     for (const e of enemies) positionWarn(e);
     for (const e of enemies) if (e.dotT > 0 && e.hp > 0 && !e.dead) { e.dotT -= dt; e.hp -= e.dotDps * dt; sparkFX(e.px, 1.2, e.pz, 0x7cff6b, 1); if (e.hp <= 0) killEnemy(e); }
     if (comboT > 0 && (comboT -= dt) <= 0) { combo = 0; setHud(); }
@@ -6638,7 +6691,7 @@ window.__cdtest = {
   simDbg: () => ({ hs: +hitstop.toFixed(3), sm: slowmo, smT: +slowmoT.toFixed(3), st: state }),
   unpause: () => setPaused(false),
   freeze: (on) => { window.__cdfreeze = !!on; },
-  spawnBoss: (id) => { if (player) return spawnBoss(id || 'kingpin', player.px + 6); },
+  // (duplicate spawnBoss removed — build fix 2026-10-09: the (id, bx) form below is the superset)
   spawnFam: (famId) => { if (player) return spawnEnemy(famId, 0, player.px + 3, 0); },
   dbgStrike: (range) => { const h = strikeHit(player, 'hand', range || 2.7); return h ? { hp: Math.round(h.target.hp), pen: +h.pen.toFixed(3) } : null; },
   spawnFoeAt: (x) => { if (player) return spawnEnemy('thug', 0, x, 0); },
@@ -6792,7 +6845,7 @@ window.__cdtest = {
     try { landHit(e, 99999, 'HEAVY', 0.09, 0.6, false, false); } catch (err) { return { ok: 0, why: 'threw' }; }
     return { ok: 1, dead: e.hp <= 0, ducks: T.ducks || 0 };
   },
-  dbgFoePassive: () => { let n = 0; for (const e of enemies) if (!e.boss && e.hp > 0) { e.ai = 'recover'; e.aiT = 999; n++; } return n; }, // passive punching bag (still a real enemy, takes real hits)
+  // (duplicate dbgFoePassive removed — build fix 2026-10-09: identical to the one above)
   dbgStickDown: (v) => { stick.dy = v ? 1 : 0; return stick.dy; }, // S15: hold stick down so doHeavy takes the real DUST LAUNCHER path
   vfxDbg: () => ({ // wave 17 VFX tranche (owner 2026-10-06): per-category burst counters + texture decode proof
     ko: T.vfxKo || 0, hit: T.vfxHit || 0, spc: T.vfxSpc || 0, dust: T.vfxDust || 0,
@@ -6958,14 +7011,7 @@ window.__cdtest = {
   step: (dt) => { playerUpdate(dt || 1 / 60); }, // drive the real physics deterministically
   estep: (dt) => { for (const e of enemies.slice()) enemyAI(e, dt || 1 / 60); }, // drive enemy AI deterministically (test only)
   estepN: (n, dt) => { for (let i = 0; i < (n || 60); i++) for (const e of enemies.slice()) enemyAI(e, dt || 1 / 60); return true; }, // batch estep (test only)
-  ff: (n, dt) => { // improve-loop: deterministic FULL-frame stepping for playtests (no render).
-    // frame() covers playerUpdate + director + enemyAI + hitstop/combo timers + projectiles.
-    // NOTE: hit resolution uses wall-clock setTimeout — after ff(), await a real sleep so
-    // pending hit timeouts fire, then sample. Positions are read fresh inside the timeout.
-    const t = Math.max(1, Math.min(600, n | 0 || 1));
-    for (let i = 0; i < t; i++) frame(dt || 1 / 60, false);
-    return +gameTime.toFixed(2);
-  },
+  // (duplicate 'ff' removed — build fix 2026-10-09: the canonical fast-forward lives above at 'improve-loop playtest tooling')
   dbg: () => player ? { st: state, mo: missionOver, en: ended, hp: player.hp, busy: player.busy, airT: player.airT, py: player.py, vy: player.vy, frames: dbgFrames } : null,
   setStick: (dx, dy) => { stick.dx = dx; stick.dy = dy; },
   playerPos: () => player ? { px: +player.px.toFixed(2), pz: +player.pz.toFixed(2), py: +(player.py || 0).toFixed(2), airT: +(player.airT || 0).toFixed(2) } : null,
@@ -6976,7 +7022,7 @@ window.__cdtest = {
   setDiff: (id) => { save.difficulty = id; writeSave(); },
   zeroBusy: () => { if (player) player.busy = 0; },
   info: () => ({ px: player ? +player.px.toFixed(1) : 0, hp: player ? Math.round(player.hp) : 0, foes: enemies.length, boss: bossRef ? Math.round(bossRef.hp) : 0, cash: cashRun, kills }),
-  clipNames: () => Object.keys(clips),
+  // (duplicate clipNames removed — defined once at the top of __cdtest)
   foes: () => enemies.map((e) => ({ px: +e.px.toFixed(2), pz: +(e.pz || 0).toFixed(2), ai: e.ai, hp: Math.round(e.hp), name: e.name, wu: +((e.windup || 0).toFixed(2)) })),
   // combat+cinematics wave: motion inputs, energy, mega, projectiles, cine
   energy: () => player ? Math.round(player.energy) : 0,
