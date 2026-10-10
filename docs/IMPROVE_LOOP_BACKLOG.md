@@ -227,11 +227,25 @@ via HP/damage numbers. Medium risk (touches enemyAI state machine).
 **Risk:** low (table values).
 **Shipped:** ATK jab 0.03→0.10s, cross 0.04→0.12s, kick 0.08→0.16s; LAUNCHER finisher 0.08→0.14s (counter/gavel/KO untouched); doPunch buffers HIT presses during hitstop (atkBuf, fires when freeze+busy clear, 0.5s expiry); Smash-style defender micro-vibration (render-only, restored per frame). Headless-verified: jab 0.100s / cross 0.120s / launcher 0.140s live, buffer taps+2, KO/cash popups intact. Playtest: `game-3d/qa/playtest-p15-hitstop.mjs` (+ `playtest-p15b-string-ko.mjs`).
 
-### P16 — SoR4 health rally (desperation rework)
+### P16 — SoR4 health rally (desperation rework) — SHIPPED 2026-10-10
 **Refs:** Streets of Rage 4 — desperation HP banked as recoverable green health if you keep attacking (see docs/RESEARCH_FIGHTER_MECHANICS.md).
 **Gap:** CD desperation costs 10% HP permanently — pure punishment.
 **Work:** bank the cost as rally health; attacking recovers it; taking hits loses it.
 **Risk:** low-medium.
+**Shipped:** desperation cost (10% HP, never-lethal guards unchanged) banked as `player.rallyHp`
+in both desperation paths (`doDesperation` + DOWN+SPC); `rallyRecover()` converts 1/5 of the
+remaining pool per landed non-DESPERATION hit (~5 clean hits per bank — guarded/dodged strikes
+convert nothing, the blast never rallies its own cost, heals to full forfeit a stale bank);
+`applyPlayerDamage()` drains rally before real HP (block chip included); zeroing HP still KOs,
+bank cleared on death; green `#prally` HUD segment stacked past the real-HP fill (SoR4 green);
+'RALLY RECOVERED!' moment + popup on full conversion; move-list copy updated (banked, not
+permanent). Headless-verified: bank math (hp 100→90, rally 10), 1/5 conversion per hit,
+full recovery via attacking, drain-first (20-dmg hit → rally 10→0, hp −10 only),
+KO-with-rally-pending (missionOver, rally cleared), OBVIOUS-DEFECT sweep clean
+(minDist ≥0.85, feet grounded, facing follows movement input, foe HP drops on hits,
+no T-poses, HUD correct), zero page/console errors (file:// manifest artifact filtered).
+Playtest: `game-3d/qa/playtest-p16-rally.mjs` (+ `probe-p16-rally-moment.mjs`);
+shots + results.json in `game-3d/shots-p16-rally/` (7 frames, all eyes-reviewed).
 
 ### P17 — Tekken counter-hit properties
 **Refs:** Tekken — counter-hits grant NEW properties (knockdown/stun/juggle), not just 2x damage (see docs/RESEARCH_FIGHTER_MECHANICS.md).
