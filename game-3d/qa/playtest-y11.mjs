@@ -44,11 +44,10 @@ must('1. boot: title ready', await waitTitle());
 await E('t.unpause()'); // headless safety: make sure the sim loop is not paused
 
 // ---- A. ko1 (first KO) + toast screenshot ----
+// spawn+kill in ONE evaluate: atomic, the rAF loop can't interleave between them
 must('2. m1 fight state', await startFight('m1'));
-await E('t.spawnFoeAt(6)'); // m1's first scripted spawn is at px=10 — spawn a real foe via spawnEnemy
-await E('t.ff(30)');
-await E('t.hitFoe(0, 99999)');
-await sleep(400);
+const koHp = await E('(t.spawnFoeAt(6), t.hitFoe(t.foes().length - 1, 99999))');
+console.log('   foe hp after kill hit:', koHp);
 // read the toast BEFORE the (slow) screenshot — it shows for 4s
 const toastTxt = await page.evaluate(() => document.getElementById('achBanner').textContent);
 const toastShown = await page.evaluate(() => document.getElementById('achBanner').classList.contains('show'));
@@ -59,14 +58,12 @@ await page.screenshot({ path: SHOTS + '/1-ko1-toast.png' });
 await sleep(1500); // let the corpse clear from the enemies list
 
 // ---- B. juggle (hit a launched foe mid-air) ----
-await E('t.spawnFoeAt(6)');
-await E('t.ff(30)');
-await E('t.hitFoe(0, 5, true)'); // launcher: foe airborne, survives (70hp thug)
+// both hits in ONE evaluate: launcher sets airborne at the end of landHit,
+// the follow-up hit sees it — atomic, no rAF interleave
+await E('(t.spawnFoeAt(6), t.hitFoe(t.foes().length - 1, 5, true), t.hitFoe(t.foes().length - 1, 5))');
 await sleep(400);
-const airCheck = await E('t.foes()[0] ? 1 : 0');
+const airCheck = await E('t.foes().length > 0 ? 1 : 0');
 must('4. foe present for juggle', airCheck === 1);
-await E('t.hitFoe(0, 5)'); // mid-air hit
-await sleep(400);
 must('4a. juggle unlocked via real landHit airborne branch', await has('juggle'));
 await page.screenshot({ path: SHOTS + '/2-juggle-toast.png' });
 
@@ -89,8 +86,8 @@ await page.screenshot({ path: SHOTS + '/3-combo50-toast.png' });
 // ---- D. bowling (thrown foe plows into another) ----
 must('6. endless fight state', await startFight('endless'));
 await E('t.spawnFoeAt(6)'); // spawn the pair directly: the endless director only
-await E('t.spawnFoeAt(8.5)'); // spawns on the rAF loop, which headless throttles
-await E('t.ff(30)');
+await E('t.spawnFoeAt(7.0)'); // spawns on the rAF loop, which headless throttles
+await E('t.ff(30)'); // (pair starts inside the 1.3px contact radius — first tick connects)
 const nF = (await E('t.foes()')).length;
 must('6a. 2 foes present via real spawnEnemy', nF >= 2);
 {
