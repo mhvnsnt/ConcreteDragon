@@ -6174,6 +6174,9 @@ function updateCine(dt) {
 // cinematic intro: plays once from the title screen, then character select
 function playIntro() {
   showOnly(null);
+  // CDCI2: clean cinematic — hide combat HUD + touch controls during the intro
+  $('touch').classList.remove('on');
+  $('hud').style.display = 'none';
   playCine({
     mode: 'intro', dur: 7.5,
     caps: [
@@ -6581,7 +6584,7 @@ function frame(dt, doRender = true) {
       showcase.root.rotation.y = showcaseRot;
       showcase.root.position.set(0, 0, 0);
     }
-    camera.position.set(0, 1.0, 5.2);
+    camera.position.set(0, 1.0, 6.5); // CDCI2: pulled back so showcase fighter clears the logo
     camera.lookAt(0, 0.1, 0);
   } else if (state === 'mission') {
     camera.position.set(6, 2.8, 8.5);
