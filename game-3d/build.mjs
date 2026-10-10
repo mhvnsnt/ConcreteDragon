@@ -8,7 +8,10 @@ const r = await esbuild.build({ entryPoints: ['src/main.js'], bundle: true, mini
 const js = r.outputFiles[0].text.replace(/<\/script/gi, '<\\/script');
 const credits = '<!-- Built by Orion Enterprises LLC playable-kit. Assets (all CC0 1.0, public domain): ' + [...new Set(man.map(m => m.source.split('/').slice(0, 3).join('/')))].join('; ') + ' -->';
 const tpl = fs.readFileSync('src/template.html', 'utf8');
-const html = tpl.replace('<!--CREDITS-->', () => credits).replace('/*ASSETS*/', () => JSON.stringify(assets)).replace('/*BUNDLE*/', () => js);
+// CYCLE 2: title logo — inline the official graffiti logo as base64 (replaces broken CSS gradient text)
+let logoDataUri = '';
+try { logoDataUri = 'data:image/png;base64,' + fs.readFileSync('build/assets/logo-title.png').toString('base64'); } catch (e) { console.log('logo-title.png missing, using text fallback'); }
+const html = tpl.replace('<!--CREDITS-->', () => credits).replace('/*ASSETS*/', () => JSON.stringify(assets)).replace('/*BUNDLE*/', () => js).replace('<!--LOGO-DATAURI-->', () => logoDataUri);
 fs.mkdirSync('dist', { recursive: true });
 fs.writeFileSync('dist/concrete-dragon.html', html);
 const kb = (n) => (n / 1024 / 1024).toFixed(2) + ' MB';
