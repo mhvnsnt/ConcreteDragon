@@ -220,11 +220,12 @@ via HP/damage numbers. Medium risk (touches enemyAI state machine).
 **Work:** (1) character select redesign FIRST: big cards, paged or horizontal, human-sized touch targets; (2) paged menus everywhere (no vertical scroll marathons); (3) glanceable hierarchy, breathing room. Menu research track (cd-menu-ui-research) producing the full spec.
 **Risk:** medium (touches all menus). GLOBAL — applies to every game repo.
 
-### P15 — Hitstop retune (the #1 feel-per-line change)
+### P15 — Hitstop retune (the #1 feel-per-line change) — SHIPPED 2026-10-10
 **Refs:** Street Fighter norm 9f lights / 13f heavies; Guilty Gear Xrd 7f/10f (see docs/RESEARCH_FIGHTER_MECHANICS.md). CD jab freezes ~2f.
 **Gap:** hitstop severely under-tuned; hits feel weightless.
 **Work:** retune `ATK` table toward 6-16f by move weight; accept cancels during hitstop (SF2 2-in-1 rule).
 **Risk:** low (table values).
+**Shipped:** ATK jab 0.03→0.10s, cross 0.04→0.12s, kick 0.08→0.16s; LAUNCHER finisher 0.08→0.14s (counter/gavel/KO untouched); doPunch buffers HIT presses during hitstop (atkBuf, fires when freeze+busy clear, 0.5s expiry); Smash-style defender micro-vibration (render-only, restored per frame). Headless-verified: jab 0.100s / cross 0.120s / launcher 0.140s live, buffer taps+2, KO/cash popups intact. Playtest: `game-3d/qa/playtest-p15-hitstop.mjs` (+ `playtest-p15b-string-ko.mjs`).
 
 ### P16 — SoR4 health rally (desperation rework)
 **Refs:** Streets of Rage 4 — desperation HP banked as recoverable green health if you keep attacking (see docs/RESEARCH_FIGHTER_MECHANICS.md).

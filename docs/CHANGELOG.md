@@ -8,6 +8,23 @@ it ships. itch.io devlogs mirror the highlights for buyers.
 
 ---
 
+## 2026-10-10
+
+### P15 — Hitstop retune: hits finally have weight
+- Hitstop retuned toward genre norms (SF 9f lights / 13f heavies): jab
+  0.03s → **0.10s**, cross 0.04s → **0.12s**, kick 0.08s → **0.16s**,
+  launcher finisher 0.08s → **0.14s**. Counter (0.12s), gavel (0.16s),
+  and KO slow-mo treatments untouched.
+- **SF2 2-in-1 rule**: HIT presses during hitstop now buffer instead of
+  being eaten — the buffered cancel fires when the freeze ends, so jab →
+  cross → launcher strings stay consistent even when you press early.
+- **Smash-style defender micro-vibration** during hitstop (render-only
+  jitter, restored every frame so positioning never drifts).
+- Verified headless: jab 0.100s / cross 0.120s / launcher 0.140s measured
+  live, buffer fires (taps+2), KO + cash popups intact, zero interpenetration.
+
+---
+
 ## 2026-10-09
 
 ### Menus: digestibility pass
