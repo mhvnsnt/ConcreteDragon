@@ -6706,7 +6706,7 @@ function frame(dt, doRender = true) {
   if (paused) { RR(); return; }
   if (cine) { updateCine(dt); updateFx(dt); updateProjs(dt); RR(); return; }
   gameTime += dt;
-  if (hitstop > 0) { hitstop -= dt; for (const f of fighters) if (f.vibT > 0) f.vibT -= dt; dt *= 0.05; } // P15: vibT decays in real time so the shake never outlives the freeze
+  if (hitstop > 0) { if (hitstop > (T.hsMax || 0)) T.hsMax = hitstop; hitstop -= dt; for (const f of fighters) if (f.vibT > 0) f.vibT -= dt; dt *= 0.05; } // P15: vibT decays in real time so the shake never outlives the freeze; T.hsMax records peak hitstop for tests
   if (slowmoT > 0) { slowmoT -= dt; dt *= slowmo; }
   for (const f of fighters) { f.mixer.update(dt); if (f.busy > 0) f.busy -= dt; updateSquash(f, dt); }
   doWaveTick(dt); // MOVES EXPANSION: energy wave charge
@@ -6875,6 +6875,8 @@ window.__cdtest = {
   simDbg: () => ({ hs: +hitstop.toFixed(3), sm: slowmo, smT: +slowmoT.toFixed(3), st: state }),
   atkHsDbg: () => ATK.map(a => a[5]), // P15: hitstop column of the attack table [jab, cross, kick]
   atkBufDbg: () => !!(player && player.atkBuf), // P15: true while a HIT press is buffered during hitstop
+  hsMaxDbg: () => +((T.hsMax || 0).toFixed(3)), hsMaxClear: () => { T.hsMax = 0; return true; }, // P15: peak hitstop since clear
+  tapsDbg: () => T.taps || 0, // P15: doPunch invocations (proves buffered cancels fire)
   unpause: () => setPaused(false),
   freeze: (on) => { window.__cdfreeze = !!on; },
   // (duplicate spawnBoss removed — build fix 2026-10-09: the (id, bx) form below is the superset)
@@ -6895,7 +6897,7 @@ window.__cdtest = {
   foeCount: () => enemies.length,
   playerGrab: () => (player && player.grab ? { phase: player.grab.phase, link: player.grab.link, name: player.grab.name } : null),
   fighterArchetype: () => fighterDef().archetype,
-  enemiesDbg: () => enemies.map((e) => ({ hp: Math.round(e.hp), px: +e.px.toFixed(2), dead: !!e.dead })),
+  enemiesDbg: () => enemies.map((e) => ({ hp: Math.round(e.hp), px: +e.px.toFixed(2), dead: !!e.dead, vibT: +((e.vibT || 0).toFixed(3)) })),
   squashDbg: (i) => { const e = enemies[i]; if (!e) return null; return { t: +e.squashT.toFixed(3), amt: e.squashAmt, mode: e.squashMode, sy: +e.root.scale.y.toFixed(3), sx: +e.root.scale.x.toFixed(3) }; },
   destructDbg: () => destructibles.map((d) => ({ name: d.name, hp: Math.round(d.hp), px: +d.px.toFixed(2) })),
   thrownDbg: () => thrownWpns.map((t) => ({ type: t.type, px: +t.px.toFixed(2) })),
