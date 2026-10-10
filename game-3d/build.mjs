@@ -11,7 +11,7 @@ const tpl = fs.readFileSync('src/template.html', 'utf8');
 // CYCLE 2: title logo — inline the official graffiti logo as base64 (replaces broken CSS gradient text)
 let logoDataUri = '';
 try { logoDataUri = 'data:image/png;base64,' + fs.readFileSync('build/assets/logo-title.png').toString('base64'); } catch (e) { console.log('logo-title.png missing, using text fallback'); }
-const html = tpl.replace('<!--CREDITS-->', () => credits).replace('/*ASSETS*/', () => JSON.stringify(assets)).replace('/*BUNDLE*/', () => js).replace('<!--LOGO-DATAURI-->', () => logoDataUri);
+const html = tpl.replace('<!--CREDITS-->', () => credits).replace('/*ASSETS*/', () => JSON.stringify(assets)).replace('/*BUNDLE*/', () => js).replace(/<!--LOGO-DATAURI-->/g, () => logoDataUri);
 fs.mkdirSync('dist', { recursive: true });
 fs.writeFileSync('dist/concrete-dragon.html', html);
 const kb = (n) => (n / 1024 / 1024).toFixed(2) + ' MB';
