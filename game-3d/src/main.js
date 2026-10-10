@@ -7018,7 +7018,7 @@ window.__cdtest = {
   },
   hitLayerDbg: () => ({ layer: T.hitLayerSfx || 0, synth: T.synthHitSfx || 0 }), // S1 hit-layer tranche (owner 2026-10-08): layer fires AND synth hits still resolve
   hitLayerClear: () => { T.hitLayerSfx = 0; T.synthHitSfx = 0; },
-  dbgFoePassive: () => { let n = 0; for (const e of enemies) if (!e.boss && e.hp > 0) { e.ai = 'recover'; e.aiT = 999; n++; } return n; }, // S1 hit-layer playtest: passive punching bag (still a real enemy, takes real hits)
+  dbgFoePassive: () => { let n = 0; for (const e of enemies) if (!e.boss && e.hp > 0) { e.ai = 'recover'; e.aiT = 999; e.guardCD = 99; e.dodgeCD = 99; n++; } return n; }, // S1 hit-layer playtest: passive punching bag (still a real enemy, takes real hits; P15: reactions disabled for deterministic hitstop measurement)
   audioDbg: (ks) => (ks || []).map(k => ({ k, ok: !!(sbuf[k] && sbuf[k] instanceof AudioBuffer) })), // S2: prove swing SFX decoded
   uiClickDbg: () => ({ uiClick: T.uiClickSfx || 0 }), // S6 UI click tranche (owner 2026-10-08): playtest hook for the central UI-button click SFX
   uiClickClear: () => { T.uiClickSfx = 0; },
