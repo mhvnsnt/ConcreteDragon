@@ -3441,12 +3441,11 @@ function startMission(id, node) {
   $('touch').classList.add('on');
   $('bossWrap').style.display = 'none';
   // story beat: letterboxed mission card before the action (Nintendo-style)
-  // TUTORIAL FIX (cycle 1): hint shows AFTER the card cinematic ends, not during it — no more overlap
   playCine({
     mode: 'card', dur: 2.3,
     caps: [{ t: 0.15, html: '<div class="cc2">' + mission.name + '</div><div class="cc3">' + (mission.card || 'CLEAR THE BLOCK') + '</div>' }]
       .concat(mission.daily ? [{ t: 1.15, html: '<div class="cc3">⚡ DAILY RUN — ' + dailyDateLabel(mission.dailyDate) + ' · SEED ' + mission.dailySeed + '</div>' }] : []),
-    onDone: () => { const b = mission.boss && bossDef(mission.boss); banner((mission.daily ? '⚡ DAILY RUN — ' + dailyDateLabel(mission.dailyDate) + ' · ' : '') + mission.name + ' — ' + (b ? 'BOSS: ' + b.name : 'CLEAR THE BLOCK'), 'gold'); sfx(196, 0.5, 'sawtooth', 0.4); if (!save.seenHint) hint(true); },
+    onDone: () => { const b = mission.boss && bossDef(mission.boss); banner((mission.daily ? '⚡ DAILY RUN — ' + dailyDateLabel(mission.dailyDate) + ' · ' : '') + mission.name + ' — ' + (b ? 'BOSS: ' + b.name : 'CLEAR THE BLOCK'), 'gold'); sfx(196, 0.5, 'sawtooth', 0.4); },
   });
   setHud();
 }
@@ -6588,6 +6587,8 @@ function frame(dt, doRender = true) {
   } else if (state === 'fight' && player) {
     playerUpdate(dt);
     recordStick(); // fighting-game motion input history
+    // CYCLE 2: tutorial hint appears only when truly playable — no cinematic, no letterbox, no boss card
+    if (!save.seenHint && !cine && !document.body.classList.contains('cine')) hint(true);
     director(dt);
     for (const e of enemies.slice()) enemyAI(e, dt);
     resolveBodyCollision(); // OBVIOUS-DEFECT LAW: no interpenetration, ever
