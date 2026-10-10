@@ -14,7 +14,10 @@ const browser = await puppeteer.launch({ executablePath: CHROME, headless: 'new'
 const page = await browser.newPage();
 await page.setViewport({ width: 844, height: 390, isMobile: true, hasTouch: true });
 page.on('pageerror', (e) => errors.push('[pageerror] ' + e.message.slice(0, 200)));
-page.on('console', (m) => { if (m.type() === 'error') errors.push('[console.error] ' + m.text().slice(0, 200)); });
+// file:// harness: manifest.webmanifest is CORS-blocked from origin 'null' (pre-existing,
+// unrelated to achievements) — allowlisted by URL via requestfailed so real failures surface.
+page.on('requestfailed', (r) => { if (!/manifest\.webmanifest/.test(r.url())) errors.push('[requestfailed] ' + r.url().slice(-100)); });
+page.on('console', (m) => { if (m.type() === 'error' && !/manifest\.webmanifest|Failed to load resource: net::ERR_FAILED/.test(m.text())) errors.push('[console.error] ' + m.text().slice(0, 200)); });
 const E = async (expr) => page.evaluate(new Function('const t = window.__cdtest; return (' + expr + ')'));
 const check = (label, ok) => console.log((ok ? 'PASS' : 'FAIL') + ' | ' + label);
 let allOk = true;
@@ -44,16 +47,17 @@ must('1. boot: title ready', await waitTitle());
 await E('t.unpause()'); // headless safety: make sure the sim loop is not paused
 
 // ---- A. ko1 (first KO) + toast screenshot ----
-// spawn+kill in ONE evaluate: atomic, the rAF loop can't interleave between them
+// spawn, kill, AND toast-state read in ONE evaluate: under CPU contention the
+// CDP round-trip alone can exceed the 4s toast, so the DOM read must happen in
+// the same JS task as the unlock.
 must('2. m1 fight state', await startFight('m1'));
-const koHp = await E('(t.spawnFoeAt(6), t.hitFoe(t.foes().length - 1, 99999))');
-console.log('   foe hp after kill hit:', koHp);
-// read the toast BEFORE the (slow) screenshot — it shows for 4s
-const toastTxt = await page.evaluate(() => document.getElementById('achBanner').textContent);
-const toastShown = await page.evaluate(() => document.getElementById('achBanner').classList.contains('show'));
+const kr = await E(`(() => { t.spawnFoeAt(6); const hp = t.hitFoe(t.foes().length - 1, 99999);
+  const b = document.getElementById('achBanner');
+  return { hp: hp, txt: b.textContent, cls: b.className }; })()`);
+console.log('   kill+toast state:', JSON.stringify(kr));
 must('3. ko1 unlocked via real killEnemy', await has('ko1'));
-must('3a. unlock toast shows ACHIEVEMENT banner text', /ACHIEVEMENT/.test(toastTxt));
-must('3b. toast banner is actually visible (show class, top-level overlay)', toastShown);
+must('3a. unlock toast shows ACHIEVEMENT banner text', /ACHIEVEMENT/.test(kr.txt));
+must('3b. toast banner is actually visible (show class, top-level overlay)', (kr.cls || '').includes('show'));
 await page.screenshot({ path: SHOTS + '/1-ko1-toast.png' });
 await sleep(1500); // let the corpse clear from the enemies list
 
