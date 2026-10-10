@@ -74,7 +74,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#150f2a;touch-action:n
 @keyframes chainpop{0%{transform:translate(-50%,-50%) scale(.4)}20%{transform:translate(-50%,-50%) scale(1.35)}45%{transform:translate(-50%,-50%) scale(1.1)}100%{transform:translate(-50%,-120%) scale(1.15);opacity:0}}
 @keyframes pop{0%{transform:translate(-50%,-50%) scale(.4)}15%{transform:translate(-50%,-50%) scale(1.25)}100%{transform:translate(-50%,-160%) scale(1);opacity:0}}
 #warn{position:absolute;transform:translate(-50%,-100%);font-size:22px;font-family:'SairaStencil','Bungee','Anton',Arial,sans-serif;color:#ff2a2a;background:#fff;border-radius:6px;padding:2px 8px;opacity:0;transition:opacity .08s;box-shadow:0 0 18px #f00}
-#hint{position:absolute;left:50%;bottom:calc(max(12px,env(safe-area-inset-bottom)) + 130px);white-space:nowrap;transform:translateX(-50%);text-align:center;opacity:0;transition:opacity .25s}
+#hint{position:absolute;left:50%;bottom:calc(max(12px,env(safe-area-inset-bottom)) + 170px);white-space:nowrap;transform:translateX(-50%);text-align:center;opacity:0;transition:opacity .25s}
 #hint .ring{width:60px;height:60px;margin:0 auto 6px;border:5px solid #fff;border-radius:50%;animation:ring 1s infinite;box-shadow:0 0 16px #4fd1ff}
 #hint b{font-size:26px;text-shadow:0 3px 0 #000;letter-spacing:1px}
 #hint small{display:block;font-family:Arial,sans-serif;font-weight:700;font-size:13px;margin-top:4px;text-shadow:0 2px 0 #000;text-transform:none}
@@ -126,6 +126,14 @@ body.cine #cineSkip{display:block}
 #selPreview #showName{font-size:30px;margin-top:4px}
 #selPreview #showTag{max-width:330px}
 #dragHint{font-family:Arial,sans-serif;font-weight:700;font-size:11px;opacity:.6;margin-top:4px;text-transform:none}
+/* ------- select tabs (CSS-only radio toggle — zero JS, all main.js IDs kept) ------- */
+.selTab{display:none}
+.tabBar{display:flex;gap:6px;justify-content:center;width:100%;padding:8px 12px 2px;box-sizing:border-box;flex:0 0 auto;z-index:3}
+.tabBar label{flex:1;max-width:132px;text-align:center;font-family:'BebasNeue','Anton',Arial,sans-serif;font-size:15px;letter-spacing:2px;color:#cfc3ff;background:#241b45;border:2px solid #4a4370;border-radius:10px;padding:9px 0;cursor:pointer;pointer-events:auto;min-height:44px;box-sizing:border-box}
+#tabFighter:checked~.tabBar label[for="tabFighter"],#tabMoves:checked~.tabBar label[for="tabMoves"],#tabStyle:checked~.tabBar label[for="tabStyle"],#tabStats:checked~.tabBar label[for="tabStats"]{color:#2a0b00;background:linear-gradient(#ffe14d,#ff9d2e);border-color:#ffe14d;box-shadow:0 0 10px #ffcf2e88}
+.selPane{display:none;width:100%;flex-direction:column;align-items:center}
+#tabFighter:checked~#selScroll #paneFighter,#tabMoves:checked~#selScroll #paneMoves,#tabStyle:checked~#selScroll #paneStyle,#tabStats:checked~#selScroll #paneStats{display:flex}
+.selActions{width:100%;display:flex;flex-direction:column;align-items:center;padding:6px 0 10px}
 #selScroll{flex:1 1 auto;width:100%;overflow-y:auto;display:flex;flex-direction:column;align-items:center;padding:10px 12px 26px;box-sizing:border-box;border-top:3px solid #4a4370;background-image:url("data:image/jpeg;base64,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"),linear-gradient(to bottom,rgba(10,6,24,.94),rgba(10,6,24,.98));background-blend-mode:overlay}
 #moveList{width:min(360px,92%);margin-top:6px;text-align:left}
 .mvrow{display:flex;gap:8px;align-items:baseline;font-family:Arial,sans-serif;font-size:12px;padding:5px 2px;border-bottom:1px solid #ffffff18}
@@ -133,7 +141,7 @@ body.cine #cineSkip{display:block}
 .mvrow .mi{font-family:'BebasNeue','Anton',Arial,sans-serif;font-size:13px;letter-spacing:1px;color:#7af0ff;white-space:nowrap}
 .mvrow .md{opacity:.75;text-transform:none}
 #mission{background-image:url("data:image/jpeg;base64,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"),linear-gradient(to bottom,rgba(10,6,24,.55),rgba(10,6,24,.92));background-blend-mode:overlay}
-#logo{font-family:'SairaStencil','Bungee','Anton',Impact,Arial,sans-serif;font-size:52px;line-height:1;letter-spacing:2px;background:linear-gradient(#fff,#4fd1ff 60%,#ff4fd8);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 4px 0 #000);margin-top:6px}
+#logo{font-family:'SairaStencil','Bungee','Anton',Impact,Arial,sans-serif;font-size:52px;line-height:1;letter-spacing:2px;background:linear-gradient(#fff,#b388ff 55%,#ffcf2e);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 4px 0 #000);margin-top:6px}
 #logo small{display:block;font-family:'BebasNeue','Anton',Arial,sans-serif;font-size:16px;letter-spacing:8px;color:#ffe14d;-webkit-text-fill-color:#ffe14d;margin-top:6px}
 .subtitle{font-size:19px;letter-spacing:4px;margin:10px 0 12px;color:#fff;text-shadow:0 2px 0 #000}
 #showName{font-family:'SairaStencil','Bungee','Anton',Arial,sans-serif;font-size:32px;letter-spacing:2px;text-shadow:0 3px 0 #000;margin-top:2px}
@@ -168,6 +176,10 @@ body.cine #cineSkip{display:block}
 .czTitle{font-family:'SairaStencil','Bungee','Anton',Arial,sans-serif;font-size:22px;letter-spacing:2px}
 .czSub{font-family:Arial,sans-serif;font-size:12px;opacity:.75;margin-bottom:6px;text-transform:none}
 #customOv{justify-content:flex-end;background:rgba(6,3,16,.45)}
+.cdGrid{display:flex;gap:6px;flex-wrap:wrap;align-items:center;flex:1}
+.cdItem{display:flex;gap:6px;align-items:center;background:#1c1826;border:2px solid #000;border-radius:8px;padding:5px 8px}
+.cdName{font-family:Arial,sans-serif;font-weight:700;font-size:11px;letter-spacing:.5px;color:#f0f0ff}
+.cdRar{font-family:Arial,sans-serif;font-weight:700;font-size:9px;letter-spacing:1px;border:1px solid;border-radius:4px;padding:1px 5px}
 #customOv .dlg{margin-right:4vw}
 .texBtn{padding:8px 14px;border-radius:10px;border:3px solid #0008;cursor:pointer;pointer-events:auto;font-family:'BebasNeue','Anton',Arial,sans-serif;font-size:14px;letter-spacing:2px;color:#fff;background:#2a2438}
 .texBtn.sel{border-color:#ffe14d;box-shadow:0 0 10px #ffe14d;background:#3a3050}
@@ -184,20 +196,24 @@ body.cine #cineSkip{display:block}
 .ghostBtn{margin-top:10px;background:transparent;color:#fff;border:2px solid #ffffff88;border-radius:24px;padding:10px 28px;font-family:'BebasNeue','Anton',Arial,sans-serif;font-size:16px;letter-spacing:3px;cursor:pointer;pointer-events:auto;text-transform:uppercase}
 .tipbtn{margin-top:10px;background:transparent;color:#ffd166;border:2px solid #ffd166;border-radius:24px;padding:10px 28px;font-family:'BebasNeue','Anton',Arial,sans-serif;font-size:16px;letter-spacing:3px;cursor:pointer;pointer-events:auto;text-transform:uppercase}
 .tipbtn:active{transform:scale(.96)}
-#mList{display:flex;gap:14px;overflow-x:auto;width:100%;max-width:640px;padding:6px 4px 14px;scrollbar-width:none}
+#mList{display:flex;gap:10px;overflow-x:auto;width:100%;max-width:640px;padding:6px 4px 14px;scrollbar-width:none}
 #mList::-webkit-scrollbar{display:none}
-.mcard{flex:0 0 240px;padding:6px 8px;pointer-events:auto;text-align:left}
-.mcard .dn{font-size:14px;letter-spacing:3px;color:#7af0ff}
-.mcard .mn{font-family:'SairaStencil','Bungee','Anton',Arial,sans-serif;font-size:22px;letter-spacing:1px;margin:4px 0;text-shadow:0 2px 0 #000}
-.mcard .sw{height:10px;border-radius:3px;margin:6px 0;border:1px solid #000}
-.mcard .inf{font-family:Arial,sans-serif;font-weight:700;font-size:11px;text-transform:none;opacity:.85;line-height:1.5}
-.mcard .rw{font-family:Arial,sans-serif;font-weight:700;font-size:11px;color:#ffd166;text-transform:none;margin-top:6px}
-.mcard .go{margin-top:10px;width:100%;font-size:19px;padding:2px 8px}
+.mcard{flex:0 0 184px;padding:5px 7px;pointer-events:auto;text-align:left}
+.mcard .dn{font-size:11px;letter-spacing:2px;color:#7af0ff}
+.mcard .mn{font-family:'SairaStencil','Bungee','Anton',Arial,sans-serif;font-size:17px;letter-spacing:1px;margin:3px 0;text-shadow:0 2px 0 #000}
+.mcard .sw{height:8px;border-radius:3px;margin:5px 0;border:1px solid #000}
+.mcard .inf{font-family:Arial,sans-serif;font-weight:700;font-size:10px;text-transform:none;opacity:.85;line-height:1.4}
+.mcard .rw{font-family:Arial,sans-serif;font-weight:700;font-size:10px;color:#ffd166;text-transform:none;margin-top:5px}
+.mcard .go{margin-top:8px;width:100%;font-size:16px;padding:2px 6px}
 .mcard.locked{filter:grayscale(1) brightness(.6)}
-.mcard .best{font-family:Arial,sans-serif;font-weight:700;font-size:11px;color:#80ed99;text-transform:none}
-.zoneHead{flex:0 0 200px;padding:8px 10px;pointer-events:none;text-align:left;border-left:4px solid #ffd166}
-.zoneHead .zn{font-family:'SairaStencil','Bungee','Anton',Arial,sans-serif;font-size:18px;letter-spacing:1px;color:#ffd166;text-shadow:0 2px 0 #000}
-.zoneHead .zc{font-family:Arial,sans-serif;font-weight:700;font-size:11px;opacity:.75;line-height:1.5;margin-top:4px;text-transform:none}
+.mcard .best{font-family:Arial,sans-serif;font-weight:700;font-size:10px;color:#80ed99;text-transform:none}
+.zoneHead{flex:0 0 168px;padding:6px 8px;pointer-events:none;text-align:left;border-left:4px solid #ffd166}
+.zoneHead .zn{font-family:'SairaStencil','Bungee','Anton',Arial,sans-serif;font-size:15px;letter-spacing:1px;color:#ffd166;text-shadow:0 2px 0 #000}
+.zoneHead .zc{font-family:Arial,sans-serif;font-weight:700;font-size:10px;opacity:.75;line-height:1.4;margin-top:3px;text-transform:none}
+/* cleaner results rhythm: tighter reward rows */
+#results #blessRow,#results #storeRow,#results #shopRow2{margin-top:8px}
+#results .bigBtn{margin-top:10px}
+#pauseOv .row{margin-top:8px}
 .zoneHead.locked{filter:grayscale(1) brightness(.6)}
 .blessCard{flex:0 0 200px;padding:10px 12px;pointer-events:auto;text-align:left;cursor:pointer;border:2px solid #7af0ff;border-radius:8px;background:#141428}
 .blessCard:hover{border-color:#ffd166}
@@ -314,7 +330,7 @@ body.cine #cineSkip{display:block}
   <div id="spcWrap"><div id="spc"></div></div><div id="spcLbl">ENERGY</div>
   <div id="bossWrap"><div class="bn" id="bossName"></div><div id="bossBar"><i id="bghost" class="ghost" style="width:100%"></i><i id="bossHp" style="width:100%"></i></div></div>
   <div id="combo"></div><div id="styleRank"></div><div id="warn">! COUNTER NOW !</div>
-  <div id="hint"><div class="ring"></div><b id="hintT">DRAG LEFT SIDE TO MOVE</b><small id="hintS">Tap right side to punch · dodge the <span style="color:#ff4d4d">!</span> or tap to counter</small></div>
+  <div id="hint"><div class="ring"></div><b id="hintT">DRAG LEFT SIDE TO MOVE</b><small id="hintS">Tap right side to punch · dodge the <span style="color:#ff4d4d;font-size:18px;font-weight:900">!</span> or tap to counter</small></div>
   <div id="ko">K.O.</div>
 </div>
 <div id="touch">
@@ -329,14 +345,14 @@ body.cine #cineSkip{display:block}
 <div id="flash"></div><div id="lsEdge"></div><div id="achBanner"></div>
 <div id="lbTop"></div><div id="lbBot"></div><div id="nrgFlash"></div>
 <div id="cineCap"></div><div id="cineSkip">TAP TO SKIP ▸</div><div id="megaName"></div>
-<div id="title" class="screen hidden" style="justify-content:center;background:linear-gradient(to bottom,rgba(10,6,24,.15),rgba(10,6,24,.75))">
+<div id="title" class="screen hidden" style="justify-content:flex-start;background:linear-gradient(to bottom,rgba(10,6,24,.15),rgba(10,6,24,.75))">
   <div id="logo">CONCRETE DRAGON<small>STREET BRAWLER</small></div>
   <div id="tapStart">TAP TO START</div>
   <div><span id="loginBonus" style="display:inline-block;margin-top:8px;padding:6px 14px;border:2px solid #ffd166;border-radius:16px;font-size:13px;letter-spacing:1px;color:#ffd166"></span></div>
   <button class="tipbtn" id="tipBtnTitle">❤ TIP JAR</button>
   <button class="tipbtn" id="creditsBtn" style="margin-top:8px">© CREDITS</button>
   <div id="patchNotes" style="max-width:340px;margin:8px auto 0;text-align:left;opacity:.9"></div>
-  <div id="titleMeta"></div>
+  <div id="titleMeta" style="position:static;margin:12px auto 0"></div>
 </div>
 <div id="creditsOv" class="overlay hidden">
   <div class="dlg panel9" style="max-height:80vh;overflow-y:auto;text-align:left">
@@ -346,27 +362,48 @@ body.cine #cineSkip{display:block}
   </div>
 </div>
 <div id="select" class="screen hidden">
+  <!-- tab radios: CSS-only tab switching (zero JS) — keep BEFORE tabBar/#selScroll -->
+  <input type="radio" class="selTab" name="selTab" id="tabFighter" checked>
+  <input type="radio" class="selTab" name="selTab" id="tabMoves">
+  <input type="radio" class="selTab" name="selTab" id="tabStyle">
+  <input type="radio" class="selTab" name="selTab" id="tabStats">
   <div id="selPreview">
     <div id="logo" style="font-size:26px">CONCRETE DRAGON</div>
     <div id="showName"></div>
     <div id="showTag"></div>
     <div id="dragHint">◂ drag model to spin ▸</div>
   </div>
+  <div class="tabBar">
+    <label for="tabFighter">FIGHTER</label>
+    <label for="tabMoves">MOVES</label>
+    <label for="tabStyle">STYLE</label>
+    <label for="tabStats">STATS</label>
+  </div>
   <div id="selScroll">
-    <div id="statBars"></div>
-    <div class="subtitle" style="margin:10px 0 0">Move list</div>
-    <div id="moveList"></div>
-    <div class="subtitle" style="margin:10px 0 0">Pick your fighter</div>
-    <div id="cards"></div>
-    <div id="skinsRow"><div class="cap">Skin (style only — no power)</div></div>
-    <div id="texRow"><div class="cap">Texture (style only — no power)</div></div>
-    <div id="scoutRow"><div class="cap">Scouted crew — infinite (style only — no power)</div></div>
-    <div id="gearRow"><div class="cap">Gear — tap a slot to manage</div></div>
-    <div id="charmRow"><div class="cap">Charm — one per mission</div></div>
-    <div id="shopRow"></div>
-    <div id="metaLine"></div>
-    <button class="bigBtn btn9" id="fightBtn">Missions</button>
-    <button class="bigBtn btn9" id="customizeBtn" style="margin-top:8px">⚙ CUSTOMIZE</button>
+    <div class="selPane" id="paneFighter">
+      <div id="cards"></div>
+    </div>
+    <div class="selPane" id="paneMoves">
+      <div id="moveList"></div>
+    </div>
+    <div class="selPane" id="paneStyle">
+      <div id="skinsRow"><div class="cap">SKIN · STYLE ONLY</div></div>
+      <div id="texRow"><div class="cap">TEXTURE · STYLE ONLY</div></div>
+      <div id="scoutRow"><div class="cap">SCOUTED CREW · STYLE ONLY</div></div>
+      <div id="gearRow"><div class="cap">GEAR</div></div>
+      <div id="charmRow"><div class="cap">CHARM · 1 PER MISSION</div></div>
+      <div id="shopRow"></div>
+      <div id="metaLine"></div>
+    </div>
+    <div class="selPane" id="paneStats">
+      <div id="statBars"></div>
+    </div>
+    <div class="selActions">
+      <button class="bigBtn btn9" id="fightBtn">Missions</button>
+      <button class="bigBtn btn9" id="customizeBtn" style="margin-top:8px">⚙ CUSTOMIZE</button>
+      <!-- needs main.js: bind selectBackBtn -> showTitle() -->
+      <button class="ghostBtn" id="selectBackBtn" style="margin-top:10px">← TITLE</button>
+    </div>
   </div>
 </div>
 <div id="customOv" class="overlay hidden">
@@ -377,7 +414,7 @@ body.cine #cineSkip{display:block}
 </div>
 <div id="mission" class="screen hidden">
   <div id="logo" style="font-size:32px">CONCRETE DRAGON</div>
-  <div class="subtitle">Pick your mission</div>
+  <div class="subtitle">MISSIONS</div>
   <div id="repRow" style="display:flex;gap:6px;justify-content:center;margin:4px 0 8px;flex-wrap:wrap"></div>
   <div id="mList"></div>
   <div><span id="dailyTag"></span></div>
@@ -406,13 +443,15 @@ body.cine #cineSkip{display:block}
     <div class="row"><button class="btn9" id="resumeBtn">Resume</button></div>
     <div class="row"><button class="btn9" id="restartBtn">Restart</button>
     <button class="btn9" id="quitBtn">Missions</button></div>
+    <!-- needs main.js: bind quitTitleBtn -> showTitle() -->
+    <div class="row"><button class="btn9" id="quitTitleBtn">Quit to Title</button></div>
     <div class="subtitle" style="margin:10px 0 2px;font-size:15px">Difficulty</div>
     <div class="row" id="diffRow" style="gap:6px"></div>
     <div class="setrow"><span>SOUND</span><button id="muteBtn">ON</button></div>
     <div class="setrow"><span>HAPTICS</span><button id="hapticsBtn">ON</button></div>
     <div class="setrow"><span>QUALITY</span><button id="qualityBtn">AUTO</button></div>
     <div class="setrow"><span>ASSIST</span><button id="assistBtn">OFF</button></div>
-    <div class="subtitle" style="margin:10px 0 2px;font-size:15px">Move list</div>
+    <div class="subtitle" style="margin:10px 0 2px;font-size:15px">MOVES</div>
     <div id="pauseMoves" style="text-align:left"></div>
   </div>
 </div>

@@ -52,6 +52,7 @@ var facing := 1
 var use_textures := false
 var textures := {}
 var skin_dir := ""  # art subdir actually loaded (base or selected skin)
+var cosmetics := {}  # equipped customization: {slot: item_id}; accessory = Array
 var bt_brain = null  # optional behavior-tree brain (scripts/ai/); if set, _ai_update delegates to it
 
 var max_hp := 100.0
@@ -98,10 +99,12 @@ var _weapon_node: Node2D = null
 var fight: Node = null  # set by FightScreen
 
 
-func setup(p_kind: int, p_is_ai: bool, p_name: String, p_skin: String = "") -> void:
+func setup(p_kind: int, p_is_ai: bool, p_name: String, p_skin: String = "",
+		p_cosmetics: Dictionary = {}) -> void:
 	kind = p_kind
 	is_ai = p_is_ai
 	disp_name = p_name
+	cosmetics = p_cosmetics
 	var def: Dictionary = FIGHTER_DEFS.get(kind, FIGHTER_DEFS[KIND_ROOK])
 	skin_dir = p_skin if p_skin != "" else str(def["art"])
 	toughness = float(def.get("toughness", 1.0))
@@ -221,6 +224,39 @@ func _build_tex_rig() -> void:
 		sn.z_index = -1 if side == "F" else -3
 		knee.add_child(sn)
 		Parts["leg_s" + side] = sn
+	_apply_cosmetics()
+
+
+## Character-customization suite: overlay PNGs ride the paper-doll parts.
+## Overlays are children of the base part sprites (same 256px canvas space),
+## so they inherit pivots, joints, and animation for free. Cosmetic-only.
+func _apply_cosmetics() -> void:
+	if not tex_mode or cosmetics.is_empty():
+		return
+	var art_key := str(FIGHTER_DEFS[kind].get("art", "rook"))
+	var hosts := {
+		"head": ["head"],
+		"torso": ["torso"],
+		"arm_f": ["arm_fF", "arm_fB"],
+		"leg_s": ["leg_sF", "leg_sB"],
+	}
+	for slot in cosmetics.keys():
+		var ids: Array = cosmetics[slot] if slot == "accessory" else [cosmetics[slot]]
+		for item_id in ids:
+			if str(item_id) == "":
+				continue
+			for f in Cosmetics.art_files(art_key, str(item_id)):
+				for h in hosts.get(str(f["canvas"]), []):
+					if Parts.has(h) and Parts[h] is Sprite2D:
+						_cosmetic_overlay(Parts[h], str(f["path"]))
+
+
+func _cosmetic_overlay(host: Sprite2D, path: String) -> void:
+	var sp := Sprite2D.new()
+	sp.texture = load(path)
+	sp.centered = false  # same canvas origin as the host part
+	sp.z_index = 1  # relative: draws just above the host
+	host.add_child(sp)
 
 
 # ---------------------------------------------------------------- rig ----
