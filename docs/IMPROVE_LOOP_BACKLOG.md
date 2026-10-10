@@ -246,6 +246,9 @@ KO-with-rally-pending (missionOver, rally cleared), OBVIOUS-DEFECT sweep clean
 no T-poses, HUD correct), zero page/console errors (file:// manifest artifact filtered).
 Playtest: `game-3d/qa/playtest-p16-rally.mjs` (+ `probe-p16-rally-moment.mjs`);
 shots + results.json in `game-3d/shots-p16-rally/` (7 frames, all eyes-reviewed).
+Recovery-moment popup proven rendered by the probe (the 900ms popText lifetime
+races multi-second SwiftShader evaluate roundtrips, so the main suite asserts the
+rallyfull event instead of the transient DOM node).
 
 ### P17 — Tekken counter-hit properties
 **Refs:** Tekken — counter-hits grant NEW properties (knockdown/stun/juggle), not just 2x damage (see docs/RESEARCH_FIGHTER_MECHANICS.md).
