@@ -2603,7 +2603,8 @@ function makeCreatureRaw(cid, tint, x, face, scale = 1) {
   root.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.material = o.material.clone(); o.material.color = new THREE.Color(tint); } });
   root.position.set(x, 0, 0); root.rotation.y = face; scene.add(root);
   const mixer = new THREE.AnimationMixer(root);
-  const f = { root, mixer, cur: null, hp: 100, maxHp: 100, busy: 0, tint, sc: scale, dmgMult: 1, vy: 0, airborne: false, creature: cid, creatureClips: t.byName, creatureDef: cd };
+  const f = { root, mixer, cur: null, hp: 100, maxHp: 100, busy: 0, tint, sc: scale, dmgMult: 1, vy: 0, airborne: false, creature: cid, creatureClips: t.byName, creatureDef: cd,
+    squashT: 0, squashAmt: 0, squashMode: 0, baseScale: 0 }; // P12 SQUASH-STRETCH
   mixer.addEventListener('finished', (e) => { if (e.action === f.cur && f.onDone) { const d = f.onDone; f.onDone = null; d(); } });
   fighters.push(f); return f;
 }
@@ -2613,7 +2614,8 @@ function makeFighterRaw(tint, x, face, scale = 1, tex = null) {
   root.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.material = o.material.clone(); o.material.color = new THREE.Color(tint); if (tex) o.material.map = tex; } });
   root.position.set(x, 0, 0); root.rotation.y = face; scene.add(root);
   const mixer = new THREE.AnimationMixer(root);
-  const f = { root, mixer, cur: null, hp: 100, maxHp: 100, busy: 0, tint, sc: scale, dmgMult: 1, vy: 0, airborne: false };
+  const f = { root, mixer, cur: null, hp: 100, maxHp: 100, busy: 0, tint, sc: scale, dmgMult: 1, vy: 0, airborne: false,
+    squashT: 0, squashAmt: 0, squashMode: 0, baseScale: 0 }; // P12 SQUASH-STRETCH: baseScale captured lazily
   mixer.addEventListener('finished', (e) => { if (e.action === f.cur && f.onDone) { const d = f.onDone; f.onDone = null; d(); } });
   fighters.push(f); return f;
 }
@@ -3436,13 +3438,13 @@ function startMission(id, node) {
   showOnly(null);
   $('touch').classList.add('on');
   $('bossWrap').style.display = 'none';
-  if (!save.seenHint) hint(true);
   // story beat: letterboxed mission card before the action (Nintendo-style)
+  // TUTORIAL FIX (cycle 1): hint shows AFTER the card cinematic ends, not during it — no more overlap
   playCine({
     mode: 'card', dur: 2.3,
     caps: [{ t: 0.15, html: '<div class="cc2">' + mission.name + '</div><div class="cc3">' + (mission.card || 'CLEAR THE BLOCK') + '</div>' }]
       .concat(mission.daily ? [{ t: 1.15, html: '<div class="cc3">⚡ DAILY RUN — ' + dailyDateLabel(mission.dailyDate) + ' · SEED ' + mission.dailySeed + '</div>' }] : []),
-    onDone: () => { const b = mission.boss && bossDef(mission.boss); banner((mission.daily ? '⚡ DAILY RUN — ' + dailyDateLabel(mission.dailyDate) + ' · ' : '') + mission.name + ' — ' + (b ? 'BOSS: ' + b.name : 'CLEAR THE BLOCK'), 'gold'); sfx(196, 0.5, 'sawtooth', 0.4); },
+    onDone: () => { const b = mission.boss && bossDef(mission.boss); banner((mission.daily ? '⚡ DAILY RUN — ' + dailyDateLabel(mission.dailyDate) + ' · ' : '') + mission.name + ' — ' + (b ? 'BOSS: ' + b.name : 'CLEAR THE BLOCK'), 'gold'); sfx(196, 0.5, 'sawtooth', 0.4); if (!save.seenHint) hint(true); },
   });
   setHud();
 }
@@ -4688,6 +4690,8 @@ function landHit(e, dmg, label, hs, sh, launcher, counter) {
   if (Math.random() < critCh()) { dealt = Math.round(dealt * 1.6); critOn = true; }
   if (player && player.hp > 0 && player.hp < player.maxHp * 0.3) { dealt = Math.round(dealt * 1.25); lsOn = true; lastStandFx(); }
   e.hp -= dealt; combo++; comboT = 2.5; maxCombo = Math.max(maxCombo, combo); // SoR4 combo keep-alive: 2.5s rhythm
+  // P12 SQUASH-STRETCH: every landed hit squashes the victim; launchers stretch instead
+  applySquash(e, launcher ? 0.32 : (label === 'HEAVY' || label === 'HEAT' ? 0.26 : (counter ? 0.3 : 0.16)), launcher ? 1 : 0);
   // PRESENTATION: arcade score per hit — move weight + juggle bonus (quiet: HUD pops on milestones/KOs)
   const hitPts = counter ? 75 : (label === 'HEAVY' || label === 'HEAT' ? 25 : (label === 'LAUNCHER' || label === 'DUST LAUNCHER' ? 30 : 10));
   awardScore(hitPts + (e.airborne ? 15 : 0), true);
@@ -4863,6 +4867,7 @@ function hurtPlayer(dmg) {
   }
   dmg = Math.max(1, Math.round(dmg * (1 - (blessFx().armor || 0)))); // IRON SKIN
   dmgTaken += dmg; player.hp -= dmg; combo = 0; shake = 0.3; hitstop = 0.05; flash('#ff2a2a'); sfx('hit2', 0.8, false, 0.7); buzz(50); // F10 haptics
+  applySquash(player, 0.22, 0); // P12: player squashes when hurt too
   player.jugN = (player.jugN || 0) + 1; player.jugT = 2.5; // BURST (Guilty Gear): juggle tracking
   // RAGE METER (The TakeOver): damage taken builds rage; full bar = 8s +40% damage
   if (!(player.rageT > 0)) {
@@ -6539,6 +6544,23 @@ function resolveHurtboxContact() {
   }
   for (const f of fs) syncPos(f);
 }
+// P12 SQUASH-AND-STRETCH (Nintendo feel — Luigi's Mansion/Mario): hit reactions squash
+// the body cartoonishly instead of realistic ragdoll. Launches stretch upward.
+// Volume is roughly preserved (XZ expands as Y squashes) for the cartoon look.
+function applySquash(f, amt, mode) {
+  if (!f || !f.root) return;
+  f.squashT = 0.22; f.squashAmt = amt; f.squashMode = mode; // mode 0=squash, 1=stretch
+}
+function updateSquash(f, dt) {
+  if (!f || f.squashT <= 0) return;
+  if (!f.baseScale) f.baseScale = f.root.scale.x || 1; // lazy capture (after titan scaling)
+  f.squashT -= dt;
+  const bs = f.baseScale;
+  if (f.squashT <= 0) { f.root.scale.set(bs, bs, bs); return; } // restore
+  const k = f.squashT / 0.22, amt = f.squashAmt * k * k; // ease-out
+  if (f.squashMode === 0) f.root.scale.set(bs * (1 + amt * 0.7), bs * (1 - amt), bs * (1 + amt * 0.7));
+  else f.root.scale.set(bs * (1 - amt * 0.45), bs * (1 + amt * 1.1), bs * (1 - amt * 0.45));
+}
 function frame(dt, doRender = true) {
   const RR = () => { if (doRender) renderer.render(scene, camera); };
   if (paused) { RR(); return; }
@@ -6546,7 +6568,7 @@ function frame(dt, doRender = true) {
   gameTime += dt;
   if (hitstop > 0) { hitstop -= dt; dt *= 0.05; }
   if (slowmoT > 0) { slowmoT -= dt; dt *= slowmo; }
-  for (const f of fighters) { f.mixer.update(dt); if (f.busy > 0) f.busy -= dt; }
+  for (const f of fighters) { f.mixer.update(dt); if (f.busy > 0) f.busy -= dt; updateSquash(f, dt); }
   doWaveTick(dt); // MOVES EXPANSION: energy wave charge
   idleVariantTick(dt); // MOVES EXPANSION: idle variants
 
@@ -6703,6 +6725,7 @@ window.__cdtest = {
   playerGrab: () => (player && player.grab ? { phase: player.grab.phase, link: player.grab.link, name: player.grab.name } : null),
   fighterArchetype: () => fighterDef().archetype,
   enemiesDbg: () => enemies.map((e) => ({ hp: Math.round(e.hp), px: +e.px.toFixed(2), dead: !!e.dead })),
+  squashDbg: (i) => { const e = enemies[i]; if (!e) return null; return { t: +e.squashT.toFixed(3), amt: e.squashAmt, mode: e.squashMode, sy: +e.root.scale.y.toFixed(3), sx: +e.root.scale.x.toFixed(3) }; },
   destructDbg: () => destructibles.map((d) => ({ name: d.name, hp: Math.round(d.hp), px: +d.px.toFixed(2) })),
   thrownDbg: () => thrownWpns.map((t) => ({ type: t.type, px: +t.px.toFixed(2) })),
   spawnPropAt: (name, dx) => { if (player) placeProp(name, player.px + dx, 0); },

@@ -74,10 +74,10 @@ html,body{margin:0;height:100%;overflow:hidden;background:#150f2a;touch-action:n
 @keyframes chainpop{0%{transform:translate(-50%,-50%) scale(.4)}20%{transform:translate(-50%,-50%) scale(1.35)}45%{transform:translate(-50%,-50%) scale(1.1)}100%{transform:translate(-50%,-120%) scale(1.15);opacity:0}}
 @keyframes pop{0%{transform:translate(-50%,-50%) scale(.4)}15%{transform:translate(-50%,-50%) scale(1.25)}100%{transform:translate(-50%,-160%) scale(1);opacity:0}}
 #warn{position:absolute;transform:translate(-50%,-100%);font-size:22px;font-family:'SairaStencil','Bungee','Anton',Arial,sans-serif;color:#ff2a2a;background:#fff;border-radius:6px;padding:2px 8px;opacity:0;transition:opacity .08s;box-shadow:0 0 18px #f00}
-#hint{position:absolute;left:50%;bottom:calc(max(12px,env(safe-area-inset-bottom)) + 170px);white-space:nowrap;transform:translateX(-50%);text-align:center;opacity:0;transition:opacity .25s}
+#hint{position:absolute;left:38%;bottom:calc(max(12px,env(safe-area-inset-bottom)) + 170px);white-space:nowrap;transform:translateX(-50%);text-align:center;opacity:0;transition:opacity .25s;max-width:60vw}
 #hint .ring{width:60px;height:60px;margin:0 auto 6px;border:5px solid #fff;border-radius:50%;animation:ring 1s infinite;box-shadow:0 0 16px #4fd1ff}
 #hint b{font-size:26px;text-shadow:0 3px 0 #000;letter-spacing:1px}
-#hint small{display:block;font-family:Arial,sans-serif;font-weight:700;font-size:13px;margin-top:4px;text-shadow:0 2px 0 #000;text-transform:none}
+#hint small{display:block;font-family:Arial,sans-serif;font-weight:700;font-size:13px;margin-top:4px;text-shadow:0 2px 0 #000;text-transform:none;max-width:70vw;white-space:normal;margin-left:auto;margin-right:auto}
 @keyframes ring{0%{transform:scale(.7);opacity:1}100%{transform:scale(1.25);opacity:.2}}
 #ko::before{content:'';position:absolute;left:50%;top:50%;width:420px;height:420px;transform:translate(-50%,-50%);background:radial-gradient(circle,rgba(255,80,40,.55) 0%,rgba(255,180,40,.25) 40%,transparent 70%);z-index:-1;pointer-events:none}
 #ko{position:absolute;left:50%;top:40%;transform:translate(-50%,-50%) scale(0);font-size:96px;font-family:'SairaStencil','Bungee','Anton',Arial,sans-serif;color:#ffe14d;text-shadow:0 6px 0 #b3001b,0 0 30px #f80;transition:transform .25s cubic-bezier(.2,2,.4,1);white-space:nowrap}
