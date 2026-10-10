@@ -6874,6 +6874,8 @@ window.__cdtest = {
   projDbg: () => projs.map((p) => ({ x: +p.x.toFixed(2), y: +p.y.toFixed(2), vx: +p.vx.toFixed(2), kind: p.kind, life: +p.life.toFixed(2) })),
   simDbg: () => ({ hs: +hitstop.toFixed(3), sm: slowmo, smT: +slowmoT.toFixed(3), st: state }),
   atkHsDbg: () => ATK.map(a => a[5]), // P15: hitstop column of the attack table [jab, cross, kick]
+  atkIdxDbg: () => atkIdx, // P15: string position (predicts jab/cross/launcher for the next punch)
+  dbgFinisher: () => { const e = enemies.find(x => x.hp > 0 && !x.boss); if (!e || !player) return null; doFinisher(e); return 'LAUNCHER'; }, // P15: drive the real finisher path (the 3rd-hit foot gate is animation-dependent; this tests the retuned landHit directly)
   atkBufDbg: () => !!(player && player.atkBuf), // P15: true while a HIT press is buffered during hitstop
   hsMaxDbg: () => +((T.hsMax || 0).toFixed(3)), hsMaxClear: () => { T.hsMax = 0; return true; }, // P15: peak hitstop since clear
   tapsDbg: () => T.taps || 0, // P15: doPunch invocations (proves buffered cancels fire)
