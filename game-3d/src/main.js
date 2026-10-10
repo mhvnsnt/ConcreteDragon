@@ -4741,7 +4741,8 @@ function landHit(e, dmg, label, hs, sh, launcher, counter) {
   else sfx(['hit1', 'hit2', 'hit3'][Math.floor(Math.random() * 3)], 0.9, false, 0.9 + Math.random() * 0.2);
   const sp = screenPos(head); popText((critOn ? 'CRIT ' : '') + (lsOn ? 'LAST STAND ' : '') + (counter ? 'COUNTER! -' : '-') + dealt, counter ? 'big' : '', sp.x, sp.y - 30);
   // CDCI3: comic-book hit words on significant hits — POW!/WHAM! for heavies, handled KOs in killEnemy
-  if (!counter && (label === 'HEAVY' || label === 'HEAT') && powOk()) {
+  // CDCI4: lethal heavies skip the hit word so the KO word wins the moment (no double-pop)
+  if (!counter && (label === 'HEAVY' || label === 'HEAT') && e.hp > 0 && powOk()) {
     popText(powWord(['POW!', 'WHAM!', 'SMASH!', 'BAM!', 'THWACK!']), 'pow', sp.x + rnd(-34, 34), sp.y - 78);
   }
   if (counter) flash('#7af0ff');
