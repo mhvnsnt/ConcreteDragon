@@ -3660,9 +3660,10 @@ function positionWarn(e) {
 
 // ---------- player combat ----------
 const ATK = [ // [clip, timeScale, impact delay, dmg, label, hitstop, shake]
-  ['Melee_Unarmed_Attack_Punch_A', 1.9, 0.16, 9, 'JAB', 0.03, 0.12],
-  ['Melee_Unarmed_Attack_Punch_A', 2.1, 0.15, 10, 'CROSS', 0.04, 0.15],
-  ['Melee_Unarmed_Attack_Kick', 1.7, 0.2, 15, 'KICK', 0.08, 0.25],
+  // P15 hitstop retune: toward genre norms (SF 9f lights / 13f heavies) — jab 0.10 / cross 0.12 / kick 0.16
+  ['Melee_Unarmed_Attack_Punch_A', 1.9, 0.16, 9, 'JAB', 0.10, 0.12],
+  ['Melee_Unarmed_Attack_Punch_A', 2.1, 0.15, 10, 'CROSS', 0.12, 0.15],
+  ['Melee_Unarmed_Attack_Kick', 1.7, 0.2, 15, 'KICK', 0.16, 0.25],
 ];
 // unique 4th-hit finishers: the every-3rd-hit launcher is per-fighter now
 function doFinisher(t) {
@@ -3702,7 +3703,7 @@ function doFinisher(t) {
     t.airT = Math.max(t.airT || 0, 0.9);
   } else { // KID BLUE: classic pop-up launcher
     finContact('hand', 0.3);
-    landHit(t, bdmg, 'LAUNCHER', 0.08, 0.4, true, false);
+    landHit(t, bdmg, 'LAUNCHER', 0.14, 0.4, true, false); // P15: launcher hitstop 0.08 -> 0.14 (genre norm)
   }
   popText(fd.finname, 'spc', sp.x, sp.y - 70);
   sfx(392, 0.12, 'square', 0.5);
@@ -3720,7 +3721,11 @@ function doParry(e) {
   player.busy = 0.25; setHud(); ev('parry', {});
 }
 function doPunch() {
-  if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.busy > 0 || player.blocking) return;
+  if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.blocking) return;
+  // P15 SF2 2-in-1: a HIT press that lands during hitstop buffers instead of being eaten —
+  // the buffered cancel executes when the freeze ends so string timing stays consistent
+  if (player.busy > 0) { if (hitstop > 0) { player.atkBuf = true; player.atkBufT0 = gameTime; } return; }
+  player.atkBuf = false; // live press consumed the buffer
   if (player.weapon) { doWeaponSwing(); return; }
   // WALK-IN GRAB: HIT while holding a foe = knee strike
   if (player.grabVictim) { doGrabKnee(); return; }
@@ -4824,6 +4829,7 @@ function landHit(e, dmg, label, hs, sh, launcher, counter) {
   burst(head, counter ? 30 : 16, counter ? 0x7af0ff : 0xffd27a, counter ? 6 : 4);
   vfxImpact(head, counter); // wave 17: Kenney muzzle/star impact pops on every landed hit
   shake = sh; hitstop = hs; // snappy: tiny freeze on light hits, bigger only for counter/heavy/special/KO
+  if (e && hs > 0) e.vibT = hs; // P15: Smash-style defender micro-vibration rides out the hitstop
   if (counter) sfxCounter(0.85); // S5: counters get their own crack/chime, not the generic hit thud
   else sfx(['hit1', 'hit2', 'hit3'][Math.floor(Math.random() * 3)], 0.9, false, 0.9 + Math.random() * 0.2);
   const sp = screenPos(head); popText((critOn ? 'CRIT ' : '') + (lsOn ? 'LAST STAND ' : '') + (counter ? 'COUNTER! -' : '-') + dealt, counter ? 'big' : '', sp.x, sp.y - 30);
@@ -6700,7 +6706,7 @@ function frame(dt, doRender = true) {
   if (paused) { RR(); return; }
   if (cine) { updateCine(dt); updateFx(dt); updateProjs(dt); RR(); return; }
   gameTime += dt;
-  if (hitstop > 0) { hitstop -= dt; dt *= 0.05; }
+  if (hitstop > 0) { hitstop -= dt; for (const f of fighters) if (f.vibT > 0) f.vibT -= dt; dt *= 0.05; } // P15: vibT decays in real time so the shake never outlives the freeze
   if (slowmoT > 0) { slowmoT -= dt; dt *= slowmo; }
   for (const f of fighters) { f.mixer.update(dt); if (f.busy > 0) f.busy -= dt; updateSquash(f, dt); }
   doWaveTick(dt); // MOVES EXPANSION: energy wave charge
@@ -6718,6 +6724,13 @@ function frame(dt, doRender = true) {
     camera.position.set(6, 2.8, 8.5);
     camera.lookAt(6, 1.2, 0);
   } else if (state === 'fight' && player) {
+    // P15 SF2 2-in-1: a HIT press buffered during hitstop fires the moment the freeze and the
+    // current busy window both clear (buffer expires after 0.5s so stale presses never fire late)
+    if (player.atkBuf) {
+      const fresh = gameTime - (player.atkBufT0 || 0) <= 0.5;
+      if (fresh && hitstop <= 0 && player.busy <= 0 && !missionOver && !ended && player.hp > 0 && !player.blocking) { player.atkBuf = false; doPunch(); }
+      else if (!fresh || missionOver || ended || player.hp <= 0) player.atkBuf = false;
+    }
     playerUpdate(dt);
     recordStick(); // fighting-game motion input history
     // CYCLE 2: tutorial hint appears only when truly playable — no cinematic, no letterbox, no boss card
@@ -6786,7 +6799,12 @@ function frame(dt, doRender = true) {
     camera.position.set(camOverride.px, camOverride.py, camOverride.pz);
     camera.lookAt(camOverride.tx, camOverride.ty, camOverride.tz);
   }
+  // P15: defender micro-vibration — jitter is render-only and restored immediately, so
+  // positioning/AI pipelines never see it and the model can't drift between frames
+  const _vibKeep = [];
+  for (const f of fighters) if (f.vibT > 0 && f.root) { _vibKeep.push([f, f.root.position.x]); f.root.position.x += (Math.random() - 0.5) * 0.05; }
   renderer.render(scene, camera);
+  for (const _vk of _vibKeep) _vk[0].root.position.x = _vk[1];
   T.state = state; T.frameMs = +(clock.elapsedTime * 0).toFixed(1); T.drawCalls = renderer.info.render.calls; T.tris = renderer.info.render.triangles;
 }
 // ---------- boot ----------
@@ -6855,6 +6873,8 @@ window.__cdtest = {
   pickupDbg: () => pickups.map((p) => ({ type: p.type, px: +p.px.toFixed(2), pz: +p.pz.toFixed(2) })),
   projDbg: () => projs.map((p) => ({ x: +p.x.toFixed(2), y: +p.y.toFixed(2), vx: +p.vx.toFixed(2), kind: p.kind, life: +p.life.toFixed(2) })),
   simDbg: () => ({ hs: +hitstop.toFixed(3), sm: slowmo, smT: +slowmoT.toFixed(3), st: state }),
+  atkHsDbg: () => ATK.map(a => a[5]), // P15: hitstop column of the attack table [jab, cross, kick]
+  atkBufDbg: () => !!(player && player.atkBuf), // P15: true while a HIT press is buffered during hitstop
   unpause: () => setPaused(false),
   freeze: (on) => { window.__cdfreeze = !!on; },
   // (duplicate spawnBoss removed — build fix 2026-10-09: the (id, bx) form below is the superset)
