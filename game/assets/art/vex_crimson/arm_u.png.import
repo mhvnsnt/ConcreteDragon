@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://h4e1ku5o9e056"
-path=""
+uid="uid://elberb640ann"
+path="res://.godot/imported/arm_u.png-6c28c4d271dbc4bf73af354bd1c1bcbf.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/art/vex_crimson/arm_u.png"
-dest_files=[]
+dest_files=["res://.godot/imported/arm_u.png-6c28c4d271dbc4bf73af354bd1c1bcbf.ctex"]
 
 [params]
 

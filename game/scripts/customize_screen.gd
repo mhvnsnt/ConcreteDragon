@@ -12,10 +12,12 @@ const SLOT_LABELS := {
 var main: Node = null
 var save: SaveData = null
 var _kind := 0
+var _slot := "headgear"  # visible slot tab (UX law: one slot at a time)
 var _preview: Fighter = null
 var _preview_wrap: Node2D = null
 var _cash_label: Label = null
-var _rows := {}  # slot -> VBoxContainer
+var _slot_tabs := {}   # slot -> Button
+var _item_grid: GridContainer = null
 
 
 func setup(p_main: Node, p_save: SaveData) -> void:
@@ -31,58 +33,65 @@ func _ready() -> void:
 	bg.size = Vector2(1280, 720)
 	add_child(bg)
 
-	var title := _label("GEAR", 84, Color("ffd166"))
-	title.position = Vector2(60, 16)
-	title.size = Vector2(500, 100)
+	var title := _label("GEAR", 64, Color("ffd166"))
+	title.position = Vector2(40, 8)
+	title.size = Vector2(400, 70)
 	add_child(title)
-	var sub := _label("CUSTOMIZE — style only, never power", 26, Color(0.75, 0.75, 0.8))
-	sub.position = Vector2(62, 100)
-	sub.size = Vector2(600, 40)
+	var sub := _label("CUSTOMIZE — style only, never power", 22, Color(0.75, 0.75, 0.8))
+	sub.position = Vector2(42, 72)
+	sub.size = Vector2(500, 30)
 	add_child(sub)
 
-	_cash_label = _label("", 34, Color("ffd166"))
-	_cash_label.position = Vector2(950, 40)
-	_cash_label.size = Vector2(300, 50)
+	_cash_label = _label("", 30, Color("ffd166"))
+	_cash_label.position = Vector2(950, 30)
+	_cash_label.size = Vector2(300, 44)
 	_cash_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	add_child(_cash_label)
 
-	# fighter tabs
+	# fighter tabs: 2 rows x 4 (8 fighters, big touch targets)
 	var kinds := Fighter.FIGHTER_DEFS.keys()
+	kinds.sort()
 	for i in kinds.size():
 		var k := int(kinds[i])
 		var b := Button.new()
 		b.text = str(Fighter.FIGHTER_DEFS[k]["name"])
-		b.position = Vector2(62 + i * 200, 150)
-		b.custom_minimum_size = Vector2(180, 52)
-		b.add_theme_font_size_override("font_size", 30)
+		b.position = Vector2(40 + (i % 4) * 165, 112 + (i / 4) * 60)
+		b.custom_minimum_size = Vector2(150, 52)
+		b.add_theme_font_size_override("font_size", 24)
 		b.pressed.connect(_on_tab.bind(k))
 		add_child(b)
 
 	# preview (live paper-doll fighter with equipped cosmetics)
 	_preview_wrap = Node2D.new()
-	_preview_wrap.position = Vector2(270, 660)
-	_preview_wrap.scale = Vector2(1.05, 1.05)
+	_preview_wrap.position = Vector2(200, 700)
+	_preview_wrap.scale = Vector2(0.85, 0.85)
 	add_child(_preview_wrap)
 
-	# slot rows on the right
-	var y := 150.0
-	for slot in Cosmetics.slots():
-		var lab := _label(str(SLOT_LABELS.get(slot, slot.to_upper())), 28, Color(0.85, 0.85, 0.9))
-		lab.position = Vector2(560, y)
-		lab.size = Vector2(700, 36)
-		add_child(lab)
-		y += 38
-		var vb := VBoxContainer.new()
-		vb.position = Vector2(560, y)
-		vb.custom_minimum_size = Vector2(700, 10)
-		vb.add_theme_constant_override("separation", 4)
-		add_child(vb)
-		_rows[slot] = vb
-		y += 86.0
+	# slot tabs: one slot's items at a time (UX law: one screen, one job)
+	var slots := Cosmetics.slots()
+	for i in slots.size():
+		var slot := str(slots[i])
+		var tb := Button.new()
+		tb.text = str(SLOT_LABELS.get(slot, slot.to_upper()))
+		tb.position = Vector2(420 + i * 140, 240)
+		tb.custom_minimum_size = Vector2(130, 52)
+		tb.add_theme_font_size_override("font_size", 22)
+		tb.pressed.connect(_on_slot_tab.bind(slot))
+		add_child(tb)
+		_slot_tabs[slot] = tb
+
+	# item grid for the active slot (2 columns of big buttons)
+	_item_grid = GridContainer.new()
+	_item_grid.position = Vector2(420, 308)
+	_item_grid.custom_minimum_size = Vector2(780, 330)
+	_item_grid.columns = 2
+	_item_grid.add_theme_constant_override("h_separation", 12)
+	_item_grid.add_theme_constant_override("v_separation", 10)
+	add_child(_item_grid)
 
 	var back := Button.new()
 	back.text = "← BACK"
-	back.position = Vector2(62, 640)
+	back.position = Vector2(40, 648)
 	back.custom_minimum_size = Vector2(200, 56)
 	back.add_theme_font_size_override("font_size", 30)
 	back.pressed.connect(_on_back)
@@ -110,11 +119,36 @@ func _on_back() -> void:
 	main.show_select()
 
 
+func _on_slot_tab(slot: String) -> void:
+	_slot = slot
+	_refresh_all()
+
+
 func _refresh_all() -> void:
 	_cash_label.text = "CASH: $" + str(save.cash)
 	_refresh_preview()
-	for slot in _rows.keys():
-		_refresh_row(slot)
+	for slot in _slot_tabs.keys():
+		var tb: Button = _slot_tabs[slot]
+		tb.disabled = (slot == _slot)
+	_refresh_items()
+
+
+func _refresh_items() -> void:
+	for c in _item_grid.get_children():
+		c.queue_free()
+	var eq := save.get_equipped(_kind)
+	var stock := Cosmetics.shop_stock(save)
+	var items := _slot_items(_slot)
+	if _slot != "accessory":
+		items = ["__none__"] + items
+	for item_id in items:
+		if item_id == "__none__":
+			var nb := _item_button("None", Color(0.5, 0.5, 0.55), " unequip ",
+				str(eq.get(_slot, "")) == "")
+			nb.pressed.connect(_on_unequip.bind(_slot))
+			_item_grid.add_child(nb)
+			continue
+		_item_grid.add_child(_make_item_button(_slot, item_id, eq, stock))
 
 
 func _refresh_preview() -> void:
@@ -134,31 +168,6 @@ func _slot_items(slot: String) -> Array:
 		if str(Cosmetics.items()[item_id].get("slot")) == slot:
 			out.append(item_id)
 	return out
-
-
-func _refresh_row(slot: String) -> void:
-	var vb: VBoxContainer = _rows[slot]
-	for c in vb.get_children():
-		c.queue_free()
-	var eq := save.get_equipped(_kind)
-	var stock := Cosmetics.shop_stock(save)
-	# "none" button for single-equip slots
-	var items := _slot_items(slot)
-	if slot != "accessory":
-		items = ["__none__"] + items
-	# chunk into rows of 4 so long catalogs don't overflow
-	for ci in range(0, items.size(), 4):
-		var hb := HBoxContainer.new()
-		hb.add_theme_constant_override("separation", 6)
-		vb.add_child(hb)
-		for item_id in items.slice(ci, ci + 3):
-			if item_id == "__none__":
-				var nb := _item_button("None", Color(0.5, 0.5, 0.55), " unequip ",
-					str(eq.get(slot, "")) == "")
-				nb.pressed.connect(_on_unequip.bind(slot))
-				hb.add_child(nb)
-				continue
-			hb.add_child(_make_item_button(slot, item_id, eq, stock))
 
 
 func _make_item_button(slot: String, item_id: String, eq: Dictionary, stock: Array) -> Button:
@@ -200,8 +209,8 @@ func _make_item_button(slot: String, item_id: String, eq: Dictionary, stock: Arr
 func _item_button(label: String, rc: Color, state: String, active: bool) -> Button:
 	var b := Button.new()
 	b.text = label + state
-	b.custom_minimum_size = Vector2(0, 44)
-	b.add_theme_font_size_override("font_size", 20)
+	b.custom_minimum_size = Vector2(370, 46)
+	b.add_theme_font_size_override("font_size", 21)
 	b.add_theme_color_override("font_color", rc if not active else Color.WHITE)
 	if active:
 		var sb := StyleBoxFlat.new()

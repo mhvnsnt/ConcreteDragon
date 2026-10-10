@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://zs41h2i4a5a3j"
-path=""
+uid="uid://cmosxp0lvw1jx"
+path="res://.godot/imported/leg_t.png-01935ba477f6b94834bc488c79552f7a.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/art/vex_crimson/leg_t.png"
-dest_files=[]
+dest_files=["res://.godot/imported/leg_t.png-01935ba477f6b94834bc488c79552f7a.ctex"]
 
 [params]
 
