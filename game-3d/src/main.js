@@ -53,6 +53,7 @@ const save = {
   haptics: true,
   gearInv: {}, gearTier: {}, gearEq: {}, charm: null, charmsUnlocked: [],
   assist: false, missionGrades: {}, scoutRoster: [], loadouts: {},
+  ach: { unlocked: [], bosses: [] }, lifetimeCash: 0, lifetimeKills: 0, // Y11 achievements
 };
 const TIP_URL = 'https://paypal.me/MarquisWhitacre';
 function loadSave() {
@@ -75,6 +76,11 @@ function loadSave() {
   if (!Array.isArray(save.scoutRoster)) save.scoutRoster = [];
   if (!save.loadouts || typeof save.loadouts !== 'object') save.loadouts = {};
   if (!save.missionGrades || typeof save.missionGrades !== 'object') save.missionGrades = {};
+  if (!save.ach || typeof save.ach !== 'object') save.ach = { unlocked: [], bosses: [] }; // Y11
+  if (!Array.isArray(save.ach.unlocked)) save.ach.unlocked = [];
+  if (!Array.isArray(save.ach.bosses)) save.ach.bosses = [];
+  if (typeof save.lifetimeCash !== 'number') save.lifetimeCash = 0;
+  if (typeof save.lifetimeKills !== 'number') save.lifetimeKills = 0;
   for (const k of ['up_dodge','up_magnet','up_revive','up_crit','up_regen','up_luck','up_energy','up_counter','up_speed'])
     if (typeof save[k] !== 'number') save[k] = 0;
 }
@@ -1258,6 +1264,19 @@ function renderBoard() {
     L.appendChild(r); any = true;
   }
   if (!any) L.innerHTML = '<div class="bline"><span>No records yet — go fight.</span><b>—</b></div>';
+  // Y11: achievement list lives on the Records screen
+  const achN = (save.ach && save.ach.unlocked ? save.ach.unlocked.length : 0);
+  const achTitle = document.createElement('div');
+  achTitle.className = 'subtitle'; achTitle.style.marginTop = '10px';
+  achTitle.textContent = `ACHIEVEMENTS (${achN}/${ACHIEVEMENTS.length})`;
+  L.appendChild(achTitle);
+  for (const a of ACHIEVEMENTS) {
+    const got = save.ach && save.ach.unlocked && save.ach.unlocked.includes(a.id);
+    const r = document.createElement('div'); r.className = 'bline';
+    if (!got) r.style.opacity = '0.45';
+    r.innerHTML = `<span>${got ? '★' : '—'} ${a.name}</span><b>${got ? 'UNLOCKED' : a.desc}</b>`;
+    L.appendChild(r);
+  }
 }
 function tipJar() { sfxUiClick(0.7); window.open(TIP_URL, '_blank', 'noopener'); }
 document.addEventListener('visibilitychange', () => setPaused(document.hidden));
@@ -1613,7 +1632,10 @@ function damageDestructibles(range) {
   }
 }
 function destroyDestructible(d) {
+  if (d.col.dead) return; // already smashed
   d.col.dead = true;
+  runSmashed++; // Y11
+  if (runSmashed >= 25) unlockAch('smash25');
   const pos = d.mesh.position.clone();
   // TNT CRATE (Crash taxonomy): chain explosion — hurts enemies AND you. Risk assessment.
   if (d.def.tnt) {
@@ -2823,6 +2845,66 @@ function powWord(list) {
 function banner(txt, cls) {
   popText(txt, 'big ' + (cls || ''), innerWidth / 2, innerHeight * 0.3);
 }
+// ---------- Y11 achievements (docs/IMPROVE_LOOP_BACKLOG.md P5) ----------
+// Local, style-not-power, no new assets: unlock toast reuses the U11 unlock-ceremony
+// banner pattern (fanfare + pulsing banner) on a dedicated top-level #achBanner —
+// #unlockBanner lives inside the hidden results overlay, invisible mid-fight.
+// Slow-mo reserved for `big` moments; normal unlocks stay clean.
+// Progress persists in save.ach / lifetimeCash / lifetimeKills.
+const ACHIEVEMENTS = [
+  { id: 'ko1', name: 'DRAW FIRST BLOOD', desc: 'Score your first K.O.' },
+  { id: 'combo50', name: 'UNSTOPPABLE', desc: 'Land a 50-hit combo' },
+  { id: 'm1', name: 'FIRST BLOOD', desc: 'Clear FIRST BLOOD', mission: 'm1' },
+  { id: 'm2', name: 'SCRAP YARD', desc: 'Clear SCRAP YARD', mission: 'm2' },
+  { id: 'm3', name: 'NIGHT MARKET', desc: 'Clear NIGHT MARKET', mission: 'm3' },
+  { id: 'm4', name: 'RUST BELT', desc: 'Clear RUST BELT', mission: 'm4' },
+  { id: 'm5', name: 'OVERPASS RUN', desc: 'Clear OVERPASS RUN', mission: 'm5' },
+  { id: 'm6', name: 'FACTORY FLOOR', desc: 'Clear FACTORY FLOOR', mission: 'm6' },
+  { id: 'bosses', name: 'KING OF THE BLOCK', desc: 'Defeat every boss', big: true },
+  { id: 'cash10k', name: 'HEAVY PURSE', desc: 'Earn $10,000 lifetime cash' },
+  { id: 'daily', name: 'DAILY GRIND', desc: 'Complete a DAILY RUN' },
+  { id: 'ko100', name: 'CENTURY OF BODIES', desc: '100 lifetime K.O.s', big: true },
+  { id: 'flawless', name: 'UNTOUCHABLE', desc: 'Clear a mission taking no damage' },
+  { id: 'juggle', name: 'AIR TRAFFIC', desc: 'Juggle a launched foe' },
+  { id: 'bowling', name: 'BOWLING', desc: 'Throw a foe into another foe' },
+  { id: 'smash25', name: 'DEMOLITION CREW', desc: 'Smash 25 breakables in one run' },
+  { id: 'wave10', name: 'ENDLESS LEGEND', desc: 'Reach wave 10 in ENDLESS SCRAP', big: true },
+];
+const BOSS_ACH_IDS = BOSSES.map((b) => b.id); // the bosses the game actually has
+const achQueue = [];
+let achToastActive = false;
+function unlockAch(id) {
+  if (!save.ach) save.ach = { unlocked: [], bosses: [] };
+  if (save.ach.unlocked.includes(id)) return false;
+  const a = ACHIEVEMENTS.find((x) => x.id === id);
+  if (!a) return false;
+  save.ach.unlocked.push(id); writeSave();
+  ev('ach', { id });
+  achQueue.push(a);
+  pumpAchQueue();
+  return true;
+}
+function pumpAchQueue() {
+  if (achToastActive || !achQueue.length) return;
+  const ub = $('achBanner'); // Y11: dedicated gameplay toast (unlockBanner lives inside hidden #results)
+  if (!ub) return;
+  if (ub.textContent && ub.textContent.trim() !== '') {
+    // another toast is holding the banner — retry, then take it.
+    const a0 = achQueue[0]; a0._retry = (a0._retry || 0) + 1;
+    if (a0._retry > 8) { ub.textContent = ''; }
+    else { setTimeout(pumpAchQueue, 1200); return; }
+  }
+  achToastActive = true;
+  const a = achQueue.shift();
+  ub.textContent = '★ ACHIEVEMENT — ' + a.name + ' ★';
+  ub.classList.add('show');
+  // U11 ceremony pattern: fanfare (bell + coin) + flash + pulsing banner; slow-mo only for big moments.
+  // bell is one-shot (never looped — a looping bell would pile up forever).
+  sfx('bell', 0.9, false, 1.2); flash('#ffe14d');
+  setTimeout(() => sfx('coin', 0.8, false, 1.2), 180);
+  if (a.big && state === 'fight') { slowmo = 0.3; slowmoT = 1.1; }
+  setTimeout(() => { ub.textContent = ''; ub.classList.remove('show'); achToastActive = false; pumpAchQueue(); }, 4000);
+}
 function screenPos(v) { const p = v.clone().project(camera); return { x: (p.x * 0.5 + 0.5) * innerWidth, y: (-p.y * 0.5 + 0.5) * innerHeight }; }
 function flash(color) { const f = $('flash'); f.style.background = color; f.style.opacity = 0.55; setTimeout(() => (f.style.opacity = 0), 60); }
 
@@ -3182,6 +3264,8 @@ function showResults(win, mission, stats) {
       if (b && b.proc) { // INFINITE BOSS: escalating cash bounty, challenger counter
         const bounty = 150 + (parseInt(mission.boss.slice(2), 10) || 0) * 40;
         save.cash += bounty;
+        save.lifetimeCash = (save.lifetimeCash || 0) + bounty; // Y11
+        if (save.lifetimeCash >= 10000) unlockAch('cash10k');
         save.pbKills = (save.pbKills || 0) + 1;
         ub.textContent = '★ ENDLESS CHALLENGER DOWN — BOUNTY $' + bounty + ' ★';
         // INFINITE UNLOCKS: every 5th endless kill unlocks a titled challenger variant as playable
@@ -3233,7 +3317,8 @@ function showResults(win, mission, stats) {
     const full = save.comebackDay !== today;
     if (full) save.comebackDay = today; else save.losses++;
     const kept = full ? cashRun : Math.round(cashRun * 0.25);
-    if (kept > 0) { save.cash += kept; setTimeout(() => popText((full ? 'BLOCK COVERS YOU +$' : 'COMEBACK CASH +$') + kept, 'gold', innerWidth/2, innerHeight*0.35), 900); ev('comeback', { full, kept }); }
+    if (kept > 0) { save.cash += kept; save.lifetimeCash = (save.lifetimeCash || 0) + kept; // Y11
+      if (save.lifetimeCash >= 10000) unlockAch('cash10k'); setTimeout(() => popText((full ? 'BLOCK COVERS YOU +$' : 'COMEBACK CASH +$') + kept, 'gold', innerWidth/2, innerHeight*0.35), 900); ev('comeback', { full, kept }); }
   }
   save.cash += Math.round(stats.cash * repMult().cash); writeSave();
   // BLESSINGS: pick 1 of 3 after a win; lost on defeat (roguelite run-building)
@@ -3328,7 +3413,7 @@ function showResults(win, mission, stats) {
 let player = null, enemies = [], mission = null, missionR = Math.random;
 let spawnQueue = [], bossSpawned = false, bossRef = null, missionOver = false, ended = false;
 let gameTime = 0, combo = 0, comboT = 0, maxCombo = 0, atkIdx = 0, dmgTaken = 0, missionMaxHp = 100;
-let cashRun = 0, kills = 0, distWalked = 0, endlessT = 3, endlessTier = 0, endlessMuts = [];
+let cashRun = 0, kills = 0, distWalked = 0, endlessT = 3, endlessTier = 0, endlessMuts = [], runSmashed = 0;
 let scoreRun = 0; // PRESENTATION: arcade score for this mission
 function hint(on) { $('hint').style.opacity = on ? 1 : 0; }
 function awardCash(base, pos, tag, quiet) {
@@ -3436,7 +3521,7 @@ function startMission(id, node) {
   spawnQueue = mission.spawns.map((s) => Object.assign({}, s, { done: false })).sort((a, b) => a.at - b.at);
   bossSpawned = false; bossRef = null; missionOver = false; ended = false;
   gameTime = 0; combo = 0; comboT = 0; maxCombo = 0; atkIdx = 0; dmgTaken = 0; missionMaxHp = player.maxHp;
-  cashRun = 0; kills = 0; distWalked = 0; endlessT = 3; endlessTier = 0; endlessMuts = [];
+  cashRun = 0; kills = 0; distWalked = 0; endlessT = 3; endlessTier = 0; endlessMuts = []; runSmashed = 0;
   scoreRun = 0; // PRESENTATION: reset arcade score
   camX = 2;
   state = 'fight'; ev('mission_start', { id: mission.id });
@@ -4716,9 +4801,11 @@ function landHit(e, dmg, label, hs, sh, launcher, counter) {
     const msp = screenPos(e.root.position.clone().add(new THREE.Vector3(0, 2.6, 0)));
     popText(combo + ' HITS — ' + (combo >= 50 ? 'UNSTOPPABLE!' : combo >= 30 ? 'SAVAGE!' : combo >= 20 ? 'BRUTAL!' : 'RAMPAGE!'), 'big', msp.x, msp.y);
     sfx('bell', 0.9, false, 1.2);
+    if (combo === 50) unlockAch('combo50'); // Y11
   }
   // ANTI-INFINITE (Skullgirls Undizzy): same move 3x in one juggle = auto-drop with a "READ!" popup. Fairness by design.
   if (e.airborne) {
+    unlockAch('juggle'); // Y11: hit a launched foe mid-air
     e.jugSeq = e.jugSeq || [];
     e.jugSeq.push(label);
     if (e.jugSeq.length > 3) e.jugSeq.shift();
@@ -4773,6 +4860,7 @@ function landHit(e, dmg, label, hs, sh, launcher, counter) {
 }
 function killEnemy(e) {
   T.kos++; ev('ko', { name: e.name });
+  unlockAch('ko1'); // Y11: first K.O.
   hideWarn(e);
   playAnim(e, 'Death_A', { ts: 0.8, clamp: true });
   let koHold = 900; // PRESENTATION: KO splash hold time (final blow holds longer)
@@ -4781,6 +4869,12 @@ function killEnemy(e) {
     $('bossWrap').style.display = 'none';
     musicStage(); // boss down -> back to the stage loop
     banner('BOSS DOWN!');
+    // Y11: record static boss defeats (skip procedural endless challengers) — all 9 = KING OF THE BLOCK
+    const bid = e.boss && e.boss.id;
+    if (bid && BOSS_ACH_IDS.includes(bid) && !save.ach.bosses.includes(bid)) {
+      save.ach.bosses.push(bid); writeSave();
+      if (BOSS_ACH_IDS.every((x) => save.ach.bosses.includes(x))) unlockAch('bosses');
+    }
     save.bossesBeaten = (save.bossesBeaten || 0) + 1; writeSave(); // gates boss-tier cosmetics
   } else {
     slowmo = 0.35; slowmoT = 0.7; shake = 0.45; hitstop = 0.09;
@@ -5160,6 +5254,7 @@ function enemyAI(e, dt) {
           landHit(o, Math.round(30 * (player ? player.dmgMult : 1)), 'THROWN BODY', 0.08, 0.4, false, false);
           e.kvx = (e.kvx || 0) * 0.7; // plowing through the crowd bleeds speed
           T.throwCrowd = (T.throwCrowd || 0) + 1; ev('throwcrowd', {});
+          unlockAch('bowling'); // Y11: thrown foe plowed into another foe
         }
       }
     }
@@ -5491,6 +5586,8 @@ function director(dt) {
     const tier = Math.floor(distWalked / 30);
     if (tier > (endlessTier || 0)) {
       endlessTier = tier;
+      save.best_wave = Math.max(save.best_wave || 0, tier); writeSave(); // Y11: track best endless wave
+      if (tier >= 10) unlockAch('wave10'); // Y11: reach wave 10 in endless
       const MUT = ['SWARM', 'BRUTES', 'FEVER', 'SECOND WIND', 'GLASS JAW'];
       const mut = MUT[(tier - 1) % MUT.length];
       (endlessMuts = endlessMuts || []).push(mut);
@@ -5580,6 +5677,16 @@ function missionComplete(win) {
     if (!prev) save.boards[mission.id] = bk;
   } else if (mission.endless || mission.daily) {
     stats.dist = distWalked;
+  }
+  // Y11 achievements: lifetime tallies + mission-clear unlocks (win only)
+  if (win) {
+    save.lifetimeKills = (save.lifetimeKills || 0) + kills;
+    save.lifetimeCash = (save.lifetimeCash || 0) + Math.round(stats.cash * repMult().cash); // mirrors the save.cash award in showResults
+    if (save.lifetimeKills >= 100) unlockAch('ko100');
+    if (save.lifetimeCash >= 10000) unlockAch('cash10k');
+    if (ACHIEVEMENTS.some((a) => a.mission === mission.id)) unlockAch(mission.id); // m1..m6 clears
+    if (mission.daily) unlockAch('daily');
+    if (dmgTaken <= 0) unlockAch('flawless');
   }
   writeSave();
   setTimeout(() => showResults(win, mission, stats), win ? 1400 : 800);
@@ -7140,4 +7247,12 @@ window.__cdtest = {
   saveDbg: () => JSON.parse(JSON.stringify({ daily: save.daily, dailyBest: save.dailyBest, boards: save.boards })),
   missionDbg: () => mission ? { id: mission.id, district: mission.district, len: mission.len, daily: !!mission.daily, dailyDate: mission.dailyDate || null, dailySeed: mission.dailySeed || null, nSpawns: (mission.spawns || []).length } : null,
   missionComplete,
+  // Y11 achievement test hooks (drive real game paths)
+  achDbg: () => JSON.parse(JSON.stringify({ unlocked: (save.ach && save.ach.unlocked) || [], bosses: (save.ach && save.ach.bosses) || [], lifetimeCash: save.lifetimeCash, lifetimeKills: save.lifetimeKills })),
+  hitFoe: (i, dmg, launcher) => { const e = enemies[i]; if (e && e.hp > 0 && state === 'fight') landHit(e, dmg, 'TEST', 0.05, 0.2, !!launcher, false); return e ? Math.round(e.hp) : -1; },
+  spawnBossT: (id) => { const e = spawnBoss(id, player ? player.px + 4 : 8); return e ? e.name : null; },
+  throwFoeT: (i) => { const e = enemies[i]; if (!e) return false; e.airborne = true; e.vy = 4.5; e.thrownBody = true; e.thrownHit = new Set(); e.kvx = 13; e.ai = 'launched'; return true; },
+  addCashRunT: (n) => { cashRun += n; return cashRun; },
+  setDistT: (d) => { distWalked = d; return true; },
+  smashedT: () => runSmashed,
 };

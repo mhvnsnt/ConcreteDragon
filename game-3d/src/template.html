@@ -233,6 +233,8 @@ body.cine #cineSkip{display:block}
 .stat b{color:#ffd166}
 #unlockBanner{font-family:'SairaStencil','Bungee','Anton',Arial,sans-serif;font-size:22px;color:#7af0ff;text-shadow:0 0 14px #7af0ff,0 3px 0 #000;margin:8px 0;letter-spacing:2px;min-height:30px}
 #unlockBanner.show{animation:pulse .8s infinite}
+#achBanner{position:fixed;left:0;right:0;top:76px;z-index:70;pointer-events:none;font-family:'SairaStencil','Bungee','Anton',Arial,sans-serif;font-size:24px;color:#ffe14d;text-shadow:0 0 16px #ffe14d,0 3px 0 #000;letter-spacing:2px;text-align:center;min-height:32px;white-space:nowrap}
+#achBanner.show{animation:pulse .8s infinite}
 #results.win #resTitle{font-family:'SairaStencil','Bungee','Anton',Arial,sans-serif;font-size:40px;letter-spacing:3px;background:linear-gradient(#fff,#ffd166 60%,#ff8c42);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 4px 0 #000) drop-shadow(0 0 18px #ffcf2e88)}
 #results.lose #resTitle{font-family:'SairaStencil','Bungee','Anton',Arial,sans-serif;font-size:40px;letter-spacing:3px;color:#ff4d4d;text-shadow:0 4px 0 #000,0 0 18px #ff000088}
 #cashLines{margin:8px 0 2px;font-family:Arial,sans-serif;font-weight:700;font-size:15px;text-transform:none}
@@ -350,7 +352,7 @@ body.cine #cineSkip{display:block}
   <div class="abtn" id="btnJmp"><div class="tx">JMP</div></div>
   <div class="abtn" id="btnGrp"><div class="tx">GRP</div></div>
 </div>
-<div id="flash"></div><div id="lsEdge"></div>
+<div id="flash"></div><div id="lsEdge"></div><div id="achBanner"></div>
 <div id="lbTop"></div><div id="lbBot"></div><div id="nrgFlash"></div>
 <div id="cineCap"></div><div id="cineSkip">TAP TO SKIP ▸</div><div id="megaName"></div>
 <div id="title" class="screen hidden" style="justify-content:flex-start;background:linear-gradient(to bottom,rgba(10,6,24,.15),rgba(10,6,24,.75))">
