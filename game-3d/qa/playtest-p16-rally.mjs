@@ -34,8 +34,10 @@ page.on('pageerror', (e) => errs.push('[pageerror] ' + e.message.slice(0, 200)))
 page.on('console', (m) => {
   if (m.type() !== 'error') return;
   const t = m.text();
-  if (t.includes('manifest.webmanifest')) return; // file://-only artifact
-  errs.push('[console.error] ' + t.slice(0, 200));
+  const loc = m.location(); const url = (loc && loc.url) || '';
+  // file://-only artifacts: the PWA manifest can't be fetched with origin 'null'; loads fine over http(s)
+  if (t.includes('manifest.webmanifest') || url.includes('manifest.webmanifest')) return;
+  errs.push('[console.error] ' + t.slice(0, 160) + ' @ ' + url.slice(-60));
 });
 const Eraw = (expr) => page.evaluate(new Function('const t = window.__cdtest; return (' + expr + ')'));
 const E = async (expr) => {
@@ -86,40 +88,47 @@ await shot('01-rally-banked'); // HUD: blue fill + green rally segment past it
 
 // ---- P16b: landed hits convert rally -> HP (~1/5 of pool per hit) ----
 await stageFoe();
-let prev = await rally();
-let landed = 0, guard = 0;
-for (let i = 0; i < 14; i++) {
-  const foeAlive = (await E('t.foeHp(0)')) > 0;
-  if (!foeAlive) { await stageFoe(); }
+let landed = 0;
+for (let i = 0; i < 8; i++) {
+  if ((await E('t.foeHp(0)')) <= 0) { await stageFoe(); }
   const before = await rally();
   await E(`t.dbgG3('clean')`); // one real 20-dmg jab via landHit
   await E('t.ff(3)');
   const after = await rally();
   landed++;
-  const conv = before.hp < before.maxHp ? Math.min(before.rally, Math.max(1, Math.ceil(before.rally / 5))) : 0;
   if (before.rally > 0 && before.hp < before.maxHp) {
+    const conv = Math.min(before.rally, Math.max(1, Math.ceil(before.rally / 5)));
     check(`hit ${landed}: rally converts ~1/5 (rally ${before.rally}->${after.rally}, hp ${before.hp}->${after.hp})`,
       after.rally === before.rally - conv && after.hp === Math.min(before.maxHp, before.hp + conv),
       `conv=${conv}`);
-    guard++;
-    if (guard >= 3) break;
   }
-  if (after.rally === 0) break;
+  if (landed === 2) await shot('02-rally-mid'); // green segment shrunk, blue grown
+  if (landed >= 3) break;
 }
-// keep hitting until the bank is empty
-for (let i = 0; i < 14; i++) {
+// ---- P16b2: full-conversion moment, low-HP regime ----
+// hp is pinned low (20) so it can never reach maxHp here: the bank can only empty
+// via true conversion, so the 'RALLY RECOVERED!' moment MUST fire. (A full-size bank
+// plus foe kills risks OLD BLOOD kill-heal topping HP to full, which forfeits the
+// bank BY DESIGN — verified separately, not a defect.)
+await E('t.healPlayer()'); await E('t.clearFoes()');
+await E('t.setHp(20)'); await doDesp();
+const rb = await rally();
+check('low-HP bank staged', rb.hp === 18 && rb.rally > 0, `hp=${rb.hp} rally=${rb.rally}`);
+await stageFoe();
+for (let i = 0; i < 16; i++) {
   const cur = await rally();
   if (cur.rally === 0) break;
   if ((await E('t.foeHp(0)')) <= 0) { await stageFoe(); }
   await E(`t.dbgG3('clean')`);
   await E('t.ff(3)');
-  if (i === 1) await shot('02-rally-mid'); // green segment shrunk, blue grown
 }
 const rFull = await rally();
 check('rally fully recovered via attacking', rFull.rally === 0, `rally=${rFull.rally} hp=${rFull.hp}/${rFull.maxHp}`);
 check('rallyRecovered counter > 0', rFull.recovered > 0, `recovered=${rFull.recovered}`);
 const evts = await E('t.dbgEvents()');
 check("'RALLY RECOVERED!' moment fired", evts.includes('rallyfull'), 'ev rallyfull present');
+const popN = await page.evaluate(() => [...document.querySelectorAll('.pop')].filter((d) => d.textContent.includes('RALLY RECOVERED')).length);
+check("'RALLY RECOVERED!' popup rendered", popN > 0, `found=${popN}`);
 check('hp never exceeded maxHp', rFull.hp <= rFull.maxHp, `hp=${rFull.hp}`);
 await shot('03-rally-full'); // HUD: all-blue bar, no green
 
