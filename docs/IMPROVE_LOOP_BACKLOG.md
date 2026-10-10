@@ -166,6 +166,60 @@ via HP/damage numbers. Medium risk (touches enemyAI state machine).
 
 ### (boss music — separate worker lane as of 2026-10-09, loop stays off it)
 
+### P6 — Lock-on camera + chanbara circling (N9/N10)
+**Refs:** Zelda OoT Z-targeting (Aonuma/Koizumi — see docs/RESEARCH_NINTENDO_VISUAL.md §2b): lock keeps player AND enemy framed, attacks converge; Miyamoto's chanbara circling duel model.
+**Gap:** no lock-on; camera doesn't guarantee both fighters framed; movement is free-run always.
+**Work:** soft lock-on (nearest threat), camera pulls to frame player+locked enemy, attacks converge on lock; locked movement becomes strafe/orbit.
+**Risk:** medium (touches camera + combat + movement).
+
+### P7 — AI director: off-lock enemies hold at frame edge (N11)
+**Refs:** Zelda OoT Koizumi — "Z-targeting tells the other enemies to wait" (see docs/RESEARCH_NINTENDO_VISUAL.md §2b).
+**Gap:** enemies dogpile/walk in without attacking (owner complaint 2026-10-09).
+**Work:** AI director rule — off-lock enemies hold at frame edge (taunt, circle, occasional projectile); only N engage at once. Pairs with enemy-AI research track.
+**Risk:** medium (touches enemyAI).
+
+### P8 — Dash feel: FOV widen + camera wobble (N12)
+**Refs:** Gears of War roadie run, GDC (see docs/RESEARCH_NINTENDO_VISUAL.md §2c).
+**Gap:** dash feels flat.
+**Work:** on dash: drop camera slightly, widen FOV 10-15%, subtle handheld wobble.
+**Risk:** low.
+
+### P9 — Rule-of-thirds framing (N13)
+**Refs:** Gears GDC — don't center the hero (see docs/RESEARCH_NINTENDO_VISUAL.md §2c).
+**Gap:** player likely centered, blocking threat-side view.
+**Work:** default camera offsets player to lower-third; incoming-threat side stays open.
+**Risk:** low.
+
+### P10 — Cutscene multi-camera system (N14)
+**Refs:** darwin3d camera theory (see docs/RESEARCH_NINTENDO_VISUAL.md §2d): cut between OTS (~10° off action line) and reaction (~60°) instead of one gliding cam.
+**Gap:** no cutscene camera language.
+**Work:** virtual multi-camera: establish action line, cut between profile/OTS/reaction; finisher cams — hard cut to low angle on impact, hold 0.5s, cut back.
+**Risk:** medium-high (needs cutscene system).
+
+### P11 — "Run and watch" spectacle segments (N15)
+**Refs:** SA2 GameSpot hands-on (see docs/RESEARCH_NINTENDO_VISUAL.md §3a).
+**Gap:** stage transitions are plain.
+**Work:** chase/transition sequences — hold-forward with dramatic authored camera cuts (low chase, crane, tracking).
+**Risk:** medium.
+
+### P12 — Squash-and-stretch hit reactions (N7)
+**Refs:** Luigi's Mansion (see docs/RESEARCH_NINTENDO_VISUAL.md §1d).
+**Gap:** hit reactions likely realistic/stiff.
+**Work:** exaggerate with squash-stretch deform on heavies, not ragdoll.
+**Risk:** low-medium (animation).
+
+### P13 — Night stage dramatic lighting (N6)
+**Refs:** Luigi's Mansion single-source lighting (see docs/RESEARCH_NINTENDO_VISUAL.md §1d).
+**Gap:** night stages may be flat-lit.
+**Work:** streetlamp pools, neon signs, deep shadows on night/alley stages.
+**Risk:** low-medium (lighting).
+
+### P14 — HUMAN-PERSPECTIVE UX LAW (owner 2026-10-09)
+**Refs:** owner directive — the character-select incident. AI builds dense/tiny/logically-complete; humans need big/clear/few. See ~/AGENTS.md HUMAN-PERSPECTIVE UX LAW.
+**Gap:** character select crams options into a tiny thin bottom scroll window; menus generally dense and un-thumbable.
+**Work:** (1) character select redesign FIRST: big cards, paged or horizontal, human-sized touch targets; (2) paged menus everywhere (no vertical scroll marathons); (3) glanceable hierarchy, breathing room. Menu research track (cd-menu-ui-research) producing the full spec.
+**Risk:** medium (touches all menus). GLOBAL — applies to every game repo.
+
 ### P15 — Hitstop retune (the #1 feel-per-line change)
 **Refs:** Street Fighter norm 9f lights / 13f heavies; Guilty Gear Xrd 7f/10f (see docs/RESEARCH_FIGHTER_MECHANICS.md). CD jab freezes ~2f.
 **Gap:** hitstop severely under-tuned; hits feel weightless.
