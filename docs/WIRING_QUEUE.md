@@ -178,7 +178,13 @@ Wire in this order; playtest after each tier. Owner plays and vetoes — wire, d
 - C8 grab/throw, C9 back attack, C10 air attack, C11 weapons — combat expansion pass 2.
 - Y10 run codes, Y11 achievements, Y13 anti-cheat — after leaderboards land.
 - S9 crowd ambience — needs freesound login (account lane); S13 boss theme — next audio pass.
-- M9 PWA install — after web build stabilizes.
+- M9 PWA install — ✅ WIRED 2026-10-09 (wave 19): `game-3d/pwa/` (manifest.webmanifest,
+  sw.js cache-first, icons 192/512/maskable/apple-touch from itch cover art), PWA tags +
+  guarded SW registration in `src/template.html`, build.mjs stamps SW cache version
+  (`version.txt`-`git sha`) + copies pwa/ to `dist/pwa/`, CI deploy-web publishes
+  manifest/sw/icons at Pages site root. Playtest-verified
+  (`qa/playtest-pwa.mjs`, zero errors: manifest parses, SW activates, OFFLINE reload
+  boots title from cache). Doc: `docs/TRANCHE_WAVE19_PWA.md`.
 
 ## Laws (never break while wiring)
 Style-not-power · 3D-demo naming (Street Thug/Big Rico) · slow-mo for big moments only ·

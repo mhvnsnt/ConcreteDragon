@@ -48,6 +48,7 @@ const save = {
   best_wave: 0, selected: 'kidblue', skins: {}, tex: {},
   unlocked: ['kidblue', 'ghost', 'brick'], missionsDone: [],
   daily: { date: '', score: 0 }, dailyBest: null, boards: {}, seenHint: false,
+  bestScore: {}, // PRESENTATION: best arcade score per mission id
   muted: false, quality: 'auto', difficulty: 'normal', circuitN: 0, blessings: [], rep: 0, goldCards: [],
   haptics: true,
   gearInv: {}, gearTier: {}, gearEq: {}, charm: null, charmsUnlocked: [],
@@ -85,9 +86,14 @@ const hustleMult = () => 1 + save.up_hustle * 0.15;
 
 // ---------- data: roster (data-driven; unlock via missions/bosses) ----------
 const FIGHTERS = [
-  { id: 'kidblue', wrestle: 'DRAGON SUPLEX', name: 'KID BLUE', tag: 'Balanced brawler. Big heart, bigger hands.', hp: 100, dmg: 1.0, spd: 1.0, unlock: { type: 'start' },
+  { id: 'kidblue', wrestle: 'DRAGON SUPLEX',
+    archetype: 'allrounder',
+    grapple: { range: 2.0, dmgMul: 1.0, chains: null }, name: 'KID BLUE', tag: 'Balanced brawler. Big heart, bigger hands.', hp: 100, dmg: 1.0, spd: 1.0, unlock: { type: 'start' },
     spc2: { name: 'DRAGON RUSH', cost: 35, desc: 'Shoulder-first dash through the whole pack.' },
     qcf: { name: "DRAGON'S BREATH", sigkind: 'fireball', kind: 'fire', dmg: 30, speed: 9.5, color: 0xff7a2a, desc: 'Fireball', tag: 'Fireball projectile — 25 energy' },
+    ki: { name: 'DRAGON PALM', dmg: 9, speed: 15, color: 0xff7a2a, cost: 5 },
+    wave: { name: 'DRAGON WAVE', dmg: 24, speed: 7.5, color: 0xff7a2a, cost: 15 },
+    spin: { name: 'DRAGON CYCLONE', dmg: 18, color: 0xff7a2a, dur: 0.62, cost: 20 },
     bfname: 'STREET DASH', blitzname: 'DRAGON BLITZ', duname: 'SKY UPPER',
     mega: { name: "DRAGON'S JUDGMENT" },
     stance: { name: "RUSH STANCE", dmg: 0.85, spd: 1.25, desc: "All hands, no brakes. Faster, lighter hits." },
@@ -107,13 +113,20 @@ const FIGHTERS = [
       ['TECH', 'HIT while knocked down', 'Instant recovery + bounce + brief invuln. Never helpless.'],
       ['DUST LAUNCHER', '↓ + HVY', 'Universal overhead launcher. Pops them up for juggles.'],
       ['TAG SPOT', 'TAUNT near a glowing wall', 'Spray the wall (3s, vulnerable). Big cash + 15 REP.'],
-      ['GRAPPLE', 'GRP btn / G on staggered foe', 'Wrestling finisher: suplex/piledriver/powerbomb. Big moment.'],
+      ['GRAPPLE', 'GRP near a foe', 'Basic grab: suplex slam. On a staggered foe: DRAGON SUPLEX finisher.'],
+      ['COMBO ROUTE', 'JAB > CROSS > DUST LAUNCHER', 'Pop them up, juggle in the air. Balanced and reliable.'],
+      ['BLOCK', 'HOLD DDG / hold L', 'Guard stance: damage becomes chip. Heavies still hurt.'],
       ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
       ['DRAGON RUSH', '↓ + SPC (50 meter)', 'Shoulder dash straight through the pack.'],
     ] },
-  { id: 'ghost', wrestle: 'PHANTOM DRIVER', name: 'GHOST', tag: 'Fast striker. Blink and you lose.', hp: 85, dmg: 0.9, spd: 1.25, unlock: { type: 'start' },
+  { id: 'ghost', wrestle: 'PHANTOM DRIVER',
+    archetype: 'striker',
+    grapple: { range: 2.0, dmgMul: 0.85, chains: null }, name: 'GHOST', tag: 'Fast striker. Blink and you lose.', hp: 85, dmg: 0.9, spd: 1.25, unlock: { type: 'start' },
     spc2: { name: 'BLINK FLURRY', cost: 35, desc: 'Blink between the 3 nearest enemies, striking each.' },
     qcf: { name: 'PHANTOM STEP', sigkind: 'teleport', dmg: 36, color: 0x9a7bff, desc: 'Blink behind the nearest enemy and strike', tag: 'Teleport strike — 25 energy' },
+    ki: { name: 'SPECTRAL BOLT', dmg: 8, speed: 16, color: 0x9a7bff, cost: 5 },
+    wave: { name: 'PHANTOM WAVE', dmg: 22, speed: 8, color: 0x9a7bff, cost: 15 },
+    spin: { name: 'GHOST CYCLONE', dmg: 16, color: 0x9a7bff, dur: 0.62, cost: 20 },
     bfname: 'PHASE STEP', blitzname: 'PHANTOM BLITZ', duname: 'WRAITH RISE',
     mega: { name: 'MIDNIGHT REQUIEM' },
     stance: { name: "WRAITH STANCE", dmg: 1.2, spd: 0.95, desc: "Blinks hit harder. Meaner, not faster." },
@@ -133,13 +146,24 @@ const FIGHTERS = [
       ['TECH', 'HIT while knocked down', 'Instant recovery + bounce + brief invuln. Never helpless.'],
       ['DUST LAUNCHER', '↓ + HVY', 'Universal overhead launcher. Pops them up for juggles.'],
       ['TAG SPOT', 'TAUNT near a glowing wall', 'Spray the wall (3s, vulnerable). Big cash + 15 REP.'],
-      ['GRAPPLE', 'GRP btn / G on staggered foe', 'Wrestling finisher: suplex/piledriver/powerbomb. Big moment.'],
+      ['GRAPPLE', 'GRP near a foe', 'Quick snatch suplex — fast but light. On a staggered foe: PHANTOM DRIVER finisher.'],
+      ['COMBO ROUTE', 'PHANTOM STEP > FANG FLICKER x3', 'Teleport in, blur them with speed. Never stand still.'],
+      ['BLOCK', 'HOLD DDG / hold L', 'Guard stance: damage becomes chip. Heavies still hurt.'],
       ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
       ['BLINK FLURRY', '↓ + SPC (50 meter)', 'Blink between the 3 nearest enemies.'],
     ] },
-  { id: 'brick', wrestle: 'RENT-A-POWERBOMB', name: 'BRICK', tag: 'Walking wall. Hits like rent day.', hp: 135, dmg: 1.25, spd: 0.85, unlock: { type: 'start' },
+  { id: 'brick', wrestle: 'RENT-A-POWERBOMB',
+    archetype: 'grappler',
+    grapple: { range: 2.7, dmgMul: 1.25, chains: [
+      { name: 'RENT-A-POWERBOMB', d: 'chain_brick_d1', r: 'chain_brick_r1', dmg: 30, window: 0.55, strikes: 2 },
+      { name: 'EVICTION NOTICE', d: 'chain_brick_d2', r: 'chain_brick_r2', dmg: 44, window: 0.5 },
+      { name: 'FORECLOSURE', d: 'chain_brick_d3', r: 'chain_brick_r3', dmg: 62, window: 0, launch: true },
+    ] }, name: 'BRICK', tag: 'Walking wall. Hits like rent day.', hp: 135, dmg: 1.25, spd: 0.85, unlock: { type: 'start' },
     spc2: { name: 'SEISMIC SLAM', cost: 35, desc: 'Ground pound: shockwave launches everyone near.' },
     qcf: { name: 'RENT COLLECTION', sigkind: 'grab', dmg: 46, color: 0xffb02e, desc: 'Command grab — yank and slam', tag: 'Command grab — 25 energy' },
+    ki: { name: 'BRICK BAT', dmg: 12, speed: 12, color: 0xffb02e, cost: 6 },
+    wave: { name: 'SEISMIC WAVE', dmg: 28, speed: 6, color: 0xffb02e, cost: 18 },
+    spin: { name: 'WRECKING BALL', dmg: 22, color: 0xffb02e, dur: 0.7, cost: 25 },
     bfname: 'PAVEMENT RUSH', blitzname: 'BATTERING RAM', duname: 'HIGH-RISE',
     mega: { name: 'RENT DUE' },
     stance: { name: "PAYLOAD STANCE", dmg: 1.35, spd: 0.78, desc: "The wall walks forward." },
@@ -159,13 +183,23 @@ const FIGHTERS = [
       ['TECH', 'HIT while knocked down', 'Instant recovery + bounce + brief invuln. Never helpless.'],
       ['DUST LAUNCHER', '↓ + HVY', 'Universal overhead launcher. Pops them up for juggles.'],
       ['TAG SPOT', 'TAUNT near a glowing wall', 'Spray the wall (3s, vulnerable). Big cash + 15 REP.'],
-      ['GRAPPLE', 'GRP btn / G on staggered foe', 'Wrestling finisher: suplex/piledriver/powerbomb. Big moment.'],
+      ['CHAIN GRAPPLE', 'GRP near a foe', 'Grab opens with knee strikes into RENT-A-POWERBOMB. GRP in the gold window to chain: EVICTION NOTICE, then FORECLOSURE (launcher).'],
+      ['BLOCK', 'HOLD DDG / hold L', 'Guard stance: damage becomes chip. Heavies still hurt.'],
       ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
       ['SEISMIC SLAM', '↓ + SPC (50 meter)', 'Ground pound launches everyone nearby.'],
     ] },
-  { id: 'kingpin', wrestle: 'HOSTILE SUPLEX', name: 'KINGPIN', tag: 'Used to run this block. Now he runs with you.', hp: 150, dmg: 1.3, spd: 0.9, unlock: { type: 'boss', boss: 'kingpin' },
+  { id: 'kingpin', wrestle: 'HOSTILE SUPLEX',
+    archetype: 'grappler',
+    grapple: { range: 2.6, dmgMul: 1.2, chains: [
+      { name: 'HOSTILE SUPLEX', d: 'chain_kingpin_d1', r: 'chain_kingpin_r1', dmg: 32, window: 0.55, strikes: 2 },
+      { name: 'ROYAL DECREE', d: 'chain_kingpin_d2', r: 'chain_kingpin_r2', dmg: 46, window: 0.5 },
+      { name: 'HOSTILE TAKEOVER', d: 'chain_kingpin_d3', r: 'chain_kingpin_r3', dmg: 68, window: 0, launch: true },
+    ] }, name: 'KINGPIN', tag: 'Used to run this block. Now he runs with you.', hp: 150, dmg: 1.3, spd: 0.9, unlock: { type: 'boss', boss: 'kingpin' },
     spc2: { name: "KINGPIN'S WRATH", cost: 35, desc: 'Royal beatdown: massive AOE around him.' },
     qcf: { name: 'ROYAL DECREE', sigkind: 'orb', kind: 'orb', dmg: 40, speed: 5, color: 0xffd166, desc: 'Slow explosive orb', tag: 'Explosive orb — 25 energy' },
+    ki: { name: "KING'S WRATH", dmg: 10, speed: 14, color: 0xffd166, cost: 6 },
+    wave: { name: 'EMPIRE WAVE', dmg: 26, speed: 7, color: 0xffd166, cost: 16 },
+    spin: { name: 'EXECUTIVE ORDER', dmg: 20, color: 0xffd166, dur: 0.62, cost: 22 },
     bfname: 'HOSTILE MARCH', blitzname: 'ROYAL CHARGE', duname: 'THRONE RISE',
     mega: { name: 'HOSTILE TAKEOVER' },
     stance: { name: "IRON THRONE", dmg: 1.2, spd: 0.92, desc: "Every decree lands heavier." },
@@ -185,13 +219,24 @@ const FIGHTERS = [
       ['TECH', 'HIT while knocked down', 'Instant recovery + bounce + brief invuln. Never helpless.'],
       ['DUST LAUNCHER', '↓ + HVY', 'Universal overhead launcher. Pops them up for juggles.'],
       ['TAG SPOT', 'TAUNT near a glowing wall', 'Spray the wall (3s, vulnerable). Big cash + 15 REP.'],
-      ['GRAPPLE', 'GRP btn / G on staggered foe', 'Wrestling finisher: suplex/piledriver/powerbomb. Big moment.'],
+      ['CHAIN GRAPPLE', 'GRP near a foe', 'Grab opens with knee strikes into HOSTILE SUPLEX. GRP in the gold window to chain: ROYAL DECREE, then HOSTILE TAKEOVER (launcher).'],
+      ['BLOCK', 'HOLD DDG / hold L', 'Guard stance: damage becomes chip. Heavies still hurt.'],
       ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
       ["KINGPIN'S WRATH", '↓ + SPC (50 meter)', 'Massive shockwave around him.'],
     ] },
-  { id: 'sledge', wrestle: 'DEMOLITION DRIVER', name: 'SLEDGE', tag: 'Yard enforcer. Swings first, talks never.', hp: 165, dmg: 1.45, spd: 0.8, unlock: { type: 'boss', boss: 'sledge' },
+  { id: 'sledge', wrestle: 'DEMOLITION DRIVER',
+    archetype: 'grappler',
+    grapple: { range: 2.8, dmgMul: 1.35, chains: [
+      { name: 'YARD TOSS', d: 'chain_sledge_d1', r: 'chain_sledge_r1', dmg: 28, window: 0.6, strikes: 3 },
+      { name: 'SCRAP SUPLEX', d: 'chain_sledge_d2', r: 'chain_sledge_r2', dmg: 40, window: 0.55 },
+      { name: 'GIRDER GERMAN', d: 'chain_sledge_d3', r: 'chain_sledge_r3', dmg: 52, window: 0.5 },
+      { name: 'DEMOLITION DAY', d: 'chain_sledge_d4', r: 'chain_sledge_r4', dmg: 78, window: 0, launch: true },
+    ] }, name: 'SLEDGE', tag: 'Yard enforcer. Swings first, talks never.', hp: 165, dmg: 1.45, spd: 0.8, unlock: { type: 'boss', boss: 'sledge' },
     spc2: { name: 'WRECKING SWING', cost: 35, desc: '360° swing that clears the whole circle.' },
     qcf: { name: 'IRON CYCLONE', sigkind: 'spin', dmg: 16, color: 0x80ed99, desc: 'Traveling spin — multi-hit', tag: 'Traveling spin — 25 energy' },
+    ki: { name: 'IRON JAB', dmg: 8, speed: 14, color: 0x80ed99, cost: 5 },
+    wave: { name: 'CYCLONE WAVE', dmg: 22, speed: 7, color: 0x80ed99, cost: 15 },
+    spin: { name: 'IRON CYCLONE', dmg: 16, color: 0x80ed99, dur: 0.62, cost: 20 },
     bfname: 'WRECKING RUSH', blitzname: 'SLEDGEHAMMER RUN', duname: 'CRANE UPPER',
     mega: { name: 'DEMOLITION DAY' },
     stance: { name: "DEMOLITION STANCE", dmg: 1.3, spd: 0.85, desc: "Swinging for the fences." },
@@ -211,13 +256,19 @@ const FIGHTERS = [
       ['TECH', 'HIT while knocked down', 'Instant recovery + bounce + brief invuln. Never helpless.'],
       ['DUST LAUNCHER', '↓ + HVY', 'Universal overhead launcher. Pops them up for juggles.'],
       ['TAG SPOT', 'TAUNT near a glowing wall', 'Spray the wall (3s, vulnerable). Big cash + 15 REP.'],
-      ['GRAPPLE', 'GRP btn / G on staggered foe', 'Wrestling finisher: suplex/piledriver/powerbomb. Big moment.'],
+      ['CHAIN GRAPPLE', 'GRP near a foe', 'Grab opens with bodyshots into YARD TOSS. GRP in the gold window to chain: SCRAP SUPLEX, GIRDER GERMAN, then DEMOLITION DAY (launcher).'],
+      ['BLOCK', 'HOLD DDG / hold L', 'Guard stance: damage becomes chip. Heavies still hurt.'],
       ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
       ['WRECKING SWING', '↓ + SPC (50 meter)', '360° swing clears the whole circle.'],
     ] },
-  { id: 'viper', wrestle: 'VENOM POWERBOMB', name: 'VIPER', tag: 'Fast hands, faster mouth.', hp: 95, dmg: 1.05, spd: 1.35, unlock: { type: 'boss', boss: 'viper' },
+  { id: 'viper', wrestle: 'VENOM POWERBOMB',
+    archetype: 'striker',
+    grapple: { range: 2.0, dmgMul: 0.9, chains: null }, name: 'VIPER', tag: 'Fast hands, faster mouth.', hp: 95, dmg: 1.05, spd: 1.35, unlock: { type: 'boss', boss: 'viper' },
     spc2: { name: 'VENOM DASH', cost: 35, desc: 'Serpent dash: strikes everything in a line.' },
     qcf: { name: "SERPENT'S WAKE", sigkind: 'groundwave', kind: 'fangwave', dmg: 26, speed: 9, color: 0x7cff6b, desc: 'Ground fang wave', tag: 'Ground fang wave — 25 energy' },
+    ki: { name: 'VENOM SPIT', dmg: 7, speed: 17, color: 0x7cff6b, cost: 4 },
+    wave: { name: 'SERPENT WAVE', dmg: 20, speed: 8.5, color: 0x7cff6b, cost: 14 },
+    spin: { name: 'COIL SPIN', dmg: 15, color: 0x7cff6b, dur: 0.6, cost: 18 },
     bfname: 'SERPENT DASH', blitzname: 'VIPER STRIKE', duname: 'COIL SPRING',
     mega: { name: "SERPENT'S COIL" },
     stance: { name: "COIL STANCE", dmg: 1.1, spd: 1.22, desc: "Strike from anywhere." },
@@ -237,13 +288,19 @@ const FIGHTERS = [
       ['TECH', 'HIT while knocked down', 'Instant recovery + bounce + brief invuln. Never helpless.'],
       ['DUST LAUNCHER', '↓ + HVY', 'Universal overhead launcher. Pops them up for juggles.'],
       ['TAG SPOT', 'TAUNT near a glowing wall', 'Spray the wall (3s, vulnerable). Big cash + 15 REP.'],
-      ['GRAPPLE', 'GRP btn / G on staggered foe', 'Wrestling finisher: suplex/piledriver/powerbomb. Big moment.'],
+      ['GRAPPLE', 'GRP near a foe', 'Quick snatch suplex — fast but light. On a staggered foe: VENOM POWERBOMB finisher.'],
+      ['BLOCK', 'HOLD DDG / hold L', 'Guard stance: damage becomes chip. Heavies still hurt.'],
       ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
       ['VENOM DASH', '↓ + SPC (50 meter)', 'Dash in a line, striking everything.'],
     ] },
-  { id: 'dust', wrestle: 'DUST DEVIL DRIVER', name: 'DUST', tag: 'Quick hands. Gone before you blink.', hp: 80, dmg: 0.95, spd: 1.4, unlock: { type: 'boss', boss: 'rust' },
+  { id: 'dust', wrestle: 'DUST DEVIL DRIVER',
+    archetype: 'striker',
+    grapple: { range: 2.0, dmgMul: 0.85, chains: null }, name: 'DUST', tag: 'Quick hands. Gone before you blink.', hp: 80, dmg: 0.95, spd: 1.4, unlock: { type: 'boss', boss: 'rust' },
     spc2: { name: 'DUST DEVIL', cost: 35, desc: 'Spin into the pack: AOE hits while moving.' },
     qcf: { name: 'DESERT SPIKES', sigkind: 'erupt', dmg: 30, color: 0xd8b56b, desc: 'Spikes erupt under nearby enemies', tag: 'Ground eruption — 25 energy' },
+    ki: { name: 'SAND BLAST', dmg: 8, speed: 15, color: 0xd8b56b, cost: 5 },
+    wave: { name: 'DUST STORM', dmg: 23, speed: 7, color: 0xd8b56b, cost: 15 },
+    spin: { name: 'DESERT CYCLONE', dmg: 17, color: 0xd8b56b, dur: 0.62, cost: 20 },
     bfname: 'DUST RUSH', blitzname: 'DUST DEVIL', duname: 'HABOOB RISE',
     mega: { name: 'DUST BOWL' },
     stance: { name: "STORM STANCE", dmg: 1.05, spd: 1.3, desc: "Become the weather." },
@@ -260,11 +317,17 @@ const FIGHTERS = [
       ['CYCLONE KICK', 'JUMP, then HIT', 'Aerial cyclone kick.'],
       ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
       ['DUST DEVIL', '↓ + SPC (50 meter)', 'Spinning AOE that travels through the pack.'],
+      ['GRAPPLE', 'GRP near a foe', 'Quick snatch suplex — fast but light. On a staggered foe: DUST DEVIL DRIVER finisher.'],
     ] },
-  { id: 'jack', wrestle: 'HARVEST SUPLEX', name: 'JACK', tag: 'He wears the harvest. The harvest wears you.', hp: 95, dmg: 1.05, spd: 1.05,
+  { id: 'jack', wrestle: 'HARVEST SUPLEX',
+    archetype: 'allrounder',
+    grapple: { range: 2.1, dmgMul: 1.0, chains: null }, name: 'JACK', tag: 'He wears the harvest. The harvest wears you.', hp: 95, dmg: 1.05, spd: 1.05,
     unlock: { type: 'boss', boss: 'pumpkinking' }, head: 'pumpkin', tint: 0xe07b1f,
     spc2: { name: 'CANDLE RUSH', cost: 35, desc: 'Burning dash: leaves a fire trail through the pack.' },
     qcf: { name: 'PUMPKIN BOMB', sigkind: 'fireball', kind: 'fire', dmg: 34, speed: 8, color: 0xff7a1a, arc: 1, desc: 'Lobbed flaming pumpkin', tag: 'Lobbed pumpkin bomb — 25 energy' },
+    ki: { name: 'JACK-O-BOLT', dmg: 9, speed: 14, color: 0xff7a1a, cost: 5 },
+    wave: { name: 'HARVEST WAVE', dmg: 25, speed: 7, color: 0xff7a1a, cost: 16 },
+    spin: { name: 'PUMPKIN SPIN', dmg: 18, color: 0xff7a1a, dur: 0.62, cost: 20 },
     bfname: 'PATCH SPRINT', blitzname: 'HARVEST RUSH', duname: 'SCARECROW RISE',
     mega: { name: 'GREAT PUMPKIN' },
     stance: { name: "HARVEST STANCE", dmg: 1.25, spd: 0.9, desc: "The patch feeds on pain." },
@@ -284,10 +347,10 @@ const FIGHTERS = [
       ['TECH', 'HIT while knocked down', 'Instant recovery + bounce + brief invuln. Never helpless.'],
       ['DUST LAUNCHER', '↓ + HVY', 'Universal overhead launcher. Pops them up for juggles.'],
       ['TAG SPOT', 'TAUNT near a glowing wall', 'Spray the wall (3s, vulnerable). Big cash + 15 REP.'],
-      ['GRAPPLE', 'GRP btn / G on staggered foe', 'Wrestling finisher: suplex/piledriver/powerbomb. Big moment.'],
+      ['GRAPPLE', 'GRP near a foe', 'Quick snatch suplex — fast but light. On a staggered foe: HARVEST SUPLEX finisher.'],
       ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
       ['CANDLE RUSH', '↓ + SPC (50 meter)', 'Burning dash through the pack.'],
-      ['GRAPPLE', 'GRP btn / G on staggered foe', 'Wrestling finisher: suplex/piledriver/powerbomb. Big moment.'],
+      ['BLOCK', 'HOLD DDG / hold L', 'Guard stance: damage becomes chip. Heavies still hurt.'],
     ] },
 ];
 // ---------- fighting-game move sets: motion inputs + energy costs per fighter ----------
@@ -1823,8 +1886,13 @@ function doDojoMove(id) {
     setTimeout(() => {
       if (state !== 'fight' || missionOver || ended) return;
       for (const e of enemies.slice()) {
-        if (e.hp > 0 && Math.abs(e.px - player.px) < 2.6 && Math.abs(e.pz - player.pz) < 1.8)
+        if (e.hp > 0 && Math.abs(e.px - player.px) < 2.6 && Math.abs(e.pz - player.pz) < 1.8) {
+          // CONTACT COLLISION: spinning body hitbox vs hurtbox
+          const sc = limbContact(player, e, 'body');
+          if (!sc) continue;
+          resolveStrikeContact(player, e, sc, { knockback: 0.3 });
           landHit(e, Math.round(28 * player.dmgMult), mv.name, 0.08, 0.5, false, false);
+        }
       }
       damageDestructibles(2.6); sparkFX(player.px, 1.2, player.pz, 0xffe14d, 16);
     }, 180);
@@ -1836,6 +1904,10 @@ function doDojoMove(id) {
       if (state !== 'fight' || missionOver || ended) return;
       for (const e of enemies.slice()) {
         if (e.hp > 0 && Math.abs(e.px - player.px) < 2.2 && Math.abs(e.pz - player.pz) < 1.4) {
+          // CONTACT COLLISION: tackling body hitbox vs hurtbox
+          const tc = limbContact(player, e, 'body');
+          if (!tc) continue;
+          resolveStrikeContact(player, e, tc, { knockback: 0.3 });
           landHit(e, Math.round(32 * player.dmgMult), mv.name, 0.09, 0.6, false, false);
           e.px = clamp(e.px + dir * 2.5, 0.5, 1e6); syncPos(e);
         }
@@ -1847,7 +1919,9 @@ function doDojoMove(id) {
     sfx('whoosh', 0.8, false, 1.1);
     setTimeout(() => {
       if (state !== 'fight' || missionOver || ended) return;
-      const t = nearestEnemy(2.0);
+      const hit = strikeHit(player, 'hand', 2.0); // CONTACT COLLISION: hand hitbox vs hurtbox
+      const t = hit && hit.target;
+      if (t) resolveStrikeContact(player, t, hit, { knockback: 0.3 });
       if (t && !t.boss) landHit(t, Math.round(26 * player.dmgMult), mv.name, 0.09, 0.5, true, false);
       else if (t) landHit(t, Math.round(26 * player.dmgMult), mv.name, 0.09, 0.5, false, false);
       sparkFX(player.px + dir, 1.4, player.pz, 0x7af0ff, 12);
@@ -2786,7 +2860,10 @@ function showMission() {
     if (best) card.appendChild(el('div', 'best', `BEST: ${best}`));
     card.appendChild(el('div', 'rw', locked ? '🔒 ' + (m.unlock.id ? 'Clear ' + missionDef(m.unlock.id).name : '') : '★ ' + m.reward));
     if (!locked) {
+<<<<<<< HEAD
       // (dead duplicate 'go' button removed — build fix 2026-10-09: it redeclared the binding below)
+=======
+>>>>>>> main
       const ranToday = m.daily && save.daily.date === localDateStr();
       const go = el('button', 'go' + (m.daily ? ' panel9g' : ''), m.daily ? (ranToday ? '⚡ DAILY RUN · RETRY' : '⚡ DAILY RUN') : 'GO');
       go.onclick = (e) => { e.stopPropagation(); unlockAudio(); sfx('uiclick', 0.8); startMission(m.id); };
@@ -2959,10 +3036,19 @@ function showResults(win, mission, stats) {
   $('resStats').innerHTML =
     `<div class="stat">${win ? 'CLEARED' : 'REACHED'} <b>${mission.name}</b></div>` +
     `<div class="stat"><b>${stats.kills}</b> K.O.s &nbsp;·&nbsp; BEST COMBO <b>${stats.maxCombo}</b></div>` +
+    `<div class="stat" style="color:#7af0ff">SCORE <b>${scoreRun.toLocaleString('en-US')}</b></div>` +
     (stats.dist ? `<div class="stat">DISTANCE <b>${Math.round(stats.dist)}m</b></div>` : '');
   if (win && mission.mods && mission.mods.length) {
     const mnames = mission.mods.map((id) => (MODIFIERS.find((m) => m.id === id) || {}).name).filter(Boolean);
     $('resStats').innerHTML += `<div class="stat" style="color:#ff9df0">WILDNESS ${mission.wild}: ${mnames.join(' · ')}</div>`;
+  }
+  // PRESENTATION: best arcade score per mission + NEW BEST callout
+  save.bestScore = save.bestScore || {};
+  const sbk = mission.id || 'unknown';
+  if (win && scoreRun > 0 && (!save.bestScore[sbk] || scoreRun > save.bestScore[sbk])) {
+    const isBest = (save.bestScore[sbk] || 0) > 0;
+    save.bestScore[sbk] = scoreRun; writeSave();
+    if (isBest) $('resStats').innerHTML += `<div class="stat" style="color:#ffe14d">★ NEW BEST SCORE ★</div>`;
   }
   $('cashLines').innerHTML =
     `<div>Fight cash <b>+$${stats.cash}</b></div>` +
@@ -2978,6 +3064,7 @@ let player = null, enemies = [], mission = null, missionR = Math.random;
 let spawnQueue = [], bossSpawned = false, bossRef = null, missionOver = false, ended = false;
 let gameTime = 0, combo = 0, comboT = 0, maxCombo = 0, atkIdx = 0, dmgTaken = 0, missionMaxHp = 100;
 let cashRun = 0, kills = 0, distWalked = 0, endlessT = 3, endlessTier = 0, endlessMuts = [];
+let scoreRun = 0; // PRESENTATION: arcade score for this mission
 function hint(on) { $('hint').style.opacity = on ? 1 : 0; }
 function awardCash(base, pos, tag, quiet) {
   const fever = (mission && mission.endless && (endlessMuts || []).includes('FEVER')) ? 2 : 1;
@@ -2987,6 +3074,15 @@ function awardCash(base, pos, tag, quiet) {
   const sp = pos ? screenPos(pos) : { x: innerWidth / 2, y: innerHeight * 0.45 };
   popText(txt, 'gold', sp.x + (Math.random() * 60 - 30), sp.y);
   if (!quiet) sfx('coin', 0.7, false, 1.15); // TIER 3 item 13: cash PICKUP collection passes quiet=true so the dedicated pickup chime replaces the generic coin (distinct, not layered)
+}
+// PRESENTATION: arcade score (refs SoR4 / Final Fight). Per-hit points by move weight,
+// combo multiplier (10+ = 1.5x, 20+ = 2x, 30+ = 3x), KO + style bonuses in killEnemy.
+function awardScore(base, quiet) {
+  const mult = combo >= 30 ? 3 : combo >= 20 ? 2 : combo >= 10 ? 1.5 : 1;
+  const pts = Math.max(1, Math.round(base * mult));
+  scoreRun += pts;
+  if (!quiet) { const el = $('score'); if (el) el.classList.add('pop'); setTimeout(() => el && el.classList.remove('pop'), 180); }
+  return pts;
 }
 function genDailySpawns(R, len) {
   const sp = []; const fams = ['thug', 'rico', 'jabber', 'heavyd'];
@@ -3069,12 +3165,14 @@ function startMission(id, node) {
   player.baseSpd = player.spd;
   player.px = 2; player.pz = 0; player.face = 1;
   player.energy = 50; player.dodgeT = 0; player.dodgeCD = 0; player.busy = 0; player.spinT = 0;
+  player.blocking = false; player.blockstunT = 0; // BLOCK (defense lane): fresh guard each mission
   player.animMove = false; player.stance = 0; // mixtape stance resets to balanced each mission
   playAnim(player, 'Melee_Unarmed_Idle', { loop: true });
   spawnQueue = mission.spawns.map((s) => Object.assign({}, s, { done: false })).sort((a, b) => a.at - b.at);
   bossSpawned = false; bossRef = null; missionOver = false; ended = false;
   gameTime = 0; combo = 0; comboT = 0; maxCombo = 0; atkIdx = 0; dmgTaken = 0; missionMaxHp = player.maxHp;
   cashRun = 0; kills = 0; distWalked = 0; endlessT = 3; endlessTier = 0; endlessMuts = [];
+  scoreRun = 0; // PRESENTATION: reset arcade score
   camX = 2;
   state = 'fight'; ev('mission_start', { id: mission.id });
   // ONE-HIT (Katana Zero): brief planning slow-mo at mission start — survey the room, then move
@@ -3183,6 +3281,8 @@ function spawnBoss(bossId, bx) {
   enemies.push(e); bossRef = e;
   bossBeat(b.name); // letterboxed boss entrance card
   banner('⚠ ' + b.name + ' ⚠');
+  // PRESENTATION: boss intro camera move — push in on the boss during the entrance card (SoR4)
+  pushT = 1.4; pushPos.copy(e.root.position);
   $('bossWrap').style.display = 'block'; $('bossName').textContent = b.name + ' — ' + b.intro;
   sfx('bell', 0.9);
   musicBoss(b.id); // boss music lane (owner 2026-10-09): this boss's own track
@@ -3214,6 +3314,8 @@ function doFinisher(t) {
   const fd = fighterDef(), fin = fd.fin || 'launch';
   const bdmg = Math.round(26 * player.dmgMult);
   const sp = screenPos(t.root.position.clone().add(new THREE.Vector3(0, 2.2, 0)));
+  // CONTACT COLLISION: finisher strikes separate on contact — limb ends AT the hurtbox.
+  const finContact = (limb, kb) => { const c = limbContact(player, t, limb); if (c) resolveStrikeContact(player, t, c, { knockback: kb }); };
   if (fin === 'blink') { // GHOST: teleport behind, unseen strike
     sparkFX(player.px, 1.1, player.pz, 0x9a7bff, 12);
     player.px = clamp(t.px - player.face * 0.9, 0.5, mission.len === Infinity ? 1e6 : mission.len - 1.5);
@@ -3221,24 +3323,30 @@ function doFinisher(t) {
     player.root.position.set(player.px, 0, player.pz);
     sparkFX(player.px, 1.1, player.pz, 0x9a7bff, 12);
     flash('#9a7bff');
+    finContact('hand', 0.3);
     landHit(t, bdmg, 'BLINK STRIKE', 0.1, 0.4, false, false);
   } else if (fin === 'slam') { // BRICK: AOE curb stomp
     for (const o of enemies) if (o.hp > 0 && Math.abs(o.px - t.px) < 2.4 && Math.abs(o.pz - t.pz) < 1.7) landHit(o, bdmg, 'CURB STOMP', 0.08, 0.5, true, false);
     shake=Math.max(shake,0.5);
   } else if (fin === 'gavel') { // KINGPIN: heavy single, long hit-stop
+    finContact('hand', 0.4);
     landHit(t, Math.round(bdmg * 1.2), 'GAVEL DROP', 0.16, 0.6, false, false);
     addHitstop(0.14);
   } else if (fin === 'demo') { // SLEDGE: far knockback wreckage
+    finContact('body', 0.5);
     landHit(t, Math.round(34 * player.dmgMult), 'DEMOLITION', 0.1, 0.7, true, false);
     shake=Math.max(shake,0.55);
   } else if (fin === 'dot') { // VIPER: venom keeps chewing
+    finContact('hand', 0.2);
     landHit(t, Math.round(bdmg * 0.7), 'FANG BARB', 0.06, 0.3, false, false);
     t.dotT = 3; t.dotDps = 9 * player.dmgMult;
     popText('VENOM!', 'spc', sp.x, sp.y - 40);
   } else if (fin === 'cyclone') { // DUST: extended air juggle
+    finContact('foot', 0.3);
     landHit(t, bdmg, 'CYCLONE LIFT', 0.08, 0.4, true, false);
     t.airT = Math.max(t.airT || 0, 0.9);
   } else { // KID BLUE: classic pop-up launcher
+    finContact('hand', 0.3);
     landHit(t, bdmg, 'LAUNCHER', 0.08, 0.4, true, false);
   }
   popText(fd.finname, 'spc', sp.x, sp.y - 70);
@@ -3257,7 +3365,7 @@ function doParry(e) {
   player.busy = 0.25; setHud(); ev('parry', {});
 }
 function doPunch() {
-  if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.busy > 0) return;
+  if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.busy > 0 || player.blocking) return;
   faceNearestEnemy();
   unlockAudio();
   T.taps++; hint(false); save.seenHint = true;
@@ -3294,12 +3402,15 @@ function doPunch() {
   sfxSwing(0.5); // S2: dedicated swing whoosh on the swing
   setTimeout(() => {
     if (state !== 'fight' || missionOver || ended) return;
+    const limb = clip.indexOf('Kick') >= 0 ? 'foot' : 'hand'; // CONTACT COLLISION: strike limb hitbox
     if (ce && ce.hp > 0) {
       // PARRY vs COUNTER: stick toward the attacker = parry (stagger + free energy); else counter
       const toward = Math.sign(ce.px - player.px) || 1;
       if (dx * toward > 0.5) { doParry(ce); return; }
       ce.windup = 0; hideWarn(ce);
       const bfx = blessFx();
+      const cc = limbContact(player, ce, limb);
+      if (cc) resolveStrikeContact(player, ce, cc, { knockback: 0.35 });
       landHit(ce, Math.round(dmg * player.dmgMult * 2 * (1 + (bfx.counterDmg || 0) + (save.up_counter || 0) * 0.1)), 'COUNTER', 0.12, 0.35, false, true);
       buzz(30); // F10 haptics: counter is a big moment
       const duo = blessDuo(); // SUNDAY SERVICE: counters trigger a shockwave
@@ -3314,8 +3425,10 @@ function doPunch() {
       }
       return;
     }
-    const t = nearestEnemy(range);
-    if (t) {
+    const hit = strikeHit(player, limb, range); // CONTACT COLLISION: hitbox vs hurtbox, not distance
+    if (hit) {
+      resolveStrikeContact(player, hit.target, hit, { knockback: 0.18 });
+      const t = hit.target;
       if (t.airborne) { t.vy = Math.max(t.vy, 2.2); landHit(t, Math.round(dmg * player.dmgMult * 0.6), 'JUGGLE', 0.03, 0.12, false, false); }
       else if (launcher) doFinisher(t);
       else landHit(t, Math.round(dmg * player.dmgMult * (1 + (blessFx().punchDmg || 0))), label, hs, sh, false, false);
@@ -3347,6 +3460,10 @@ function doBlitz() {
     for (const e of enemies) {
       if (e.hp <= 0 || e.dead) continue;
       if (e.px > xa && e.px < xb && Math.abs(e.pz - player.pz) < 1.25) {
+        // CONTACT COLLISION: swept body hitbox along the lunge path vs hurtbox
+        const c = sweptBodyContact(player, e, player.blitzX0 ?? player.px, player.blitzX1 ?? player.px);
+        if (!c) continue;
+        resolveStrikeContact(player, e, c, { knockback: 0.3 });
         landHit(e, Math.round(24 * player.dmgMult * (1 + (bfx.punchDmg || 0))), (fd.blitzname || 'BLITZ'), 0.08, 0.35, false, false);
         blitzHit = true;
       }
@@ -3363,8 +3480,10 @@ function releaseFocus() {
   sfxSwing(0.6); // S2: dedicated swing whoosh
   setTimeout(() => {
     if (state !== 'fight' || missionOver || ended) return;
-    const t = nearestEnemy(2.4);
-    if (t) {
+    const hit = strikeHit(player, 'foot', 2.4); // CONTACT COLLISION: foot hitbox vs hurtbox
+    if (hit) {
+      resolveStrikeContact(player, hit.target, hit, { knockback: 0.35 });
+      const t = hit.target;
       landHit(t, Math.round(34 * player.dmgMult), 'FOCUS', 0.1, 0.4, false, false);
       if (!t.boss && t.hp > 0) { t.ai = 'recover'; t.aiT = 2.4; playAnim(t, 'Hit_A', {}); } // crumple
     } else sfxSwing(0.8, true); // S2: whiff
@@ -3386,37 +3505,237 @@ function doTech() {
   return true;
 }
 function doGrapple() {
-  // WRESTLING FINISHERS (No More Heroes): staggered enemy + GRAPPLE = suplex/piledriver/powerbomb.
-  // Stun an enemy (parry/counter), then style on them. Wrestling flavor for the wrestling-rooted roster.
-  if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.busy > 0 || player.airT > 0) return;
+  // MOVESETS: universal basic grab + grappler chain throws (Tekken King-style).
+  // Every grapple is DELIVER (throw lands, own clip) + RECOVER (back to neutral, own clip).
+  // Grapplers: after each recover, a timed GRP window chains the next link.
+  // NOTE: the chain-window check MUST come before the busy guard — the window is a
+  // deliberate opening (player.busy is held through it), and GRP inside it advances the chain.
+  if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.airT > 0 || player.blocking) return;
+  if (player.grab && player.grab.phase === 'window') { chainNext(); return; }
+  if (player.busy > 0) return;
+  if (player.grab) return; // already grabbing
   faceNearestEnemy();
   unlockAudio(); T.taps++; hint(false);
-  const t = nearestEnemy(2.4);
-  if (!t || !(t.stagger > 0) || t.boss) {
-    // whiff: small stumble, no penalty beyond the beat
+  const fd = fighterDef();
+  const g = fd.grapple || { range: 2.0, dmgMul: 1.0, chains: null };
+  const t = nearestEnemy(g.range);
+  if (!t || t.boss) {
     player.busy = 0.3;
     playAnim(player, 'Melee_Unarmed_Idle', { ts: 0.8, fade: 0.1 });
     return;
   }
+  // JUGGLE GRAPPLE (grapplers): catch a launched/juggled foe out of the air
+  if ((t.airborne || (t.airT || 0) > 0 || (t.py || 0) > 0.5) && fd.archetype === 'grappler' && clips['juggle_d']) {
+    startJuggleGrab(t, g);
+    return;
+  }
+  // Staggered foe: classic wrestling finisher (uses the fighter's signature wrestle name)
+  if (t.stagger > 0) { wrestlingFinisher(t, fd); return; }
+  // Universal basic grab (all characters). Grapplers: this IS chain link 0.
+  startGrabLink(t, g, 0);
+}
+function grabClipDur(name, ts) {
+  const c = clips[name];
+  return c ? (c.duration / (ts || 1)) : 1.0;
+}
+function startGrabLink(t, g, linkIdx) {
+  // Begin a grab link. Grapplers open link 0 with COMBO GRAPPLE strikes
+  // (knee/bodyshots, real punch clips) before the throw deliver.
+  // Then DELIVER (throw lands, own mocap clip) + RECOVER (own mocap clip, sped up).
+  // Victim is kinematically driven through GRAB -> LIFT -> LOCKUP -> THROW by
+  // updateGrapple (whole-body follow, not bone faking).
   const fd = fighterDef();
+  const isChain = g.chains && g.chains[linkIdx];
+  const link = isChain || null;
+  const dClip = link ? link.d : 'grab_basic_d';
+  const rClip = link ? link.r : 'grab_basic_r';
+  const name = link ? link.name : (fd.wrestle || 'STREET SUPLEX');
+  const dmg = Math.round((link ? link.dmg : 34) * (player.dmgMult || 1) * (g.dmgMul || 1));
+  const ts = 1.35;
+  const dur = grabClipDur(dClip, ts);
+  const strikes = (link && link.strikes) || 0;
+  const strikeDur = strikes * 0.34;
+  const rDur = grabClipDur(rClip, 2.0); // recover plays back faster — chains stay snappy
+  player.grab = { victim: t, link: linkIdx, chain: g.chains || null, linkDef: link,
+    phase: strikes ? 'strikes' : 'deliver', t: 0, dur: strikes ? strikeDur : dur, dClip, rClip, name, dmg, ts,
+    rDur, strikeTotal: strikes, strikeN: 0, strikeDmg: Math.round(9 * (player.dmgMult || 1) * (g.dmgMul || 1)),
+    launch: !!(link && link.launch), isChain: !!isChain };
+  player.busy = strikeDur + dur + rDur + 0.4; // uninterruptible through strikes + deliver + recover
+  t.stagger = 999; t.grabLock = true;
+  faceNearestEnemy();
+  if (strikes) {
+    playAnim(player, 'Melee_Unarmed_Attack_Punch_A', { ts: 1.8, fade: 0.06 });
+    playAnim(t, 'Hit_A', { ts: 1.2, fade: 0.06 });
+  } else {
+    playAnim(player, dClip, { ts, fade: 0.08 });
+    playAnim(t, 'Hit_B', { ts: 1.0, fade: 0.08 });
+  }
+  banner(name + '!', 'spc'); sfx('hit3', 1, false, 0.55);
+  const sp = screenPos(t.root.position.clone().add(new THREE.Vector3(0, 2.4, 0)));
+  popText(name + '!', 'big', sp.x, sp.y);
+  sparkFX(t.px, 1.2, t.pz, 0xffd166, 24);
+  T.grapples = (T.grapples || 0) + 1; ev('grapple', { name }); setHud();
+}
+function startJuggleGrab(t, g) {
+  // Air grab: pop-up german on a launched foe, slam back down.
+  const fd = fighterDef();
+  const ts = 1.35;
+  const dClip = 'juggle_d', rClip = 'juggle_r';
+  const dur = grabClipDur(dClip, ts);
+  const dmg = Math.round(46 * (player.dmgMult || 1) * (g.dmgMul || 1));
+  player.grab = { victim: t, link: -2, chain: null, linkDef: null,
+    phase: 'deliver', t: 0, dur, dClip, rClip, name: 'SKY SNATCH', dmg, ts,
+    launch: false, isChain: false, juggle: true };
+  player.busy = dur + 0.9;
+  t.stagger = 999; t.grabLock = true;
+  faceNearestEnemy();
+  playAnim(player, dClip, { ts, fade: 0.08 });
+  playAnim(t, 'Hit_B', { ts: 1.1, fade: 0.08 }); // victim reacts with a real hit clip, timed to the pop-up
+  banner('SKY SNATCH!', 'spc'); sfx('hit3', 1, false, 0.55);
+  sparkFX(t.px, 1.6, t.pz, 0x7af0ff, 24);
+  T.grapples = (T.grapples || 0) + 1; ev('grapple', { name: 'SKY SNATCH' }); setHud();
+}
+function wrestlingFinisher(t, fd) {
+  // Original staggered-foe wrestling finisher (kept intact).
   const wname = fd.wrestle || 'STREET SUPLEX';
   player.busy = 1.0;
   playAnim(player, 'Melee_Unarmed_Attack_Punch_B', { ts: 1.2, fade: 0.05 });
   banner(wname + '!', 'spc'); sfx('hit3', 1, false, 0.55); flash('#ffd166');
-  addSlowmo(0.5, 0.5); shake = 0.7; // big moment: slow-mo allowed
+  addSlowmo(0.5, 0.5); shake = 0.7;
   const sp = screenPos(t.root.position.clone().add(new THREE.Vector3(0, 2.4, 0)));
   popText(wname + '!', 'big', sp.x, sp.y);
   sparkFX(t.px, 1.2, t.pz, 0xffd166, 24);
   setTimeout(() => {
     if (state !== 'fight' || missionOver || ended) return;
+    if (t.hp > 0) {
+      t.px = clamp(player.px + (player.face || 1) * 0.85, 0.5, mission.len === Infinity ? 1e6 : mission.len - 1.5);
+      t.pz = player.pz || 0;
+      syncPos(t);
+      const gc = limbContact(player, t, 'hand');
+      if (gc) resolveStrikeContact(player, t, gc, { knockback: 0.3 });
+    }
     landHit(t, Math.round(48 * player.dmgMult), wname, 0.12, 0.8, true, false);
     damageDestructibles(2.4);
   }, 300);
   T.grapples = (T.grapples || 0) + 1; ev('grapple', { name: wname }); setHud();
 }
+function chainNext() {
+  // GRP pressed inside the window: advance to the next chain link.
+  const gr = player.grab;
+  if (!gr || gr.phase !== 'window') return;
+  const t = gr.victim;
+  if (!t || t.hp <= 0) { endGrab(); return; }
+  const g = (fighterDef().grapple || {});
+  startGrabLink(t, g, gr.link + 1);
+}
+function endGrab() {
+  const gr = player.grab;
+  if (gr && gr.victim) { gr.victim.grabLock = false; if (gr.victim.stagger > 100) gr.victim.stagger = 0.6; }
+  player.grab = null;
+  player.busy = Math.min(player.busy || 0, 0.25);
+  playAnim(player, 'Melee_Unarmed_Idle', { loop: true, fade: 0.15 });
+}
+function updateGrapple(dt) {
+  // Drives the victim through GRAB -> LIFT -> LOCKUP -> THROW while the attacker's
+  // mocap deliver plays. Whole-body kinematic follow (standard fighting-game practice);
+  // the attacker's bones are real mocap, the victim plays real hit clips.
+  const gr = player && player.grab;
+  if (!gr || !gr.victim) return;
+  const t = gr.victim;
+  if (t.hp <= 0) { endGrab(); return; }
+  const face = player.face || 1;
+  if (gr.phase === 'strikes') {
+    // COMBO GRAPPLE: hold the victim, land knee/bodyshots (real punch clips), then throw.
+    gr.t += dt;
+    t.px = clamp(player.px + face * 0.9, 0.5, mission.len === Infinity ? 1e6 : mission.len - 1.5);
+    t.pz = player.pz || 0; t.py = 0; syncPos(t);
+    const want = Math.min(gr.strikeTotal, Math.floor(gr.t / 0.34) + 1);
+    while (gr.strikeN < want && gr.strikeN < gr.strikeTotal) {
+      gr.strikeN++;
+      landHit(t, gr.strikeDmg, 'KNEE', 0.03, 0.2, false, false);
+      playAnim(t, 'Hit_A', { ts: 1.6, fade: 0.04 });
+      sfx('hit2', 0.9, false, 1.1);
+    }
+    if (gr.t >= gr.dur) {
+      // strikes done -> the throw deliver
+      gr.phase = 'deliver'; gr.t = 0;
+      gr.dur = grabClipDur(gr.dClip, gr.ts);
+      playAnim(player, gr.dClip, { ts: gr.ts, fade: 0.08 });
+      playAnim(t, 'Hit_B', { ts: 1.0, fade: 0.08 });
+    }
+  } else if (gr.phase === 'deliver') {
+    gr.t += dt;
+    const p = Math.min(1, gr.t / gr.dur);
+    // Victim arc: grab (front, ground) -> lift (rises with the hands) -> lockup/throw (arcs over) -> slam
+    let vx, vy;
+    const x0 = player.px + face * 0.9;
+    if (gr.juggle) {
+      // Juggle: victim starts airborne, gets popped higher, then slammed down
+      const startPy = Math.max(0.8, t.py || 0.8);
+      if (p < 0.4) { vx = player.px + face * 0.7; vy = startPy + p * 2.0; }
+      else if (p < 0.7) { vx = player.px + face * 0.9; vy = startPy + 0.8 + (p - 0.4) * 3.0; }
+      else { const q = (p - 0.7) / 0.3; vx = player.px + face * (0.9 + q * 1.2); vy = Math.max(0, (startPy + 1.7) * (1 - q * q)); }
+    } else if (p < 0.28) { const q = p / 0.28; vx = x0; vy = 0; }
+    else if (p < 0.55) { const q = (p - 0.28) / 0.27; vx = player.px + face * (0.9 - q * 0.5); vy = q * q * 2.3; }
+    else if (p < 0.82) { const q = (p - 0.55) / 0.27; vx = player.px + face * (0.4 + q * 1.6); vy = 2.3 - q * q * 1.6; }
+    else { const q = (p - 0.82) / 0.18; vx = player.px + face * 2.0; vy = Math.max(0, 0.7 * (1 - q * q)); }
+    t.px = clamp(vx, 0.5, mission.len === Infinity ? 1e6 : mission.len - 1.5);
+    t.pz = player.pz || 0;
+    t.py = vy;
+    syncPos(t);
+    if (!gr.hitDone && p >= 0.8) {
+      gr.hitDone = true;
+      // CONTACT COLLISION: positional lock at slam — bodies never interpenetrate
+      const gc = limbContact(player, t, 'hand');
+      if (gc) resolveStrikeContact(player, t, gc, { knockback: 0.3 });
+      // Non-launch links slam the victim down (no launcher pop — the arc already
+      // delivered them). Launch finishers send them skyward for real.
+      landHit(t, gr.dmg, gr.name, 0.12, 0.8, false, false);
+      damageDestructibles(2.4);
+      shake = Math.max(shake || 0, 0.6);
+      if (gr.launch) {
+        t.vy = 7; t.airborne = true; t.ai = 'launched';
+        playAnim(t, 'Hit_B', { ts: 1.2 });
+        const lsp = screenPos(t.root.position.clone().add(new THREE.Vector3(0, 2.4, 0)));
+        popText('LAUNCH!', 'spc', lsp.x, lsp.y - 60);
+      } else {
+        t.airborne = false; t.vy = 0; t.ai = 'recover'; t.aiT = 1.0;
+      }
+    }
+    if (p >= 1) {
+      gr.phase = 'recover';
+      gr.t = 0;
+      gr.dur = gr.rDur || grabClipDur(gr.rClip, gr.ts);
+      playAnim(player, gr.rClip, { ts: 2.0, fade: 0.1 }); // recover at 2x — chains stay snappy
+      // victim stays down briefly (unless the finisher launched them — they fly free)
+      if (!gr.launch) { t.py = 0; syncPos(t); }
+    }
+  } else if (gr.phase === 'recover') {
+    gr.t += dt;
+    // keep the victim grounded at the slam spot during recover (launched ones fly free)
+    if (!gr.launch) { t.py = 0; syncPos(t); }
+    if (gr.t >= gr.dur) {
+      if (gr.chain && gr.chain[gr.link + 1] && t.hp > 0) {
+        // Open the timed chain window
+        gr.phase = 'window';
+        gr.t = 0;
+        gr.dur = gr.chain[gr.link + 1].window || 0.5;
+        player.busy = gr.dur + 0.2;
+        const sp = screenPos(player.root.position.clone().add(new THREE.Vector3(0, 2.6, 0)));
+        popText('GRP! ' + gr.chain[gr.link + 1].name, 'chain', sp.x, sp.y);
+        sfx('counter', 1, false, 0.4);
+      } else {
+        endGrab();
+      }
+    }
+  } else if (gr.phase === 'window') {
+    gr.t += dt;
+    if (gr.t >= gr.dur) endGrab(); // window missed: chain ends
+  }
+}
 function doTaunt() {
   // TMNT taunt: talk trash, build special meter. Pure addition — costs a beat of vulnerability.
-  if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.busy > 0 || player.airT > 0) return;
+  if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.busy > 0 || player.airT > 0 || player.blocking) return;
   unlockAudio();
   // JET SET RADIO: near a tag spot, TAUNT starts spraying instead of trash-talking
   const tag = nearestTagSpot(2.2);
@@ -3440,7 +3759,7 @@ function doTaunt() {
 function doStance() {
   // MIXTAPE STANCE SYSTEM (Double Dragon Neon): two switchable loadouts mid-fight.
   // Double-tap TAUNT swaps stances — trade damage for speed or vice versa. Style, not power: pure tradeoff.
-  if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.busy > 0 || player.airT > 0) return;
+  if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.busy > 0 || player.airT > 0 || player.blocking) return;
   unlockAudio();
   const fd = fighterDef();
   player.stance = player.stance ? 0 : 1;
@@ -3465,7 +3784,7 @@ function doStance() {
   setHud(); ev('stance', { stance: player.stance });
 }
 function doJump() {
-  if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.busy > 0) return;
+  if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.busy > 0 || player.blocking) return;
   if (player.airT > 0) return;
   unlockAudio();
   player.vy = 7.2; player.airT = 0.001; player.py = 0.001;
@@ -3483,7 +3802,33 @@ function doJumpAttack() {
   playAnim(player, 'Melee_Unarmed_Attack_Kick', { ts: 2.2, fade: 0.03 });
   player.vy = Math.min(player.vy, -2); // fast fall into the kick
   sfxSwing(0.55); // S2: dedicated swing whoosh
+<<<<<<< HEAD
   T.dives = (T.dives || 0) + 1; // test hook
+=======
+  // CONTACT COLLISION: the foot hitbox is live during the fall — contact is checked
+  // per-frame in frame() until the kick lands or the window expires (hit once).
+  player.diveKick = { t: 0.7, hit: false };
+  damageDestructibles(2.3);
+}
+function updateDiveKick(dt) {
+  const dk = player && player.diveKick;
+  if (!dk || state !== 'fight' || missionOver || ended) { if (player) player.diveKick = null; return; }
+  dk.t -= dt;
+  const landed = (player.py || 0) <= 0.02 && player.vy >= 0;
+  if (dk.t <= 0 || landed) { player.diveKick = null; if (!dk.hitAny) sfxSwing(0.8, true); return; } // S2: whiff
+  for (const e of enemies.slice()) {
+    if (e.hp <= 0) continue;
+    if (Math.abs(e.px - player.px) > 2.3 || Math.abs((e.pz || 0) - (player.pz || 0)) > 1.6) continue;
+    const c = limbContact(player, e, 'foot');
+    if (!c) continue;
+    dk.hitAny = true;
+    resolveStrikeContact(player, e, c, { knockback: 0.3 });
+    landHit(e, Math.round(18 * player.dmgMult), 'DIVE KICK', 0.07, 0.3, false, false);
+    shake = Math.max(shake, 0.3);
+    player.diveKick = null;
+    return;
+  }
+>>>>>>> main
 }
 function doStanceFin(fd) {
   // Stance-exclusive finisher: only available in stance mode (double-tap TAUNT). Style, not power: a tradeoff move.
@@ -3503,12 +3848,21 @@ function doStanceFin(fd) {
     burst(player.root.position.clone().add(new THREE.Vector3(dir * 1.2, 1.2, 0)), 24, fin.color, 6);
     for (let i = 0; i < 5; i++) setTimeout(() => {
       if (state !== 'fight' || missionOver || ended) return;
-      const t = nearestEnemy(2.6);
-      if (t && Math.sign(t.px - player.px) === dir) { landHit(t, Math.round(11 * player.dmgMult), fin.name, 0.05, 0.25, false, false); sfx('hit2', 0.9, false, 0.7); }
+      const hit = strikeHit(player, 'hand', 2.6); // CONTACT COLLISION: palm hitbox vs hurtbox
+      const t = hit && hit.target;
+      if (t && Math.sign(t.px - player.px) === dir) {
+        resolveStrikeContact(player, t, hit, { knockback: 0.15 });
+        landHit(t, Math.round(11 * player.dmgMult), fin.name, 0.05, 0.25, false, false); sfx('hit2', 0.9, false, 0.7);
+      }
     }, i * 90);
   } else if (fin.kind === 'blinkback') { // GHOST: blink through nearest, strike from behind
     const t = nearestEnemy(6);
-    if (t) { player.px = t.px - dir * 1.4; burst(player.root.position.clone().add(new THREE.Vector3(0, 1.2, 0)), 26, fin.color, 7); landHit(t, Math.round(34 * player.dmgMult), fin.name, 0.1, 0.5, false, false); }
+    if (t) {
+      player.px = t.px - dir * 1.4; burst(player.root.position.clone().add(new THREE.Vector3(0, 1.2, 0)), 26, fin.color, 7);
+      const bc = limbContact(player, t, 'hand'); // CONTACT COLLISION: separate on contact
+      if (bc) resolveStrikeContact(player, t, bc, { knockback: 0.25 });
+      landHit(t, Math.round(34 * player.dmgMult), fin.name, 0.1, 0.5, false, false);
+    }
     else popText('NO TARGET', '', innerWidth / 2, innerHeight * 0.4);
   } else if (fin.kind === 'spin') { // BRICK: 360 wrecking spin
     burst(player.root.position.clone().add(new THREE.Vector3(0, 1.0, 0)), 34, fin.color, 7); shake = 0.6;
@@ -3523,28 +3877,37 @@ function doStanceFin(fd) {
     hitAll(2.8, 1.8, 38, fin.name, true); damageDestructibles(2.8);
   } else if (fin.kind === 'linedash') { // VIPER: coil through the line
     const dist = 4.6;
+    const lx0 = player.px;
     player.px = clamp(player.px + dir * dist, 0.5, mission.len === Infinity ? 1e6 : mission.len - 1.5);
     burst(player.root.position.clone().add(new THREE.Vector3(0, 1.0, 0)), 30, fin.color, 6);
     vfxSpecial(player.root.position.clone().add(new THREE.Vector3(0, 1.0, 0)), 'flame'); // wave 17
     for (const e of enemies.slice()) {
-      if (e.hp > 0 && Math.abs(e.px - (player.px - dir * dist / 2)) < dist / 2 + 0.8 && Math.abs(e.pz - player.pz) < 1.6)
+      if (e.hp > 0 && Math.abs(e.px - (player.px - dir * dist / 2)) < dist / 2 + 0.8 && Math.abs(e.pz - player.pz) < 1.6) {
+        // CONTACT COLLISION: swept body hitbox along the dash vs hurtbox
+        const lc = sweptBodyContact(player, e, lx0, player.px);
+        if (!lc) continue;
+        resolveStrikeContact(player, e, lc, { knockback: 0.3 });
         landHit(e, Math.round(28 * player.dmgMult), fin.name, 0.08, 0.35, false, false);
+      }
     }
   } else if (fin.kind === 'storm') { // DUST: sandstorm closes in
     burst(player.root.position.clone().add(new THREE.Vector3(0, 1.2, 0)), 44, fin.color, 8); shake = 0.55;
     vfxSpecial(player.root.position.clone().add(new THREE.Vector3(0, 1.2, 0)), 'flame'); // wave 17
     hitAll(3.4, 2.4, 26, fin.name, false); damageDestructibles(3.4);
   } else if (fin.kind === 'launcher') { // JACK: rising gourd uppercut
-    const t = nearestEnemy(2.6);
+    const hit = strikeHit(player, 'hand', 2.6); // CONTACT COLLISION: uppercut hitbox vs hurtbox
     burst(player.root.position.clone().add(new THREE.Vector3(0, 1.6, 0)), 30, fin.color, 7);
     vfxSpecial(player.root.position.clone().add(new THREE.Vector3(0, 1.6, 0)), 'flame'); // wave 17
-    if (t) landHit(t, Math.round(36 * player.dmgMult), fin.name, 0.12, 0.7, true, false);
+    if (hit) {
+      resolveStrikeContact(player, hit.target, hit, { knockback: 0.3 });
+      landHit(hit.target, Math.round(36 * player.dmgMult), fin.name, 0.12, 0.7, true, false);
+    }
     else popText('WHIFF', '', innerWidth / 2, innerHeight * 0.4);
   }
   setHud(); ev('stancefin', { kind: fin.kind });
 }
 function doHeavy() {
-  if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.busy > 0) return;
+  if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.busy > 0 || player.blocking) return;
   faceNearestEnemy();
   unlockAudio(); T.taps++; hint(false);
   // DUST LAUNCHER (Guilty Gear): ↓+HVY = universal overhead launcher, same for every fighter.
@@ -3555,12 +3918,15 @@ function doHeavy() {
     sfxSwing(0.6); // S2: dedicated swing whoosh
     setTimeout(() => {
       if (state !== 'fight' || missionOver || ended) return;
-      const t = nearestEnemy(2.4);
+      const hit = strikeHit(player, 'foot', 2.4); // CONTACT COLLISION: foot hitbox vs hurtbox
+      const t = hit && hit.target;
       if (t && !t.boss) {
+        resolveStrikeContact(player, t, hit, { knockback: 0.4 });
         landHit(t, Math.round(20 * player.dmgMult), 'DUST LAUNCHER', 0.09, 0.5, true, false);
         const sp = screenPos(t.root.position.clone().add(new THREE.Vector3(0, 2.4, 0)));
         popText('DUST LAUNCHER!', 'spc', sp.x, sp.y);
       } else if (t) {
+        resolveStrikeContact(player, t, hit, { knockback: 0.4 });
         landHit(t, Math.round(20 * player.dmgMult), 'DUST LAUNCHER', 0.09, 0.5, false, false);
       } else sfxSwing(0.8, true); // S2: whiff
       if (t) buzz(25); // F10 haptics
@@ -3578,6 +3944,8 @@ function doHeavy() {
     addSlowmo(0.5, 0.35); shake = 0.7;
     setTimeout(() => {
       if (state !== 'fight' || missionOver || ended) return;
+      const hc = limbContact(player, heatT, 'foot'); // CONTACT COLLISION: separate if overlapping
+      if (hc) resolveStrikeContact(player, heatT, hc, { knockback: 0.4 });
       landHit(heatT, Math.round(55 * player.dmgMult), 'HEAT', 0.12, 0.8, true, false);
       buzz(35); // F10 haptics: HEAT finisher is a big moment
       sparkFX(heatT.px, 1.2, heatT.pz, 0xff6a00, 20);
@@ -3593,14 +3961,18 @@ function doHeavy() {
   sfxSwing(0.55); // S2: dedicated swing whoosh (heavy had none)
   setTimeout(() => {
     if (state !== 'fight' || missionOver || ended) return;
-    const t = nearestEnemy(2.2);
-    if (t) { landHit(t, Math.round(24 * player.dmgMult), 'HEAVY', 0.09, 0.4, false, false); buzz(25); } // F10 haptics
+    const hit = strikeHit(player, 'foot', 2.2); // CONTACT COLLISION: foot hitbox vs hurtbox
+    if (hit) {
+      resolveStrikeContact(player, hit.target, hit, { knockback: 0.35 });
+      landHit(hit.target, Math.round(24 * player.dmgMult), 'HEAVY', 0.09, 0.4, false, false);
+      buzz(25); // F10 haptics
+    }
     else sfxSwing(0.8, true); // S2: whiff
     damageDestructibles(1.9);
   }, 230);
 }
 function doSpecial() {
-  if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0) return;
+  if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.blocking) return;
   faceNearestEnemy();
   unlockAudio();
   const fd = fighterDef();
@@ -3693,8 +4065,13 @@ function doDesperation() {
   burst(player.root.position.clone().add(new THREE.Vector3(0, 1, 0)), 30, 0xff4d4d, 6);
   vfxSpecial(player.root.position.clone().add(new THREE.Vector3(0, 1, 0)), 'flame'); // wave 17: panic-button desperation
   for (const e of enemies.slice()) {
-    if (e.hp > 0 && Math.abs(e.px - player.px) < 2.6 && Math.abs(e.pz - player.pz) < 1.8)
+    if (e.hp > 0 && Math.abs(e.px - player.px) < 2.6 && Math.abs(e.pz - player.pz) < 1.8) {
+      // CONTACT COLLISION: spinning body hitbox vs hurtbox
+      const dc = limbContact(player, e, 'body');
+      if (!dc) continue;
+      resolveStrikeContact(player, e, dc, { knockback: 0.35 });
       landHit(e, Math.round(26 * player.dmgMult), 'DESPERATION', 0.08, 0.35, false, false);
+    }
   }
   damageDestructibles(2.6);
   setHud(); ev('desperation', {});
@@ -3708,12 +4085,18 @@ function doSpecial2(fd) {
   const kind = { kidblue: 'dash', viper: 'dash', ghost: 'blink', brick: 'slam', kingpin: 'slam', sledge: 'slam' }[fd.id] || 'slam';
   if (kind === 'dash') {
     const dir = player.face || 1, dist = 4.2;
+    const sx0 = player.px;
     player.px = clamp(player.px + dir * dist, 0.5, mission.len === Infinity ? 1e6 : mission.len - 1.5);
     burst(player.root.position.clone().add(new THREE.Vector3(0, 1, 0)), 30, 0xff4fd8, 6);
     vfxSpecial(player.root.position.clone().add(new THREE.Vector3(0, 1, 0)), 'magic'); // wave 17: dash special
     for (const e of enemies.slice()) {
-      if (e.hp > 0 && Math.abs(e.px - (player.px - dir * dist / 2)) < dist / 2 + 0.8 && Math.abs(e.pz - player.pz) < 1.6)
+      if (e.hp > 0 && Math.abs(e.px - (player.px - dir * dist / 2)) < dist / 2 + 0.8 && Math.abs(e.pz - player.pz) < 1.6) {
+        // CONTACT COLLISION: swept body hitbox along the dash vs hurtbox
+        const sc = sweptBodyContact(player, e, sx0, player.px);
+        if (!sc) continue;
+        resolveStrikeContact(player, e, sc, { knockback: 0.3 });
         landHit(e, Math.round(30 * player.dmgMult), sp.name, 0.08, 0.35, false, false);
+      }
     }
   } else if (kind === 'blink') {
     const near = enemies.filter((e) => e.hp > 0).sort((a, b) =>
@@ -3721,6 +4104,8 @@ function doSpecial2(fd) {
     for (const e of near) {
       burst(e.root.position.clone().add(new THREE.Vector3(0, 1.2, 0)), 18, 0x7af0ff, 5);
       vfxSpecial(e.root.position.clone().add(new THREE.Vector3(0, 1.2, 0)), 'magic'); // wave 17: blink special
+      const bc = limbContact(player, e, 'hand'); // CONTACT COLLISION: separate on contact
+      if (bc) resolveStrikeContact(player, e, bc, { knockback: 0.25 });
       landHit(e, Math.round(26 * player.dmgMult), sp.name, 0.06, 0.25, false, false);
     }
     if (!near.length) popText('NO TARGET', '', innerWidth / 2, innerHeight * 0.4);
@@ -3755,9 +4140,99 @@ function doDodge() {
   T.dodgeSfx = (T.dodgeSfx || 0) + 1; // test hook
   ev('dodge', {});
 }
+// ---------- PLAYER BLOCK (defense lane; refs SoR4 / Yakuza / Def Jam) ----------
+// HOLD DDG (touch) or hold L (keyboard) = block stance. Tap = dodge (unchanged).
+// Blocking: negates most damage to chip, brief blockstun, can't move/attack while
+// holding. Can't block mid-attack (busy), while airborne, or while knocked down.
+let blockHoldT = 0, blockHoldTimer = null; // input hold detection
+function startBlock() {
+  if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0) return false;
+  if (player.blocking || player.busy > 0 || (player.airT || 0) > 0 || (player.knockT || 0) > 0) return false;
+  player.blocking = true;
+  faceNearestEnemy();
+  playAnim(player, 'Melee_Unarmed_Idle', { loop: true });
+  sparkFX(player.px, 1.1, player.pz, 0x7af0ff, 8);
+  T.blocks = (T.blocks || 0); // counter increments on blocked hits
+  ev('blockstart', {});
+  return true;
+}
+function stopBlock() {
+  if (!player || !player.blocking) return;
+  player.blocking = false;
+  blockHoldT = 0;
+  if (player.hp > 0 && state === 'fight') playAnim(player, 'Melee_Unarmed_Idle', { loop: true });
+  ev('blockend', {});
+}
+// DDG hold detection: tap (<220ms) = dodge, hold = block stance until release
+function ddgDown() {
+  if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0) return;
+  unlockAudio();
+  blockHoldT = performance.now();
+  clearTimeout(blockHoldTimer);
+  blockHoldTimer = setTimeout(() => { blockHoldTimer = null; startBlock(); }, 220);
+}
+function ddgUp() {
+  if (blockHoldTimer) { clearTimeout(blockHoldTimer); blockHoldTimer = null; doDodge(); }
+  else stopBlock();
+  blockHoldT = 0;
+}
+// ---------- G3: ENEMY BLOCK / DODGE (improve-loop c4; refs SoR4 / Final Fight / Urban Reign) ----------
+// Backlog finding: player offense was uncontested except by spacing — no enemy guards, no
+// sidesteps. Eligible enemies (grounded, not staggered, in walk/recover — windup is committed)
+// react to an incoming strike with a sidestep (whiffs the hit) or a guard (chip damage).
+// Cooldowns + modest chances keep it fair; test hooks T.guards / T.dodges.
+function enemyCanReact(e) {
+  if (!e || e.hp <= 0 || e.airborne || e.launched || (e.stagger || 0) > 0) return false;
+  const st = e.ai || 'walk';
+  return st === 'walk' || st === 'recover';
+}
+function enemySidestepReact(e) {
+  if (!enemyCanReact(e) || (e.dodgeCD || 0) > 0) return false;
+  const chance = e.boss ? 0.10 : (e.move === 'knife' ? 0.14 : 0.08);
+  if (Math.random() >= chance) return false;
+  e.dodgeCD = rnd(1.5, 2.5);
+  // quick lateral shift off the player's line — reads as a real sidestep
+  const away = ((e.pz || 0) >= (player ? player.pz : 0)) ? 1 : -1;
+  e.pz = clamp((e.pz || 0) + away * rnd(0.8, 1.2), -1.4, 1.4);
+  e.px = (e.px || 0) + rnd(-0.3, 0.3);
+  e.dodgeT = 0.3; // i-frames cover the rest of this strike's multi-hits
+  playAnim(e, 'Running_A', { ts: 2.6 });
+  burst(e.root.position.clone().add(new THREE.Vector3(0, 0.3, 0)), 8, 0xcfcfcf, 3);
+  const sp = screenPos(e.root.position.clone().add(new THREE.Vector3(0, 1.6, 0)));
+  popText('DODGED!', 'spc', sp.x, sp.y - 20);
+  sfx('whoosh', 0.4, false, 1.6);
+  T.dodges = (T.dodges || 0) + 1; ev('edodge', {});
+  syncPos(e);
+  return true;
+}
+function enemyGuardReact(e, dmg, label) {
+  if (!enemyCanReact(e) || (e.guardCD || 0) > 0) return false;
+  const chance = e.boss ? 0.22 : 0.12;
+  if (Math.random() >= chance) return false;
+  const chip = Math.max(1, Math.round(dmg * 0.12)); // chip only — no crit, no combo build
+  e.hp -= chip;
+  T.hits++; T.guards = (T.guards || 0) + 1; ev('eguard', { label, chip });
+  e.guardT = 0.5; e.guardCD = rnd(1.4, 2.4);
+  e.root.rotation.y = (player && player.px >= e.px) ? Math.PI / 2 : -Math.PI / 2;
+  playAnim(e, 'Melee_Unarmed_Idle', { loop: true }); // brace (no guard anim asset — read comes from FX)
+  const chest = e.root.position.clone().add(new THREE.Vector3(0, fighterHeight * 0.62 * (e.sc || 1), 0.15));
+  burst(chest, 12, 0x7af0ff, 3); // blue block flash
+  const sp = screenPos(chest);
+  popText('BLOCKED -' + chip, 'spc', sp.x, sp.y - 20);
+  sfx('hit2', 0.5, false, 0.5); // pitched-down thud = block sound
+  shake = Math.max(shake, 0.08);
+  setHud();
+  if (e.hp <= 0) killEnemy(e);
+  return true;
+}
 function landHit(e, dmg, label, hs, sh, launcher, counter) {
   if (mission && mission.endless && (endlessMuts || []).includes('GLASS JAW')) dmg = Math.round(dmg * 1.5);
   if (!e || e.hp <= 0 || state !== 'fight') return;
+  // G3 ENEMY BLOCK/DODGE (improve-loop c4): reactions happen here, the single damage choke
+  // point, so every player attack type is contestable — but windup/staggered/airborne enemies
+  // stay punishable (see enemyCanReact).
+  if (enemySidestepReact(e)) return;
+  if (enemyGuardReact(e, dmg, label)) return;
   // ONE-HIT (Katana Zero): everyone dies in one hit — bosses take heavy damage instead
   if (mission && hasMod('onehit')) { if (e.boss) dmg = Math.max(dmg, 150); else dmg = 99999; }
   T.hits++; if (counter) T.counters++;
@@ -3766,6 +4241,14 @@ function landHit(e, dmg, label, hs, sh, launcher, counter) {
   if (Math.random() < critCh()) { dealt = Math.round(dealt * 1.6); critOn = true; }
   if (player && player.hp > 0 && player.hp < player.maxHp * 0.3) { dealt = Math.round(dealt * 1.25); lsOn = true; lastStandFx(); }
   e.hp -= dealt; combo++; comboT = 2.5; maxCombo = Math.max(maxCombo, combo); // SoR4 combo keep-alive: 2.5s rhythm
+  // PRESENTATION: arcade score per hit — move weight + juggle bonus (quiet: HUD pops on milestones/KOs)
+  const hitPts = counter ? 75 : (label === 'HEAVY' || label === 'HEAT' ? 25 : (label === 'LAUNCHER' || label === 'DUST LAUNCHER' ? 30 : 10));
+  awardScore(hitPts + (e.airborne ? 15 : 0), true);
+  if (combo === 10 || combo === 20 || combo === 30 || combo === 50) { // PRESENTATION: combo milestone callouts
+    const msp = screenPos(e.root.position.clone().add(new THREE.Vector3(0, 2.6, 0)));
+    popText(combo + ' HITS — ' + (combo >= 50 ? 'UNSTOPPABLE!' : combo >= 30 ? 'SAVAGE!' : combo >= 20 ? 'BRUTAL!' : 'RAMPAGE!'), 'big', msp.x, msp.y);
+    sfx('bell', 0.9, false, 1.2);
+  }
   // ANTI-INFINITE (Skullgirls Undizzy): same move 3x in one juggle = auto-drop with a "READ!" popup. Fairness by design.
   if (e.airborne) {
     e.jugSeq = e.jugSeq || [];
@@ -3820,6 +4303,7 @@ function killEnemy(e) {
   T.kos++; ev('ko', { name: e.name });
   hideWarn(e);
   playAnim(e, 'Death_A', { ts: 0.8, clamp: true });
+  let koHold = 900; // PRESENTATION: KO splash hold time (final blow holds longer)
   if (e.boss) {
     slowmo = 0.3; slowmoT = 1.1; shake = 0.6; hitstop = 0.12; // boss KO = biggest moment
     $('bossWrap').style.display = 'none';
@@ -3829,10 +4313,19 @@ function killEnemy(e) {
   } else {
     slowmo = 0.35; slowmoT = 0.7; shake = 0.45; hitstop = 0.09;
   }
+  // PRESENTATION: KO score bonus — style rank scales it, boss is the jackpot
+  awardScore(e.boss ? 1000 : 150 + styleRank * 50, true);
+  // PRESENTATION: FINAL BLOW — last enemy standing (or the boss) gets the dramatic
+  // slow-mo treatment: deeper freeze, longer hold, camera already pushing in (Yakuza heat moment)
+  const foesLeft = enemies.filter(x => x !== e && x.hp > 0).length;
+  if (e.boss || foesLeft === 0) {
+    slowmo = 0.15; slowmoT = e.boss ? 1.8 : 1.4; shake = 0.7; hitstop = 0.15;
+    koHold = 1400;
+  }
   sfx('bell', 0.8); flash('#ffffff');
   vfxKO(e.root.position.clone().add(new THREE.Vector3(0, 1, 0)), !!e.boss); // wave 17: Kenney ring+smoke+spark KO burst
   pushT = 0.85; pushPos.copy(e.root.position);
-  $('ko').classList.add('show'); setTimeout(() => $('ko').classList.remove('show'), 900); buzz(45); // F10 haptics
+  $('ko').classList.add('show'); setTimeout(() => $('ko').classList.remove('show'), koHold); buzz(45); // F10 haptics
   const base = e.boss ? 60 : (8 + Math.round(distWalked * 0.2)) * (e.golden ? 5 : 1);
   awardCash(base, e.root.position.clone());
   if (combo >= 5) awardCash(Math.min(combo, 20), e.root.position.clone().add(new THREE.Vector3(0, 0.4, 0)), 'COMBO');
@@ -3895,6 +4388,28 @@ function hurtPlayer(dmg) {
       sparkFX(player.px, 1.2, player.pz, 0x9a7bff, 18);
       ev('witchtime', {});
     }
+    return;
+  }
+  // PLAYER BLOCK (defense lane; refs SoR4/Yakuza/Def Jam): holding block while grounded
+  // reduces the hit to chip. Heavies still hurt through guard (chip scales with damage).
+  // Blockstun is tracked separately so holding block through a flurry keeps blocking —
+  // you can't be forced out of guard by chip alone. Uses the real Melee_Block_Hit
+  // clip for the reaction — never faked.
+  if (player.blocking && !((player.airT || 0) > 0)) {
+    const chip = Math.max(1, Math.round(dmg * 0.15));
+    player.hp -= chip;
+    T.blocks = (T.blocks || 0) + 1; ev('pblock', { chip, dmg });
+    playAnim(player, 'Melee_Block_Hit', { ts: 1.3 });
+    sparkFX(player.px + (player.face || 1) * 0.5, 1.2, player.pz, 0x7af0ff, 14);
+    const bsp = screenPos(player.root.position.clone().add(new THREE.Vector3(0, 2.0, 0)));
+    popText('BLOCKED -' + chip, 'spc', bsp.x, bsp.y - 20);
+    sfx('hit2', 0.5, false, 0.5); // pitched-down thud = block sound
+    player.blockstunT = 0.3; // holding guard through blockstun keeps blocking
+    player.busy = Math.max(player.busy, 0.15); // brief counter-pressure window
+    player.energy = clamp(player.energy + 3, 0, energyMax()); // defense rewarded, not punished
+    hitstop = 0.04; shake = Math.max(shake, 0.06);
+    setHud();
+    if (player.hp <= 0) { player.hp = 0; setHud(); playAnim(player, 'Death_A', { clamp: true }); missionOver = true; }
     return;
   }
   dmg = Math.max(1, Math.round(dmg * (1 - (blessFx().armor || 0)))); // IRON SKIN
@@ -3973,7 +4488,29 @@ function stickEnd(e) {
 }
 function setupInput() {
   const bind = (id, fn) => $(id).addEventListener('pointerdown', (e) => { e.stopPropagation(); e.preventDefault(); fn(); }, { passive: false });
-  bind('btnAtk', () => { if (player && player.knockT > 0) doTech(); else doPunch(); }); bind('btnDdg', doDodge); bind('btnSpc', doSpecial); bind('btnJmp', doJump);
+  bind('btnAtk', () => { if (player && player.knockT > 0) doTech(); else doPunch(); }); bind('btnJmp', doJump);
+  // BLOCK (defense lane): HOLD DDG = block stance, tap = dodge (unchanged)
+  { const el = $('btnDdg');
+    el.addEventListener('pointerdown', (e) => { e.stopPropagation(); e.preventDefault(); ddgDown(); }, { passive: false });
+    el.addEventListener('pointerup', (e) => { e.stopPropagation(); ddgUp(); }, { passive: false });
+    el.addEventListener('pointercancel', (e) => { e.stopPropagation(); ddgUp(); }, { passive: false });
+  }
+  // SPC (moves expansion): tap = special, double-tap = KI BLAST, hold = charge ENERGY WAVE
+  { const el = $('btnSpc'); let spcDownT = 0, spcLastTap = 0;
+    el.addEventListener('pointerdown', (e) => { e.stopPropagation(); e.preventDefault();
+      const now = performance.now();
+      if (now - spcLastTap < 300) { spcLastTap = 0; doKiBlast(); return; } // double-tap: ki blast
+      spcDownT = now;
+    }, { passive: false });
+    const spcUp = (e) => { e.stopPropagation();
+      if (waveCharging) { doWaveRelease(); }
+      else if (spcDownT > 0 && performance.now() - spcDownT < 350) { spcLastTap = performance.now(); doSpecial(); }
+      spcDownT = 0;
+    };
+    el.addEventListener('pointerup', spcUp, { passive: false });
+    el.addEventListener('pointercancel', spcUp, { passive: false });
+    setInterval(() => { if (spcDownT > 0 && !waveCharging && performance.now() - spcDownT > 350) doWaveStart(); }, 50);
+  }
   bind('btnGrp', doGrapple); // WRESTLING FINISHERS (No More Heroes): GRAPPLE on staggered foes
   // FOCUS (SFIV): HOLD HVY 0.45s = focus stance (absorb one hit), release = crumple strike; tap = normal heavy
   { const el = $('btnHvy');
@@ -4058,7 +4595,7 @@ function setupInput() {
     if (k === 'j') { if (player && player.knockT > 0) { doTech(); } else doPunch(); }
     if (k === 'g') doGrapple(); // WRESTLING FINISHERS: GRAPPLE on staggered foes
     if (k === 'k') doHeavy();
-    if (k === 'l') doDodge();
+    if (k === 'l' && !e.repeat) { ddgDown(); } // BLOCK (defense lane): hold L = block, tap = dodge
     if (k === 'u') doSpecial();
     if (k === 't') { const now = performance.now(); if (now - tauntKeyLastT < 350) { tauntKeyLastT = 0; doStance(); } else { tauntKeyLastT = now; doTaunt(); } }
     if (k === ' ') { e.preventDefault(); doJump(); }
@@ -4069,6 +4606,7 @@ function setupInput() {
     if ((k === 'arrowright' || k === 'd') && stick.dx > 0) stick.dx = 0;
     if ((k === 'arrowup' || k === 'w') && stick.dy < 0) stick.dy = 0;
     if ((k === 'arrowdown' || k === 's') && stick.dy > 0) stick.dy = 0;
+    if (k === 'l') ddgUp(); // BLOCK (defense lane): release L = stop block or dodge on tap
   });
   addEventListener('resize', resize);
 }
@@ -4078,6 +4616,15 @@ let camX = 2;
 function enemyAI(e, dt) {
   if (e.hp <= 0) return;
   if (window.__cdfreeze) return; // test hook: freeze enemy AI for deterministic verification
+  // G3 timers (improve-loop c4): guard brace + reaction cooldowns + dodge i-frames tick everywhere
+  if (e.guardT > 0) e.guardT -= dt;
+  e.guardCD = Math.max(0, (e.guardCD || 0) - dt);
+  e.dodgeCD = Math.max(0, (e.dodgeCD || 0) - dt);
+  if (e.dodgeT > 0) e.dodgeT -= dt;
+  if (e.guardT > 0) { // braced: face the player, hold position, can't act until the brace ends
+    e.root.rotation.y = (player && player.px >= e.px) ? Math.PI / 2 : -Math.PI / 2;
+    syncPos(e); return;
+  }
   if (e.airborne) { // launched / juggled
     e.vy -= 18 * dt; e.root.position.y += e.vy * dt;
     // F8 EDGE-BOUNCE (owner 2026-10-07, wave 9): horizontal knock velocity integrates with
@@ -4169,9 +4716,11 @@ function enemyStrike(e) {
   for (let i = 0; i < hits; i++) {
     setTimeout(() => {
       if (!e || e.hp <= 0 || state !== 'fight' || missionOver || ended || !player || player.hp <= 0) return;
-      const dx = Math.abs(player.px - e.px), dz = Math.abs(player.pz - e.pz);
-      if (dx < 1.7 && dz < 0.85) {
+      // CONTACT COLLISION: fist hitbox vs player hurtbox (not a distance radius)
+      const c = strikeHitsPlayer(e, 'hand', 1.7, 0.85);
+      if (c) {
         if (player.dodgeT > 0) { nearMiss(e); return; }
+        resolveStrikeContact(e, player, c, { knockback: 0.22 });
         let dmg = Math.round(14 * e.dmgMult);
         if (e.move === 'knife') dmg = Math.round(dmg * 1.3);
         if (e.move === 'uppercut') dmg = Math.round(dmg * 1.25);
@@ -4186,16 +4735,24 @@ function enemyStrike(e) {
 function sigHitPlayer(e, rx, rz, dmg, label, delay, opts = {}) {
   setTimeout(() => {
     if (!e || e.hp <= 0 || state !== 'fight' || missionOver || ended || !player || player.hp <= 0) return;
-    const dx = Math.abs(player.px - e.px), dz = Math.abs(player.pz - e.pz);
-    if (dx < rx && dz < rz) {
-      if (player.dodgeT > 0) { nearMiss(e); return; }
-      hurtPlayer(dmg);
-      const sp = screenPos(player.root.position.clone().add(new THREE.Vector3(0, 1.6, 0)));
-      popText(label, 'spc', sp.x, sp.y - 50);
-      if (opts.slow) { player.slowT = opts.slow; }
-      if (opts.heal) { e.hp = Math.min(e.maxHp, e.hp + Math.round(dmg * opts.heal)); }
-      if (opts.burst) { const bp = e.root.position.clone().add(new THREE.Vector3(0, 1.2, 0)); burst(bp, 22, opts.burst, 6); shake = Math.max(shake, 0.45); }
+    // CONTACT COLLISION: opts.limb = physical strike → hitbox vs hurtbox.
+    // No limb (AOE/shockwave/scream) → keeps the original radius check.
+    let contact = null;
+    if (opts.limb) {
+      contact = strikeHitsPlayer(e, opts.limb, rx, rz);
+      if (!contact) return;
+    } else {
+      const dx = Math.abs(player.px - e.px), dz = Math.abs(player.pz - e.pz);
+      if (!(dx < rx && dz < rz)) return;
     }
+    if (player.dodgeT > 0) { nearMiss(e); return; }
+    if (contact) resolveStrikeContact(e, player, contact, { knockback: 0.28 });
+    hurtPlayer(dmg);
+    const sp = screenPos(player.root.position.clone().add(new THREE.Vector3(0, 1.6, 0)));
+    popText(label, 'spc', sp.x, sp.y - 50);
+    if (opts.slow) { player.slowT = opts.slow; }
+    if (opts.heal) { e.hp = Math.min(e.maxHp, e.hp + Math.round(dmg * opts.heal)); }
+    if (opts.burst) { const bp = e.root.position.clone().add(new THREE.Vector3(0, 1.2, 0)); burst(bp, 22, opts.burst, 6); shake = Math.max(shake, 0.45); }
   }, delay);
 }
 function execEnemySig(e) {
@@ -4204,30 +4761,30 @@ function execEnemySig(e) {
   const base = Math.round(14 * e.dmgMult);
   if (id === 'curbcheck') { // STREET THUG: heavy overhand, big shake
     playAnim(e, 'Melee_Unarmed_Attack_Kick', { ts: 1.3 });
-    sigHitPlayer(e, 1.8, 0.9, Math.round(base * 1.6), 'CURB CHECK', 320, { burst: 0xffb03d });
+    sigHitPlayer(e, 1.8, 0.9, Math.round(base * 1.6), 'CURB CHECK', 320, { burst: 0xffb03d, limb: 'foot' });
   } else if (id === 'debtcollector') { // BIG RICO: wide shoulder-slam AOE
     playAnim(e, 'Melee_Unarmed_Attack_Kick', { ts: 1.1 });
     sfx('hit3', 0.9, false, 0.8);
-    sigHitPlayer(e, 2.4, 1.4, Math.round(base * 1.3), 'DEBT COLLECTOR', 380, { burst: 0x9a6bff });
+    sigHitPlayer(e, 2.4, 1.4, Math.round(base * 1.3), 'DEBT COLLECTOR', 380, { burst: 0x9a6bff, limb: 'body' });
   } else if (id === 'hundredhands') { // JABBER: 4-hit rapid flurry
     playAnim(e, 'Melee_Unarmed_Attack_Punch_A', { ts: 2.6 });
-    for (let i = 0; i < 4; i++) sigHitPlayer(e, 1.6, 0.8, Math.round(base * 0.55), i === 3 ? 'HUNDRED HANDS' : '', 200 + i * 170);
+    for (let i = 0; i < 4; i++) sigHitPlayer(e, 1.6, 0.8, Math.round(base * 0.55), i === 3 ? 'HUNDRED HANDS' : '', 200 + i * 170, { limb: 'hand' });
   } else if (id === 'freighttrain') { // HEAVY D: signature charge, hits on pass
     banner('FREIGHT TRAIN');
     e.chargeT = 0.7; e.chargeDx = dir; e.chargeHit = false; e.chargeDmg = Math.round(base * 1.5);
     playAnim(e, 'Running_A', { ts: 2.6 }); sfx('hit2', 1, false, 0.6);
   } else if (id === 'shivrain') { // STRAY: double knife slash, second cuts deeper
     playAnim(e, 'Melee_Unarmed_Attack_Punch_A', { ts: 2.2 });
-    sigHitPlayer(e, 1.7, 0.85, Math.round(base * 0.9), '', 220);
-    sigHitPlayer(e, 1.7, 0.85, Math.round(base * 1.6), 'SHIV RAIN', 460, { burst: 0xd8d8e8 });
+    sigHitPlayer(e, 1.7, 0.85, Math.round(base * 0.9), '', 220, { limb: 'hand' });
+    sigHitPlayer(e, 1.7, 0.85, Math.round(base * 1.6), 'SHIV RAIN', 460, { burst: 0xd8d8e8, limb: 'hand' });
   } else if (id === 'harvestmoon') { // JACK: leaping slam, pumpkin shockwave ring
     playAnim(e, 'Melee_Unarmed_Attack_Kick', { ts: 1.2 });
     sfx('hit3', 1, false, 0.7);
-    sigHitPlayer(e, 2.3, 1.3, Math.round(base * 1.4), 'HARVEST MOON', 400, { burst: 0xff7a1a });
+    sigHitPlayer(e, 2.3, 1.3, Math.round(base * 1.4), 'HARVEST MOON', 400, { burst: 0xff7a1a, limb: 'body' });
   } else if (id === 'gravebite') { // ROTTEN: lunge bite, drains life
     playAnim(e, 'Melee_Unarmed_Attack_Punch_A', { ts: 1.8 });
     sfx('hit2', 0.9, false, 0.8);
-    sigHitPlayer(e, 2.0, 1.0, Math.round(base * 1.2), 'GRAVEBITE', 300, { burst: 0x7a9a5a, heal: 0.4 });
+    sigHitPlayer(e, 2.0, 1.0, Math.round(base * 1.2), 'GRAVEBITE', 300, { burst: 0x7a9a5a, heal: 0.4, limb: 'head' });
   } else if (id === 'hellfirearc') { // HELLION: fire wave projectile
     playAnim(e, 'Melee_Unarmed_Attack_Punch_A', { ts: 1.4 });
     banner('HELLFIRE ARC');
@@ -4265,7 +4822,7 @@ function execEnemySig(e) {
     banner('DUNK SHOT');
     playAnim(e, 'Melee_Unarmed_Attack_Kick', { ts: 1.6 });
     sfx('hit3', 0.9, false, 0.8);
-    sigHitPlayer(e, 2.2, 1.4, Math.round(base * 1.5), 'DUNK SHOT', 380, { burst: 0xff8c1a });
+    sigHitPlayer(e, 2.2, 1.4, Math.round(base * 1.5), 'DUNK SHOT', 380, { burst: 0xff8c1a, limb: 'body' });
   } else if (id === 'crossover') { // STREET BALLER: ankle-breaker dash-through
     playAnim(e, 'Melee_Unarmed_Attack_Punch_A', { ts: 2.4 });
     e.chargeT = 0.45; e.chargeDx = dir; e.chargeHit = false; e.chargeDmg = Math.round(base * 1.2);
@@ -4278,6 +4835,12 @@ function execEnemySig(e) {
 }
 // ---------- boss AI: telegraphed patterns ----------
 function bossAI(e, dt, dx, dz, adx, adz) {
+  // G3 timers (improve-loop c4): guard brace + reaction cooldowns + dodge i-frames
+  if (e.guardT > 0) e.guardT -= dt;
+  e.guardCD = Math.max(0, (e.guardCD || 0) - dt);
+  e.dodgeCD = Math.max(0, (e.dodgeCD || 0) - dt);
+  if (e.dodgeT > 0) e.dodgeT -= dt;
+  if (e.guardT > 0) { e.root.rotation.y = dx > 0 ? Math.PI / 2 : -Math.PI / 2; syncPos(e); return; }
   if (e.ai === 'walk') {
     e.px += Math.sign(dx) * Math.min(adx, e.spd * dt);
     e.pz += Math.sign(dz) * Math.min(adz, e.spd * 0.8 * dt);
@@ -4317,8 +4880,13 @@ function execPattern(e) {
     shake = 0.5; hitstop = 0.06; sfx('hit3', 1);
     setTimeout(() => {
       if (!e || e.hp <= 0 || state !== 'fight' || missionOver || ended || !player || player.hp <= 0) return;
-      const dx = Math.abs(player.px - e.px), dz = Math.abs(player.pz - e.pz);
-      if (dx < 2.5 && dz < 1.5) { if (player.dodgeT > 0) nearMiss(e); else hurtPlayer(Math.round(22 * e.dmgMult)); }
+      // CONTACT COLLISION: slam body hitbox vs player hurtbox
+      const sc = strikeHitsPlayer(e, 'body', 2.5, 1.5);
+      if (sc) {
+        if (player.dodgeT > 0) { nearMiss(e); return; }
+        resolveStrikeContact(e, player, sc, { knockback: 0.35 });
+        hurtPlayer(Math.round(22 * e.dmgMult));
+      }
     }, 200);
   } else if (pat === 'charge') {
     e.chargeT = 0.7; e.chargeDx = Math.sign(player.px - e.px) || 1; e.chargeHit = false;
@@ -4332,8 +4900,13 @@ function execPattern(e) {
     let n = 0;
     const iv = setInterval(() => {
       if (n++ >= 4 || !e || e.hp <= 0 || state !== 'fight' || missionOver || ended || !player || player.hp <= 0) { clearInterval(iv); return; }
-      const dx = Math.abs(player.px - e.px), dz = Math.abs(player.pz - e.pz);
-      if (dx < 1.9 && dz < 0.95) { if (player.dodgeT > 0) nearMiss(e); else hurtPlayer(Math.round(9 * e.dmgMult)); }
+      // CONTACT COLLISION: fist hitbox vs player hurtbox
+      const fc = strikeHitsPlayer(e, 'hand', 1.9, 0.95);
+      if (fc) {
+        if (player.dodgeT > 0) { nearMiss(e); return; }
+        resolveStrikeContact(e, player, fc, { knockback: 0.2 });
+        hurtPlayer(Math.round(9 * e.dmgMult));
+      }
     }, 230);
   }
   e.ai = 'recover'; e.aiT = 1.3;
@@ -4517,6 +5090,11 @@ function playerUpdate(dt) {
   if (p.dodgeCD > 0) p.dodgeCD -= dt;
   if (p.blitzCD > 0) p.blitzCD -= dt;
   if (p.witchCD > 0) p.witchCD -= dt;
+  if (p.blockstunT > 0) p.blockstunT -= dt; // BLOCK (defense lane)
+  if (p.blocking) { // persistent guard shimmer so the stance reads clearly
+    p.guardFxT = (p.guardFxT || 0) - dt;
+    if (p.guardFxT <= 0) { p.guardFxT = 0.5; sparkFX(p.px, 1.1, p.pz, 0x7af0ff, 4); }
+  }
   // RADICAL MODE (TMNT): +30% dmg, +15% speed while active
   if (p.radicalT > 0) {
     p.radicalT -= dt;
@@ -4572,6 +5150,7 @@ function playerUpdate(dt) {
   const spd = 4.4 * (p.spd || 1) * (p.slowT > 0 ? 0.45 : 1) * (1 + (blessFx().moveSpd || 0));
   let mx = stick.dx * spd, mz = stick.dy * spd;
   if (p.dodgeT > 0) { mx = p.dodgeDx * 10; mz = p.dodgeDz * 10; }
+  if (p.blocking) { mx = 0; mz = 0; } // BLOCK (defense lane): holding guard roots you
   const maxX = mission.len === Infinity ? 1e6 : mission.len - 1.5;
   p.px = clamp(p.px + mx * dt, 0.5, maxX);
   p.pz = clamp(p.pz + mz * dt, -1.4, 1.4);
@@ -4619,13 +5198,16 @@ function playerUpdate(dt) {
     for (const pl of platforms) if (Math.abs(p.px - pl.x) < pl.w / 2 && Math.abs(p.pz - pl.z) < pl.d / 2) { over = true; break; }
     if (!over) { p.airT = 0.01; p.vy = 0; }
   }
-  if (p.spinT > 0) { // IRON CYCLONE: spinning travel, multi-hit
+  if (p.spinT > 0) { // SPIN: travel + multi-hit (rotation from real SpinAttack clip, not procedural)
     const maxX = mission.len === Infinity ? 1e6 : mission.len - 1.5;
     p.px = clamp(p.px + p.face * 9.5 * dt, 0.5, maxX);
-    p.root.rotation.y += dt * 16 * p.face;
     for (const e of enemies) {
       if (!e.dead && e.hp > 0 && !p.spinHit.has(e) && Math.abs(e.px - p.px) < 1.6 && Math.abs(e.pz - p.pz) < 1.25) {
+        // CONTACT COLLISION: spinning body hitbox vs hurtbox
+        const sc = limbContact(p, e, 'body');
+        if (!sc) continue;
         p.spinHit.add(e);
+        resolveStrikeContact(p, e, sc, { knockback: 0.3 });
         landHit(e, Math.round((p.spinDmg || 16) * p.dmgMult), p.spinName || 'SPIN', 0.05, 0.3, false, false);
       }
     }
@@ -4678,8 +5260,16 @@ function playerUpdate(dt) {
   for (const e of enemies) {
     if (e.chargeT > 0 && e.hp > 0) {
       e.px += e.chargeDx * 8 * dt; syncPos(e); e.chargeT -= dt;
-      if (!e.chargeHit && Math.abs(e.px - p.px) < 1.15 && Math.abs(e.pz - p.pz) < 0.9) {
+      // CONTACT COLLISION: charging body hitbox vs player hurtbox (not a distance radius).
+      // The charge STOPS at contact — the attacker never passes through the defender.
+      const cc = limbContact(e, p, 'body');
+      if (!e.chargeHit && cc) {
         e.chargeHit = true;
+        // stop the charge at contact: back off to just touching
+        e.px -= e.chargeDx * (cc.pen + 0.05);
+        e.chargeT = Math.min(e.chargeT, 0.12);
+        syncPos(e);
+        resolveStrikeContact(e, p, cc, { knockback: 0.45 });
         if (p.dodgeT > 0) nearMiss(e); else hurtPlayer(e.chargeDmg || Math.round(20 * e.dmgMult));
       }
       if (e.chargeT <= 0) { e.chargeHit = false; e.ai = 'recover'; e.aiT = 1.0; playAnim(e, 'Melee_Unarmed_Idle', { loop: true }); }
@@ -4736,7 +5326,7 @@ const projs = []; // {spr,x,y,z,vx,vy,vz,kind,dmg,from,color,pierce,life,arc,rad
 function fireProj(o) {
   const mat = new THREE.SpriteMaterial({ map: sparkTex, color: o.color, transparent: true, opacity: 1, depthWrite: false });
   const s = new THREE.Sprite(mat);
-  const sc = o.kind === 'beam' ? [1.9, 0.6] : o.kind === 'shock' ? [1.3, 0.55] : o.kind === 'orb' ? [1.15, 1.15] : [0.9, 0.9];
+  const sc = o.kind === 'beam' ? [1.9, 0.6] : o.kind === 'shock' ? [1.3, 0.55] : o.kind === 'orb' ? [1.15, 1.15] : o.kind === 'ki' ? [0.55, 0.55] : o.kind === 'wave' ? [1.7, 1.0] : [0.9, 0.9];
   s.scale.set(sc[0], sc[1], 1);
   s.position.set(o.x, o.y || 1.15, o.z);
   scene.add(s);
@@ -4766,6 +5356,8 @@ function updateProjs(dt) {
     p.spr.material.rotation += dt * 9;
     if (Math.random() < 0.45) sparkFX(p.x, p.y, p.z, p.color, 2);
     if (p.kind === 'fangwave' && Math.random() < 0.7) sparkFX(p.x, 0.18, p.z, p.color, 3);
+    if (p.kind === 'wave' && Math.random() < 0.8) { sparkFX(p.x, p.y, p.z, p.color, 4); sparkFX(p.x, p.y + 0.3, p.z, 0xffffff, 2); }
+    if (p.kind === 'ki' && Math.random() < 0.5) sparkFX(p.x, p.y, p.z, p.color, 2);
     let dead = p.life <= 0 || Math.abs(p.x) > 32 || Math.abs(p.z) > 15;
     if (!dead && p.from === 'p') {
       for (const e of enemies) {
@@ -4832,6 +5424,8 @@ function doMotionSpecial(kind, free) {
       if (e) {
         player.px = clamp(e.px - player.face * 1.15, 0.5, 1e6); player.pz = e.pz; syncPos(player);
         sparkFX(player.px, 1.1, player.pz, pr.color, 14);
+        const tc = limbContact(player, e, 'hand'); // CONTACT COLLISION: separate on contact
+        if (tc) resolveStrikeContact(player, e, tc, { knockback: 0.25 });
         landHit(e, Math.round(pr.dmg * dmgM), pr.name, 0.09, 0.45, false, false);
       }
       present();
@@ -4846,6 +5440,10 @@ function doMotionSpecial(kind, free) {
         sfx(220, 0.25, 'sawtooth', 0.5);
         setTimeout(() => {
           if (state !== 'fight' || !e || e.hp <= 0) return;
+          // CONTACT COLLISION: positional lock — victim held at fixed offset, no interpenetration
+          e.px = clamp(player.px + player.face * 0.95, 0.5, 1e6); e.pz = player.pz || 0; syncPos(e);
+          const gc = limbContact(player, e, 'hand');
+          if (gc) resolveStrikeContact(player, e, gc, { knockback: 0.3 });
           landHit(e, Math.round(pr.dmg * player.dmgMult), pr.name, 0.12, 0.6, true, false);
           for (const o of enemies) { if (o !== e && !o.dead && o.hp > 0 && Math.abs(o.px - e.px) < 2.2 && Math.abs(o.pz - e.pz) < 1.6) landHit(o, Math.round(20 * player.dmgMult), 'SHOCKWAVE', 0.06, 0.35, false, false); }
           burst(new THREE.Vector3(e.px, 0.4, e.pz), 18, pr.color, 5);
@@ -4856,8 +5454,8 @@ function doMotionSpecial(kind, free) {
       }
       present();
     } else if (pr.sigkind === 'spin') {
-      playAnim(player, 'Melee_Unarmed_Attack_Punch_A', { once: true, dur: 0.5 });
-      player.busy = Math.max(player.busy, 0.55);
+      playAnim(player, 'SpinAttack', { once: true, dur: 0.62 });
+      player.busy = Math.max(player.busy, 0.62);
       player.spinT = 0.55; player.spinHit = new Set();
       player.spinName = pr.name; player.spinColor = pr.color; player.spinDmg = pr.dmg;
       sfx(300, 0.4, 'sawtooth', 0.4);
@@ -4892,6 +5490,111 @@ function doMotionSpecial(kind, free) {
     addHitstop(0.08); addSlowmo(0.35, 0.35);
   }
 }
+
+// Idle variant: occasionally switch to Idle_B for visual variety (moves expansion fill pass).
+function idleVariantTick(dt) {
+  if (!player || state !== 'fight' || player.busy > 0 || player.hp <= 0) return;
+  if (player.moveX !== 0 || player.knockT > 0) return; // only when truly idle
+  player.idleVT = (player.idleVT || 0) - dt;
+  if (player.idleVT <= 0) {
+    player.idleVT = 4 + Math.random() * 3;
+    const useB = Math.random() < 0.35;
+    const cur = useB ? 'Idle_B' : 'Melee_Unarmed_Idle';
+    if (player.idleCur !== cur) { player.idleCur = cur; playAnim(player, cur, { loop: true, fade: 0.4 }); }
+  }
+}
+
+// ---------- MOVES EXPANSION: ki blasts, energy waves, generalized spin ----------
+// Ki Blast: rapid-fire ki projectile (double-tap SPC). Spammable, low cost.
+function doKiBlast() {
+  if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.busy > 0) return;
+  const fd = fighterDef();
+  const ki = fd.ki || { name: 'KI BLAST', dmg: 8, speed: 14, color: 0x7af0ff, cost: 5 };
+  if (player.energy < ki.cost) { popText('NEED ENERGY', 'bad', innerWidth/2, innerHeight*0.4); return; }
+  player.energy -= ki.cost; setHud();
+  faceNearestEnemy(); unlockAudio();
+  player.busy = Math.max(player.busy, 0.22);
+  playAnim(player, 'KiBlast', { once: true, dur: 0.35 });
+  sfxSwing(0.4);
+  const sp = screenPos(player.root.position);
+  setTimeout(() => {
+    if (state !== 'fight' || missionOver || ended) return;
+    fireProj({ x: player.px + player.face * 0.8, z: player.pz, y: 1.15,
+      vx: player.face * ki.speed, kind: 'ki', label: ki.name,
+      dmg: Math.round(ki.dmg * player.dmgMult), color: ki.color,
+      fromPlayer: true, life: 1.2, radius: 0.35 });
+    popText(ki.name, 'spc', sp.x, sp.y - 70);
+  }, 120);
+  ev('kiblast', {});
+}
+
+// Energy Wave: hold SPC to charge (WaveCharge clip + growing glow), release to fire.
+// Charge levels 1-3 based on hold time. Piercing traveling wave.
+let waveChargeT = 0, waveCharging = false, waveChargeFx = null;
+function doWaveStart() {
+  if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.busy > 0) return;
+  if (player.energy < 15) return false;
+  waveCharging = true; waveChargeT = 0;
+  playAnim(player, 'WaveCharge', { loop: true, fade: 0.1 });
+  sfx(110, 0.3, 'sawtooth', 0.5);
+  return true;
+}
+function doWaveTick(dt) {
+  if (!waveCharging || !player) return;
+  waveChargeT += dt;
+  const lvl = Math.min(3, 1 + Math.floor(waveChargeT / 0.5));
+  // growing glow
+  if (Math.random() < 0.5) sparkFX(player.px + player.face * 0.6, 1.0, player.pz, 0x7af0ff, 2 + lvl);
+  if (waveChargeT > 1.6) doWaveRelease(); // auto-release at max
+}
+function doWaveRelease() {
+  if (!waveCharging) return;
+  waveCharging = false;
+  if (state !== 'fight' || !player || player.hp <= 0) return;
+  const fd = fighterDef();
+  const wv = fd.wave || { name: 'ENERGY WAVE', dmg: 22, speed: 7, color: 0x7af0ff, cost: 15 };
+  const lvl = Math.min(3, 1 + Math.floor(waveChargeT / 0.5));
+  const cost = wv.cost + (lvl - 1) * 10;
+  if (player.energy < cost) { popText('NEED ENERGY', 'bad', innerWidth/2, innerHeight*0.4); waveChargeT = 0; return; }
+  player.energy -= cost; setHud();
+  faceNearestEnemy();
+  player.busy = Math.max(player.busy, 0.4);
+  playAnim(player, 'WaveRelease', { once: true, dur: 0.4 });
+  addHitstop(0.06); shake = Math.max(shake, 0.3 + lvl * 0.15);
+  sfx(180, 0.5, 'sawtooth', 0.4);
+  const sp = screenPos(player.root.position);
+  popText(wv.name + ' LV' + lvl, 'spc', sp.x, sp.y - 80);
+  banner(wv.name, 'spc');
+  setTimeout(() => {
+    if (state !== 'fight' || missionOver || ended) return;
+    fireProj({ x: player.px + player.face * 0.9, z: player.pz, y: 1.0,
+      vx: player.face * wv.speed, kind: 'wave', label: wv.name,
+      dmg: Math.round(wv.dmg * lvl * player.dmgMult), color: wv.color,
+      fromPlayer: true, pierce: 99, life: 1.4, radius: 0.7 + lvl * 0.2 });
+    burst(player.root.position.clone().add(new THREE.Vector3(player.face, 1.0, 0)), 16, wv.color, 5);
+  }, 100);
+  waveChargeT = 0;
+  ev('energywave', { lvl });
+}
+
+// Generalized spin attack: real SpinAttack clip (baked 360, not procedural).
+// Any fighter can use via fd.spin config; lane 7 (movesets) assigns per character.
+function doSpinAttack(opts) {
+  if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.busy > 0) return;
+  const o = opts || (fighterDef().spin) || { name: 'SPIN ATTACK', dmg: 16, color: 0x80ed99, dur: 0.6, cost: 20 };
+  if (player.energy < (o.cost || 20)) { popText('NEED ENERGY', 'bad', innerWidth/2, innerHeight*0.4); return; }
+  player.energy -= (o.cost || 20); setHud();
+  faceNearestEnemy(); unlockAudio();
+  player.busy = Math.max(player.busy, o.dur || 0.6);
+  playAnim(player, 'SpinAttack', { once: true, dur: o.dur || 0.6 });
+  player.spinT = o.dur || 0.6; player.spinHit = new Set();
+  player.spinName = o.name; player.spinColor = o.color; player.spinDmg = o.dmg;
+  sfx(300, 0.4, 'sawtooth', 0.4);
+  const sp = screenPos(player.root.position);
+  popText(o.name, 'spc', sp.x, sp.y - 70);
+  ev('spinattack', {});
+}
+
 // ---------- MEGA SUPER (full energy, cinematic) ----------
 function doMega() {
   const fd = fighterDef();
@@ -5006,17 +5709,42 @@ function spcSegs() {
   if (!_spcSegs) { _spcSegs = []; const wrap = $('spc'); for (let i = 0; i < SPC_SEGS; i++) { const d = document.createElement('div'); d.className = 'spcSeg'; wrap.appendChild(d); _spcSegs.push(d); } }
   return _spcSegs;
 }
+// damage ghost bars (art-ui): white/red trailing bar drains slowly after damage (genre standard).
+// CSS transition animates the trail; on heal we snap the ghost (no transition) so it never lags growth.
+const _ghostLast = {};
+function ghostFill(id, ghostId, frac) {
+  const el = $(id), g = $(ghostId);
+  if (!el || !g) return;
+  el.style.width = Math.max(0, frac * 100) + '%';
+  const last = (_ghostLast[id] !== undefined) ? _ghostLast[id] : frac;
+  if (frac >= last - 0.001) {
+    g.style.transition = 'none';
+    g.style.width = Math.max(0, frac * 100) + '%';
+    void g.offsetWidth;
+    g.style.transition = '';
+  } else {
+    g.style.width = Math.max(0, frac * 100) + '%';
+  }
+  _ghostLast[id] = frac;
+}
 function setHud() {
   if (!player) return;
   const fd = fighterDef();
-  $('php').style.width = Math.max(0, player.hp / player.maxHp * 100) + '%';
+  ghostFill('php', 'pghost', Math.max(0, player.hp / player.maxHp));
   $('pname').textContent = fd.name + (player.stance && fd.stance ? ' — ' + fd.stance.name : '');
   const e = (bossRef && bossRef.hp > 0) ? bossRef : nearestEnemy(99);
-  if (e) { $('ehp').style.width = Math.max(0, e.hp / e.maxHp * 100) + '%'; $('ename').textContent = e.name; }
-  else { $('ehp').style.width = '0%'; $('ename').textContent = ''; }
+  if (e) { ghostFill('ehp', 'eghost', Math.max(0, e.hp / e.maxHp)); $('ename').textContent = e.name; }
+  else { ghostFill('ehp', 'eghost', 0); $('ename').textContent = ''; }
   $('cash').textContent = 'CASH: $' + (save.cash + cashRun);
-  $('combo').style.opacity = combo >= 2 ? 1 : 0;
-  $('combo').textContent = combo + ' HIT COMBO';
+  // PRESENTATION: arcade score HUD
+  const sc = $('score'); if (sc) sc.textContent = 'SCORE ' + scoreRun.toLocaleString('en-US');
+  const _cb = $('combo');
+  _cb.style.opacity = combo >= 2 ? 1 : 0;
+  const _ct = combo + ' HIT COMBO';
+  if (_cb.textContent !== _ct) { _cb.textContent = _ct; _cb.classList.remove('pop'); void _cb.offsetWidth; _cb.classList.add('pop'); }
+  // PRESENTATION: combo counter scales with heat — bigger combos read bigger
+  _cb.style.fontSize = (combo >= 30 ? 44 : combo >= 20 ? 38 : 32) + 'px';
+  _cb.style.color = combo >= 30 ? '#ff4d4d' : combo >= 20 ? '#ff9f1c' : '#ffe14d';
   const sr2 = $('styleRank');
   if (sr2) {
     sr2.style.opacity = styleRank >= 2 && combo >= 3 ? 1 : 0;
@@ -5026,6 +5754,11 @@ function setHud() {
   // LAST STAND edge glow persists while dangerous
   const lse = $('lsEdge');
   if (lse) lse.style.opacity = (player.hp > 0 && player.hp < player.maxHp * 0.3) ? '1' : '0';
+  // ROUND 2 UI: low-HP alarm on health bars, rage state on boss bar
+  $('pbar').classList.toggle('low', player.hp > 0 && player.hp < player.maxHp * 0.3);
+  $('ebar').classList.toggle('low', !!e && e.hp > 0 && e.hp < e.maxHp * 0.3);
+  const _bw = $('bossWrap');
+  if (_bw) _bw.classList.toggle('rage', !!(bossRef && bossRef.hp > 0 && bossRef.hp < bossRef.maxHp * 0.25));
   const segs = spcSegs(); const litSegs = Math.round(clamp(player.energy / energyMax(), 0, 1) * SPC_SEGS);
   for (let i = 0; i < segs.length; i++) segs[i].classList.toggle('lit', i < litSegs);
   $('spcWrap').classList.toggle('ready', player.energy >= 60);
@@ -5033,7 +5766,7 @@ function setHud() {
   $('btnSpc').classList.toggle('ready', player.energy >= 60);
   const prog = mission && isFinite(mission.len) ? clamp(player.px / mission.len, 0, 1) : clamp(distWalked / 220, 0, 1);
   $('prog').style.width = (prog * 100) + '%';
-  if (bossRef && bossRef.hp > 0) $('bossHp').style.width = Math.max(0, bossRef.hp / bossRef.maxHp * 100) + '%';
+  if (bossRef && bossRef.hp > 0) ghostFill('bossHp', 'bghost', Math.max(0, bossRef.hp / bossRef.maxHp));
 }
 // ---------- layout ----------
 function resize() {
@@ -5083,6 +5816,226 @@ function resolveBodyCollision() {
   }
   for (const f of bs) syncPos(f);
 }
+// CONTACT COLLISION (owner 2026-10-09 — the no-collision incident): real hitboxes + hurtboxes.
+// PR #12 separates body CENTERS on the ground plane. This layer adds the brawler-standard
+// system on top:
+//   - HURTBOXES: head sphere + torso capsule per fighter, positioned from LIVE bone/joint
+//     positions every frame (bounding-box fallback for creature rigs without named bones).
+//   - HITBOXES: spheres at the striking limb, ACTIVE ONLY during strike frames. Every
+//     strike's hit detection now tests hitbox-vs-hurtbox instead of a distance radius.
+//   - On contact: the hit registers through the normal path (damage + hit-stop + VFX),
+//     the defender is knocked back CLEAR of the hitbox, and the attacker's advance stops.
+//     The fist ends AT the face, never inside the head.
+//   - Always-on guard (resolveHurtboxContact): head/head and head/torso hurtboxes can
+//     never interpenetrate between any two fighters, enforced every frame.
+// Zero interpenetration of any body part, ever.
+function bindCombatBones(f) {
+  if (f._bones) return f._bones;
+  const B = {};
+  const cand = { head: [], handR: [], handL: [], footR: [], footL: [], chest: [], hips: [] };
+  f.root.traverse((o) => {
+    if (!o.isBone) return;
+    const n = (o.name || '').toLowerCase();
+    if (n === 'head') cand.head.unshift(o); else if (n.includes('head')) cand.head.push(o);
+    else if (n === 'hand.r' || n === 'hand_r') cand.handR.unshift(o);
+    else if (n === 'hand.l' || n === 'hand_l') cand.handL.unshift(o);
+    else if (n.includes('hand') && (n.includes('.r') || n.includes('_r') || n.includes('right'))) cand.handR.push(o);
+    else if (n.includes('hand') && (n.includes('.l') || n.includes('_l') || n.includes('left'))) cand.handL.push(o);
+    else if (n.includes('hand')) { if (!cand.handR.length) cand.handR.push(o); else cand.handL.push(o); }
+    else if (n === 'foot.r' || n === 'foot_r') cand.footR.unshift(o);
+    else if (n === 'foot.l' || n === 'foot_l') cand.footL.unshift(o);
+    else if (n.includes('foot') && (n.includes('.r') || n.includes('_r') || n.includes('right'))) cand.footR.push(o);
+    else if (n.includes('foot') && (n.includes('.l') || n.includes('_l') || n.includes('left'))) cand.footL.push(o);
+    else if (n === 'chest') cand.chest.unshift(o); else if (n === 'spine') cand.chest.push(o);
+    else if (n === 'hips') cand.hips.unshift(o); else if (n === 'pelvis') cand.hips.push(o);
+  });
+  for (const k of Object.keys(cand)) if (cand[k].length) B[k] = cand[k][0];
+  f._bones = B;
+  return B;
+}
+const _hbTmp = new THREE.Vector3();
+function hurtboxes(f) {
+  // Head sphere + torso capsule from live joint positions. Never null.
+  const sc = f.sc || 1, px = f.px || 0, py = f.py || 0, pz = f.pz || 0;
+  const B = bindCombatBones(f);
+  let head, torso;
+  if (B.head) {
+    B.head.getWorldPosition(_hbTmp);
+    head = { c: _hbTmp.clone(), r: 0.24 * sc };
+  } else {
+    const h = 1.8 * sc;
+    head = { c: new THREE.Vector3(px, py + h * 0.82, pz), r: 0.20 * sc };
+  }
+  if (B.hips && B.chest) {
+    const a = B.hips.getWorldPosition(new THREE.Vector3());
+    const b = B.chest.getWorldPosition(new THREE.Vector3());
+    torso = { a, b, r: 0.32 * sc };
+  } else {
+    const h = 1.8 * sc;
+    torso = {
+      a: new THREE.Vector3(px, py + h * 0.32, pz),
+      b: new THREE.Vector3(px, py + h * 0.66, pz),
+      r: 0.30 * sc,
+    };
+  }
+  return { head, torso };
+}
+function strikeHitboxes(f, limb) {
+  // Hitbox spheres at the striking limb, from live bone positions. Active during
+  // strike frames only — callers (strikeHit/strikeHitsPlayer) invoke at strike moments.
+  // limb: 'hand' | 'foot' | 'head' | 'body'
+  const sc = f.sc || 1;
+  const B = bindCombatBones(f);
+  const out = [];
+  const push = (b, r) => { if (b) { b.getWorldPosition(_hbTmp); out.push({ c: _hbTmp.clone(), r: r * sc }); } };
+  if (limb === 'hand') { push(B.handR, 0.27); push(B.handL, 0.27); }
+  else if (limb === 'foot') { push(B.footR, 0.30); push(B.footL, 0.30); }
+  else if (limb === 'head') { push(B.head, 0.30); }
+  else if (limb === 'body') {
+    const hb = hurtboxes(f);
+    out.push({ c: hb.torso.a.clone().lerp(hb.torso.b, 0.5), r: hb.torso.r + 0.12 * sc });
+  }
+  if (!out.length) {
+    // No usable bones (odd creature rig): sphere in front of the fighter.
+    const face = f.face || 1;
+    out.push({ c: new THREE.Vector3((f.px || 0) + face * 0.7 * sc, (f.py || 0) + 1.1 * sc, f.pz || 0), r: 0.5 * sc });
+  }
+  return out;
+}
+function hurtboxPenetration(f, hc, hr) {
+  // Deepest penetration of hitbox sphere (hc, hr) into f's hurtboxes.
+  // Returns { pen, nx, ny, nz } — pen > 0 means contact; (n) points from the
+  // defender's hurtbox TOWARD the hitbox (i.e. toward the attacker).
+  const hb = hurtboxes(f);
+  let best = 0, bx = 1, by = 0, bz = 0;
+  { // head sphere
+    const dx = hc.x - hb.head.c.x, dy = hc.y - hb.head.c.y, dz = hc.z - hb.head.c.z;
+    const d = Math.sqrt(dx * dx + dy * dy + dz * dz);
+    const pen = (hr + hb.head.r) - d;
+    if (pen > best) { best = pen; const l = d > 1e-4 ? d : 1; bx = dx / l; by = dy / l; bz = dz / l; }
+  }
+  { // torso capsule: distance from hitbox center to segment
+    const a = hb.torso.a, b = hb.torso.b;
+    const abx = b.x - a.x, aby = b.y - a.y, abz = b.z - a.z;
+    const len2 = abx * abx + aby * aby + abz * abz || 1e-6;
+    const t = Math.max(0, Math.min(1, ((hc.x - a.x) * abx + (hc.y - a.y) * aby + (hc.z - a.z) * abz) / len2));
+    const cx = a.x + abx * t, cy = a.y + aby * t, cz = a.z + abz * t;
+    const dx = hc.x - cx, dy = hc.y - cy, dz = hc.z - cz;
+    const d = Math.sqrt(dx * dx + dy * dy + dz * dz);
+    const pen = (hr + hb.torso.r) - d;
+    if (pen > best) { best = pen; const l = d > 1e-4 ? d : 1; bx = dx / l; by = dy / l; bz = dz / l; }
+  }
+  return { pen: best, nx: bx, ny: by, nz: bz };
+}
+// Strike detection: hitbox (live limb bones) vs hurtboxes. Drop-in for nearestEnemy(range)
+// at strike moments. Returns { target, pen, nx, ny, nz } for the best-overlapping foe, or null.
+function limbContact(attacker, defender, limb) {
+  // Best hitbox-vs-hurtbox contact of attacker's limb vs a single defender; null if no overlap.
+  const boxes = strikeHitboxes(attacker, limb);
+  let best = null;
+  for (const hb of boxes) {
+    const { pen, nx, ny, nz } = hurtboxPenetration(defender, hb.c, hb.r);
+    if (pen > 0 && (!best || pen > best.pen)) best = { pen, nx, ny, nz };
+  }
+  return best;
+}
+function strikeHit(attacker, limb, range) {
+  const boxes = strikeHitboxes(attacker, limb);
+  let best = null;
+  for (const e of enemies) {
+    if (e === attacker || e.hp <= 0) continue;
+    const rd = Math.abs(e.px - attacker.px) + Math.abs((e.pz || 0) - (attacker.pz || 0)) * 0.7;
+    if (rd > range + 0.6) continue; // too far to even try (keeps old whiff behavior)
+    const c = limbContact(attacker, e, limb);
+    if (c && (!best || c.pen > best.pen)) best = { target: e, pen: c.pen, nx: c.nx, ny: c.ny, nz: c.nz };
+  }
+  return best;
+}
+// Enemy strike vs the player. Drop-in for the dx/dz distance check. Returns contact or null.
+function strikeHitsPlayer(e, limb, rx, rz) {
+  if (!player || player.hp <= 0) return null;
+  const r = Math.max(rx || 1.7, rz || 0.85);
+  const rd = Math.abs(player.px - e.px) + Math.abs((player.pz || 0) - (e.pz || 0)) * 0.7;
+  if (rd > r + 0.6) return null;
+  return limbContact(e, player, limb);
+}
+// Swept body hitbox for dash-through attacks (blitz, charges): tests the attacker's
+// torso capsule at samples along the path x0→x1 vs the defender's hurtboxes.
+function sweptBodyContact(attacker, defender, x0, x1) {
+  const sc = attacker.sc || 1;
+  const y = (attacker.py || 0) + 1.0 * sc, z = attacker.pz || 0;
+  const r = 0.42 * sc;
+  let best = null;
+  for (let s = 0; s <= 4; s++) {
+    const x = x0 + (x1 - x0) * (s / 4);
+    const { pen, nx, ny, nz } = hurtboxPenetration(defender, { x, y, z }, r);
+    if (pen > 0 && (!best || pen > best.pen)) best = { pen, nx, ny, nz };
+  }
+  return best;
+}
+// On a confirmed hit: separate the bodies so the striking limb ends AT the hurtbox,
+// never inside it. Pushes the defender away from the attacker (bosses budge less),
+// adds hit knockback, and stops the attacker's advance for this attack.
+function resolveStrikeContact(attacker, defender, contact, opts = {}) {
+  const w = defender.boss ? 0.65 : 1; // bosses are heavy
+  const push = ((contact && contact.pen) || 0) + 0.07;
+  T.lastContactPen = (contact && contact.pen) || 0; // test hook: penetration at strike detection
+  T.strikeContacts = (T.strikeContacts || 0) + 1; // test hook: count of contact resolutions
+  if (contact && (contact.nx !== undefined)) {
+    defender.px -= contact.nx * push * w;
+    defender.pz = (defender.pz || 0) - contact.nz * push * w;
+  }
+  const kb = opts.knockback || 0;
+  if (kb > 0) {
+    const dir = Math.sign(defender.px - attacker.px) || (attacker.face || 1) || 1;
+    defender.px += dir * kb * w;
+  }
+  defender.px = clamp(defender.px, 0.5, mission.len === Infinity ? 1e6 : mission.len - 1.5);
+  syncPos(defender);
+}
+function separateHurtboxes(a, b, ha, hb) {
+  // Always-on guard: a and b are live fighters; their head/head and head/torso
+  // hurtboxes must never overlap. Mass-weighted ground-plane push (matches PR #12).
+  // ha/hb are precomputed hurtboxes (pass explicitly to avoid recompute).
+  ha = ha || hurtboxes(a); hb = hb || hurtboxes(b);
+  const ma = a === player ? 3 : (a.boss ? 5 : 1);
+  const mb = b === player ? 3 : (b.boss ? 5 : 1);
+  const tw = ma + mb;
+  const pushPair = (ca, ra, cb, rb) => {
+    let dx = cb.x - ca.x, dy = cb.y - ca.y, dz = cb.z - ca.z;
+    let d = Math.sqrt(dx * dx + dy * dy + dz * dz);
+    const min = ra + rb;
+    if (d >= min) return;
+    if (d < 1e-4) { dx = 1; dy = 0; dz = 0; d = 1; }
+    const push = min - d, nx = dx / d, nz = dz / d;
+    T.maxHurtPen = Math.max(T.maxHurtPen || 0, push); // test hook: deepest corrected penetration
+    // separate on the ground plane (heads bob; keep y out of it)
+    a.px -= nx * push * (mb / tw); a.pz = (a.pz || 0) - nz * push * (mb / tw);
+    b.px += nx * push * (ma / tw); b.pz = (b.pz || 0) + nz * push * (ma / tw);
+  };
+  pushPair(ha.head.c, ha.head.r, hb.head.c, hb.head.r); // head vs head
+  // head vs torso capsule: closest point on capsule segment to the other head
+  const headVsTorso = (head, torso, self, other, ms, mo) => {
+    const A = torso.a, Bc = torso.b;
+    const abx = Bc.x - A.x, aby = Bc.y - A.y, abz = Bc.z - A.z;
+    const len2 = abx * abx + aby * aby + abz * abz || 1e-6;
+    const t = Math.max(0, Math.min(1, ((head.c.x - A.x) * abx + (head.c.y - A.y) * aby + (head.c.z - A.z) * abz) / len2));
+    pushPair(head.c, head.r, { x: A.x + abx * t, y: A.y + aby * t, z: A.z + abz * t }, torso.r);
+  };
+  headVsTorso(ha.head, hb.torso);
+  headVsTorso(hb.head, ha.torso);
+}
+function resolveHurtboxContact() {
+  const fs = [];
+  if (player && player.hp > 0) fs.push(player);
+  for (const e of enemies) if (e.hp > 0) fs.push(e);
+  // compute hurtboxes once per fighter (not per pair)
+  const hbs = fs.map((f) => hurtboxes(f));
+  for (let i = 0; i < fs.length; i++) {
+    for (let j = i + 1; j < fs.length; j++) separateHurtboxes(fs[i], fs[j], hbs[i], hbs[j]);
+  }
+  for (const f of fs) syncPos(f);
+}
 function frame(dt, doRender = true) {
   const RR = () => { if (doRender) renderer.render(scene, camera); };
   if (paused) { RR(); return; }
@@ -5091,6 +6044,8 @@ function frame(dt, doRender = true) {
   if (hitstop > 0) { hitstop -= dt; dt *= 0.05; }
   if (slowmoT > 0) { slowmoT -= dt; dt *= slowmo; }
   for (const f of fighters) { f.mixer.update(dt); if (f.busy > 0) f.busy -= dt; }
+  doWaveTick(dt); // MOVES EXPANSION: energy wave charge
+  idleVariantTick(dt); // MOVES EXPANSION: idle variants
 
   if (state === 'select' || state === 'title') {
     if (showcase && state === 'select') {
@@ -5109,6 +6064,8 @@ function frame(dt, doRender = true) {
     director(dt);
     for (const e of enemies.slice()) enemyAI(e, dt);
     resolveBodyCollision(); // OBVIOUS-DEFECT LAW: no interpenetration, ever
+    resolveHurtboxContact(); // CONTACT COLLISION: head/torso hurtboxes never overlap, ever
+    updateDiveKick(dt); // CONTACT COLLISION: live foot hitbox during dive-kick fall
     for (const e of enemies) positionWarn(e);
     for (const e of enemies) if (e.dotT > 0 && e.hp > 0 && !e.dead) { e.dotT -= dt; e.hp -= e.dotDps * dt; sparkFX(e.px, 1.2, e.pz, 0x7cff6b, 1); if (e.hp <= 0) killEnemy(e); }
     if (comboT > 0 && (comboT -= dt) <= 0) { combo = 0; setHud(); }
@@ -5146,6 +6103,7 @@ function frame(dt, doRender = true) {
     if (f.cheerT > 0) f.cheerT -= dt;
   }
   updateFx(dt);
+  if (state === 'fight') updateGrapple(dt); // MOVESETS: chain-throw state machine + victim driving
   if (!lowFx && state === 'fight') {
     fpsAcc.push(clock.elapsedTime);
     if (fpsAcc.length > 40) {
@@ -5177,8 +6135,8 @@ async function loadArenaProps() {
 }
 async function boot() {
   loadSave();
-  const [fg, am, ag, amv, st, rd, ix] = await Promise.all(['fighter.glb', 'anim_melee.glb', 'anim_general.glb', 'anim_move.glb', 'street.glb', 'roads.glb', 'industrial.glb'].map(parse));
-  for (const g of [am, ag, amv]) for (const c of g.animations) clips[c.name] = c;
+  const [fg, am, ag, amv, agr, amx, st, rd, ix] = await Promise.all(['fighter.glb', 'anim_melee.glb', 'anim_general.glb', 'anim_move.glb', 'anim_grapple.glb', 'anim_moves.glb', 'street.glb', 'roads.glb', 'industrial.glb'].map(parse));
+  for (const g of [am, ag, amv, agr, amx]) for (const c of g.animations) clips[c.name] = c;
   fighterTemplate = fg.scene;
   const names = new Set(); fighterTemplate.traverse((o) => names.add(o.name));
   for (const c of Object.values(clips)) c.tracks = c.tracks.filter((t) => names.has(t.name.split('.')[0]));
@@ -5206,6 +6164,15 @@ boot().catch((e) => { T.errors.push(String(e && e.stack || e)); console.error(e)
 // QA hook (test automation only — drives the real game systems, no mocks)
 window.__cdtest = {
   startMission, state: () => state,
+  gameTime: () => gameTime,
+  playClipOnPlayer: (name) => { if (player && clips[name]) { playAnim(player, name, { loop: false, fade: 0.1, ts: 0.5 }); return true; } return false; },
+  clipNames: () => Object.keys(clips),
+  clips: () => Object.keys(clips),
+  playClip: (name) => { if (player) playAnim(player, name, { once: true, dur: 0.6 }); return !!clips[name]; },
+  doKiBlast, doWaveStart, doWaveRelease, doSpinAttack,
+  killAll: () => { for (const e of [...enemies]) killEnemy(e, true); return enemies.length; },
+  setBusy: (v) => { if (player) player.busy = v; },
+  boneQuat: (bone) => { if (!player) return null; const b = player.root.getObjectByName(bone); if (!b) return null; const q = b.quaternion; return [q.x, q.y, q.z, q.w].map(v => +v.toFixed(3)); },
   tp: (x) => { if (player) player.px = x; },
   tp2: (x, z) => { if (player) { player.px = x; player.pz = z; } },
   projCount: () => projs.length,
@@ -5216,6 +6183,11 @@ window.__cdtest = {
   freeze: (on) => { window.__cdfreeze = !!on; },
   // (duplicate spawnBoss removed — build fix 2026-10-09: the (id, bx) form below is the superset)
   spawnFam: (famId) => { if (player) return spawnEnemy(famId, 0, player.px + 3, 0); },
+  spawnFoeAt: (x) => { if (player) return spawnEnemy('thug', 0, x, 0); },
+  foeHp: (i) => (enemies[i] ? enemies[i].hp : -1),
+  foeCount: () => enemies.length,
+  playerGrab: () => (player && player.grab ? { phase: player.grab.phase, link: player.grab.link, name: player.grab.name } : null),
+  fighterArchetype: () => fighterDef().archetype,
   sigChance: (v) => { window.__cdSigChance = v; },
   playerDbg: () => player ? { busy: +player.busy.toFixed(2), stance: player.stance||0, hp: Math.round(player.hp), state, fid: fighterDef().id, hasFin: !!fighterDef().stanceFin, face: player.face, animMove: !!player.animMove, animTs: player.cur ? +player.cur.timeScale.toFixed(2) : 0, px: +player.px.toFixed(2) } : null,
   fireStanceFin: (fid) => { const fd = FIGHTERS.find(f => f.id === fid); if (fd && fd.stanceFin && player) { player.stance = 1; doStanceFin(fd); return fd.stanceFin.kind; } return null; },
@@ -5230,7 +6202,28 @@ window.__cdtest = {
   showMission: () => showMission(),
   dbgBlitz: () => { doBlitz(); return player.blitzCD; },
   dbgHurt: (d) => hurtPlayer(d),
+  dbgG3: (mode) => { // TEST ONLY (improve-loop c4): one landHit vs a controlled foe, forcing the reaction
+    const e = enemies.find(x => x.hp > 0 && !x.boss);
+    if (!e || !player || state !== 'fight') return null;
+    e.ai = 'walk'; e.stagger = 0; e.airborne = false; e.launched = false; e.guardCD = 0; e.dodgeCD = 0;
+    e.guardT = 0; e.dodgeT = 0;
+    e.px = player.px + 2; e.pz = player.pz; syncPos(e);
+    const hp0 = Math.round(e.hp), g0 = T.guards || 0, d0 = T.dodges || 0, pz0 = e.pz;
+    const origRnd = Math.random;
+    if (mode === 'guard') { e.dodgeCD = 99; Math.random = () => 0.01; } // dodge disabled, guard passes
+    else if (mode === 'dodge') { Math.random = () => 0.001; } // dodge rolls first, passes
+    else if (mode === 'clean') { Math.random = () => 0.999; } // both fail
+    else if (mode === 'windup') { e.ai = 'windup'; Math.random = () => 0.001; } // mid-swing: committed, no reaction
+    try { landHit(e, 20, 'jab', 0.03, 0.2, false, false); }
+    finally { Math.random = origRnd; }
+    return { hp0, hp1: Math.round(e.hp), guards: (T.guards || 0) - g0, dodges: (T.dodges || 0) - d0,
+      guardT: +(e.guardT || 0).toFixed(2), dodgeT: +(e.dodgeT || 0).toFixed(2), pzShift: +(e.pz - pz0).toFixed(2) };
+  },
   dbgDodgeT: (v) => { if (player) player.dodgeT = v; return player.dodgeT; },
+  // BLOCK (defense lane) test hooks
+  dbgBlock: (on) => { if (player) { if (on) startBlock(); else stopBlock(); } return !!(player && player.blocking); },
+  dbgBlockHit: (dmg) => { const hp0 = player.hp, b0 = T.blocks || 0; hurtPlayer(dmg || 20); return { hp0, hp1: player.hp, chip: hp0 - player.hp, blocks: (T.blocks || 0) - b0 }; },
+  dbgSetBusy: (v) => { if (player) player.busy = v; return player ? player.busy : null },
   dbgEvents: () => T.events.map((e) => e.name),
   dbgPlayer: () => player ? { hp: player.hp, energy: Math.round(player.energy), px: +player.px.toFixed(2), witchCD: +(player.witchCD||0).toFixed(2), blitzCD: +(player.blitzCD||0).toFixed(2) } : null,
   dbgBoss: (id) => { const b = bossDef(id); return b ? { name: b.name, hp: b.hp, proc: !!b.proc, sig: b.sig ? b.sig.name : null } : null; },
@@ -5269,6 +6262,9 @@ window.__cdtest = {
   spawnCreature: (cid) => { if (player) { const e = makeCreatureRaw(cid, 0xffffff, player.px + 3, -Math.PI / 2, 1); if (e) { e.maxHp = e.hp = 200; e.dmgMult = 1; e.spd = 1.5; e.px = player.px + 3; e.pz = 0; e.ai = 'walk'; e.aiT = 1; syncPos(e); playAnim(e, 'Running_A', { loop: true }); enemies.push(e); } return e; } },
   hurt: (n) => { if (player) hurtPlayer(n); },
   doJump, doPunch, doHeavy, doSpecial, doTaunt, doDesperation, doStance, doTech, doGrapple, doDodge,
+  // CONTACT COLLISION test hooks: hurtbox interpenetration stats
+  contactStats: () => ({ maxPen: +((T.maxHurtPen || 0).toFixed(3)), lastStrike: +((T.lastContactPen || 0).toFixed(3)), strikes: T.strikeContacts || 0 }),
+  resetContactStats: () => { T.maxHurtPen = 0; T.lastContactPen = 0; T.strikeContacts = 0; return true; },
   swingDbg: () => ({ swing: T.swingSfx || 0, whiff: T.whiffSfx || 0 }), // S2 swing-whoosh tranche (owner 2026-10-07)
   energySegDbg: () => T.energySeg || 0, // TIER 2 item 9 segmented energy bar (wave 18, owner 2026-10-09)
   swingClear: () => { T.swingSfx = 0; T.whiffSfx = 0; },
@@ -5280,6 +6276,8 @@ window.__cdtest = {
   counterClear: () => { T.counterSfx = 0; T.counters = 0; },
   buzzDbg: () => ({ buzzN: T.buzzN || 0 }), // F10 haptics (improve-loop cycle 1, 2026-10-09)
   buzzClear: () => { T.buzzN = 0; },
+  scoreDbg: () => ({ score: scoreRun, combo, maxCombo }), // PRESENTATION: arcade score test hook
+  slowmoDbg: () => ({ slowmo, slowmoT, pushT }), // PRESENTATION: slow-mo + camera push test hook
   forceCounterWindup: () => { // S5 playtest: stage a foe mid-windup in counter range, neutral stick
     const e = enemies.find(x => x.hp > 0 && !x.boss);
     if (!e || !player) return false;
@@ -5441,7 +6439,18 @@ window.__cdtest = {
   step: (dt) => { playerUpdate(dt || 1 / 60); }, // drive the real physics deterministically
   estep: (dt) => { for (const e of enemies.slice()) enemyAI(e, dt || 1 / 60); }, // drive enemy AI deterministically (test only)
   estepN: (n, dt) => { for (let i = 0; i < (n || 60); i++) for (const e of enemies.slice()) enemyAI(e, dt || 1 / 60); return true; }, // batch estep (test only)
+<<<<<<< HEAD
   // (duplicate 'ff' removed — build fix 2026-10-09: the canonical fast-forward lives above at 'improve-loop playtest tooling')
+=======
+  ff: (n, dt) => { // improve-loop: deterministic FULL-frame stepping for playtests (no render).
+    // frame() covers playerUpdate + director + enemyAI + hitstop/combo timers + projectiles.
+    // NOTE: hit resolution uses wall-clock setTimeout — after ff(), await a real sleep so
+    // pending hit timeouts fire, then sample. Positions are read fresh inside the timeout.
+    const t = Math.max(1, Math.min(600, n | 0 || 1));
+    for (let i = 0; i < t; i++) frame(dt || 1 / 60, false);
+    return +gameTime.toFixed(2);
+  },
+>>>>>>> main
   dbg: () => player ? { st: state, mo: missionOver, en: ended, hp: player.hp, busy: player.busy, airT: player.airT, py: player.py, vy: player.vy, frames: dbgFrames } : null,
   setStick: (dx, dy) => { stick.dx = dx; stick.dy = dy; },
   playerPos: () => player ? { px: +player.px.toFixed(2), pz: +player.pz.toFixed(2), py: +(player.py || 0).toFixed(2), airT: +(player.airT || 0).toFixed(2) } : null,
