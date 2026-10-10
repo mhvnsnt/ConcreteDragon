@@ -6622,13 +6622,15 @@ function frame(dt, doRender = true) {
       camera.lookAt(tx + 0.2, 1.1, pushPos.z);
     } else {
       // P8 DASH FEEL (Gears roadie-run): blitz widens FOV 12%, drops camera, adds wobble — feels 2x faster for free
+      // P9 RULE-OF-THIRDS: lookAt shifted toward facing puts player on the third, threat side open (Gears GDC)
       const dashK = player.dashFeelT > 0 ? Math.min(1, player.dashFeelT / 0.4) : 0;
       const baseFov = innerHeight > innerWidth ? 52 : 40;
       const targetFov = baseFov * (1 + dashK * 0.12);
       if (Math.abs(camera.fov - targetFov) > 0.1) { camera.fov = targetFov; camera.updateProjectionMatrix(); }
       const wob = dashK * 0.06;
+      const faceDir = player.face || 1;
       camera.position.set(camX + (Math.random() - 0.5) * (shake + wob), 2.6 - dashK * 0.25 + (Math.random() - 0.5) * (shake + wob), 7.6);
-      camera.lookAt(camX + 0.2, 1.25, 0);
+      camera.lookAt(camX + faceDir * 1.1, 1.25, 0);
     }
     shake *= Math.pow(0.002, dt);
     lampL.position.x = camX - 2; lampR.position.x = camX + 4;
