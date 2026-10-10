@@ -5452,6 +5452,7 @@ window.__cdtest = {
   setDiff: (id) => { save.difficulty = id; writeSave(); },
   zeroBusy: () => { if (player) player.busy = 0; },
   info: () => ({ px: player ? +player.px.toFixed(1) : 0, hp: player ? Math.round(player.hp) : 0, foes: enemies.length, boss: bossRef ? Math.round(bossRef.hp) : 0, cash: cashRun, kills }),
+  // (duplicate clipNames removed — defined once at the top of __cdtest)
   foes: () => enemies.map((e) => ({ px: +e.px.toFixed(2), pz: +(e.pz || 0).toFixed(2), ai: e.ai, hp: Math.round(e.hp), name: e.name, wu: +((e.windup || 0).toFixed(2)) })),
   // combat+cinematics wave: motion inputs, energy, mega, projectiles, cine
   energy: () => player ? Math.round(player.energy) : 0,
