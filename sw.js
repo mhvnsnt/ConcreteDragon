@@ -3,8 +3,8 @@
 // install time is unreliable, so the shell is cached at RUNTIME on first
 // successful online load (cache-first afterwards). Small files precache at
 // install for instant availability.
-// 0.1.1-6802ad7 is stamped by game-3d/build.mjs at build time.
-const CACHE = 'concrete-dragon-0.1.1-6802ad7';
+// 0.1.1-9b5881a is stamped by game-3d/build.mjs at build time.
+const CACHE = 'concrete-dragon-0.1.1-9b5881a';
 const PRECACHE = [
   './manifest.webmanifest',
   './icons/icon-192.png',
