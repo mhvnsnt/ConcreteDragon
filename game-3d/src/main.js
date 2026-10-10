@@ -114,7 +114,7 @@ const FIGHTERS = [
       ['DRAGON HOOK', 'HVY', 'Slow, crushing hook. Big damage.'],
       ['HUNDRED HAND SLAP', 'STANCE + HVY', 'Rapid open-palm flurry. Eats guards alive.'],
       ['DRAGON DROP', 'JUMP, then HIT', 'Aerial dive kick. Hits on the way down.'],
-      ['DESPERATION', 'DDG ×2', '360° panic spin. Costs 10% HP.'],
+      ['DESPERATION', 'DDG ×2', '360° panic spin. Banks 10% HP as rally — attack to win it back.'],
       ['TAUNT', 'TAUNT btn / T', 'Talk trash, gain special meter.'],
       ['TECH', 'HIT while knocked down', 'Instant recovery + bounce + brief invuln. Never helpless.'],
       ['DUST LAUNCHER', '↓ + HVY', 'Universal overhead launcher. Pops them up for juggles.'],
@@ -147,7 +147,7 @@ const FIGHTERS = [
       ['WRAITH HOOK', 'HVY', 'Charged hook. Big damage.'],
       ['AFTERIMAGE ASSAULT', 'STANCE + HVY', 'Blink through them — strike from behind.'],
       ['GHOST DROP', 'JUMP, then HIT', 'Aerial dive kick.'],
-      ['DESPERATION', 'DDG ×2', '360° panic spin. Costs 10% HP.'],
+      ['DESPERATION', 'DDG ×2', '360° panic spin. Banks 10% HP as rally — attack to win it back.'],
       ['TAUNT', 'TAUNT btn / T', 'Talk trash, gain special meter.'],
       ['TECH', 'HIT while knocked down', 'Instant recovery + bounce + brief invuln. Never helpless.'],
       ['DUST LAUNCHER', '↓ + HVY', 'Universal overhead launcher. Pops them up for juggles.'],
@@ -184,7 +184,7 @@ const FIGHTERS = [
       ['RENT COLLECTOR', 'HVY', 'The rent collector. Huge damage.'],
       ['WRECKING BALL', 'STANCE + HVY', '360° wrecking spin. The whole circle pays.'],
       ['CURB DROP', 'JUMP, then HIT', 'Aerial drop kick.'],
-      ['DESPERATION', 'DDG ×2', '360° panic spin. Costs 10% HP.'],
+      ['DESPERATION', 'DDG ×2', '360° panic spin. Banks 10% HP as rally — attack to win it back.'],
       ['TAUNT', 'TAUNT btn / T', 'Talk trash, gain special meter.'],
       ['TECH', 'HIT while knocked down', 'Instant recovery + bounce + brief invuln. Never helpless.'],
       ['DUST LAUNCHER', '↓ + HVY', 'Universal overhead launcher. Pops them up for juggles.'],
@@ -220,7 +220,7 @@ const FIGHTERS = [
       ['THE GAVEL', 'HVY', 'The gavel. Enormous damage.'],
       ['ROYAL EDICT', 'STANCE + HVY', 'Decree from above: radial shockwave slam.'],
       ['THRONE STOMP', 'JUMP, then HIT', 'Aerial stomp kick.'],
-      ['DESPERATION', 'DDG ×2', '360° panic spin. Costs 10% HP.'],
+      ['DESPERATION', 'DDG ×2', '360° panic spin. Banks 10% HP as rally — attack to win it back.'],
       ['TAUNT', 'TAUNT btn / T', 'Talk trash, gain special meter.'],
       ['TECH', 'HIT while knocked down', 'Instant recovery + bounce + brief invuln. Never helpless.'],
       ['DUST LAUNCHER', '↓ + HVY', 'Universal overhead launcher. Pops them up for juggles.'],
@@ -257,7 +257,7 @@ const FIGHTERS = [
       ['FULL SLEDGE', 'HVY', 'Full sledge. Devastating.'],
       ['SCRAP YARD', 'STANCE + HVY', 'Overhead crusher. Launches the whole pack.'],
       ['WRECKING DROP', 'JUMP, then HIT', 'Aerial demolition kick.'],
-      ['DESPERATION', 'DDG ×2', '360° panic spin. Costs 10% HP.'],
+      ['DESPERATION', 'DDG ×2', '360° panic spin. Banks 10% HP as rally — attack to win it back.'],
       ['TAUNT', 'TAUNT btn / T', 'Talk trash, gain special meter.'],
       ['TECH', 'HIT while knocked down', 'Instant recovery + bounce + brief invuln. Never helpless.'],
       ['DUST LAUNCHER', '↓ + HVY', 'Universal overhead launcher. Pops them up for juggles.'],
@@ -289,7 +289,7 @@ const FIGHTERS = [
       ['THE FANG', 'HVY', 'The fang. Big damage.'],
       ["SERPENT'S EMBRACE", 'STANCE + HVY', 'Coil through the line — everything gets bit.'],
       ['VIPER DROP', 'JUMP, then HIT', 'Aerial fang kick.'],
-      ['DESPERATION', 'DDG ×2', '360° panic spin. Costs 10% HP.'],
+      ['DESPERATION', 'DDG ×2', '360° panic spin. Banks 10% HP as rally — attack to win it back.'],
       ['TAUNT', 'TAUNT btn / T', 'Talk trash, gain special meter.'],
       ['TECH', 'HIT while knocked down', 'Instant recovery + bounce + brief invuln. Never helpless.'],
       ['DUST LAUNCHER', '↓ + HVY', 'Universal overhead launcher. Pops them up for juggles.'],
@@ -348,7 +348,7 @@ const FIGHTERS = [
       ['GOURD CRUSHER', 'HVY', 'Overhead gourd crusher. Big damage.'],
       ['HARVEST MOON', 'STANCE + HVY', 'Rising gourd uppercut. Sends them skyward.'],
       ['HARVEST DROP', 'JUMP, then HIT', 'Aerial harvest drop kick.'],
-      ['DESPERATION', 'DDG ×2', '360° panic spin. Costs 10% HP.'],
+      ['DESPERATION', 'DDG ×2', '360° panic spin. Banks 10% HP as rally — attack to win it back.'],
       ['TAUNT', 'TAUNT btn / T', 'Talk trash, gain special meter.'],
       ['TECH', 'HIT while knocked down', 'Instant recovery + bounce + brief invuln. Never helpless.'],
       ['DUST LAUNCHER', '↓ + HVY', 'Universal overhead launcher. Pops them up for juggles.'],
@@ -375,7 +375,7 @@ for (const f of FIGHTERS) {
     ['HEAT', 'HVY on staggered foe', 'Contextual finisher — big damage, slow-mo'],
     ['FOCUS', 'HOLD HVY 0.45s', 'Absorb one hit, release = crumple strike'],
     ['BURST', '↑ + SPC while juggled', 'Combo breaker — 50 energy'],
-    ['DESPERATION', '↓ + SPC under 50% HP', 'Trade 10% HP for a huge blast'],
+    ['DESPERATION', '↓ + SPC under 50% HP', 'Trade 10% HP (banked as rally — win it back by attacking) for a huge blast'],
     ['RAGE', 'Take damage', 'Full rage bar = 8s +40% damage'],
     ['DASH STRIKE', 'DDG into enemy', 'Your dodge is a weapon — 18 dmg on contact'],
     ['WALL SPLAT', 'Launch near props', 'Slam them into scenery for bonus damage'],
@@ -4540,7 +4540,9 @@ function doSpecial() {
   if (stick.dy > 0.5 && player.hp < player.maxHp * 0.5) {
     inputHist.length = 0;
     const cost = Math.round(player.maxHp * 0.1);
+    const hpBefore = player.hp;
     player.hp = Math.max(1, player.hp - cost); player.busy = 0.6;
+    player.rallyHp = (player.rallyHp || 0) + (hpBefore - player.hp); // P16 SoR4 RALLY: cost banked as recoverable green health
     banner('DESPERATION!', 'bad'); sfx('hit3', 1, false, 0.5); flash('#ff4444');
     addSlowmo(0.4, 0.5); shake = 0.8;
     playAnim(player, 'Melee_Unarmed_Attack_Kick', { ts: 1.8, fade: 0.05 });
@@ -4609,11 +4611,14 @@ function doSpecial() {
   setHud();
 }
 function doDesperation() {
-  // Final Fight desperation: 360° spin that costs 10% current HP (never lethal) — the panic button
+  // Final Fight desperation: 360° spin — the panic button. P16 SoR4 RALLY: the 10%
+  // current-HP cost (never lethal) is BANKED as recoverable rally health (green bar),
+  // not lost permanently. Keep attacking to earn it back; taking a hit drains it first.
   if (player.busy > 0 || player.airT > 0) return;
   const cost = Math.max(1, Math.round(player.hp * 0.10));
   if (player.hp - cost < 1) { popText('TOO WEAK', 'bad', innerWidth / 2, innerHeight * 0.4); return; }
   player.hp -= cost; player.busy = 0.55; player.dodgeCD = 1.2;
+  player.rallyHp = (player.rallyHp || 0) + cost; // P16: bank the cost as rally health
   playAnim(player, 'Melee_Unarmed_Attack_Kick', { ts: 2.8, fade: 0.04 });
   slowmo = 0.5; slowmoT = 0.4; flash('#ff2a2a');
   banner('DESPERATION!', 'bad');
@@ -4792,6 +4797,7 @@ function landHit(e, dmg, label, hs, sh, launcher, counter) {
   // ONE-HIT (Katana Zero): everyone dies in one hit — bosses take heavy damage instead
   if (mission && hasMod('onehit')) { if (e.boss) dmg = Math.max(dmg, 150); else dmg = 99999; }
   T.hits++; if (counter) T.counters++;
+  if (label !== 'DESPERATION') rallyRecover(); // P16 SoR4 RALLY: landed offense earns the bank back — the blast never rallies its own cost
   // CRIT (gear/gym) + LAST STAND (Garou TOP-inspired): below 30% HP you hit 25% harder
   let dealt = dmg, critOn = false, lsOn = false;
   if (Math.random() < critCh()) { dealt = Math.round(dealt * 1.6); critOn = true; }
@@ -4931,6 +4937,38 @@ function killEnemy(e) {
   }, 1200);
   setHud();
 }
+// P16 SoR4 RALLY (Streets of Rage 4: desperation/special HP costs are banked as
+// recoverable green health — "lost health is banked, potentially recoverable…
+// if you keep on the offensive"). Banking happens in doDesperation + the DOWN+SPC
+// desperation path (player.rallyHp). Incoming damage drains banked rally BEFORE
+// real HP ("rally lost-first-on-damage"); zeroing HP still KOs even with rally
+// pending — rally never saves you.
+function applyPlayerDamage(dmg) {
+  const r = Math.min(player.rallyHp || 0, dmg);
+  if (r > 0) { player.rallyHp -= r; T.rallyAbsorbed = (T.rallyAbsorbed || 0) + r; ev('rallydrain', { r }); }
+  player.hp -= (dmg - r);
+}
+// Each landed (non-desperation) hit converts 1/5 of the remaining rally pool into
+// real HP — ~5 clean hits earns a full desperation bank back. Guarded/dodged strikes
+// convert nothing; the desperation blast itself never rallies its own cost. If heals
+// topped HP to full, the stale bank is forfeited (nothing left to earn back).
+function rallyRecover() {
+  if (!player || player.hp <= 0) return;
+  const r = player.rallyHp || 0;
+  if (r <= 0) return;
+  if (player.hp >= player.maxHp) { player.rallyHp = 0; return; }
+  const conv = Math.min(r, Math.max(1, Math.ceil(r / 5)));
+  player.hp = Math.min(player.maxHp, player.hp + conv);
+  player.rallyHp = r - conv;
+  T.rallyRecovered = (T.rallyRecovered || 0) + conv;
+  if (player.rallyHp <= 0) {
+    player.rallyHp = 0;
+    const rsp = screenPos(player.root.position.clone().add(new THREE.Vector3(0, 2.2, 0)));
+    popText('RALLY RECOVERED!', 'gold', rsp.x, rsp.y - 20);
+    sfx('bell', 0.9, false, 1.2); ev('rallyfull', {});
+  }
+  setHud();
+}
 function hurtPlayer(dmg) {
   if (mission && mission.endless && (endlessMuts || []).includes('GLASS JAW')) dmg = Math.round(dmg * 1.5);
   if (!player || player.hp <= 0 || missionOver || ended) return;
@@ -4973,7 +5011,7 @@ function hurtPlayer(dmg) {
   // clip for the reaction — never faked.
   if (player.blocking && !((player.airT || 0) > 0)) {
     const chip = Math.max(1, Math.round(dmg * 0.15));
-    player.hp -= chip;
+    applyPlayerDamage(chip); // P16: chip drains banked rally first too
     T.blocks = (T.blocks || 0) + 1; ev('pblock', { chip, dmg });
     playAnim(player, 'Melee_Block_Hit', { ts: 1.3 });
     sparkFX(player.px + (player.face || 1) * 0.5, 1.2, player.pz, 0x7af0ff, 14);
@@ -4989,7 +5027,7 @@ function hurtPlayer(dmg) {
     return;
   }
   dmg = Math.max(1, Math.round(dmg * (1 - (blessFx().armor || 0)))); // IRON SKIN
-  dmgTaken += dmg; player.hp -= dmg; combo = 0; shake = 0.3; hitstop = 0.05; flash('#ff2a2a'); sfx('hit2', 0.8, false, 0.7); buzz(50); // F10 haptics
+  dmgTaken += dmg; applyPlayerDamage(dmg); combo = 0; shake = 0.3; hitstop = 0.05; flash('#ff2a2a'); sfx('hit2', 0.8, false, 0.7); buzz(50); // F10 haptics
   applySquash(player, 0.22, 0); // P12: player squashes when hurt too
   player.jugN = (player.jugN || 0) + 1; player.jugT = 2.5; // BURST (Guilty Gear): juggle tracking
   // RAGE METER (The TakeOver): damage taken builds rage; full bar = 8s +40% damage
@@ -5027,7 +5065,7 @@ function hurtPlayer(dmg) {
       player.usedCharmRevive = true; player.hp = 1;
       banner('SECOND WIND'); flash('#7af0ff'); sfx('bell', 1, true); setHud(); return;
     }
-    player.hp = 0; setHud();
+    player.hp = 0; player.rallyHp = 0; setHud(); // P16: the rally bank dies with you — zeroing HP KOs even with rally pending
     playAnim(player, 'Death_A', { clamp: true });
     missionOver = true;
     setTimeout(() => missionComplete(false), 1400);
@@ -6368,6 +6406,8 @@ function setHud() {
   if (!player) return;
   const fd = fighterDef();
   ghostFill('php', 'pghost', Math.max(0, player.hp / player.maxHp));
+  // P16 SoR4 RALLY: green rally-health segment stacked past the real-HP fill (SoR4 green)
+  const pr = $('prally'); if (pr) pr.style.width = Math.min(100, Math.max(0, (player.hp + (player.rallyHp || 0)) / player.maxHp * 100)) + '%';
   $('pname').textContent = fd.name + (player.stance && fd.stance ? ' — ' + fd.stance.name : '');
   const e = (bossRef && bossRef.hp > 0) ? bossRef : nearestEnemy(99);
   if (e) { ghostFill('ehp', 'eghost', Math.max(0, e.hp / e.maxHp)); $('ename').textContent = e.name; }
@@ -6909,7 +6949,7 @@ window.__cdtest = {
   setHp: (n) => { if (player) { player.hp = n; setHud(); } },
   smashNearestDestruct: () => { const d = destructibles.find((x) => x.hp > 0); if (d) { d.hp = 0; destroyDestructible(d); } },
   sigChance: (v) => { window.__cdSigChance = v; },
-  playerDbg: () => player ? { busy: +player.busy.toFixed(2), stance: player.stance||0, hp: Math.round(player.hp), maxHp: Math.round(player.maxHp), state, fid: fighterDef().id, weapon: player.weapon ? { type: player.weapon.type, durability: player.weapon.durability } : null, hasFin: !!fighterDef().stanceFin, face: player.face, animMove: !!player.animMove, animTs: player.cur ? +player.cur.timeScale.toFixed(2) : 0, px: +player.px.toFixed(2) } : null,
+  playerDbg: () => player ? { busy: +player.busy.toFixed(2), stance: player.stance||0, hp: Math.round(player.hp), maxHp: Math.round(player.maxHp), rally: Math.round(player.rallyHp || 0), state, fid: fighterDef().id, weapon: player.weapon ? { type: player.weapon.type, durability: player.weapon.durability } : null, hasFin: !!fighterDef().stanceFin, face: player.face, animMove: !!player.animMove, animTs: player.cur ? +player.cur.timeScale.toFixed(2) : 0, px: +player.px.toFixed(2) } : null,
   fireStanceFin: (fid) => { const fd = FIGHTERS.find(f => f.id === fid); if (fd && fd.stanceFin && player) { player.stance = 1; doStanceFin(fd); return fd.stanceFin.kind; } return null; },
   forceStance: () => { if (player && player.stance !== 1) doStance(); return true; },
   forceBossSig: () => { if (bossRef) { bossRef.pat = 'sig'; bossRef.ai = 'windup'; bossRef.windup = 0.01; } },
@@ -7021,6 +7061,7 @@ window.__cdtest = {
   hitLayerDbg: () => ({ layer: T.hitLayerSfx || 0, synth: T.synthHitSfx || 0 }), // S1 hit-layer tranche (owner 2026-10-08): layer fires AND synth hits still resolve
   hitLayerClear: () => { T.hitLayerSfx = 0; T.synthHitSfx = 0; },
   dbgFoePassive: () => { let n = 0; for (const e of enemies) if (!e.boss && e.hp > 0) { e.ai = 'recover'; e.aiT = 999; e.guardCD = 99; e.dodgeCD = 99; n++; } return n; }, // S1 hit-layer playtest: passive punching bag (still a real enemy, takes real hits; P15: reactions disabled for deterministic hitstop measurement)
+  rallyDbg: () => player ? { hp: Math.round(player.hp), rally: Math.round(player.rallyHp || 0), maxHp: Math.round(player.maxHp), recovered: T.rallyRecovered || 0, absorbed: T.rallyAbsorbed || 0 } : null, // P16: rally pool + lifetime counters
   audioDbg: (ks) => (ks || []).map(k => ({ k, ok: !!(sbuf[k] && sbuf[k] instanceof AudioBuffer) })), // S2: prove swing SFX decoded
   uiClickDbg: () => ({ uiClick: T.uiClickSfx || 0 }), // S6 UI click tranche (owner 2026-10-08): playtest hook for the central UI-button click SFX
   uiClickClear: () => { T.uiClickSfx = 0; },

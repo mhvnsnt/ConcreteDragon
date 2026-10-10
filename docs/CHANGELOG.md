@@ -10,6 +10,24 @@ it ships. itch.io devlogs mirror the highlights for buyers.
 
 ## 2026-10-10
 
+### P16 — SoR4 health rally: desperation is a brave bet now
+- Desperation no longer costs 10% HP permanently — the cost is **banked as
+  recoverable rally health** (SoR4 green), shown as a green segment stacked
+  past the real-HP fill on the player health bar.
+- **Earn it back by attacking**: every landed hit converts 1/5 of the
+  remaining rally pool into real HP — about five clean hits recovers a full
+  bank. Guarded/dodged strikes convert nothing; the desperation blast itself
+  never rallies its own cost. Full recovery fires a **RALLY RECOVERED!**
+  moment.
+- **Lost-first-on-damage**: incoming hits drain banked rally before real HP.
+  Zeroing HP still KOs even with rally pending — rally never saves you.
+- Move-list copy updated (no-false-advertising: the cost is banked, not
+  permanent). Design ref: docs/RESEARCH_FIGHTER_MECHANICS.md §1b.
+- Verified headless: bank math, 1/5 conversion rate, full-recovery moment +
+  popup, drain-first damage, KO-with-rally, OBVIOUS-DEFECT sweep clean
+  (no interpenetration, feet grounded, facing follows input, hits connect,
+  no T-poses, HUD correct), zero page/console errors.
+
 ### P15 — Hitstop retune: hits finally have weight
 - Hitstop retuned toward genre norms (SF 9f lights / 13f heavies): jab
   0.03s → **0.10s**, cross 0.04s → **0.12s**, kick 0.08s → **0.16s**,
