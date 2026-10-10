@@ -4,6 +4,10 @@
   "source": "KayKit Character Animations 1.1 (CC0 1.0)"
  },
  {
+  "file": "anim_taunt.glb",
+  "source": "Wrestling mocap (Taunt) retargeted to game rig via Blender — clip: Taunt_Yakuza"
+ },
+ {
   "file": "anim_melee.glb",
   "source": "KayKit Character Animations 1.1 (CC0 1.0)"
  },
