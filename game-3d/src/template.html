@@ -292,6 +292,13 @@ body.cine #cineSkip{display:block}
 #title #logo{position:relative;padding:16px 30px 12px}
 #title #logo::before{content:'';position:absolute;inset:0;z-index:-1;border-radius:14px;border:3px solid #4a4370;box-shadow:0 6px 0 #000,inset 0 0 34px rgba(0,0,0,.65);background:radial-gradient(circle at 14px 14px,#9aa3b8 0 3px,#2a2f3a 4px,transparent 5px),radial-gradient(circle at calc(100% - 14px) 14px,#9aa3b8 0 3px,#2a2f3a 4px,transparent 5px),radial-gradient(circle at 14px calc(100% - 14px),#9aa3b8 0 3px,#2a2f3a 4px,transparent 5px),radial-gradient(circle at calc(100% - 14px) calc(100% - 14px),#9aa3b8 0 3px,#2a2f3a 4px,transparent 5px),linear-gradient(180deg,rgba(38,32,64,.95),rgba(16,11,34,.96))}
 #tapStart{display:inline-block;padding:10px 34px;border:3px solid #ffe14d;border-radius:12px;background:rgba(26,15,42,.87);box-shadow:0 0 18px rgba(255,225,77,.35),inset 0 0 14px rgba(0,0,0,.55)}
+/* CDCI3: title must fit short (landscape phone) viewports — TAP TO START above the fold */
+@media (max-height:520px){
+  #title #logo{padding:6px 18px 4px}
+  #title #logo img{width:min(38vw,260px)!important}
+  #title #logo small{font-size:11px;letter-spacing:3px}
+  #tapStart{margin-top:10px;font-size:18px;padding:8px 26px}
+}
 #patchNotes{background:rgba(18,12,38,.87);border:2px solid #4a4370;border-radius:10px;padding:4px 14px 10px}
 /* --- dragon dividers on section headers --- */
 .subtitle{display:flex;align-items:center;justify-content:center;gap:12px}
