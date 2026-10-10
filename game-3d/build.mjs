@@ -17,7 +17,10 @@ console.log('js bundle', kb(js.length), '| html', kb(Buffer.byteLength(html)));
 // so the deploy step can publish them at the site root (required for SW scope).
 let pwaVer = 'dev';
 try { pwaVer = fs.readFileSync('../game/version.txt', 'utf8').trim(); } catch (e) {}
-pwaVer += '-' + new Date().toISOString().slice(0, 10).replace(/-/g, '');
+try {
+  const { execSync } = await import('node:child_process');
+  pwaVer += '-' + execSync('git rev-parse --short HEAD', { encoding: 'utf8' }).trim();
+} catch (e) { pwaVer += '-' + new Date().toISOString().slice(0, 10).replace(/-/g, ''); }
 const copyDir = (src, dst) => {
   fs.mkdirSync(dst, { recursive: true });
   for (const f of fs.readdirSync(src, { withFileTypes: true })) {
@@ -30,3 +33,11 @@ copyDir('pwa', 'dist/pwa');
 const swPath = 'dist/pwa/sw.js';
 fs.writeFileSync(swPath, fs.readFileSync(swPath, 'utf8').replace(/__CD_PWA_VERSION__/g, () => pwaVer));
 console.log('pwa shipped, sw cache version', pwaVer);
+// MIRROR PWA FILES TO DIST ROOT: the built HTML references ./icons/...,
+// ./manifest.webmanifest and ./sw.js relative to itself (the production deploy
+// flattens pwa/ to the site root the same way), so the raw dist layout must
+// match — otherwise icons/manifest/SW 404 on boot.
+copyDir('pwa/icons', 'dist/icons');
+fs.copyFileSync('pwa/manifest.webmanifest', 'dist/manifest.webmanifest');
+fs.copyFileSync(swPath, 'dist/sw.js');
+console.log('pwa mirrored to dist root (icons + manifest + sw)');

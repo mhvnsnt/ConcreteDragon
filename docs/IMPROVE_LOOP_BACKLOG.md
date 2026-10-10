@@ -38,8 +38,28 @@ in order with conflict resolution between merges, or be rebased. Do not batch-me
   attack a passive player to a legitimate KO (game-over screen renders with
   stats); zero page/console errors. Collision interpenetration STILL PRESENT on
   main — expected, fixed by c2 (PR #12, awaiting merge), not a regression.
-- Next: G3 enemies block/dodge (medium risk, touches enemyAI) is the top
-  remaining code gap; P2/P3/P4 stay deferred to pass 2.
+- DONE cycle 4: G3 enemies block/dodge shipped (see Cycle 4 entry). P2/P3/P4 stay deferred to pass 2.
+
+## Cycle 4 (2026-10-09) — watchdog-resumed, shipped
+- **G3 enemy block/dodge** (genre gap: player offense uncontested). Enemies in walk/recover
+  (grounded, not staggered — mid-swing windup stays punishable) react at the single damage
+  choke point (`landHit`):
+  - **Sidestep**: 8-14% roll (thug 8%, knife 14%, boss 10%) — lateral shift 0.8-1.2 units,
+    0.3s i-frames, dust + whoosh + `DODGED!` popup. The strike whiffs cleanly.
+  - **Guard**: 12% roll (boss 22%) — chip damage only (12%, no crit/combo), 0.5s brace
+    (faces player, holds), blue block flash + `BLOCKED -N` popup + pitched-down thud.
+  - Cooldowns (guard 1.4-2.4s, dodge 1.5-2.5s) prevent permablock/permadodge.
+  - Test hooks: `t.dbgG3(mode)` (guard/dodge/clean/windup), `T.guards`/`T.dodges`.
+- **Verified headless** (`qa/playtest-improveloop-c4.mjs`, shots + g3-results.json in
+  `game-3d/shots-improveloop-c4/`, frames reviewed by eye): guard chips 20->2 with
+  guardT=0.5; dodge whiffs with 0.8-unit shift and dodgeT=0.3; clean hit lands full 20;
+  windup enemy takes full+crit with NO reaction; walk regression (3.68 units, minPy=0);
+  zero page/console errors.
+- **Also fixed two broken-merge artifacts found on main** (the merged stack shipped
+  unbuildable): duplicate `const go` (daily-run GO-button block) and a duplicated empty
+  `ff` hook — esbuild caught them where `node --check` did not. Lesson for the merge lane:
+  `node --check` is not enough; always build with esbuild after conflict resolution.
+- Next: P2 grab/throw stays deferred (pass 2); wave/PR lanes untouched (PR #14 merged separately).
 
 ## Ranked open backlog (not covered by any wave/PR)
 
@@ -145,3 +165,105 @@ SoR4/Final Fight enemies block; without it, late-game difficulty can only scale
 via HP/damage numbers. Medium risk (touches enemyAI state machine).
 
 ### (boss music — separate worker lane as of 2026-10-09, loop stays off it)
+
+### P6 — Lock-on camera + chanbara circling (N9/N10)
+**Refs:** Zelda OoT Z-targeting (Aonuma/Koizumi — see docs/RESEARCH_NINTENDO_VISUAL.md §2b): lock keeps player AND enemy framed, attacks converge; Miyamoto's chanbara circling duel model.
+**Gap:** no lock-on; camera doesn't guarantee both fighters framed; movement is free-run always.
+**Work:** soft lock-on (nearest threat), camera pulls to frame player+locked enemy, attacks converge on lock; locked movement becomes strafe/orbit.
+**Risk:** medium (touches camera + combat + movement).
+
+### P7 — AI director: off-lock enemies hold at frame edge (N11)
+**Refs:** Zelda OoT Koizumi — "Z-targeting tells the other enemies to wait" (see docs/RESEARCH_NINTENDO_VISUAL.md §2b).
+**Gap:** enemies dogpile/walk in without attacking (owner complaint 2026-10-09).
+**Work:** AI director rule — off-lock enemies hold at frame edge (taunt, circle, occasional projectile); only N engage at once. Pairs with enemy-AI research track.
+**Risk:** medium (touches enemyAI).
+
+### P8 — Dash feel: FOV widen + camera wobble (N12)
+**Refs:** Gears of War roadie run, GDC (see docs/RESEARCH_NINTENDO_VISUAL.md §2c).
+**Gap:** dash feels flat.
+**Work:** on dash: drop camera slightly, widen FOV 10-15%, subtle handheld wobble.
+**Risk:** low.
+
+### P9 — Rule-of-thirds framing (N13)
+**Refs:** Gears GDC — don't center the hero (see docs/RESEARCH_NINTENDO_VISUAL.md §2c).
+**Gap:** player likely centered, blocking threat-side view.
+**Work:** default camera offsets player to lower-third; incoming-threat side stays open.
+**Risk:** low.
+
+### P10 — Cutscene multi-camera system (N14)
+**Refs:** darwin3d camera theory (see docs/RESEARCH_NINTENDO_VISUAL.md §2d): cut between OTS (~10° off action line) and reaction (~60°) instead of one gliding cam.
+**Gap:** no cutscene camera language.
+**Work:** virtual multi-camera: establish action line, cut between profile/OTS/reaction; finisher cams — hard cut to low angle on impact, hold 0.5s, cut back.
+**Risk:** medium-high (needs cutscene system).
+
+### P11 — "Run and watch" spectacle segments (N15)
+**Refs:** SA2 GameSpot hands-on (see docs/RESEARCH_NINTENDO_VISUAL.md §3a).
+**Gap:** stage transitions are plain.
+**Work:** chase/transition sequences — hold-forward with dramatic authored camera cuts (low chase, crane, tracking).
+**Risk:** medium.
+
+### P12 — Squash-and-stretch hit reactions (N7)
+**Refs:** Luigi's Mansion (see docs/RESEARCH_NINTENDO_VISUAL.md §1d).
+**Gap:** hit reactions likely realistic/stiff.
+**Work:** exaggerate with squash-stretch deform on heavies, not ragdoll.
+**Risk:** low-medium (animation).
+
+### P13 — Night stage dramatic lighting (N6)
+**Refs:** Luigi's Mansion single-source lighting (see docs/RESEARCH_NINTENDO_VISUAL.md §1d).
+**Gap:** night stages may be flat-lit.
+**Work:** streetlamp pools, neon signs, deep shadows on night/alley stages.
+**Risk:** low-medium (lighting).
+
+### P14 — HUMAN-PERSPECTIVE UX LAW (owner 2026-10-09)
+**Refs:** owner directive — the character-select incident. AI builds dense/tiny/logically-complete; humans need big/clear/few. See ~/AGENTS.md HUMAN-PERSPECTIVE UX LAW.
+**Gap:** character select crams options into a tiny thin bottom scroll window; menus generally dense and un-thumbable.
+**Work:** (1) character select redesign FIRST: big cards, paged or horizontal, human-sized touch targets; (2) paged menus everywhere (no vertical scroll marathons); (3) glanceable hierarchy, breathing room. Menu research track (cd-menu-ui-research) producing the full spec.
+**Risk:** medium (touches all menus). GLOBAL — applies to every game repo.
+
+### P15 — Hitstop retune (the #1 feel-per-line change)
+**Refs:** Street Fighter norm 9f lights / 13f heavies; Guilty Gear Xrd 7f/10f (see docs/RESEARCH_FIGHTER_MECHANICS.md). CD jab freezes ~2f.
+**Gap:** hitstop severely under-tuned; hits feel weightless.
+**Work:** retune `ATK` table toward 6-16f by move weight; accept cancels during hitstop (SF2 2-in-1 rule).
+**Risk:** low (table values).
+
+### P16 — SoR4 health rally (desperation rework)
+**Refs:** Streets of Rage 4 — desperation HP banked as recoverable green health if you keep attacking (see docs/RESEARCH_FIGHTER_MECHANICS.md).
+**Gap:** CD desperation costs 10% HP permanently — pure punishment.
+**Work:** bank the cost as rally health; attacking recovers it; taking hits loses it.
+**Risk:** low-medium.
+
+### P17 — Tekken counter-hit properties
+**Refs:** Tekken — counter-hits grant NEW properties (knockdown/stun/juggle), not just 2x damage (see docs/RESEARCH_FIGHTER_MECHANICS.md).
+**Gap:** CD counters are flat 2x damage.
+**Work:** CH launcher always launches; CH heavy crumples into grapple loop.
+**Risk:** low-medium.
+
+### P18 — Back attack input (SoR4)
+**Refs:** Streets of Rage 4 (see docs/RESEARCH_FIGHTER_MECHANICS.md).
+**Gap:** no hitting behind; jump is movement-only (also P4).
+**Work:** dedicated back-attack input; rear positional strikes.
+**Risk:** low-medium.
+
+### P19 — Juggle damage scaling + bound slam (Tekken)
+**Refs:** Tekken juggle scaling; Tekken 6 bound (one per combo) (see docs/RESEARCH_FIGHTER_MECHANICS.md).
+**Gap:** juggles likely unscaled; no bound extension.
+**Work:** scale juggle hits down per hit; one bound-slam extension per combo.
+**Risk:** medium.
+
+### P20 — Enemy AI rework: hover/commit + surround slots (owner #1 complaint)
+**Refs:** pliskin92/supergereinaction hover-vs-commit; SoR surround slots; 2-attacker cap; OpenBOR (see docs/RESEARCH_ENEMY_AI.md for links + diagnosis).
+**Gap:** enemies beeline to player's exact position (main.js ~4118-4141), no standoff/strafe/slots; strike gate (adz<0.65) slower than strafe so they trail forever; ROOKIE 1.45-3.1s recoveries; `setTimeout` hit delivery whiffs during hitstop.
+**Work:** per-enemy hesitate/slot/preferGap fields; attack director (2-token cap + 6 surround slots); walk→hover/commit/reposition; game-time delayed-hit queue replacing setTimeout; keep windup telegraph + aggro scalar.
+**Risk:** medium-high (touches enemyAI core). Fixes promo videos too.
+
+### P21 — Character select redesign (UX LAW flagship)
+**Refs:** SF6 character select as art; Zelda scrolling criticism; touch-target minimums 44px (see docs/RESEARCH_MENU_UI.md).
+**Gap:** tiny thin bottom scroll window; 112px cards; 34px skin dots; unbounded roster growth.
+**Work:** 3 swipeable pages, 6 big cards/page (150px+), page dots + arrows, scout crew to own sub-page, selection fanfare, 44px minimum touch targets.
+**Risk:** medium. Sets the pattern for all menus.
+
+### P22 — Paged mission select + menu art spec
+**Refs:** see docs/RESEARCH_MENU_UI.md.
+**Gap:** vertical scroll menus; plain text boxes; undifferentiated sounds.
+**Work:** one zone per page, horizontal mission cards, 56px GO button; graffiti headers, panel9 treatments, styled dialogs, per-action sounds, animated page indicators, idle-life backgrounds.
+**Risk:** medium.

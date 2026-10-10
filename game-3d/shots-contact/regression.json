@@ -1,0 +1,48 @@
+{
+ "tests": [
+  {
+   "name": "combo-3-jabs",
+   "info": {
+    "px": 7,
+    "hp": 100,
+    "foes": 3,
+    "boss": 0,
+    "cash": 0,
+    "kills": 0
+   },
+   "stats": {
+    "maxPen": 0,
+    "lastStrike": 0.036,
+    "strikes": 2
+   },
+   "foes": [
+    70,
+    70,
+    865
+   ]
+  },
+  {
+   "name": "counter",
+   "hp": 882,
+   "stats": {
+    "maxPen": 0.001,
+    "lastStrike": 0.036,
+    "strikes": 2
+   }
+  },
+  {
+   "name": "special-aoe",
+   "hp": 858
+  },
+  {
+   "name": "boss-strike",
+   "strikes": 1,
+   "maxPen": 0.131,
+   "lastStrike": 0.233,
+   "php0": 100,
+   "php": 86
+  }
+ ],
+ "errors": [],
+ "done": true
+}
