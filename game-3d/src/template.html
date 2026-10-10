@@ -71,6 +71,9 @@ html,body{margin:0;height:100%;overflow:hidden;background:#150f2a;touch-action:n
 .circuitNode .cn{font-weight:800;font-size:13px}.circuitNode .cr{font-size:11px;color:#ffd166;margin-top:4px}
 .pop{position:absolute;transform:translate(-50%,-50%);font-size:26px;font-family:'SairaStencil','Bungee','Anton',Arial,sans-serif;color:#fff;text-shadow:0 3px 0 #000;animation:pop .9s ease-out forwards;white-space:nowrap}
 .pop.big{font-size:34px;color:#7af0ff}.pop.bad{color:#ff4d4d}.pop.gold{color:#ffd166}.pop.spc{color:#ff4fd8;font-size:40px}.pop.chain{color:#ffd166;font-size:40px;text-shadow:0 3px 0 #000,0 0 22px #ffb02e;animation:chainpop .8s ease-out forwards}
+/* CDCI3: comic-book hit words (Streets of Rage 2 steal) — chunky rotated POW!/WHAM! on significant hits */
+.pop.pow{font-size:46px;color:#ffe14d;-webkit-text-stroke:2px #6b2a00;text-shadow:0 4px 0 #6b2a00,0 0 26px rgba(255,225,77,.65);animation:powpop .7s ease-out forwards}
+@keyframes powpop{0%{transform:translate(-50%,-50%) scale(.2) rotate(-14deg)}18%{transform:translate(-50%,-50%) scale(1.5) rotate(6deg)}40%{transform:translate(-50%,-50%) scale(1.08) rotate(-3deg)}100%{transform:translate(-50%,-135%) scale(1.2) rotate(0deg);opacity:0}}
 @keyframes chainpop{0%{transform:translate(-50%,-50%) scale(.4)}20%{transform:translate(-50%,-50%) scale(1.35)}45%{transform:translate(-50%,-50%) scale(1.1)}100%{transform:translate(-50%,-120%) scale(1.15);opacity:0}}
 @keyframes pop{0%{transform:translate(-50%,-50%) scale(.4)}15%{transform:translate(-50%,-50%) scale(1.25)}100%{transform:translate(-50%,-160%) scale(1);opacity:0}}
 #warn{position:absolute;transform:translate(-50%,-100%);font-size:22px;font-family:'SairaStencil','Bungee','Anton',Arial,sans-serif;color:#ff2a2a;background:#fff;border-radius:6px;padding:2px 8px;opacity:0;transition:opacity .08s;box-shadow:0 0 18px #f00}
@@ -292,6 +295,13 @@ body.cine #cineSkip{display:block}
 #title #logo{position:relative;padding:16px 30px 12px}
 #title #logo::before{content:'';position:absolute;inset:0;z-index:-1;border-radius:14px;border:3px solid #4a4370;box-shadow:0 6px 0 #000,inset 0 0 34px rgba(0,0,0,.65);background:radial-gradient(circle at 14px 14px,#9aa3b8 0 3px,#2a2f3a 4px,transparent 5px),radial-gradient(circle at calc(100% - 14px) 14px,#9aa3b8 0 3px,#2a2f3a 4px,transparent 5px),radial-gradient(circle at 14px calc(100% - 14px),#9aa3b8 0 3px,#2a2f3a 4px,transparent 5px),radial-gradient(circle at calc(100% - 14px) calc(100% - 14px),#9aa3b8 0 3px,#2a2f3a 4px,transparent 5px),linear-gradient(180deg,rgba(38,32,64,.95),rgba(16,11,34,.96))}
 #tapStart{display:inline-block;padding:10px 34px;border:3px solid #ffe14d;border-radius:12px;background:rgba(26,15,42,.87);box-shadow:0 0 18px rgba(255,225,77,.35),inset 0 0 14px rgba(0,0,0,.55)}
+/* CDCI3: title must fit short (landscape phone) viewports — TAP TO START above the fold */
+@media (max-height:520px){
+  #title #logo{padding:6px 18px 4px}
+  #title #logo img{width:min(38vw,260px)!important}
+  #title #logo small{font-size:11px;letter-spacing:3px}
+  #tapStart{margin-top:10px;font-size:18px;padding:8px 26px}
+}
 #patchNotes{background:rgba(18,12,38,.87);border:2px solid #4a4370;border-radius:10px;padding:4px 14px 10px}
 /* --- dragon dividers on section headers --- */
 .subtitle{display:flex;align-items:center;justify-content:center;gap:12px}
