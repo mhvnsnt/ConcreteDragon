@@ -2860,10 +2860,7 @@ function showMission() {
     if (best) card.appendChild(el('div', 'best', `BEST: ${best}`));
     card.appendChild(el('div', 'rw', locked ? '🔒 ' + (m.unlock.id ? 'Clear ' + missionDef(m.unlock.id).name : '') : '★ ' + m.reward));
     if (!locked) {
-<<<<<<< HEAD
       // (dead duplicate 'go' button removed — build fix 2026-10-09: it redeclared the binding below)
-=======
->>>>>>> main
       const ranToday = m.daily && save.daily.date === localDateStr();
       const go = el('button', 'go' + (m.daily ? ' panel9g' : ''), m.daily ? (ranToday ? '⚡ DAILY RUN · RETRY' : '⚡ DAILY RUN') : 'GO');
       go.onclick = (e) => { e.stopPropagation(); unlockAudio(); sfx('uiclick', 0.8); startMission(m.id); };
@@ -3802,33 +3799,9 @@ function doJumpAttack() {
   playAnim(player, 'Melee_Unarmed_Attack_Kick', { ts: 2.2, fade: 0.03 });
   player.vy = Math.min(player.vy, -2); // fast fall into the kick
   sfxSwing(0.55); // S2: dedicated swing whoosh
-<<<<<<< HEAD
   T.dives = (T.dives || 0) + 1; // test hook
-=======
-  // CONTACT COLLISION: the foot hitbox is live during the fall — contact is checked
-  // per-frame in frame() until the kick lands or the window expires (hit once).
-  player.diveKick = { t: 0.7, hit: false };
-  damageDestructibles(2.3);
-}
-function updateDiveKick(dt) {
-  const dk = player && player.diveKick;
-  if (!dk || state !== 'fight' || missionOver || ended) { if (player) player.diveKick = null; return; }
-  dk.t -= dt;
-  const landed = (player.py || 0) <= 0.02 && player.vy >= 0;
-  if (dk.t <= 0 || landed) { player.diveKick = null; if (!dk.hitAny) sfxSwing(0.8, true); return; } // S2: whiff
-  for (const e of enemies.slice()) {
-    if (e.hp <= 0) continue;
-    if (Math.abs(e.px - player.px) > 2.3 || Math.abs((e.pz || 0) - (player.pz || 0)) > 1.6) continue;
-    const c = limbContact(player, e, 'foot');
-    if (!c) continue;
-    dk.hitAny = true;
-    resolveStrikeContact(player, e, c, { knockback: 0.3 });
-    landHit(e, Math.round(18 * player.dmgMult), 'DIVE KICK', 0.07, 0.3, false, false);
-    shake = Math.max(shake, 0.3);
-    player.diveKick = null;
-    return;
-  }
->>>>>>> main
+  // (branch uses player.dive active window at line ~5176, not player.diveKick — main's competing
+  //  dive-kick impl removed in merge; the combat-fix version is smoke-tested)
 }
 function doStanceFin(fd) {
   // Stance-exclusive finisher: only available in stance mode (double-tap TAUNT). Style, not power: a tradeoff move.
@@ -6065,7 +6038,7 @@ function frame(dt, doRender = true) {
     for (const e of enemies.slice()) enemyAI(e, dt);
     resolveBodyCollision(); // OBVIOUS-DEFECT LAW: no interpenetration, ever
     resolveHurtboxContact(); // CONTACT COLLISION: head/torso hurtboxes never overlap, ever
-    updateDiveKick(dt); // CONTACT COLLISION: live foot hitbox during dive-kick fall
+    // (updateDiveKick removed in merge — branch uses player.dive active window instead)
     for (const e of enemies) positionWarn(e);
     for (const e of enemies) if (e.dotT > 0 && e.hp > 0 && !e.dead) { e.dotT -= dt; e.hp -= e.dotDps * dt; sparkFX(e.px, 1.2, e.pz, 0x7cff6b, 1); if (e.hp <= 0) killEnemy(e); }
     if (comboT > 0 && (comboT -= dt) <= 0) { combo = 0; setHud(); }
@@ -6439,18 +6412,7 @@ window.__cdtest = {
   step: (dt) => { playerUpdate(dt || 1 / 60); }, // drive the real physics deterministically
   estep: (dt) => { for (const e of enemies.slice()) enemyAI(e, dt || 1 / 60); }, // drive enemy AI deterministically (test only)
   estepN: (n, dt) => { for (let i = 0; i < (n || 60); i++) for (const e of enemies.slice()) enemyAI(e, dt || 1 / 60); return true; }, // batch estep (test only)
-<<<<<<< HEAD
   // (duplicate 'ff' removed — build fix 2026-10-09: the canonical fast-forward lives above at 'improve-loop playtest tooling')
-=======
-  ff: (n, dt) => { // improve-loop: deterministic FULL-frame stepping for playtests (no render).
-    // frame() covers playerUpdate + director + enemyAI + hitstop/combo timers + projectiles.
-    // NOTE: hit resolution uses wall-clock setTimeout — after ff(), await a real sleep so
-    // pending hit timeouts fire, then sample. Positions are read fresh inside the timeout.
-    const t = Math.max(1, Math.min(600, n | 0 || 1));
-    for (let i = 0; i < t; i++) frame(dt || 1 / 60, false);
-    return +gameTime.toFixed(2);
-  },
->>>>>>> main
   dbg: () => player ? { st: state, mo: missionOver, en: ended, hp: player.hp, busy: player.busy, airT: player.airT, py: player.py, vy: player.vy, frames: dbgFrames } : null,
   setStick: (dx, dy) => { stick.dx = dx; stick.dy = dy; },
   playerPos: () => player ? { px: +player.px.toFixed(2), pz: +player.pz.toFixed(2), py: +(player.py || 0).toFixed(2), airT: +(player.airT || 0).toFixed(2) } : null,

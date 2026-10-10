@@ -5,10 +5,7 @@
 <title>Concrete Dragon</title>
 <!-- PWA (M9): installable + offline-capable web build -->
 <link rel="manifest" href="./manifest.webmanifest">
-<<<<<<< HEAD
-=======
 <link rel="icon" type="image/png" href="./icons/icon-192.png">
->>>>>>> main
 <meta name="theme-color" content="#150f2a">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -76,13 +73,8 @@ html,body{margin:0;height:100%;overflow:hidden;background:#150f2a;touch-action:n
 .pop.big{font-size:34px;color:#7af0ff}.pop.bad{color:#ff4d4d}.pop.gold{color:#ffd166}.pop.spc{color:#ff4fd8;font-size:40px}.pop.chain{color:#ffd166;font-size:40px;text-shadow:0 3px 0 #000,0 0 22px #ffb02e;animation:chainpop .8s ease-out forwards}
 @keyframes chainpop{0%{transform:translate(-50%,-50%) scale(.4)}20%{transform:translate(-50%,-50%) scale(1.35)}45%{transform:translate(-50%,-50%) scale(1.1)}100%{transform:translate(-50%,-120%) scale(1.15);opacity:0}}
 @keyframes pop{0%{transform:translate(-50%,-50%) scale(.4)}15%{transform:translate(-50%,-50%) scale(1.25)}100%{transform:translate(-50%,-160%) scale(1);opacity:0}}
-<<<<<<< HEAD
-#warn{position:absolute;transform:translate(-50%,-100%);font-size:22px;font-family:'Bungee','Anton',Arial,sans-serif;color:#ff2a2a;background:#fff;border-radius:6px;padding:2px 8px;opacity:0;transition:opacity .08s;box-shadow:0 0 18px #f00}
-#hint{position:absolute;left:50%;bottom:calc(max(12px,env(safe-area-inset-bottom)) + 170px);white-space:nowrap;transform:translateX(-50%);text-align:center;opacity:0;transition:opacity .25s}
-=======
 #warn{position:absolute;transform:translate(-50%,-100%);font-size:22px;font-family:'SairaStencil','Bungee','Anton',Arial,sans-serif;color:#ff2a2a;background:#fff;border-radius:6px;padding:2px 8px;opacity:0;transition:opacity .08s;box-shadow:0 0 18px #f00}
-#hint{position:absolute;left:50%;bottom:calc(max(12px,env(safe-area-inset-bottom)) + 130px);white-space:nowrap;transform:translateX(-50%);text-align:center;opacity:0;transition:opacity .25s}
->>>>>>> main
+#hint{position:absolute;left:50%;bottom:calc(max(12px,env(safe-area-inset-bottom)) + 170px);white-space:nowrap;transform:translateX(-50%);text-align:center;opacity:0;transition:opacity .25s}
 #hint .ring{width:60px;height:60px;margin:0 auto 6px;border:5px solid #fff;border-radius:50%;animation:ring 1s infinite;box-shadow:0 0 16px #4fd1ff}
 #hint b{font-size:26px;text-shadow:0 3px 0 #000;letter-spacing:1px}
 #hint small{display:block;font-family:Arial,sans-serif;font-weight:700;font-size:13px;margin-top:4px;text-shadow:0 2px 0 #000;text-transform:none}
@@ -149,11 +141,7 @@ body.cine #cineSkip{display:block}
 .mvrow .mi{font-family:'BebasNeue','Anton',Arial,sans-serif;font-size:13px;letter-spacing:1px;color:#7af0ff;white-space:nowrap}
 .mvrow .md{opacity:.75;text-transform:none}
 #mission{background-image:url("data:image/jpeg;base64,/9j/4AAQSkZJRgABAgAAAQABAAD//gAQTGF2YzYyLjI4LjEwMgD/2wBDAAgMDA4MDhAQEBAQEBMSExQUFBMTExMUFBQVFRUZGRkVFRUUFBUVGBgZGRscGxoaGRocHB4eHiQkIiIqKiszMz7/xABkAAADAQEBAAAAAAAAAAAAAAACAwEABAUBAQEBAAAAAAAAAAAAAAAAAAABAhAAAgMBAQACAQQDAQEBAAAAAAERAiExQRJhUXGBoTIiA8GRsfARAQAAAAAAAAAAAAAAAAAAAAD/wAARCAEAAQADARIAAhIAAxIA/9oADAMBAAIRAxEAPwDwRcmUaBMEAAfDMKAk20RL8MIBtHjAowAj+xtl9AVHNo1oKBcFIAEnAoGr8kTRFAHpPSADfAfoKBsShXHhFAyIQHyjAgOexnrZUAVODq1/xKAGdCS0ICsvGwAyqGUAmyK/QAqMuABmCRQEuAqQAcnAHAA7lomjkAGQEEBz2Qf+zhQAV4zLgAA+mnQAOpqhAWTLoARotlDABTWhNhQLMAGeDolAAhBPCKAln6hLSCoIGdKgJYligEsGzwABnRaegA+ULIoL8tBX9iApqTHcAgXDHtFQHK0xy6UAn4jlhAAqaoOz8CgTWwsiga2UgA04QSrgAcrGOpQE6ixAACG9IAXITUQUAdTV6AHVVMJMAMVkALswWnJQF6ZaAHNYNrQAyaa+xbtFgAav1ImmRQG5wnGAFZmEAEGKAPwEANIIAGQAD4C5wIALMU9KAGwcYACE4HRgACmmwCAGLptKgGelWdABjYL6VAYxQE9M5kALZSgvCAON4HaAA1RScMqA7hSsFA0J4gAFaHUIBcaNdfSoAICQAKWMKNKgHoyUAAcr0X6ABW6azKAArABNukfQAVZN8Oj0igRSsLTriZIoE+hNQwgL0CrKgLARQA8Oa1tABgNQAaumRFA1qRasQFA1Bb2KiABclQBNwgOhQaumrgAdAsAH2WANkAbpFBUAzhFJUFYsyBBngm9oAqAf+WkXAoCVUdNUACogNgBgAA6apC6kAPtwS2wCssEL7CoGSCkQA6QI0ADkhQFfCP8AqABPwFOQAzLZhBWNJRBV6CAEMRQAiIALYW2RQJdfRpFBFgMkUD0xdSAK8GJT+gAJacHU1hUFcnx9OmEiiBHxg61XAgOaqxjUoRQCWVyAC3LHwgAFKFoxEUEQXgAAmL4AGtDL0gABqgoBleC4IoGYL/QADUM1MAA64SdIAs4TwAElakANR6FVQAGnQ4ADMrkAF24BYqAGloZYABnWzAAH+zFiLbUVAArGSwAGpyhaTCgIgASBpFAn8jkRVRzKn/5jvQgAqNqigMkOawIC14BV+BQVoFsAGLgC4AAyoFOjmSIqiL6aGQQq9msQQBSAuFQDJwFPCgFpfkugASSTNIAYCdAB3gEgBZJUAKnA2CAFJyFRFQGnAbIKCTgrwgByYlNIAOxaLTABluCrWABbYtlAPqRAAxkT0AN4A2QBQPwFA2APlwigJIoAEwXwAAmGA2QAzZLVgBZhi2ADLWwV4AF+UMiXCgGN/wAm/wCBANXCrhQAmeBAAuhV6VAaylyMtEMAFTgrbABfCcxlAM6EuAADQbADnaDeoAMg0sACLDAAyz+yNYiAF0kNYFBLGZACPBn5CgUkUAHpGqRQDZBWABSNMAAyGZMAFphR6AEYJAE1wHMABoCWlQBSWIQFRnxlgAOVjHBQAt6DfCADs4Er/LsgBk+jY/AAMXgWooDI0gA5C5ABj4LkIBiqZAAFqDrPwjQEpfg0wyKBL6BbpAD05gXVyUA1jXsEUCowrAADBBTGgW+FEBlTIoFlYAKv4SzbIoBBYQGkEoB8lSADMIAEsJgBkCnIANaKRQKwy6AGlcIEAfDQADeplgABeIllhUAvpl9FAFCL1EACUADaxAS1gAMt/UB6ioDncIa1K4VAAnwYkUAddQ6qwANX/wCB8IAS3ulaTADnvb+QHS1n9IAFadPxjAoFVxFgAOmcOZtkAdDYC1BQVwRoigKeyRcABizQvCKAJLsEAJaLP7FQEalGbkKBdkGADEVMAJIXxADnsyNAACCQAPrxi66ABR0j4AC/o32ADUyIgDoWFKgEPjNf8FALTJUIBvhnqADPEC1gUCrWbASlgB01f8E4RQG4gBsgBiJTSgG1NIAGxbZFAxCZIAY8kFvAAX6L9KAkaSQAoQAFUJIAI2C5kACRUp0AD4VV/gACYTWEAcVu9K1LAAa/gckUAvrM8AA0BPAAfIvQAwpkAVkXQoLVGeMADuowTa0sAHJYT5YggDS0lbgA62ID/Z0KBN3Jvj6QApODQ4AB6fRCkAGWsJ+yoAq/YKCg61wFMgCt8QcFADo+CAOd50JwFApueF4QAaqi+ABXpG4CgWsC8ABMdCsAG8IvFH7hAdAPhQA+knQAauASAHTViqsigZZgXZAC/wBgZCgcKkigr0sgBEjJgBbYgW5ABPTABkCABTLZAAWquR4AX4NnQuEUA1rH7jPSKCW03SAB8IioAHwt8qFAh4jTKIAkMeVAc8HQigASN9EUBqxz6iKDrmRaeABXwS5ABr4KlAAxMU5IAc2oObWVANkUkygHdBkgBhvAAN2FPQAFPSooCsFBAdNVKDrwApXwTHAQKdFA7oAcbQbwqAGqBWAAxVCTkoCwHPQgOaBkYUAn0ZVEUEiJDfAAFIagAIXP0QA/wBcABSktUUBvonGyALfUE9ADnVRqWlACH6AC05kZx4AGUBZBFAh9CbIoJpVbQAzqGwA5arQq9ADp8AnWEAEaVhQSAZACr03IIoGriN0AAsV8ABVQ0AAovAA6auQKYQVDXhOgFWRTCoF2YE6AASEEA+mtFpgUDGSzwgDnbFOrRQHQuFrqADaX7AAXIUyRQKkbEgAlW6X4kAdNeEACdZq4UAWFIAX6bpQFakaQBz/kNlQC24QNigAnASKAxijIABbT6Wyl/sRVRz1tpKr4sgB9W2wqr0ADsC1P/oBXP3yBvEBAM4QoBitgEAAyzFMAHJyhacAAxg/IAKpLUgByaBAKF+ggRRVRa8AgzQUgBktQVXpUALrD0a3LKgEW8NfYKAGr6ZLCKAW2iMACqEiAHLgCWFQBRgfAAF4Z9ADcM2VASxGvSgMCEAabJUoDEfSKBbQTABBgAYtZkABTAp9AAIlm4wA6uKTcQAJlsMig52i2ADLCRkgA5rBMgAM6HBFAfQ4IAU0GUBq4GABoxBRYI/QCFNRwJgBmxcywoC/6EsfCAHpAOzACWXBXyKAdiES2yKBvx/QoAXjK1IAMRphEAZkAqMyMAFNwayAApmAAANhPhQB1WA1YQAslnBUANmJkoAGaUABoyADeoIAFNBekUDeoWEATwKwAK6ElMlQAAWfxwANJq6UBU5DSQQET0NooDLoqYZFA1gSADQPQAOSPhFBXwkTpAGVcQyslAHA6JIA5eyE1HAoA+A6YQAIgbEgBFpl0AGInoAMAbIoJ1gTDIoP/2Q=="),linear-gradient(to bottom,rgba(10,6,24,.55),rgba(10,6,24,.92));background-blend-mode:overlay}
-<<<<<<< HEAD
-#logo{font-family:'Bungee','Anton',Impact,Arial,sans-serif;font-size:52px;line-height:1;letter-spacing:2px;background:linear-gradient(#fff,#b388ff 55%,#ffcf2e);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 4px 0 #000);margin-top:6px}
-=======
-#logo{font-family:'SairaStencil','Bungee','Anton',Impact,Arial,sans-serif;font-size:52px;line-height:1;letter-spacing:2px;background:linear-gradient(#fff,#4fd1ff 60%,#ff4fd8);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 4px 0 #000);margin-top:6px}
->>>>>>> main
+#logo{font-family:'SairaStencil','Bungee','Anton',Impact,Arial,sans-serif;font-size:52px;line-height:1;letter-spacing:2px;background:linear-gradient(#fff,#b388ff 55%,#ffcf2e);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 4px 0 #000);margin-top:6px}
 #logo small{display:block;font-family:'BebasNeue','Anton',Arial,sans-serif;font-size:16px;letter-spacing:8px;color:#ffe14d;-webkit-text-fill-color:#ffe14d;margin-top:6px}
 .subtitle{font-size:19px;letter-spacing:4px;margin:10px 0 12px;color:#fff;text-shadow:0 2px 0 #000}
 #showName{font-family:'SairaStencil','Bungee','Anton',Arial,sans-serif;font-size:32px;letter-spacing:2px;text-shadow:0 3px 0 #000;margin-top:2px}
@@ -210,10 +198,9 @@ body.cine #cineSkip{display:block}
 .tipbtn:active{transform:scale(.96)}
 #mList{display:flex;gap:10px;overflow-x:auto;width:100%;max-width:640px;padding:6px 4px 14px;scrollbar-width:none}
 #mList::-webkit-scrollbar{display:none}
-<<<<<<< HEAD
 .mcard{flex:0 0 184px;padding:5px 7px;pointer-events:auto;text-align:left}
 .mcard .dn{font-size:11px;letter-spacing:2px;color:#7af0ff}
-.mcard .mn{font-family:'Bungee','Anton',Arial,sans-serif;font-size:17px;letter-spacing:1px;margin:3px 0;text-shadow:0 2px 0 #000}
+.mcard .mn{font-family:'SairaStencil','Bungee','Anton',Arial,sans-serif;font-size:17px;letter-spacing:1px;margin:3px 0;text-shadow:0 2px 0 #000}
 .mcard .sw{height:8px;border-radius:3px;margin:5px 0;border:1px solid #000}
 .mcard .inf{font-family:Arial,sans-serif;font-weight:700;font-size:10px;text-transform:none;opacity:.85;line-height:1.4}
 .mcard .rw{font-family:Arial,sans-serif;font-weight:700;font-size:10px;color:#ffd166;text-transform:none;margin-top:5px}
@@ -221,26 +208,12 @@ body.cine #cineSkip{display:block}
 .mcard.locked{filter:grayscale(1) brightness(.6)}
 .mcard .best{font-family:Arial,sans-serif;font-weight:700;font-size:10px;color:#80ed99;text-transform:none}
 .zoneHead{flex:0 0 168px;padding:6px 8px;pointer-events:none;text-align:left;border-left:4px solid #ffd166}
-.zoneHead .zn{font-family:'Bungee','Anton',Arial,sans-serif;font-size:15px;letter-spacing:1px;color:#ffd166;text-shadow:0 2px 0 #000}
+.zoneHead .zn{font-family:'SairaStencil','Bungee','Anton',Arial,sans-serif;font-size:15px;letter-spacing:1px;color:#ffd166;text-shadow:0 2px 0 #000}
 .zoneHead .zc{font-family:Arial,sans-serif;font-weight:700;font-size:10px;opacity:.75;line-height:1.4;margin-top:3px;text-transform:none}
 /* cleaner results rhythm: tighter reward rows */
 #results #blessRow,#results #storeRow,#results #shopRow2{margin-top:8px}
 #results .bigBtn{margin-top:10px}
 #pauseOv .row{margin-top:8px}
-=======
-.mcard{flex:0 0 240px;padding:6px 8px;pointer-events:auto;text-align:left}
-.mcard .dn{font-size:14px;letter-spacing:3px;color:#7af0ff}
-.mcard .mn{font-family:'SairaStencil','Bungee','Anton',Arial,sans-serif;font-size:22px;letter-spacing:1px;margin:4px 0;text-shadow:0 2px 0 #000}
-.mcard .sw{height:10px;border-radius:3px;margin:6px 0;border:1px solid #000}
-.mcard .inf{font-family:Arial,sans-serif;font-weight:700;font-size:11px;text-transform:none;opacity:.85;line-height:1.5}
-.mcard .rw{font-family:Arial,sans-serif;font-weight:700;font-size:11px;color:#ffd166;text-transform:none;margin-top:6px}
-.mcard .go{margin-top:10px;width:100%;font-size:19px;padding:2px 8px}
-.mcard.locked{filter:grayscale(1) brightness(.6)}
-.mcard .best{font-family:Arial,sans-serif;font-weight:700;font-size:11px;color:#80ed99;text-transform:none}
-.zoneHead{flex:0 0 200px;padding:8px 10px;pointer-events:none;text-align:left;border-left:4px solid #ffd166}
-.zoneHead .zn{font-family:'SairaStencil','Bungee','Anton',Arial,sans-serif;font-size:18px;letter-spacing:1px;color:#ffd166;text-shadow:0 2px 0 #000}
-.zoneHead .zc{font-family:Arial,sans-serif;font-weight:700;font-size:11px;opacity:.75;line-height:1.5;margin-top:4px;text-transform:none}
->>>>>>> main
 .zoneHead.locked{filter:grayscale(1) brightness(.6)}
 .blessCard{flex:0 0 200px;padding:10px 12px;pointer-events:auto;text-align:left;cursor:pointer;border:2px solid #7af0ff;border-radius:8px;background:#141428}
 .blessCard:hover{border-color:#ffd166}
