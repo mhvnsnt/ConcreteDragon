@@ -2808,8 +2808,10 @@ function banner(txt, cls) {
 }
 // ---------- Y11 achievements (docs/IMPROVE_LOOP_BACKLOG.md P5) ----------
 // Local, style-not-power, no new assets: unlock toast reuses the U11 unlock-ceremony
-// banner pattern (fanfare + pulsing #unlockBanner). Slow-mo reserved for `big` moments;
-// normal unlocks stay clean. Progress persists in save.ach / lifetimeCash / lifetimeKills.
+// banner pattern (fanfare + pulsing banner) on a dedicated top-level #achBanner —
+// #unlockBanner lives inside the hidden results overlay, invisible mid-fight.
+// Slow-mo reserved for `big` moments; normal unlocks stay clean.
+// Progress persists in save.ach / lifetimeCash / lifetimeKills.
 const ACHIEVEMENTS = [
   { id: 'ko1', name: 'DRAW FIRST BLOOD', desc: 'Score your first K.O.' },
   { id: 'combo50', name: 'UNSTOPPABLE', desc: 'Land a 50-hit combo' },
@@ -2845,10 +2847,10 @@ function unlockAch(id) {
 }
 function pumpAchQueue() {
   if (achToastActive || !achQueue.length) return;
-  const ub = $('unlockBanner');
+  const ub = $('achBanner'); // Y11: dedicated gameplay toast (unlockBanner lives inside hidden #results)
   if (!ub) return;
   if (ub.textContent && ub.textContent.trim() !== '') {
-    // U11 ceremony (or another toast) is holding the banner — retry, then take it.
+    // another toast is holding the banner — retry, then take it.
     const a0 = achQueue[0]; a0._retry = (a0._retry || 0) + 1;
     if (a0._retry > 8) { ub.textContent = ''; }
     else { setTimeout(pumpAchQueue, 1200); return; }
@@ -2857,8 +2859,9 @@ function pumpAchQueue() {
   const a = achQueue.shift();
   ub.textContent = '★ ACHIEVEMENT — ' + a.name + ' ★';
   ub.classList.add('show');
-  // U11 ceremony pattern: fanfare (bell + coin) + flash + pulsing banner; slow-mo only for big moments
-  sfx('bell', 0.9, true); flash('#ffe14d');
+  // U11 ceremony pattern: fanfare (bell + coin) + flash + pulsing banner; slow-mo only for big moments.
+  // bell is one-shot (never looped — a looping bell would pile up forever).
+  sfx('bell', 0.9, false, 1.2); flash('#ffe14d');
   setTimeout(() => sfx('coin', 0.8, false, 1.2), 180);
   if (a.big && state === 'fight') { slowmo = 0.3; slowmoT = 1.1; }
   setTimeout(() => { ub.textContent = ''; ub.classList.remove('show'); achToastActive = false; pumpAchQueue(); }, 4000);
