@@ -41,6 +41,22 @@ async function startFight(id) {
   await E('t.skipCine()');
   return waitFight();
 }
+// Screenshot with retry: under shared-VM CPU contention a single CDP capture
+// can time out. JPEG is cheaper than PNG. Missing evidence = run failure
+// (never silently passed) — but the toast screenshot right after unlock is
+// also the very next CDP call, so the 4s toast is still on screen.
+async function shot(name) {
+  for (let a = 1; a <= 3; a++) {
+    try {
+      await page.screenshot({ path: SHOTS + '/' + name, type: 'jpeg', quality: 70 });
+      return true;
+    } catch (e) {
+      console.log('   shot ' + name + ' attempt ' + a + ' failed: ' + String(e.message).slice(0, 120));
+      await sleep(15000);
+    }
+  }
+  return false;
+}
 
 await page.goto('file://' + WT + '/dist/concrete-dragon.html', { waitUntil: 'networkidle0', timeout: 120000 });
 must('1. boot: title ready', await waitTitle());
@@ -52,14 +68,16 @@ await E('t.unpause()'); // headless safety: make sure the sim loop is not paused
 // the same JS task as the unlock.
 must('2. m1 fight state', await startFight('m1'));
 const kr = await E(`(() => { t.spawnFoeAt(6); const hp = t.hitFoe(t.foes().length - 1, 99999);
-  const b = document.getElementById('achBanner');
-  return { hp: hp, txt: b.textContent, cls: b.className }; })()`);
+  const b = document.getElementById('achBanner'); const cs = getComputedStyle(b);
+  return { hp: hp, txt: b.textContent, cls: b.className, op: cs.opacity, disp: cs.display, vis: cs.visibility }; })()`);
 console.log('   kill+toast state:', JSON.stringify(kr));
-must('3. ko1 unlocked via real killEnemy', await has('ko1'));
-must('3a. unlock toast shows ACHIEVEMENT banner text', /ACHIEVEMENT/.test(kr.txt));
-must('3b. toast banner is actually visible (show class, top-level overlay)', (kr.cls || '').includes('show'));
-await page.screenshot({ path: SHOTS + '/1-ko1-toast.png' });
+// screenshot is the VERY NEXT CDP call after unlock — the toast only lives 4s
+must('3. ko1 toast captured on screen', await shot('1-ko1-toast.jpg'));
 await sleep(1500); // let the corpse clear from the enemies list
+must('3a. ko1 unlocked via real killEnemy', await has('ko1'));
+must('3b. unlock toast shows ACHIEVEMENT banner text', /ACHIEVEMENT/.test(kr.txt));
+must('3c. toast banner was actually visible (show class, top-level overlay)', (kr.cls || '').includes('show'));
+must('3d. toast banner rendered opaque+visible', kr.op === '1' && kr.disp !== 'none' && kr.vis === 'visible');
 
 // ---- B. juggle (hit a launched foe mid-air) ----
 // both hits in ONE evaluate: launcher sets airborne at the end of landHit,
@@ -69,7 +87,7 @@ await sleep(400);
 const airCheck = await E('t.foes().length > 0 ? 1 : 0');
 must('4. foe present for juggle', airCheck === 1);
 must('4a. juggle unlocked via real landHit airborne branch', await has('juggle'));
-await page.screenshot({ path: SHOTS + '/2-juggle-toast.png' });
+must('4b. juggle toast captured', await shot('2-juggle-toast.jpg'));
 
 // ---- C. combo50 (50-hit combo on a sturdy boss dummy) ----
 {
@@ -85,7 +103,7 @@ await page.screenshot({ path: SHOTS + '/2-juggle-toast.png' });
   must('5a. combo50 unlocked via 50 real landHit calls', ok);
   await E('t.hitFoe(0, 99999)'); // clean up a foe (does not affect combo50)
 }
-await page.screenshot({ path: SHOTS + '/3-combo50-toast.png' });
+must('5b. combo50 toast captured', await shot('3-combo50-toast.jpg'));
 
 // ---- D. bowling (thrown foe plows into another) ----
 must('6. endless fight state', await startFight('endless'));
@@ -104,7 +122,7 @@ must('6a. 2 foes present via real spawnEnemy', nF >= 2);
   for (let i = 0; i < 12 && !(await has('bowling')); i++) { await E('t.ff(30)'); await sleep(300); }
   must('6b. bowling unlocked via real thrown-body contact code', await has('bowling'));
 }
-await page.screenshot({ path: SHOTS + '/4-bowling.png' });
+must('6c. bowling scene captured', await shot('4-bowling.jpg'));
 
 // ---- E. smash25 (25 breakables, one run) ----
 must('7. daily fight state', await startFight('daily'));
@@ -118,7 +136,7 @@ await E('t.healPlayer()'); // TNT chains hurt — stay alive for the rest of the
 const smashed = await E('t.smashedT()');
 console.log('   smashed this run:', smashed);
 must('7b. smash25 unlocked via real destroyDestructible', smashed >= 25 && await has('smash25'));
-await page.screenshot({ path: SHOTS + '/5-smash25.png' });
+must('7c. smash25 scene captured', await shot('5-smash25.jpg'));
 
 // ---- F. wave10 (endless tier 10 = wave 10) ----
 must('8. endless fight state (2)', await startFight('endless'));
@@ -128,7 +146,7 @@ must('8a. wave10 unlocked via real director tier-up', await has('wave10'));
 const muts = await E('t.muts()');
 console.log('   endless tier:', JSON.stringify(muts));
 must('8b. endless tier reached 10', muts.tier >= 10);
-await page.screenshot({ path: SHOTS + '/6-wave10.png' });
+must('8c. wave10 scene captured', await shot('6-wave10.jpg'));
 
 // ---- G. all 9 bosses -> KING OF THE BLOCK ----
 const BOSS_IDS = ['kingpin', 'sledge', 'viper', 'rust', 'dragon', 'pumpkinking', 'carmilla', 'foreman', 'warden'];
@@ -143,7 +161,7 @@ const ab = await E('t.achDbg()');
 console.log('   bosses defeated:', JSON.stringify(ab.bosses));
 must('9a. all 9 static bosses recorded', BOSS_IDS.every((id) => ab.bosses.includes(id)));
 must('9b. bosses (KING OF THE BLOCK) unlocked', await has('bosses'));
-await page.screenshot({ path: SHOTS + '/7-bosses-toast.png' });
+must('9b2. bosses toast captured', await shot('7-bosses-toast.jpg'));
 // farm 100 real KOs inside this same endless run (real spawnEnemy + killEnemy paths)
 let farmed = (await E('t.info()')).kills;
 for (let c = 0; c < 25 && farmed < 100; c++) {
@@ -189,7 +207,7 @@ await E('t.showMission()'); await sleep(800);
 // ---- J. Records screen shows the achievement list ----
 await E('t.showMission()'); await sleep(800);
 await page.evaluate(() => document.getElementById('boardBtn').click()); await sleep(600);
-await page.screenshot({ path: SHOTS + '/8-records.png' });
+must('15b. records screen captured', await shot('8-records.jpg'));
 const boardTxt = await page.evaluate(() => document.getElementById('boardOv').textContent);
 must('16. Records shows ACHIEVEMENTS section', /ACHIEVEMENTS \(1[0-9]\/17\)/.test(boardTxt));
 must('16a. Records lists unlocked DRAW FIRST BLOOD', /DRAW FIRST BLOOD/.test(boardTxt));
