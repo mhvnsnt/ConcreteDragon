@@ -1,4 +1,4 @@
-# StreetBrawl Weight Paint PWA
+# Concrete Dragon Weight Paint PWA
 
 Mobile-first web tool for hand-painting skin weights on `fighter.glb`.
 Owner-directed 2026-10-09: automated shoulder repair failed 6x — this puts the
@@ -14,7 +14,7 @@ brush in his hand on his phone.
 
 ## Send-back loop
 
-1. Export downloads `STREETBRAWL_painted.glb` with new weights baked in.
+1. Export downloads `CONCRETEDRAGON_painted.glb` with new weights baked in.
 2. Hand the file to the pipeline (chat attach or repo).
 3. Pipeline runs `tools/rig-repair/probe_shoulders.py` — renders the painted weights
    at 15/30/45/60/90° to prove zero webbing.

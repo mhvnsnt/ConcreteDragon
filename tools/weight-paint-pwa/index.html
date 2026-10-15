@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<title>StreetBrawl Weight Paint</title>
+<title>Concrete Dragon Weight Paint</title>
 <style>
   :root { --bg:#14141a; --panel:#1e1e26; --accent:#7c5cff; --txt:#eee; --dim:#999; }
   * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
@@ -106,7 +106,7 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-const DEFAULT_URL = 'https://raw.githubusercontent.com/mhvnsnt/StreetBrawl/main/game-3d/build/assets/fighter.glb';
+const DEFAULT_URL = 'https://raw.githubusercontent.com/mhvnsnt/ConcreteDragon/main/game-3d/build/assets/fighter.glb';
 const $ = id => document.getElementById(id);
 const toast = m => { const t=$('toast'); t.textContent=m; t.style.display='block';
   clearTimeout(t._h); t._h=setTimeout(()=>t.style.display='none',2200); };
@@ -454,9 +454,9 @@ async function exportGLB(){
     const buf=await new GLTFExporter().parseAsync(modelRoot,{binary:true});
     const blob=new Blob([buf],{type:'model/gltf-binary'});
     const a=document.createElement('a');
-    a.href=URL.createObjectURL(blob); a.download='STREETBRAWL_painted.glb'; a.click();
+    a.href=URL.createObjectURL(blob); a.download='CONCRETEDRAGON_painted.glb'; a.click();
     setTimeout(()=>URL.revokeObjectURL(a.href),4000);
-    "$('status').textContent='exported STREETBRAWL_painted.glb'";
+    "$('status').textContent='exported CONCRETEDRAGON_painted.glb'";
     toast('Exported — send it to the pipeline');
   }catch(err){toast('Export failed: '+err.message);}
 }
