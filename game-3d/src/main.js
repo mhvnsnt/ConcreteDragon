@@ -3328,6 +3328,7 @@ function showResults(win, mission, stats) {
 let player = null, enemies = [], mission = null, missionR = Math.random;
 let spawnQueue = [], bossSpawned = false, bossRef = null, missionOver = false, ended = false;
 let gameTime = 0, combo = 0, comboT = 0, maxCombo = 0, atkIdx = 0, dmgTaken = 0, missionMaxHp = 100;
+let hintShown = false, hintT = 0; // CDCI4 P0 F-1/F-2: tutorial hint shows once, auto-dismisses, never re-shows
 let cashRun = 0, kills = 0, distWalked = 0, endlessT = 3, endlessTier = 0, endlessMuts = [];
 let scoreRun = 0; // PRESENTATION: arcade score for this mission
 function hint(on) { $('hint').style.opacity = on ? 1 : 0; }
@@ -3537,6 +3538,7 @@ function spawnEnemy(famId, mi, bx, bz) {
   return e;
 }
 function spawnBoss(bossId, bx) {
+  hint(false); save.seenHint = true; // CDCI4 P0 F-2: tutorial never persists into boss fight
   const b = bossDef(bossId);
   const e = b.creature ? makeCreatureRaw(b.creature, b.tint, bx, -Math.PI / 2, b.scale)
                        : makeFighterRaw(b.tint, bx, -Math.PI / 2, b.scale, texObjs.patchwork);
@@ -6614,8 +6616,9 @@ function frame(dt, doRender = true) {
   } else if (state === 'fight' && player) {
     playerUpdate(dt);
     recordStick(); // fighting-game motion input history
-    // CYCLE 2: tutorial hint appears only when truly playable — no cinematic, no letterbox, no boss card
-    if (!save.seenHint && !cine && !document.body.classList.contains('cine')) hint(true);
+    // CDCI4 P0 F-1/F-2: tutorial hint shows ONCE at fight start, auto-dismisses after 5s, never re-shows
+    if (!save.seenHint && !hintShown && !cine && !document.body.classList.contains('cine')) { hint(true); hintShown = true; hintT = 0; }
+    if (hintShown && !save.seenHint) { hintT += dt; if (hintT > 5) { hint(false); save.seenHint = true; } }
     director(dt);
     for (const e of enemies.slice()) enemyAI(e, dt);
     resolveBodyCollision(); // OBVIOUS-DEFECT LAW: no interpenetration, ever
@@ -6628,7 +6631,6 @@ function frame(dt, doRender = true) {
     if ((save.up_regen || 0) > 0 && player.hp > 0 && player.hp < player.maxHp) {
       player.hp = Math.min(player.maxHp, player.hp + (save.up_regen * 0.5) * dt); // REGEN: +1 HP/2s/lvl
     }
-    if (gameTime > 2 && !save.seenHint) hint(false);
     if (mission.nodeBless && !mission.blessOffered && isFinite(mission.len) && player.px > mission.len * 0.5) {
       mission.blessOffered = true; offerMidBlessing();
     }
