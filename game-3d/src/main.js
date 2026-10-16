@@ -88,7 +88,7 @@ const hustleMult = () => 1 + save.up_hustle * 0.15;
 const FIGHTERS = [
   { id: 'kidblue', wrestle: 'DRAGON SUPLEX',
     archetype: 'allrounder',
-    grapple: { range: 2.0, dmgMul: 1.0, chains: null }, name: 'KID BLUE', tag: 'Balanced brawler. Big heart, bigger hands.', bio: 'Grew up on the corner store steps, learned to fight breaking up fights. Fights for the block, not for himself. Every punch is a promise to the neighborhood that raised him.', hp: 100, dmg: 1.0, spd: 1.0, unlock: { type: 'start' },
+    grapple: { range: 2.0, dmgMul: 1.0, chains: null }, name: 'KID BLUE', animTune: { atk: 1.0 }, tag: 'Balanced brawler. Big heart, bigger hands.', bio: 'Grew up on the corner store steps, learned to fight breaking up fights. Fights for the block, not for himself. Every punch is a promise to the neighborhood that raised him.', hp: 100, dmg: 1.0, spd: 1.0, unlock: { type: 'start' },
     spc2: { name: 'DRAGON RUSH', cost: 35, desc: 'Shoulder-first dash through the whole pack.' },
     qcf: { name: "DRAGON'S BREATH", sigkind: 'fireball', kind: 'fire', dmg: 30, speed: 9.5, color: 0xff7a2a, desc: 'Fireball', tag: 'Fireball projectile — 25 energy' },
     ki: { name: 'DRAGON PALM', dmg: 9, speed: 15, color: 0xff7a2a, cost: 5 },
@@ -121,7 +121,7 @@ const FIGHTERS = [
     ] },
   { id: 'ghost', wrestle: 'PHANTOM DRIVER',
     archetype: 'striker',
-    grapple: { range: 2.0, dmgMul: 0.85, chains: null }, name: 'GHOST', tag: 'Fast striker. Blink and you lose.', bio: 'Nobody knows where she came from. She appears, the fight ends, she's gone. The streets whisper she's settling a debt no one can name.', hp: 85, dmg: 0.9, spd: 1.25, unlock: { type: 'start' },
+    grapple: { range: 2.0, dmgMul: 0.85, chains: null }, name: 'GHOST', animTune: { atk: 1.15 }, tag: 'Fast striker. Blink and you lose.', bio: 'Nobody knows where she came from. She appears, the fight ends, she's gone. The streets whisper she's settling a debt no one can name.', hp: 85, dmg: 0.9, spd: 1.25, unlock: { type: 'start' },
     spc2: { name: 'BLINK FLURRY', cost: 35, desc: 'Blink between the 3 nearest enemies, striking each.' },
     qcf: { name: 'PHANTOM STEP', sigkind: 'teleport', dmg: 36, color: 0x9a7bff, desc: 'Blink behind the nearest enemy and strike', tag: 'Teleport strike — 25 energy' },
     ki: { name: 'SPECTRAL BOLT', dmg: 8, speed: 16, color: 0x9a7bff, cost: 5 },
@@ -158,7 +158,7 @@ const FIGHTERS = [
       { name: 'RENT-A-POWERBOMB', d: 'chain_brick_d1', r: 'chain_brick_r1', dmg: 30, window: 0.55, strikes: 2 },
       { name: 'EVICTION NOTICE', d: 'chain_brick_d2', r: 'chain_brick_r2', dmg: 44, window: 0.5 },
       { name: 'FORECLOSURE', d: 'chain_brick_d3', r: 'chain_brick_r3', dmg: 62, window: 0, launch: true },
-    ] }, name: 'BRICK', tag: 'Walking wall. Hits like rent day.', bio: 'Former bouncer, current wall. Landlords hate him, tenants love him. He collects respect the way others collect rent: in full, on time.', hp: 135, dmg: 1.25, spd: 0.85, unlock: { type: 'start' },
+    ] }, name: 'BRICK', animTune: { atk: 0.85 }, tag: 'Walking wall. Hits like rent day.', bio: 'Former bouncer, current wall. Landlords hate him, tenants love him. He collects respect the way others collect rent: in full, on time.', hp: 135, dmg: 1.25, spd: 0.85, unlock: { type: 'start' },
     spc2: { name: 'SEISMIC SLAM', cost: 35, desc: 'Ground pound: shockwave launches everyone near.' },
     qcf: { name: 'RENT COLLECTION', sigkind: 'grab', dmg: 46, color: 0xffb02e, desc: 'Command grab — yank and slam', tag: 'Command grab — 25 energy' },
     ki: { name: 'BRICK BAT', dmg: 12, speed: 12, color: 0xffb02e, cost: 6 },
@@ -194,7 +194,7 @@ const FIGHTERS = [
       { name: 'HOSTILE SUPLEX', d: 'chain_kingpin_d1', r: 'chain_kingpin_r1', dmg: 32, window: 0.55, strikes: 2 },
       { name: 'ROYAL DECREE', d: 'chain_kingpin_d2', r: 'chain_kingpin_r2', dmg: 46, window: 0.5 },
       { name: 'HOSTILE TAKEOVER', d: 'chain_kingpin_d3', r: 'chain_kingpin_r3', dmg: 68, window: 0, launch: true },
-    ] }, name: 'KINGPIN', tag: 'Used to run this block. Now he runs with you.', bio: 'He used to own these streets from the shadows. Lost it all, learned humility the hard way. Now he fights to take the block back, this time for the people on it.', hp: 150, dmg: 1.3, spd: 0.9, unlock: { type: 'boss', boss: 'kingpin' },
+    ] }, name: 'KINGPIN', animTune: { atk: 0.95 }, tag: 'Used to run this block. Now he runs with you.', bio: 'He used to own these streets from the shadows. Lost it all, learned humility the hard way. Now he fights to take the block back, this time for the people on it.', hp: 150, dmg: 1.3, spd: 0.9, unlock: { type: 'boss', boss: 'kingpin' },
     spc2: { name: "KINGPIN'S WRATH", cost: 35, desc: 'Royal beatdown: massive AOE around him.' },
     qcf: { name: 'ROYAL DECREE', sigkind: 'orb', kind: 'orb', dmg: 40, speed: 5, color: 0xffd166, desc: 'Slow explosive orb', tag: 'Explosive orb — 25 energy' },
     ki: { name: "KING'S WRATH", dmg: 10, speed: 14, color: 0xffd166, cost: 6 },
@@ -231,7 +231,7 @@ const FIGHTERS = [
       { name: 'SCRAP SUPLEX', d: 'chain_sledge_d2', r: 'chain_sledge_r2', dmg: 40, window: 0.55 },
       { name: 'GIRDER GERMAN', d: 'chain_sledge_d3', r: 'chain_sledge_r3', dmg: 52, window: 0.5 },
       { name: 'DEMOLITION DAY', d: 'chain_sledge_d4', r: 'chain_sledge_r4', dmg: 78, window: 0, launch: true },
-    ] }, name: 'SLEDGE', tag: 'Yard enforcer. Swings first, talks never.', bio: 'Demolition crew foreman who swings a hammer like punctuation. Doesn't talk, doesn't bluff. The yard is his, and he's not sharing.', hp: 165, dmg: 1.45, spd: 0.8, unlock: { type: 'boss', boss: 'sledge' },
+    ] }, name: 'SLEDGE', animTune: { atk: 0.8 }, tag: 'Yard enforcer. Swings first, talks never.', bio: 'Demolition crew foreman who swings a hammer like punctuation. Doesn't talk, doesn't bluff. The yard is his, and he's not sharing.', hp: 165, dmg: 1.45, spd: 0.8, unlock: { type: 'boss', boss: 'sledge' },
     spc2: { name: 'WRECKING SWING', cost: 35, desc: '360° swing that clears the whole circle.' },
     qcf: { name: 'IRON CYCLONE', sigkind: 'spin', dmg: 16, color: 0x80ed99, desc: 'Traveling spin — multi-hit', tag: 'Traveling spin — 25 energy' },
     ki: { name: 'IRON JAB', dmg: 8, speed: 14, color: 0x80ed99, cost: 5 },
@@ -263,7 +263,7 @@ const FIGHTERS = [
     ] },
   { id: 'viper', wrestle: 'VENOM POWERBOMB',
     archetype: 'striker',
-    grapple: { range: 2.0, dmgMul: 0.9, chains: null }, name: 'VIPER', tag: 'Fast hands, faster mouth.', bio: 'Talked her way out of every corner and fought her way into respect. Quick tongue, quicker hands. Underestimate her once. That's all you get.', hp: 95, dmg: 1.05, spd: 1.35, unlock: { type: 'boss', boss: 'viper' },
+    grapple: { range: 2.0, dmgMul: 0.9, chains: null }, name: 'VIPER', animTune: { atk: 1.12 }, tag: 'Fast hands, faster mouth.', bio: 'Talked her way out of every corner and fought her way into respect. Quick tongue, quicker hands. Underestimate her once. That's all you get.', hp: 95, dmg: 1.05, spd: 1.35, unlock: { type: 'boss', boss: 'viper' },
     spc2: { name: 'VENOM DASH', cost: 35, desc: 'Serpent dash: strikes everything in a line.' },
     qcf: { name: "SERPENT'S WAKE", sigkind: 'groundwave', kind: 'fangwave', dmg: 26, speed: 9, color: 0x7cff6b, desc: 'Ground fang wave', tag: 'Ground fang wave — 25 energy' },
     ki: { name: 'VENOM SPIT', dmg: 7, speed: 17, color: 0x7cff6b, cost: 4 },
@@ -295,7 +295,7 @@ const FIGHTERS = [
     ] },
   { id: 'dust', wrestle: 'DUST DEVIL DRIVER',
     archetype: 'striker',
-    grapple: { range: 2.0, dmgMul: 0.85, chains: null }, name: 'DUST', tag: 'Quick hands. Gone before you blink.', bio: 'Drifts from block to block like weather. No one hires him, no one stops him. He's here because the fight is, and gone before the dust settles.', hp: 80, dmg: 0.95, spd: 1.4, unlock: { type: 'boss', boss: 'rust' },
+    grapple: { range: 2.0, dmgMul: 0.85, chains: null }, name: 'DUST', animTune: { atk: 1.1 }, tag: 'Quick hands. Gone before you blink.', bio: 'Drifts from block to block like weather. No one hires him, no one stops him. He's here because the fight is, and gone before the dust settles.', hp: 80, dmg: 0.95, spd: 1.4, unlock: { type: 'boss', boss: 'rust' },
     spc2: { name: 'DUST DEVIL', cost: 35, desc: 'Spin into the pack: AOE hits while moving.' },
     qcf: { name: 'DESERT SPIKES', sigkind: 'erupt', dmg: 30, color: 0xd8b56b, desc: 'Spikes erupt under nearby enemies', tag: 'Ground eruption — 25 energy' },
     ki: { name: 'SAND BLAST', dmg: 8, speed: 15, color: 0xd8b56b, cost: 5 },
@@ -321,7 +321,7 @@ const FIGHTERS = [
     ] },
   { id: 'jack', wrestle: 'HARVEST SUPLEX',
     archetype: 'allrounder',
-    grapple: { range: 2.1, dmgMul: 1.0, chains: null }, name: 'JACK', tag: 'He wears the harvest. The harvest wears you.', bio: 'The harvest festival's fallen king. Wears the season like armor. Fights to remind the block what it felt like before the concrete took over.', hp: 95, dmg: 1.05, spd: 1.05,
+    grapple: { range: 2.1, dmgMul: 1.0, chains: null }, name: 'JACK', animTune: { atk: 1.0 }, tag: 'He wears the harvest. The harvest wears you.', bio: 'The harvest festival's fallen king. Wears the season like armor. Fights to remind the block what it felt like before the concrete took over.', hp: 95, dmg: 1.05, spd: 1.05,
     unlock: { type: 'boss', boss: 'pumpkinking' }, head: 'pumpkin', tint: 0xe07b1f,
     spc2: { name: 'CANDLE RUSH', cost: 35, desc: 'Burning dash: leaves a fire trail through the pack.' },
     qcf: { name: 'PUMPKIN BOMB', sigkind: 'fireball', kind: 'fire', dmg: 34, speed: 8, color: 0xff7a1a, arc: 1, desc: 'Lobbed flaming pumpkin', tag: 'Lobbed pumpkin bomb — 25 energy' },
@@ -2641,6 +2641,13 @@ const CLIP_FALLBACK = {
 };
 function playAnim(f, name, { loop = false, fade = 0.12, ts = 1, done = null, clamp = false } = {}) {
   if (CLIP_FALLBACK[name]) name = CLIP_FALLBACK[name];
+  // CDCI4 TRACK D: per-fighter animation personality — same rig, different attitude (visual only)
+  try {
+    if (typeof player !== 'undefined' && f === player && /attack/i.test(name)) {
+      const tune = fighterDef().animTune;
+      if (tune && tune.atk) ts *= tune.atk;
+    }
+  } catch (e) {}
   let clip = null;
   if (f.creature) { // translate mannequin clip names to the creature's baked clips
     const role = CREATURE_ANIMROLE[name];
