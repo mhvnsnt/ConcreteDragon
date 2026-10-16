@@ -33,6 +33,10 @@ html,body{margin:0;height:100%;overflow:hidden;background:#150f2a;touch-action:n
 .bar i.ghost{position:absolute;left:0;top:0;bottom:0;height:auto;background:linear-gradient(90deg,#fff,#ff6b6b);opacity:.85;transition:width .9s ease-out}
 #ebar i.ghost{left:auto;right:0;margin-left:0;background:linear-gradient(90deg,#ff6b6b,#fff)}
 #pbar{left:10px}#pbar i{background:linear-gradient(90deg,#3cf,#4fd1ff)}
+/* P16 SoR4 RALLY: green rally-health segment stacked past the real-HP fill; php goes
+   relative so it paints above the absolute rally layer (tree order: rally < ghost < hp) */
+#pbar i.rally{position:absolute;left:0;top:0;bottom:0;height:auto;background:linear-gradient(90deg,#2fd47a,#8dff6e);opacity:.95;transition:width .15s}
+#pbar #php{position:relative}
 #ebar{right:10px}#ebar i{background:linear-gradient(90deg,#ff3d6b,#ffb03d);margin-left:auto}
 .lbl{position:absolute;top:calc(max(14px,env(safe-area-inset-top)) + 30px);font-size:15px;letter-spacing:2px;text-shadow:0 2px 0 #000}
 #pname{left:14px}#wpnBadge{left:14px;top:64px;color:#ffd166;display:none;font-size:13px;text-shadow:0 0 6px #000}#ename{right:14px;text-align:right}
@@ -245,6 +249,8 @@ body.cine #cineSkip{display:block}
 .stat b{color:#ffd166}
 #unlockBanner{font-family:'SairaStencil','Bungee','Anton',Arial,sans-serif;font-size:22px;color:#7af0ff;text-shadow:0 0 14px #7af0ff,0 3px 0 #000;margin:8px 0;letter-spacing:2px;min-height:30px}
 #unlockBanner.show{animation:pulse .8s infinite}
+#achBanner{position:fixed;left:0;right:0;top:76px;z-index:70;pointer-events:none;font-family:'SairaStencil','Bungee','Anton',Arial,sans-serif;font-size:24px;color:#ffe14d;text-shadow:0 0 16px #ffe14d,0 3px 0 #000;letter-spacing:2px;text-align:center;min-height:32px;white-space:nowrap}
+#achBanner.show{animation:pulse .8s infinite}
 #results.win #resTitle{font-family:'SairaStencil','Bungee','Anton',Arial,sans-serif;font-size:40px;letter-spacing:3px;background:linear-gradient(#fff,#ffd166 60%,#ff8c42);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 4px 0 #000) drop-shadow(0 0 18px #ffcf2e88)}
 #results.lose #resTitle{font-family:'SairaStencil','Bungee','Anton',Arial,sans-serif;font-size:40px;letter-spacing:3px;color:#ff4d4d;text-shadow:0 4px 0 #000,0 0 18px #ff000088}
 #cashLines{margin:8px 0 2px;font-family:Arial,sans-serif;font-weight:700;font-size:15px;text-transform:none}
@@ -340,7 +346,7 @@ body.cine #cineSkip{display:block}
 </head><body>
 <canvas id="c"></canvas>
 <div id="hud">
-  <div class="bar" id="pbar"><i id="pghost" class="ghost" style="width:100%"></i><i id="php" style="width:100%"></i></div><div class="lbl" id="pname">You</div><div class="lbl" id="wpnBadge" style="display:none"></div>
+  <div class="bar" id="pbar"><i id="prally" class="rally" style="width:0%"></i><i id="pghost" class="ghost" style="width:100%"></i><i id="php" style="width:100%"></i></div><div class="lbl" id="pname">You</div><div class="lbl" id="wpnBadge" style="display:none"></div>
   <div class="bar" id="ebar"><i id="eghost" class="ghost" style="width:100%"></i><i id="ehp" style="width:100%"></i></div><div class="lbl" id="ename"></div>
   <div id="progWrap"><div id="prog"></div></div>
   <button id="pauseBtn">❚❚</button>
@@ -362,7 +368,7 @@ body.cine #cineSkip{display:block}
   <div class="abtn" id="btnJmp"><div class="tx">JMP</div></div>
   <div class="abtn" id="btnGrp"><div class="tx">GRP</div></div>
 </div>
-<div id="flash"></div><div id="lsEdge"></div>
+<div id="flash"></div><div id="lsEdge"></div><div id="achBanner"></div>
 <div id="lbTop"></div><div id="lbBot"></div><div id="nrgFlash"></div>
 <div id="cineCap"></div><div id="cineSkip">TAP TO SKIP ▸</div><div id="megaName"></div>
 <div id="title" class="screen hidden" style="justify-content:flex-start;background:linear-gradient(to bottom,rgba(10,6,24,.15),rgba(10,6,24,.75))">

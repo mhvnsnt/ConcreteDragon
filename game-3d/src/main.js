@@ -53,6 +53,7 @@ const save = {
   haptics: true,
   gearInv: {}, gearTier: {}, gearEq: {}, charm: null, charmsUnlocked: [],
   assist: false, missionGrades: {}, scoutRoster: [], loadouts: {},
+  ach: { unlocked: [], bosses: [] }, lifetimeCash: 0, lifetimeKills: 0, // Y11 achievements
 };
 const TIP_URL = 'https://paypal.me/MarquisWhitacre';
 function loadSave() {
@@ -75,6 +76,11 @@ function loadSave() {
   if (!Array.isArray(save.scoutRoster)) save.scoutRoster = [];
   if (!save.loadouts || typeof save.loadouts !== 'object') save.loadouts = {};
   if (!save.missionGrades || typeof save.missionGrades !== 'object') save.missionGrades = {};
+  if (!save.ach || typeof save.ach !== 'object') save.ach = { unlocked: [], bosses: [] }; // Y11
+  if (!Array.isArray(save.ach.unlocked)) save.ach.unlocked = [];
+  if (!Array.isArray(save.ach.bosses)) save.ach.bosses = [];
+  if (typeof save.lifetimeCash !== 'number') save.lifetimeCash = 0;
+  if (typeof save.lifetimeKills !== 'number') save.lifetimeKills = 0;
   for (const k of ['up_dodge','up_magnet','up_revive','up_crit','up_regen','up_luck','up_energy','up_counter','up_speed'])
     if (typeof save[k] !== 'number') save[k] = 0;
 }
@@ -108,7 +114,7 @@ const FIGHTERS = [
       ['DRAGON HOOK', 'HVY', 'Slow, crushing hook. Big damage.'],
       ['HUNDRED HAND SLAP', 'STANCE + HVY', 'Rapid open-palm flurry. Eats guards alive.'],
       ['DRAGON DROP', 'JUMP, then HIT', 'Aerial dive kick. Hits on the way down.'],
-      ['DESPERATION', 'DDG ×2', '360° panic spin. Costs 10% HP.'],
+      ['DESPERATION', 'DDG ×2', '360° panic spin. Banks 10% HP as rally — attack to win it back.'],
       ['TAUNT', 'TAUNT btn / T', 'Talk trash, gain special meter.'],
       ['TECH', 'HIT while knocked down', 'Instant recovery + bounce + brief invuln. Never helpless.'],
       ['DUST LAUNCHER', '↓ + HVY', 'Universal overhead launcher. Pops them up for juggles.'],
@@ -141,7 +147,7 @@ const FIGHTERS = [
       ['WRAITH HOOK', 'HVY', 'Charged hook. Big damage.'],
       ['AFTERIMAGE ASSAULT', 'STANCE + HVY', 'Blink through them — strike from behind.'],
       ['GHOST DROP', 'JUMP, then HIT', 'Aerial dive kick.'],
-      ['DESPERATION', 'DDG ×2', '360° panic spin. Costs 10% HP.'],
+      ['DESPERATION', 'DDG ×2', '360° panic spin. Banks 10% HP as rally — attack to win it back.'],
       ['TAUNT', 'TAUNT btn / T', 'Talk trash, gain special meter.'],
       ['TECH', 'HIT while knocked down', 'Instant recovery + bounce + brief invuln. Never helpless.'],
       ['DUST LAUNCHER', '↓ + HVY', 'Universal overhead launcher. Pops them up for juggles.'],
@@ -178,7 +184,7 @@ const FIGHTERS = [
       ['RENT COLLECTOR', 'HVY', 'The rent collector. Huge damage.'],
       ['WRECKING BALL', 'STANCE + HVY', '360° wrecking spin. The whole circle pays.'],
       ['CURB DROP', 'JUMP, then HIT', 'Aerial drop kick.'],
-      ['DESPERATION', 'DDG ×2', '360° panic spin. Costs 10% HP.'],
+      ['DESPERATION', 'DDG ×2', '360° panic spin. Banks 10% HP as rally — attack to win it back.'],
       ['TAUNT', 'TAUNT btn / T', 'Talk trash, gain special meter.'],
       ['TECH', 'HIT while knocked down', 'Instant recovery + bounce + brief invuln. Never helpless.'],
       ['DUST LAUNCHER', '↓ + HVY', 'Universal overhead launcher. Pops them up for juggles.'],
@@ -214,7 +220,7 @@ const FIGHTERS = [
       ['THE GAVEL', 'HVY', 'The gavel. Enormous damage.'],
       ['ROYAL EDICT', 'STANCE + HVY', 'Decree from above: radial shockwave slam.'],
       ['THRONE STOMP', 'JUMP, then HIT', 'Aerial stomp kick.'],
-      ['DESPERATION', 'DDG ×2', '360° panic spin. Costs 10% HP.'],
+      ['DESPERATION', 'DDG ×2', '360° panic spin. Banks 10% HP as rally — attack to win it back.'],
       ['TAUNT', 'TAUNT btn / T', 'Talk trash, gain special meter.'],
       ['TECH', 'HIT while knocked down', 'Instant recovery + bounce + brief invuln. Never helpless.'],
       ['DUST LAUNCHER', '↓ + HVY', 'Universal overhead launcher. Pops them up for juggles.'],
@@ -251,7 +257,7 @@ const FIGHTERS = [
       ['FULL SLEDGE', 'HVY', 'Full sledge. Devastating.'],
       ['SCRAP YARD', 'STANCE + HVY', 'Overhead crusher. Launches the whole pack.'],
       ['WRECKING DROP', 'JUMP, then HIT', 'Aerial demolition kick.'],
-      ['DESPERATION', 'DDG ×2', '360° panic spin. Costs 10% HP.'],
+      ['DESPERATION', 'DDG ×2', '360° panic spin. Banks 10% HP as rally — attack to win it back.'],
       ['TAUNT', 'TAUNT btn / T', 'Talk trash, gain special meter.'],
       ['TECH', 'HIT while knocked down', 'Instant recovery + bounce + brief invuln. Never helpless.'],
       ['DUST LAUNCHER', '↓ + HVY', 'Universal overhead launcher. Pops them up for juggles.'],
@@ -283,7 +289,7 @@ const FIGHTERS = [
       ['THE FANG', 'HVY', 'The fang. Big damage.'],
       ["SERPENT'S EMBRACE", 'STANCE + HVY', 'Coil through the line — everything gets bit.'],
       ['VIPER DROP', 'JUMP, then HIT', 'Aerial fang kick.'],
-      ['DESPERATION', 'DDG ×2', '360° panic spin. Costs 10% HP.'],
+      ['DESPERATION', 'DDG ×2', '360° panic spin. Banks 10% HP as rally — attack to win it back.'],
       ['TAUNT', 'TAUNT btn / T', 'Talk trash, gain special meter.'],
       ['TECH', 'HIT while knocked down', 'Instant recovery + bounce + brief invuln. Never helpless.'],
       ['DUST LAUNCHER', '↓ + HVY', 'Universal overhead launcher. Pops them up for juggles.'],
@@ -342,7 +348,7 @@ const FIGHTERS = [
       ['GOURD CRUSHER', 'HVY', 'Overhead gourd crusher. Big damage.'],
       ['HARVEST MOON', 'STANCE + HVY', 'Rising gourd uppercut. Sends them skyward.'],
       ['HARVEST DROP', 'JUMP, then HIT', 'Aerial harvest drop kick.'],
-      ['DESPERATION', 'DDG ×2', '360° panic spin. Costs 10% HP.'],
+      ['DESPERATION', 'DDG ×2', '360° panic spin. Banks 10% HP as rally — attack to win it back.'],
       ['TAUNT', 'TAUNT btn / T', 'Talk trash, gain special meter.'],
       ['TECH', 'HIT while knocked down', 'Instant recovery + bounce + brief invuln. Never helpless.'],
       ['DUST LAUNCHER', '↓ + HVY', 'Universal overhead launcher. Pops them up for juggles.'],
@@ -369,7 +375,7 @@ for (const f of FIGHTERS) {
     ['HEAT', 'HVY on staggered foe', 'Contextual finisher — big damage, slow-mo'],
     ['FOCUS', 'HOLD HVY 0.45s', 'Absorb one hit, release = crumple strike'],
     ['BURST', '↑ + SPC while juggled', 'Combo breaker — 50 energy'],
-    ['DESPERATION', '↓ + SPC under 50% HP', 'Trade 10% HP for a huge blast'],
+    ['DESPERATION', '↓ + SPC under 50% HP', 'Trade 10% HP (banked as rally — win it back by attacking) for a huge blast'],
     ['RAGE', 'Take damage', 'Full rage bar = 8s +40% damage'],
     ['DASH STRIKE', 'DDG into enemy', 'Your dodge is a weapon — 18 dmg on contact'],
     ['WALL SPLAT', 'Launch near props', 'Slam them into scenery for bonus damage'],
@@ -1278,6 +1284,19 @@ function renderBoard() {
     L.appendChild(r); any = true;
   }
   if (!any) L.innerHTML = '<div class="bline"><span>No records yet — go fight.</span><b>—</b></div>';
+  // Y11: achievement list lives on the Records screen
+  const achN = (save.ach && save.ach.unlocked ? save.ach.unlocked.length : 0);
+  const achTitle = document.createElement('div');
+  achTitle.className = 'subtitle'; achTitle.style.marginTop = '10px';
+  achTitle.textContent = `ACHIEVEMENTS (${achN}/${ACHIEVEMENTS.length})`;
+  L.appendChild(achTitle);
+  for (const a of ACHIEVEMENTS) {
+    const got = save.ach && save.ach.unlocked && save.ach.unlocked.includes(a.id);
+    const r = document.createElement('div'); r.className = 'bline';
+    if (!got) r.style.opacity = '0.45';
+    r.innerHTML = `<span>${got ? '★' : '—'} ${a.name}</span><b>${got ? 'UNLOCKED' : a.desc}</b>`;
+    L.appendChild(r);
+  }
 }
 function tipJar() { sfxUiClick(0.7); window.open(TIP_URL, '_blank', 'noopener'); }
 document.addEventListener('visibilitychange', () => setPaused(document.hidden));
@@ -1633,7 +1652,10 @@ function damageDestructibles(range) {
   }
 }
 function destroyDestructible(d) {
+  if (d.col.dead) return; // already smashed
   d.col.dead = true;
+  runSmashed++; // Y11
+  if (runSmashed >= 25) unlockAch('smash25');
   const pos = d.mesh.position.clone();
   // TNT CRATE (Crash taxonomy): chain explosion — hurts enemies AND you. Risk assessment.
   if (d.def.tnt) {
@@ -2850,6 +2872,66 @@ function powWord(list) {
 function banner(txt, cls) {
   popText(txt, 'big ' + (cls || ''), innerWidth / 2, innerHeight * 0.3);
 }
+// ---------- Y11 achievements (docs/IMPROVE_LOOP_BACKLOG.md P5) ----------
+// Local, style-not-power, no new assets: unlock toast reuses the U11 unlock-ceremony
+// banner pattern (fanfare + pulsing banner) on a dedicated top-level #achBanner —
+// #unlockBanner lives inside the hidden results overlay, invisible mid-fight.
+// Slow-mo reserved for `big` moments; normal unlocks stay clean.
+// Progress persists in save.ach / lifetimeCash / lifetimeKills.
+const ACHIEVEMENTS = [
+  { id: 'ko1', name: 'DRAW FIRST BLOOD', desc: 'Score your first K.O.' },
+  { id: 'combo50', name: 'UNSTOPPABLE', desc: 'Land a 50-hit combo' },
+  { id: 'm1', name: 'FIRST BLOOD', desc: 'Clear FIRST BLOOD', mission: 'm1' },
+  { id: 'm2', name: 'SCRAP YARD', desc: 'Clear SCRAP YARD', mission: 'm2' },
+  { id: 'm3', name: 'NIGHT MARKET', desc: 'Clear NIGHT MARKET', mission: 'm3' },
+  { id: 'm4', name: 'RUST BELT', desc: 'Clear RUST BELT', mission: 'm4' },
+  { id: 'm5', name: 'OVERPASS RUN', desc: 'Clear OVERPASS RUN', mission: 'm5' },
+  { id: 'm6', name: 'FACTORY FLOOR', desc: 'Clear FACTORY FLOOR', mission: 'm6' },
+  { id: 'bosses', name: 'KING OF THE BLOCK', desc: 'Defeat every boss', big: true },
+  { id: 'cash10k', name: 'HEAVY PURSE', desc: 'Earn $10,000 lifetime cash' },
+  { id: 'daily', name: 'DAILY GRIND', desc: 'Complete a DAILY RUN' },
+  { id: 'ko100', name: 'CENTURY OF BODIES', desc: '100 lifetime K.O.s', big: true },
+  { id: 'flawless', name: 'UNTOUCHABLE', desc: 'Clear a mission taking no damage' },
+  { id: 'juggle', name: 'AIR TRAFFIC', desc: 'Juggle a launched foe' },
+  { id: 'bowling', name: 'BOWLING', desc: 'Throw a foe into another foe' },
+  { id: 'smash25', name: 'DEMOLITION CREW', desc: 'Smash 25 breakables in one run' },
+  { id: 'wave10', name: 'ENDLESS LEGEND', desc: 'Reach wave 10 in ENDLESS SCRAP', big: true },
+];
+const BOSS_ACH_IDS = BOSSES.map((b) => b.id); // the bosses the game actually has
+const achQueue = [];
+let achToastActive = false;
+function unlockAch(id) {
+  if (!save.ach) save.ach = { unlocked: [], bosses: [] };
+  if (save.ach.unlocked.includes(id)) return false;
+  const a = ACHIEVEMENTS.find((x) => x.id === id);
+  if (!a) return false;
+  save.ach.unlocked.push(id); writeSave();
+  ev('ach', { id });
+  achQueue.push(a);
+  pumpAchQueue();
+  return true;
+}
+function pumpAchQueue() {
+  if (achToastActive || !achQueue.length) return;
+  const ub = $('achBanner'); // Y11: dedicated gameplay toast (unlockBanner lives inside hidden #results)
+  if (!ub) return;
+  if (ub.textContent && ub.textContent.trim() !== '') {
+    // another toast is holding the banner — retry, then take it.
+    const a0 = achQueue[0]; a0._retry = (a0._retry || 0) + 1;
+    if (a0._retry > 8) { ub.textContent = ''; }
+    else { setTimeout(pumpAchQueue, 1200); return; }
+  }
+  achToastActive = true;
+  const a = achQueue.shift();
+  ub.textContent = '★ ACHIEVEMENT — ' + a.name + ' ★';
+  ub.classList.add('show');
+  // U11 ceremony pattern: fanfare (bell + coin) + flash + pulsing banner; slow-mo only for big moments.
+  // bell is one-shot (never looped — a looping bell would pile up forever).
+  sfx('bell', 0.9, false, 1.2); flash('#ffe14d');
+  setTimeout(() => sfx('coin', 0.8, false, 1.2), 180);
+  if (a.big && state === 'fight') { slowmo = 0.3; slowmoT = 1.1; }
+  setTimeout(() => { ub.textContent = ''; ub.classList.remove('show'); achToastActive = false; pumpAchQueue(); }, 4000);
+}
 function screenPos(v) { const p = v.clone().project(camera); return { x: (p.x * 0.5 + 0.5) * innerWidth, y: (-p.y * 0.5 + 0.5) * innerHeight }; }
 function flash(color) { const f = $('flash'); f.style.background = color; f.style.opacity = 0.55; setTimeout(() => (f.style.opacity = 0), 60); }
 
@@ -3214,6 +3296,8 @@ function showResults(win, mission, stats) {
       if (b && b.proc) { // INFINITE BOSS: escalating cash bounty, challenger counter
         const bounty = 150 + (parseInt(mission.boss.slice(2), 10) || 0) * 40;
         save.cash += bounty;
+        save.lifetimeCash = (save.lifetimeCash || 0) + bounty; // Y11
+        if (save.lifetimeCash >= 10000) unlockAch('cash10k');
         save.pbKills = (save.pbKills || 0) + 1;
         ub.textContent = '★ ENDLESS CHALLENGER DOWN — BOUNTY $' + bounty + ' ★';
         // INFINITE UNLOCKS: every 5th endless kill unlocks a titled challenger variant as playable
@@ -3265,7 +3349,8 @@ function showResults(win, mission, stats) {
     const full = save.comebackDay !== today;
     if (full) save.comebackDay = today; else save.losses++;
     const kept = full ? cashRun : Math.round(cashRun * 0.25);
-    if (kept > 0) { save.cash += kept; setTimeout(() => popText((full ? 'BLOCK COVERS YOU +$' : 'COMEBACK CASH +$') + kept, 'gold', innerWidth/2, innerHeight*0.35), 900); ev('comeback', { full, kept }); }
+    if (kept > 0) { save.cash += kept; save.lifetimeCash = (save.lifetimeCash || 0) + kept; // Y11
+      if (save.lifetimeCash >= 10000) unlockAch('cash10k'); setTimeout(() => popText((full ? 'BLOCK COVERS YOU +$' : 'COMEBACK CASH +$') + kept, 'gold', innerWidth/2, innerHeight*0.35), 900); ev('comeback', { full, kept }); }
   }
   save.cash += Math.round(stats.cash * repMult().cash); writeSave();
   // BLESSINGS: pick 1 of 3 after a win; lost on defeat (roguelite run-building)
@@ -3361,7 +3446,7 @@ let player = null, enemies = [], mission = null, missionR = Math.random;
 let spawnQueue = [], bossSpawned = false, bossRef = null, missionOver = false, ended = false;
 let gameTime = 0, combo = 0, comboT = 0, maxCombo = 0, atkIdx = 0, dmgTaken = 0, missionMaxHp = 100;
 let hintShown = false, hintT = 0; // CDCI4 P0 F-1/F-2: tutorial hint shows once, auto-dismisses, never re-shows
-let cashRun = 0, kills = 0, distWalked = 0, endlessT = 3, endlessTier = 0, endlessMuts = [];
+let cashRun = 0, kills = 0, distWalked = 0, endlessT = 3, endlessTier = 0, endlessMuts = [], runSmashed = 0; // keep-both: main's runSmashed + CDCI4 hint vars
 let scoreRun = 0; // PRESENTATION: arcade score for this mission
 function hint(on) { $('hint').style.opacity = on ? 1 : 0; }
 function awardCash(base, pos, tag, quiet) {
@@ -3469,7 +3554,7 @@ function startMission(id, node) {
   spawnQueue = mission.spawns.map((s) => Object.assign({}, s, { done: false })).sort((a, b) => a.at - b.at);
   bossSpawned = false; bossRef = null; missionOver = false; ended = false;
   gameTime = 0; combo = 0; comboT = 0; maxCombo = 0; atkIdx = 0; dmgTaken = 0; missionMaxHp = player.maxHp;
-  cashRun = 0; kills = 0; distWalked = 0; endlessT = 3; endlessTier = 0; endlessMuts = [];
+  cashRun = 0; kills = 0; distWalked = 0; endlessT = 3; endlessTier = 0; endlessMuts = []; runSmashed = 0;
   scoreRun = 0; // PRESENTATION: reset arcade score
   camX = 2;
   state = 'fight'; ev('mission_start', { id: mission.id });
@@ -3609,9 +3694,10 @@ function positionWarn(e) {
 
 // ---------- player combat ----------
 const ATK = [ // [clip, timeScale, impact delay, dmg, label, hitstop, shake]
-  ['Melee_Unarmed_Attack_Punch_A', 1.9, 0.16, 9, 'JAB', 0.03, 0.12],
-  ['Melee_Unarmed_Attack_Punch_A', 2.1, 0.15, 10, 'CROSS', 0.04, 0.15],
-  ['Melee_Unarmed_Attack_Kick', 1.7, 0.2, 15, 'KICK', 0.08, 0.25],
+  // P15 hitstop retune: toward genre norms (SF 9f lights / 13f heavies) — jab 0.10 / cross 0.12 / kick 0.16
+  ['Melee_Unarmed_Attack_Punch_A', 1.9, 0.16, 9, 'JAB', 0.10, 0.12],
+  ['Melee_Unarmed_Attack_Punch_A', 2.1, 0.15, 10, 'CROSS', 0.12, 0.15],
+  ['Melee_Unarmed_Attack_Kick', 1.7, 0.2, 15, 'KICK', 0.16, 0.25],
 ];
 // unique 4th-hit finishers: the every-3rd-hit launcher is per-fighter now
 function doFinisher(t) {
@@ -3651,7 +3737,7 @@ function doFinisher(t) {
     t.airT = Math.max(t.airT || 0, 0.9);
   } else { // KID BLUE: classic pop-up launcher
     finContact('hand', 0.3);
-    landHit(t, bdmg, 'LAUNCHER', 0.08, 0.4, true, false);
+    landHit(t, bdmg, 'LAUNCHER', 0.14, 0.4, true, false); // P15: launcher hitstop 0.08 -> 0.14 (genre norm)
   }
   popText(fd.finname, 'spc', sp.x, sp.y - 70);
   sfx(392, 0.12, 'square', 0.5);
@@ -3669,7 +3755,11 @@ function doParry(e) {
   player.busy = 0.25; setHud(); ev('parry', {});
 }
 function doPunch() {
-  if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.busy > 0 || player.blocking) return;
+  if (state !== 'fight' || missionOver || ended || !player || player.hp <= 0 || player.blocking) return;
+  // P15 SF2 2-in-1: a HIT press that lands during hitstop buffers instead of being eaten —
+  // the buffered cancel executes when the freeze ends so string timing stays consistent
+  if (player.busy > 0) { if (hitstop > 0) { player.atkBuf = true; player.atkBufT0 = gameTime; } return; }
+  player.atkBuf = false; // live press consumed the buffer
   if (player.weapon) { doWeaponSwing(); return; }
   // WALK-IN GRAB: HIT while holding a foe = knee strike
   if (player.grabVictim) { doGrabKnee(); return; }
@@ -4484,7 +4574,9 @@ function doSpecial() {
   if (stick.dy > 0.5 && player.hp < player.maxHp * 0.5) {
     inputHist.length = 0;
     const cost = Math.round(player.maxHp * 0.1);
+    const hpBefore = player.hp;
     player.hp = Math.max(1, player.hp - cost); player.busy = 0.6;
+    player.rallyHp = (player.rallyHp || 0) + (hpBefore - player.hp); // P16 SoR4 RALLY: cost banked as recoverable green health
     banner('DESPERATION!', 'bad'); sfx('hit3', 1, false, 0.5); flash('#ff4444');
     addSlowmo(0.4, 0.5); shake = 0.8;
     playAnim(player, 'Melee_Unarmed_Attack_Kick', { ts: 1.8, fade: 0.05 });
@@ -4553,11 +4645,14 @@ function doSpecial() {
   setHud();
 }
 function doDesperation() {
-  // Final Fight desperation: 360° spin that costs 10% current HP (never lethal) — the panic button
+  // Final Fight desperation: 360° spin — the panic button. P16 SoR4 RALLY: the 10%
+  // current-HP cost (never lethal) is BANKED as recoverable rally health (green bar),
+  // not lost permanently. Keep attacking to earn it back; taking a hit drains it first.
   if (player.busy > 0 || player.airT > 0) return;
   const cost = Math.max(1, Math.round(player.hp * 0.10));
   if (player.hp - cost < 1) { popText('TOO WEAK', 'bad', innerWidth / 2, innerHeight * 0.4); return; }
   player.hp -= cost; player.busy = 0.55; player.dodgeCD = 1.2;
+  player.rallyHp = (player.rallyHp || 0) + cost; // P16: bank the cost as rally health
   playAnim(player, 'Melee_Unarmed_Attack_Kick', { ts: 2.8, fade: 0.04 });
   slowmo = 0.5; slowmoT = 0.4; flash('#ff2a2a');
   banner('DESPERATION!', 'bad');
@@ -4736,6 +4831,7 @@ function landHit(e, dmg, label, hs, sh, launcher, counter) {
   // ONE-HIT (Katana Zero): everyone dies in one hit — bosses take heavy damage instead
   if (mission && hasMod('onehit')) { if (e.boss) dmg = Math.max(dmg, 150); else dmg = 99999; }
   T.hits++; if (counter) T.counters++;
+  if (label !== 'DESPERATION') rallyRecover(); // P16 SoR4 RALLY: landed offense earns the bank back — the blast never rallies its own cost
   // CRIT (gear/gym) + LAST STAND (Garou TOP-inspired): below 30% HP you hit 25% harder
   let dealt = dmg, critOn = false, lsOn = false;
   if (Math.random() < critCh()) { dealt = Math.round(dealt * 1.6); critOn = true; }
@@ -4750,9 +4846,11 @@ function landHit(e, dmg, label, hs, sh, launcher, counter) {
     const msp = screenPos(e.root.position.clone().add(new THREE.Vector3(0, 2.6, 0)));
     popText(combo + ' HITS — ' + (combo >= 50 ? 'UNSTOPPABLE!' : combo >= 30 ? 'SAVAGE!' : combo >= 20 ? 'BRUTAL!' : 'RAMPAGE!'), 'big', msp.x, msp.y);
     sfx('bell', 0.9, false, 1.2);
+    if (combo === 50) unlockAch('combo50'); // Y11
   }
   // ANTI-INFINITE (Skullgirls Undizzy): same move 3x in one juggle = auto-drop with a "READ!" popup. Fairness by design.
   if (e.airborne) {
+    unlockAch('juggle'); // Y11: hit a launched foe mid-air
     e.jugSeq = e.jugSeq || [];
     e.jugSeq.push(label);
     if (e.jugSeq.length > 3) e.jugSeq.shift();
@@ -4771,6 +4869,7 @@ function landHit(e, dmg, label, hs, sh, launcher, counter) {
   burst(head, counter ? 30 : 16, counter ? 0x7af0ff : 0xffd27a, counter ? 6 : 4);
   vfxImpact(head, counter); // wave 17: Kenney muzzle/star impact pops on every landed hit
   shake = sh; hitstop = hs; // snappy: tiny freeze on light hits, bigger only for counter/heavy/special/KO
+  if (e && hs > 0) e.vibT = hs; // P15: Smash-style defender micro-vibration rides out the hitstop
   if (counter) sfxCounter(0.85); // S5: counters get their own crack/chime, not the generic hit thud
   else sfx(['hit1', 'hit2', 'hit3'][Math.floor(Math.random() * 3)], 0.9, false, 0.9 + Math.random() * 0.2);
   const sp = screenPos(head); popText((critOn ? 'CRIT ' : '') + (lsOn ? 'LAST STAND ' : '') + (counter ? 'COUNTER! -' : '-') + dealt, counter ? 'big' : '', sp.x, sp.y - 30);
@@ -4808,6 +4907,7 @@ function landHit(e, dmg, label, hs, sh, launcher, counter) {
 }
 function killEnemy(e) {
   T.kos++; ev('ko', { name: e.name });
+  unlockAch('ko1'); // Y11: first K.O.
   hideWarn(e);
   playAnim(e, 'Death_A', { ts: 0.8, clamp: true });
   let koHold = 900; // PRESENTATION: KO splash hold time (final blow holds longer)
@@ -4816,6 +4916,12 @@ function killEnemy(e) {
     $('bossWrap').style.display = 'none';
     musicStage(); // boss down -> back to the stage loop
     banner('BOSS DOWN!');
+    // Y11: record static boss defeats (skip procedural endless challengers) — all 9 = KING OF THE BLOCK
+    const bid = e.boss && e.boss.id;
+    if (bid && BOSS_ACH_IDS.includes(bid) && !save.ach.bosses.includes(bid)) {
+      save.ach.bosses.push(bid); writeSave();
+      if (BOSS_ACH_IDS.every((x) => save.ach.bosses.includes(x))) unlockAch('bosses');
+    }
     save.bossesBeaten = (save.bossesBeaten || 0) + 1; writeSave(); // gates boss-tier cosmetics
   } else {
     slowmo = 0.35; slowmoT = 0.7; shake = 0.45; hitstop = 0.09;
@@ -4866,6 +4972,38 @@ function killEnemy(e) {
   }, 1200);
   setHud();
 }
+// P16 SoR4 RALLY (Streets of Rage 4: desperation/special HP costs are banked as
+// recoverable green health — "lost health is banked, potentially recoverable…
+// if you keep on the offensive"). Banking happens in doDesperation + the DOWN+SPC
+// desperation path (player.rallyHp). Incoming damage drains banked rally BEFORE
+// real HP ("rally lost-first-on-damage"); zeroing HP still KOs even with rally
+// pending — rally never saves you.
+function applyPlayerDamage(dmg) {
+  const r = Math.min(player.rallyHp || 0, dmg);
+  if (r > 0) { player.rallyHp -= r; T.rallyAbsorbed = (T.rallyAbsorbed || 0) + r; ev('rallydrain', { r }); }
+  player.hp -= (dmg - r);
+}
+// Each landed (non-desperation) hit converts 1/5 of the remaining rally pool into
+// real HP — ~5 clean hits earns a full desperation bank back. Guarded/dodged strikes
+// convert nothing; the desperation blast itself never rallies its own cost. If heals
+// topped HP to full, the stale bank is forfeited (nothing left to earn back).
+function rallyRecover() {
+  if (!player || player.hp <= 0) return;
+  const r = player.rallyHp || 0;
+  if (r <= 0) return;
+  if (player.hp >= player.maxHp) { player.rallyHp = 0; return; }
+  const conv = Math.min(r, Math.max(1, Math.ceil(r / 5)));
+  player.hp = Math.min(player.maxHp, player.hp + conv);
+  player.rallyHp = r - conv;
+  T.rallyRecovered = (T.rallyRecovered || 0) + conv;
+  if (player.rallyHp <= 0) {
+    player.rallyHp = 0;
+    const rsp = screenPos(player.root.position.clone().add(new THREE.Vector3(0, 2.2, 0)));
+    popText('RALLY RECOVERED!', 'gold', rsp.x, rsp.y - 20);
+    sfx('bell', 0.9, false, 1.2); ev('rallyfull', {});
+  }
+  setHud();
+}
 function hurtPlayer(dmg) {
   if (mission && mission.endless && (endlessMuts || []).includes('GLASS JAW')) dmg = Math.round(dmg * 1.5);
   if (!player || player.hp <= 0 || missionOver || ended) return;
@@ -4908,7 +5046,7 @@ function hurtPlayer(dmg) {
   // clip for the reaction — never faked.
   if (player.blocking && !((player.airT || 0) > 0)) {
     const chip = Math.max(1, Math.round(dmg * 0.15));
-    player.hp -= chip;
+    applyPlayerDamage(chip); // P16: chip drains banked rally first too
     T.blocks = (T.blocks || 0) + 1; ev('pblock', { chip, dmg });
     playAnim(player, 'Melee_Block_Hit', { ts: 1.3 });
     sparkFX(player.px + (player.face || 1) * 0.5, 1.2, player.pz, 0x7af0ff, 14);
@@ -4924,7 +5062,7 @@ function hurtPlayer(dmg) {
     return;
   }
   dmg = Math.max(1, Math.round(dmg * (1 - (blessFx().armor || 0)))); // IRON SKIN
-  dmgTaken += dmg; player.hp -= dmg; combo = 0; shake = 0.3; hitstop = 0.05; flash('#ff2a2a'); sfx('hit2', 0.8, false, 0.7); buzz(50); // F10 haptics
+  dmgTaken += dmg; applyPlayerDamage(dmg); combo = 0; shake = 0.3; hitstop = 0.05; flash('#ff2a2a'); sfx('hit2', 0.8, false, 0.7); buzz(50); // F10 haptics
   applySquash(player, 0.22, 0); // P12: player squashes when hurt too
   player.jugN = (player.jugN || 0) + 1; player.jugT = 2.5; // BURST (Guilty Gear): juggle tracking
   // RAGE METER (The TakeOver): damage taken builds rage; full bar = 8s +40% damage
@@ -4962,7 +5100,7 @@ function hurtPlayer(dmg) {
       player.usedCharmRevive = true; player.hp = 1;
       banner('SECOND WIND'); flash('#7af0ff'); sfx('bell', 1, true); setHud(); return;
     }
-    player.hp = 0; setHud();
+    player.hp = 0; player.rallyHp = 0; setHud(); // P16: the rally bank dies with you — zeroing HP KOs even with rally pending
     playAnim(player, 'Death_A', { clamp: true });
     missionOver = true;
     setTimeout(() => missionComplete(false), 1400);
@@ -5195,6 +5333,7 @@ function enemyAI(e, dt) {
           landHit(o, Math.round(30 * (player ? player.dmgMult : 1)), 'THROWN BODY', 0.08, 0.4, false, false);
           e.kvx = (e.kvx || 0) * 0.7; // plowing through the crowd bleeds speed
           T.throwCrowd = (T.throwCrowd || 0) + 1; ev('throwcrowd', {});
+          unlockAch('bowling'); // Y11: thrown foe plowed into another foe
         }
       }
     }
@@ -5526,6 +5665,8 @@ function director(dt) {
     const tier = Math.floor(distWalked / 30);
     if (tier > (endlessTier || 0)) {
       endlessTier = tier;
+      save.best_wave = Math.max(save.best_wave || 0, tier); writeSave(); // Y11: track best endless wave
+      if (tier >= 10) unlockAch('wave10'); // Y11: reach wave 10 in endless
       const MUT = ['SWARM', 'BRUTES', 'FEVER', 'SECOND WIND', 'GLASS JAW'];
       const mut = MUT[(tier - 1) % MUT.length];
       (endlessMuts = endlessMuts || []).push(mut);
@@ -5615,6 +5756,16 @@ function missionComplete(win) {
     if (!prev) save.boards[mission.id] = bk;
   } else if (mission.endless || mission.daily) {
     stats.dist = distWalked;
+  }
+  // Y11 achievements: lifetime tallies + mission-clear unlocks (win only)
+  if (win) {
+    save.lifetimeKills = (save.lifetimeKills || 0) + kills;
+    save.lifetimeCash = (save.lifetimeCash || 0) + Math.round(stats.cash * repMult().cash); // mirrors the save.cash award in showResults
+    if (save.lifetimeKills >= 100) unlockAch('ko100');
+    if (save.lifetimeCash >= 10000) unlockAch('cash10k');
+    if (ACHIEVEMENTS.some((a) => a.mission === mission.id)) unlockAch(mission.id); // m1..m6 clears
+    if (mission.daily) unlockAch('daily');
+    if (dmgTaken <= 0) unlockAch('flawless');
   }
   writeSave();
   setTimeout(() => showResults(win, mission, stats), win ? 1400 : 800);
@@ -6291,6 +6442,8 @@ function setHud() {
   if (!player) return;
   const fd = fighterDef();
   ghostFill('php', 'pghost', Math.max(0, player.hp / player.maxHp));
+  // P16 SoR4 RALLY: green rally-health segment stacked past the real-HP fill (SoR4 green)
+  const pr = $('prally'); if (pr) pr.style.width = Math.min(100, Math.max(0, (player.hp + (player.rallyHp || 0)) / player.maxHp * 100)) + '%';
   $('pname').textContent = fd.name + (player.stance && fd.stance ? ' — ' + fd.stance.name : '');
   const e = (bossRef && bossRef.hp > 0) ? bossRef : nearestEnemy(99);
   if (e) { ghostFill('ehp', 'eghost', Math.max(0, e.hp / e.maxHp)); $('ename').textContent = e.name; }
@@ -6629,7 +6782,7 @@ function frame(dt, doRender = true) {
   if (paused) { RR(); return; }
   if (cine) { updateCine(dt); updateFx(dt); updateProjs(dt); RR(); return; }
   gameTime += dt;
-  if (hitstop > 0) { hitstop -= dt; dt *= 0.05; }
+  if (hitstop > 0) { if (hitstop > (T.hsMax || 0)) T.hsMax = hitstop; hitstop -= dt; for (const f of fighters) if (f.vibT > 0) f.vibT -= dt; dt *= 0.05; } // P15: vibT decays in real time so the shake never outlives the freeze; T.hsMax records peak hitstop for tests
   if (slowmoT > 0) { slowmoT -= dt; dt *= slowmo; }
   for (const f of fighters) { f.mixer.update(dt); if (f.busy > 0) f.busy -= dt; updateSquash(f, dt); }
   doWaveTick(dt); // MOVES EXPANSION: energy wave charge
@@ -6647,6 +6800,13 @@ function frame(dt, doRender = true) {
     camera.position.set(6, 2.8, 8.5);
     camera.lookAt(6, 1.2, 0);
   } else if (state === 'fight' && player) {
+    // P15 SF2 2-in-1: a HIT press buffered during hitstop fires the moment the freeze and the
+    // current busy window both clear (buffer expires after 0.5s so stale presses never fire late)
+    if (player.atkBuf) {
+      const fresh = gameTime - (player.atkBufT0 || 0) <= 0.5;
+      if (fresh && hitstop <= 0 && player.busy <= 0 && !missionOver && !ended && player.hp > 0 && !player.blocking) { player.atkBuf = false; doPunch(); }
+      else if (!fresh || missionOver || ended || player.hp <= 0) player.atkBuf = false;
+    }
     playerUpdate(dt);
     recordStick(); // fighting-game motion input history
     // CDCI4 P0 F-1/F-2: tutorial hint shows ONCE at fight start, auto-dismisses after 5s, never re-shows
@@ -6715,7 +6875,12 @@ function frame(dt, doRender = true) {
     camera.position.set(camOverride.px, camOverride.py, camOverride.pz);
     camera.lookAt(camOverride.tx, camOverride.ty, camOverride.tz);
   }
+  // P15: defender micro-vibration — jitter is render-only and restored immediately, so
+  // positioning/AI pipelines never see it and the model can't drift between frames
+  const _vibKeep = [];
+  for (const f of fighters) if (f.vibT > 0 && f.root) { _vibKeep.push([f, f.root.position.x]); f.root.position.x += (Math.random() - 0.5) * 0.05; }
   renderer.render(scene, camera);
+  for (const _vk of _vibKeep) _vk[0].root.position.x = _vk[1];
   T.state = state; T.frameMs = +(clock.elapsedTime * 0).toFixed(1); T.drawCalls = renderer.info.render.calls; T.tris = renderer.info.render.triangles;
 }
 // ---------- boot ----------
@@ -6784,6 +6949,12 @@ window.__cdtest = {
   pickupDbg: () => pickups.map((p) => ({ type: p.type, px: +p.px.toFixed(2), pz: +p.pz.toFixed(2) })),
   projDbg: () => projs.map((p) => ({ x: +p.x.toFixed(2), y: +p.y.toFixed(2), vx: +p.vx.toFixed(2), kind: p.kind, life: +p.life.toFixed(2) })),
   simDbg: () => ({ hs: +hitstop.toFixed(3), sm: slowmo, smT: +slowmoT.toFixed(3), st: state }),
+  atkHsDbg: () => ATK.map(a => a[5]), // P15: hitstop column of the attack table [jab, cross, kick]
+  atkIdxDbg: () => atkIdx, // P15: string position (predicts jab/cross/launcher for the next punch)
+  dbgFinisher: () => { const e = enemies.find(x => x.hp > 0 && !x.boss); if (!e || !player) return null; doFinisher(e); return 'LAUNCHER'; }, // P15: drive the real finisher path (the 3rd-hit foot gate is animation-dependent; this tests the retuned landHit directly)
+  atkBufDbg: () => !!(player && player.atkBuf), // P15: true while a HIT press is buffered during hitstop
+  hsMaxDbg: () => +((T.hsMax || 0).toFixed(3)), hsMaxClear: () => { T.hsMax = 0; return true; }, // P15: peak hitstop since clear
+  tapsDbg: () => T.taps || 0, // P15: doPunch invocations (proves buffered cancels fire)
   unpause: () => setPaused(false),
   freeze: (on) => { window.__cdfreeze = !!on; },
   // (duplicate spawnBoss removed — build fix 2026-10-09: the (id, bx) form below is the superset)
@@ -6804,7 +6975,7 @@ window.__cdtest = {
   foeCount: () => enemies.length,
   playerGrab: () => (player && player.grab ? { phase: player.grab.phase, link: player.grab.link, name: player.grab.name } : null),
   fighterArchetype: () => fighterDef().archetype,
-  enemiesDbg: () => enemies.map((e) => ({ hp: Math.round(e.hp), px: +e.px.toFixed(2), dead: !!e.dead })),
+  enemiesDbg: () => enemies.map((e) => ({ hp: Math.round(e.hp), px: +e.px.toFixed(2), dead: !!e.dead, vibT: +((e.vibT || 0).toFixed(3)) })),
   squashDbg: (i) => { const e = enemies[i]; if (!e) return null; return { t: +e.squashT.toFixed(3), amt: e.squashAmt, mode: e.squashMode, sy: +e.root.scale.y.toFixed(3), sx: +e.root.scale.x.toFixed(3) }; },
   destructDbg: () => destructibles.map((d) => ({ name: d.name, hp: Math.round(d.hp), px: +d.px.toFixed(2) })),
   thrownDbg: () => thrownWpns.map((t) => ({ type: t.type, px: +t.px.toFixed(2) })),
@@ -6814,7 +6985,7 @@ window.__cdtest = {
   setHp: (n) => { if (player) { player.hp = n; setHud(); } },
   smashNearestDestruct: () => { const d = destructibles.find((x) => x.hp > 0); if (d) { d.hp = 0; destroyDestructible(d); } },
   sigChance: (v) => { window.__cdSigChance = v; },
-  playerDbg: () => player ? { busy: +player.busy.toFixed(2), stance: player.stance||0, hp: Math.round(player.hp), maxHp: Math.round(player.maxHp), state, fid: fighterDef().id, weapon: player.weapon ? { type: player.weapon.type, durability: player.weapon.durability } : null, hasFin: !!fighterDef().stanceFin, face: player.face, animMove: !!player.animMove, animTs: player.cur ? +player.cur.timeScale.toFixed(2) : 0, px: +player.px.toFixed(2) } : null,
+  playerDbg: () => player ? { busy: +player.busy.toFixed(2), stance: player.stance||0, hp: Math.round(player.hp), maxHp: Math.round(player.maxHp), rally: Math.round(player.rallyHp || 0), state, fid: fighterDef().id, weapon: player.weapon ? { type: player.weapon.type, durability: player.weapon.durability } : null, hasFin: !!fighterDef().stanceFin, face: player.face, animMove: !!player.animMove, animTs: player.cur ? +player.cur.timeScale.toFixed(2) : 0, px: +player.px.toFixed(2) } : null,
   fireStanceFin: (fid) => { const fd = FIGHTERS.find(f => f.id === fid); if (fd && fd.stanceFin && player) { player.stance = 1; doStanceFin(fd); return fd.stanceFin.kind; } return null; },
   forceStance: () => { if (player && player.stance !== 1) doStance(); return true; },
   forceBossSig: () => { if (bossRef) { bossRef.pat = 'sig'; bossRef.ai = 'windup'; bossRef.windup = 0.01; } },
@@ -6925,7 +7096,8 @@ window.__cdtest = {
   },
   hitLayerDbg: () => ({ layer: T.hitLayerSfx || 0, synth: T.synthHitSfx || 0 }), // S1 hit-layer tranche (owner 2026-10-08): layer fires AND synth hits still resolve
   hitLayerClear: () => { T.hitLayerSfx = 0; T.synthHitSfx = 0; },
-  dbgFoePassive: () => { let n = 0; for (const e of enemies) if (!e.boss && e.hp > 0) { e.ai = 'recover'; e.aiT = 999; n++; } return n; }, // S1 hit-layer playtest: passive punching bag (still a real enemy, takes real hits)
+  dbgFoePassive: () => { let n = 0; for (const e of enemies) if (!e.boss && e.hp > 0) { e.ai = 'recover'; e.aiT = 999; e.guardCD = 99; e.dodgeCD = 99; n++; } return n; }, // S1 hit-layer playtest: passive punching bag (still a real enemy, takes real hits; P15: reactions disabled for deterministic hitstop measurement)
+  rallyDbg: () => player ? { hp: Math.round(player.hp), rally: Math.round(player.rallyHp || 0), maxHp: Math.round(player.maxHp), recovered: T.rallyRecovered || 0, absorbed: T.rallyAbsorbed || 0 } : null, // P16: rally pool + lifetime counters
   audioDbg: (ks) => (ks || []).map(k => ({ k, ok: !!(sbuf[k] && sbuf[k] instanceof AudioBuffer) })), // S2: prove swing SFX decoded
   uiClickDbg: () => ({ uiClick: T.uiClickSfx || 0 }), // S6 UI click tranche (owner 2026-10-08): playtest hook for the central UI-button click SFX
   uiClickClear: () => { T.uiClickSfx = 0; },
@@ -7176,4 +7348,12 @@ window.__cdtest = {
   saveDbg: () => JSON.parse(JSON.stringify({ daily: save.daily, dailyBest: save.dailyBest, boards: save.boards })),
   missionDbg: () => mission ? { id: mission.id, district: mission.district, len: mission.len, daily: !!mission.daily, dailyDate: mission.dailyDate || null, dailySeed: mission.dailySeed || null, nSpawns: (mission.spawns || []).length } : null,
   missionComplete,
+  // Y11 achievement test hooks (drive real game paths)
+  achDbg: () => JSON.parse(JSON.stringify({ unlocked: (save.ach && save.ach.unlocked) || [], bosses: (save.ach && save.ach.bosses) || [], lifetimeCash: save.lifetimeCash, lifetimeKills: save.lifetimeKills })),
+  hitFoe: (i, dmg, launcher) => { const e = enemies[i]; if (e && e.hp > 0 && state === 'fight') landHit(e, dmg, 'TEST', 0.05, 0.2, !!launcher, false); return e ? Math.round(e.hp) : -1; },
+  spawnBossT: (id) => { const e = spawnBoss(id, player ? player.px + 4 : 8); return e ? e.name : null; },
+  throwFoeT: (i) => { const e = enemies[i]; if (!e) return false; e.airborne = true; e.vy = 4.5; e.thrownBody = true; e.thrownHit = new Set(); e.kvx = 13; e.ai = 'launched'; return true; },
+  addCashRunT: (n) => { cashRun += n; return cashRun; },
+  setDistT: (d) => { distWalked = d; return true; },
+  smashedT: () => runSmashed,
 };
