@@ -1,0 +1,27 @@
+{
+  "source": "ANU-QRNG",
+  "endpoint": "https://qrng.anu.edu.au/API/jsonI.php?length=16&type=uint16",
+  "type": "uint16",
+  "length": 16,
+  "data": [
+    15697,
+    63887,
+    21804,
+    51301,
+    14168,
+    26431,
+    38521,
+    6943,
+    493,
+    45193,
+    63167,
+    41580,
+    30778,
+    48622,
+    55963,
+    2253
+  ],
+  "fetched_at_utc": "2026-10-20T18:29:43.847Z",
+  "note": "True quantum random numbers measured from vacuum fluctuations (ANU QRNG).",
+  "purpose": "Official Quantum Game Jam 2026 district seed for Concrete Dragon. Captured during prep (2026-10-20); the jam district is generated deterministically from this record so the shipped build is reproducible while its entropy is genuinely quantum."
+}
