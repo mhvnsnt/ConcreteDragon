@@ -72,3 +72,22 @@ proceeded without it per the workflow law's exception clause.
 ## Propagation
 This law is appended to every mhvnsnt repo's `AGENTS.md`, each via branch → PR → merge
 per the MERGE-IT-YOURSELF LAW. This file is the canonical text; repo copies reference it.
+
+---
+
+## NO-SPARSE-COMMIT LAW (owner 2026-10-23 — the cape-jones #219 main wipe)
+NEVER commit or push from a sparse/partial checkout. A missing-file tree turns `git add -A`
+into a silent repo wipe the moment you stage everything (this is exactly how cape-jones
+main was wiped in PR #219 on 2026-10-23: the commit was built from an incomplete
+checkout and the missing files were staged as deletions).
+
+Before any commit from a non-full clone, VERIFY the working tree against the branch's
+real tree: diff the root listing, or compare tree SHAs (`git rev-parse HEAD^{tree}`
+vs the remote). If anything is missing, STOP — do not commit.
+
+Default recovery: revert the merge commit (`git revert -m 1 <merge-sha>`) and re-add
+the branch's real payload. When in doubt, build the commit via the Git Data API from
+verified tree SHAs instead of trusting a local checkout.
+
+GOTCHA: `gh`'s `-f content=@file` does NOT expand `@file` for the blobs API —
+base64 the file explicitly (e.g. `base64.b64encode`) and pass `encoding: "base64"`.
