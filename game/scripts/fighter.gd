@@ -8,6 +8,41 @@ signal died(f: Fighter)
 
 const KIND_ROOK := 0
 const KIND_VEX := 1
+const KIND_BRICK := 2
+const KIND_SABLE := 3
+const KIND_JUNO := 4
+const KIND_MACK := 5
+const KIND_IRIS := 6
+const KIND_HOLLOW := 7
+
+## Data-driven roster. kind -> definition. New fighters = new entries here
+## (+ PNG set in assets/art/<art>/ + pivots.json entry). Skins are style-only.
+const FIGHTER_DEFS := {
+	0: {"name": "ROOK", "art": "rook", "skins": ["rook", "rook_noir"],
+		"toughness": 1.15, "speed": 1.0,
+		"desc": "Balanced boxer.\nBig gloves, big heart."},
+	1: {"name": "VEX", "art": "vex", "skins": ["vex", "vex_crimson"],
+		"toughness": 0.9, "speed": 1.0,
+		"desc": "Fast kickboxer.\nBlink and you're down."},
+	2: {"name": "BRICK", "art": "brick", "skins": ["brick"],
+		"toughness": 1.5, "speed": 0.8,
+		"desc": "Grappler. Slow,\nhits like a truck."},
+	3: {"name": "SABLE", "art": "sable", "skins": ["sable"],
+		"toughness": 1.0, "speed": 1.0,
+		"desc": "Counter-fighter.\nPatience is a weapon."},
+	4: {"name": "JUNO", "art": "juno", "skins": ["juno"],
+		"toughness": 0.85, "speed": 1.25,
+		"desc": "Rushdown spark.\nNever stops moving."},
+	5: {"name": "MACK", "art": "mack", "skins": ["mack"],
+		"toughness": 1.1, "speed": 0.95,
+		"desc": "Weapon specialist.\nOld soldier, new war."},
+	6: {"name": "IRIS", "art": "iris", "skins": ["iris"],
+		"toughness": 0.8, "speed": 1.2,
+		"desc": "Acrobatic. Owns\nthe air above you."},
+	7: {"name": "HOLLOW POINT", "art": "hollow_point", "skins": ["hollow_point"],
+		"toughness": 1.3, "speed": 0.9,
+		"desc": "Boss-tier zoner.\nThe empty chamber."},
+}
 
 const MOVES := {
 	"jab":      {"startup": 0.07, "active": 0.10, "recover": 0.16, "range": 165.0, "dmg": 6.0,  "kb": 130.0, "launch": 0.0,   "hitstop": 0.06, "shake": 0.22, "sfx": "punch_thump",    "meter": 8.0,  "height": "mid"},
@@ -24,6 +59,32 @@ const PALETTES := {
 	1: {"skin": Color("c98d5e"), "hair": Color("2ec4b6"), "top": Color("7b2ff7"),
 		"shorts": Color("26232e"), "glove": Color("2ec4b6"), "shoe": Color("2ec4b6"),
 		"accent": Color("2ec4b6"), "line": Color("26232b")},
+	2: {"skin": Color("e1aa78"), "hair": Color("3c2d23"), "top": Color("aa3c32"),
+		"shorts": Color("3c3746"), "glove": Color("e1aa78"), "shoe": Color("46301e"),
+		"accent": Color("f5f2eb"), "line": Color("26232b")},
+	3: {"skin": Color("8c5f41"), "hair": Color("1e1c22"), "top": Color("5a5546"),
+		"shorts": Color("2d2d32"), "glove": Color("ebe6d7"), "shoe": Color("ebe6d7"),
+		"accent": Color("5a5546"), "line": Color("26232b")},
+	4: {"skin": Color("f0c896"), "hair": Color("ffaa28"), "top": Color("f58c28"),
+		"shorts": Color("32323c"), "glove": Color("c83c28"), "shoe": Color("f07828"),
+		"accent": Color("c82837"), "line": Color("26232b")},
+	5: {"skin": Color("cd966e"), "hair": Color("827d78"), "top": Color("6e7355"),
+		"shorts": Color("373a32"), "glove": Color("d2c8b4"), "shoe": Color("34383c"),
+		"accent": Color("4b4e3c"), "line": Color("26232b")},
+	6: {"skin": Color("e6b48c"), "hair": Color("7a4dff"), "top": Color("7a4dff"),
+		"shorts": Color("282d37"), "glove": Color("e6b48c"), "shoe": Color("2ec4b6"),
+		"accent": Color("2ec4b6"), "line": Color("26232b")},
+	7: {"skin": Color("c8cdc3"), "hair": Color("26232b"), "top": Color("2d2a37"),
+		"shorts": Color("1e1c24"), "glove": Color("2d2a37"), "shoe": Color("23212d"),
+		"accent": Color("7a4dff"), "line": Color("26232b")},
+}
+
+## Street weapons (Yakuza-style): pick up, smash, they break. Pure depth
+## addition — unarmed combat is untouched.
+const WEAPONS := {
+	"bat":    {"dmg": 6.0,  "range": 60.0, "durability": 8,  "sfx": "bat_crack"},
+	"chain":  {"dmg": 3.0,  "range": 45.0, "durability": 12, "sfx": "kick_whoosh"},
+	"bottle": {"dmg": 10.0, "range": 25.0, "durability": 3,  "sfx": "glass_break"},
 }
 
 var kind := KIND_ROOK
@@ -33,6 +94,7 @@ var facing := 1
 var use_textures := false
 var textures := {}
 var skin_dir := ""  # art subdir actually loaded (base or selected skin)
+var cosmetics := {}  # equipped customization: {slot: item_id}; accessory = Array
 var bt_brain = null  # optional behavior-tree brain (scripts/ai/); if set, _ai_update delegates to it
 
 var max_hp := 100.0
@@ -70,13 +132,25 @@ var flash := 0.0
 var squash := Vector2.ONE
 var body_scale := 1.0  # per-fighter size (bosses bigger)
 
+# weapon state ("" = unarmed)
+var weapon_type := ""
+var weapon_hits_left := 0
+var forearm_len := 66.0  # set by the rig builders; weapon grip point
+var _weapon_node: Node2D = null
+
 var fight: Node = null  # set by FightScreen
 
 
-func setup(p_kind: int, p_is_ai: bool, p_name: String) -> void:
+func setup(p_kind: int, p_is_ai: bool, p_name: String, p_skin: String = "",
+		p_cosmetics: Dictionary = {}) -> void:
 	kind = p_kind
 	is_ai = p_is_ai
 	disp_name = p_name
+	cosmetics = p_cosmetics
+	var def: Dictionary = FIGHTER_DEFS.get(kind, FIGHTER_DEFS[KIND_ROOK])
+	skin_dir = p_skin if p_skin != "" else str(def["art"])
+	toughness = float(def.get("toughness", 1.0))
+	speed_mult = float(def.get("speed", 1.0))
 	tex_mode = _try_load_textures()
 	if tex_mode:
 		_build_tex_rig()
@@ -86,17 +160,16 @@ func setup(p_kind: int, p_is_ai: bool, p_name: String) -> void:
 
 
 func _try_load_textures() -> bool:
-	var sub := "rook" if kind == KIND_ROOK else "vex"
 	var pj_path := "res://assets/art/pivots.json"
 	if not ResourceLoader.exists(pj_path):
 		return false
 	var pj: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(pj_path))
-	if pj == null or not pj.has(sub):
+	if pj == null or not pj.has(skin_dir):
 		return false
-	var piv: Dictionary = pj[sub]
+	var piv: Dictionary = pj[skin_dir]
 	var names := ["head", "torso", "arm_u", "arm_f", "leg_t", "leg_s"]
 	for n in names:
-		var tp := "res://assets/art/%s/%s.png" % [sub, n]
+		var tp := "res://assets/art/%s/%s.png" % [skin_dir, n]
 		if not ResourceLoader.exists(tp):
 			return false
 		tex_parts[n] = load(tp)
@@ -119,9 +192,15 @@ func _tex_sprite(part_name: String) -> Sprite2D:
 
 
 func _tex_hang(part_name: String) -> float:
-	# distance from pivot to far (bottom) end, in local px
+	# Content-aware hang: distance from the pivot to the lowest DRAWN pixel,
+	# in local px. (The old formula assumed art filled the PNG to its bottom
+	# edge; the real parts have transparent padding, which left 40-60px gaps
+	# at knees/elbows and floated the feet ~44px above the ground.)
+	var tex: Texture2D = tex_parts[part_name]
+	var used: Rect2i = tex.get_image().get_used_rect()
 	var pv: Array = tex_pivots[part_name]
-	return (1.0 - float(pv[1])) * 256.0 * tex_scale
+	var pivot_y: float = float(pv[1]) * 256.0
+	return maxf(8.0, (float(used.end.y) - pivot_y) * tex_scale)
 
 
 func _build_tex_rig() -> void:
@@ -131,6 +210,7 @@ func _build_tex_rig() -> void:
 	var armu_hang := _tex_hang("arm_u")
 	var armf_hang := _tex_hang("arm_f")
 	var torso_hang := _tex_hang("torso")
+	forearm_len = armf_hang
 	hips_base_y = -(thigh_hang + shin_hang)
 	var hips := Node2D.new()
 	hips.position = Vector2(0, hips_base_y)
@@ -186,6 +266,39 @@ func _build_tex_rig() -> void:
 		sn.z_index = -1 if side == "F" else -3
 		knee.add_child(sn)
 		Parts["leg_s" + side] = sn
+	_apply_cosmetics()
+
+
+## Character-customization suite: overlay PNGs ride the paper-doll parts.
+## Overlays are children of the base part sprites (same 256px canvas space),
+## so they inherit pivots, joints, and animation for free. Cosmetic-only.
+func _apply_cosmetics() -> void:
+	if not tex_mode or cosmetics.is_empty():
+		return
+	var art_key := str(FIGHTER_DEFS[kind].get("art", "rook"))
+	var hosts := {
+		"head": ["head"],
+		"torso": ["torso"],
+		"arm_f": ["arm_fF", "arm_fB"],
+		"leg_s": ["leg_sF", "leg_sB"],
+	}
+	for slot in cosmetics.keys():
+		var ids: Array = cosmetics[slot] if slot == "accessory" else [cosmetics[slot]]
+		for item_id in ids:
+			if str(item_id) == "":
+				continue
+			for f in Cosmetics.art_files(art_key, str(item_id)):
+				for h in hosts.get(str(f["canvas"]), []):
+					if Parts.has(h) and Parts[h] is Sprite2D:
+						_cosmetic_overlay(Parts[h], str(f["path"]))
+
+
+func _cosmetic_overlay(host: Sprite2D, path: String) -> void:
+	var sp := Sprite2D.new()
+	sp.texture = load(path)
+	sp.centered = false  # same canvas origin as the host part
+	sp.z_index = 1  # relative: draws just above the host
+	host.add_child(sp)
 
 
 # ---------------------------------------------------------------- rig ----
@@ -483,6 +596,58 @@ func stop_block() -> void:
 	blocking = false
 
 
+# ------------------------------------------------------------- weapons ----
+
+func has_weapon() -> bool:
+	return weapon_type != ""
+
+
+func weapon_dmg_bonus() -> float:
+	return float(WEAPONS[weapon_type]["dmg"]) if has_weapon() else 0.0
+
+
+func weapon_range_bonus() -> float:
+	return float(WEAPONS[weapon_type]["range"]) if has_weapon() else 0.0
+
+
+func weapon_sfx() -> String:
+	return str(WEAPONS[weapon_type]["sfx"]) if has_weapon() else ""
+
+
+func equip_weapon(wtype: String) -> void:
+	if not WEAPONS.has(wtype):
+		return
+	unequip_weapon()
+	weapon_type = wtype
+	weapon_hits_left = int(WEAPONS[wtype]["durability"])
+	_weapon_node = WeaponDraw.new()
+	_weapon_node.weapon_type = wtype
+	# grip: just past the fist, angled across the forearm
+	_weapon_node.position = Vector2(8, forearm_len * 0.92)
+	_weapon_node.rotation = -0.85
+	(J["elbF"] as Node2D).add_child(_weapon_node)
+
+
+func unequip_weapon() -> void:
+	if _weapon_node and is_instance_valid(_weapon_node):
+		_weapon_node.queue_free()
+	_weapon_node = null
+	weapon_type = ""
+	weapon_hits_left = 0
+
+
+## Tick durability after a landed hit. Returns the broken weapon type, or "".
+func use_weapon_hit() -> String:
+	if not has_weapon():
+		return ""
+	weapon_hits_left -= 1
+	if weapon_hits_left <= 0:
+		var t := weapon_type
+		unequip_weapon()
+		return t
+	return ""
+
+
 func add_meter(amount: float) -> void:
 	if dead:
 		return
@@ -492,7 +657,7 @@ func add_meter(amount: float) -> void:
 func take_hit(mv: Dictionary, attacker: Fighter) -> void:
 	if dead:
 		return
-	var dmg: float = float(mv["dmg"]) * attacker.dmg_mult
+	var dmg: float = float(mv["dmg"]) * attacker.dmg_mult + attacker.weapon_dmg_bonus()
 	var was_counter := attacker.telegraphing == false and telegraphing
 	# blocking?
 	if blocking and state == "block" and not (state == "launched"):
@@ -815,6 +980,42 @@ func on_player_attack_start(dist: float) -> void:
 
 # ---------------------------------------------------------------- Part ----
 
+## Procedurally drawn street weapon, gripped in the front fist. Drawn along
+## local +x (the grip), so it swings naturally with the forearm.
+class WeaponDraw:
+	extends Node2D
+	var weapon_type := "bat"
+
+	func _draw() -> void:
+		var line := Color(0.15, 0.14, 0.17)
+		match weapon_type:
+			"bat":
+				# wooden bat: fat barrel, taped grip
+				draw_line(Vector2(0, 0), Vector2(95, 0), line, 36.0)
+				draw_line(Vector2(0, 0), Vector2(95, 0), Color("c98d5e"), 28.0)
+				draw_line(Vector2(-16, 0), Vector2(12, 0), line, 32.0)
+				draw_line(Vector2(-16, 0), Vector2(12, 0), Color("5b3a29"), 24.0)
+				draw_circle(Vector2(95, 0), 17.0, line)
+				draw_circle(Vector2(95, 0), 12.0, Color("c98d5e"))
+				draw_circle(Vector2(-18, 0), 8.0, line)
+			"chain":
+				# bike chain: heavy links with a sway
+				for i in 7:
+					var x := -12.0 + i * 17.0
+					var c := Vector2(x, sin(i * 1.7) * 7.0)
+					draw_circle(c, 12.0, line)
+					draw_circle(c, 7.5, Color("a8dadc"))
+					draw_circle(c + Vector2(-2, -2), 2.5, Color(1, 1, 1, 0.7))
+			"bottle":
+				# glass bottle: neck + body + glint
+				draw_line(Vector2(-10, 0), Vector2(28, 0), line, 28.0)
+				draw_line(Vector2(-10, 0), Vector2(28, 0), Color("2d6a4f"), 20.0)
+				draw_line(Vector2(28, 0), Vector2(88, 0), line, 46.0)
+				draw_line(Vector2(28, 0), Vector2(88, 0), Color("40916c"), 38.0)
+				draw_line(Vector2(58, -13), Vector2(58, 13), Color(1, 1, 1, 0.45), 9.0)
+				draw_circle(Vector2(-12, 0), 9.0, line)
+
+
 class Part:
 	extends Node2D
 	var part_kind := ""
@@ -883,8 +1084,8 @@ class Part:
 				_capsule(Vector2.ZERO, Vector2(0, 78), 28.0, skin, line)
 				# shoe
 				var sc := Vector2(10, 92)
-				draw_ellipse(sc, 30.0, 20.0, line)
-				draw_ellipse(sc, 24.0, 14.0, palette["shoe"])
+				_poly_ellipse(sc, 30.0, 20.0, line)
+				_poly_ellipse(sc, 24.0, 14.0, palette["shoe"])
 
 	func _capsule(a: Vector2, b: Vector2, w: float, fill: Color, line: Color) -> void:
 		draw_line(a, b, line, w + 9.0)
@@ -904,7 +1105,7 @@ class Part:
 		sb2.set_corner_radius_all(int(rad))
 		draw_style_box(sb2, rect)
 
-	func draw_ellipse(c: Vector2, rx: float, ry: float, col: Color) -> void:
+	func _poly_ellipse(c: Vector2, rx: float, ry: float, col: Color) -> void:
 		var pts := PackedVector2Array()
 		for i in 20:
 			var a := TAU * i / 20.0
