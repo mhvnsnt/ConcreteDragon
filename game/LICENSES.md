@@ -17,6 +17,11 @@ All art, audio, and code in this slice. Rule: nothing ships that we can't relice
   not applicable to our 2D rig). No code taken. If ever used, check its repo license first.
 - BANNON_IMPACT — internal concept from our own research; reimplemented natively.
 
+## Fonts (`fonts/`)
+- **Bungee Regular** — David Jonathan Ross / The Bungee Project, via google/fonts.
+  **SIL Open Font License 1.1** (`fonts/OFL.txt`). Commercial embedding allowed.
+  Wired as default font in `ui/theme.tres`. Harvested 2026-10-06 (content Wave 2).
+
 ## Art (`assets/art/`)
 - All PNGs procedurally generated with PIL by our own tooling (`assets/tools/gen_art.py`,
   `gen_stage_ui.py`) — original work, no source images, no license encumbrance.
@@ -24,17 +29,9 @@ All art, audio, and code in this slice. Rule: nothing ships that we can't relice
 - See `assets/ASSET_MANIFEST.md` for the per-file log.
 
 ## Audio (`assets/sfx/` + runtime synth)
-- numpy WAVs synthesized by our own tooling (`tools/gen_sfx.py`) — original.
-- jsfxr WAVs (`jsfxr_*`) generated with **jsfxr** — **Unlicense** (public domain),
-  no attribution required. Preset roll-ups + mutate pass via
-  `tools/gen_sfx_jsfxr.mjs`; Params receipts saved as `.sfxr.json`.
+- All WAVs numpy-synthesized by our own tooling (`assets/tools/gen_sfx.py`) — original.
 - Runtime fallback synthesizer (`scripts/sfx.gd`) generates equivalent sounds in code.
-- No samples, no loops, no third-party audio with restrictions.
-
-## Props (`assets/props/`)
-- ambientCG Concrete042A + Asphalt033 (2K PBR) — **CC0-1.0**, per-file `.LICENSE.txt`.
-- Kenney City Kit: Commercial v2.1 — **CC0-1.0** (pack's own License.txt).
-- Staged for the 3D stage pipeline; not consumed by M1.
+- No samples, no loops, no third-party audio.
 
 ## Shipped-client license audit (M1)
 - [x] No GPL/AGPL code in the client.
