@@ -1,0 +1,467 @@
+{
+  "format": "concrete-dragon/quantum-district@1",
+  "name": "Iron Alley",
+  "grid": 6,
+  "master_seed": 540965111,
+  "seed_source": "ANU-QRNG",
+  "seed_type": "uint16",
+  "seed_length": 16,
+  "seed_fetched_at_utc": "2026-10-20T18:29:43.847Z",
+  "blocks": [
+    {
+      "id": 0,
+      "x": 0,
+      "y": 0,
+      "type": "park",
+      "floors": 0,
+      "alley": true,
+      "graffiti_spots": 1,
+      "breakables": 2,
+      "encounter": null
+    },
+    {
+      "id": 1,
+      "x": 1,
+      "y": 0,
+      "type": "warehouse",
+      "floors": 11,
+      "alley": false,
+      "graffiti_spots": 2,
+      "breakables": 1,
+      "encounter": {
+        "wave": 6,
+        "thugs": 6,
+        "brute": false
+      }
+    },
+    {
+      "id": 2,
+      "x": 2,
+      "y": 0,
+      "type": "plaza",
+      "floors": 0,
+      "alley": false,
+      "graffiti_spots": 1,
+      "breakables": 6,
+      "encounter": null
+    },
+    {
+      "id": 3,
+      "x": 3,
+      "y": 0,
+      "type": "plaza",
+      "floors": 0,
+      "alley": false,
+      "graffiti_spots": 3,
+      "breakables": 6,
+      "encounter": null
+    },
+    {
+      "id": 4,
+      "x": 4,
+      "y": 0,
+      "type": "industrial",
+      "floors": 10,
+      "alley": false,
+      "graffiti_spots": 2,
+      "breakables": 0,
+      "encounter": null
+    },
+    {
+      "id": 5,
+      "x": 5,
+      "y": 0,
+      "type": "residential",
+      "floors": 10,
+      "alley": false,
+      "graffiti_spots": 0,
+      "breakables": 5,
+      "encounter": null
+    },
+    {
+      "id": 6,
+      "x": 0,
+      "y": 1,
+      "type": "plaza",
+      "floors": 0,
+      "alley": false,
+      "graffiti_spots": 2,
+      "breakables": 3,
+      "encounter": null
+    },
+    {
+      "id": 7,
+      "x": 1,
+      "y": 1,
+      "type": "commercial",
+      "floors": 4,
+      "alley": false,
+      "graffiti_spots": 0,
+      "breakables": 6,
+      "encounter": null
+    },
+    {
+      "id": 8,
+      "x": 2,
+      "y": 1,
+      "type": "commercial",
+      "floors": 1,
+      "alley": false,
+      "graffiti_spots": 0,
+      "breakables": 1,
+      "encounter": null
+    },
+    {
+      "id": 9,
+      "x": 3,
+      "y": 1,
+      "type": "park",
+      "floors": 0,
+      "alley": true,
+      "graffiti_spots": 1,
+      "breakables": 5,
+      "encounter": null
+    },
+    {
+      "id": 10,
+      "x": 4,
+      "y": 1,
+      "type": "warehouse",
+      "floors": 5,
+      "alley": false,
+      "graffiti_spots": 2,
+      "breakables": 4,
+      "encounter": null
+    },
+    {
+      "id": 11,
+      "x": 5,
+      "y": 1,
+      "type": "residential",
+      "floors": 1,
+      "alley": false,
+      "graffiti_spots": 2,
+      "breakables": 5,
+      "encounter": null
+    },
+    {
+      "id": 12,
+      "x": 0,
+      "y": 2,
+      "type": "industrial",
+      "floors": 7,
+      "alley": true,
+      "graffiti_spots": 0,
+      "breakables": 6,
+      "encounter": {
+        "wave": 2,
+        "thugs": 2,
+        "brute": false
+      }
+    },
+    {
+      "id": 13,
+      "x": 1,
+      "y": 2,
+      "type": "plaza",
+      "floors": 0,
+      "alley": true,
+      "graffiti_spots": 3,
+      "breakables": 1,
+      "encounter": null
+    },
+    {
+      "id": 14,
+      "x": 2,
+      "y": 2,
+      "type": "plaza",
+      "floors": 0,
+      "alley": false,
+      "graffiti_spots": 1,
+      "breakables": 0,
+      "encounter": null
+    },
+    {
+      "id": 15,
+      "x": 3,
+      "y": 2,
+      "type": "warehouse",
+      "floors": 8,
+      "alley": false,
+      "graffiti_spots": 2,
+      "breakables": 1,
+      "encounter": null
+    },
+    {
+      "id": 16,
+      "x": 4,
+      "y": 2,
+      "type": "industrial",
+      "floors": 2,
+      "alley": true,
+      "graffiti_spots": 2,
+      "breakables": 4,
+      "encounter": {
+        "wave": 5,
+        "thugs": 2,
+        "brute": false
+      }
+    },
+    {
+      "id": 17,
+      "x": 5,
+      "y": 2,
+      "type": "commercial",
+      "floors": 11,
+      "alley": true,
+      "graffiti_spots": 1,
+      "breakables": 1,
+      "encounter": null
+    },
+    {
+      "id": 18,
+      "x": 0,
+      "y": 3,
+      "type": "residential",
+      "floors": 5,
+      "alley": false,
+      "graffiti_spots": 1,
+      "breakables": 4,
+      "encounter": {
+        "wave": 7,
+        "thugs": 2,
+        "brute": false
+      }
+    },
+    {
+      "id": 19,
+      "x": 1,
+      "y": 3,
+      "type": "commercial",
+      "floors": 3,
+      "alley": false,
+      "graffiti_spots": 3,
+      "breakables": 0,
+      "encounter": null
+    },
+    {
+      "id": 20,
+      "x": 2,
+      "y": 3,
+      "type": "industrial",
+      "floors": 10,
+      "alley": false,
+      "graffiti_spots": 0,
+      "breakables": 1,
+      "encounter": null
+    },
+    {
+      "id": 21,
+      "x": 3,
+      "y": 3,
+      "type": "industrial",
+      "floors": 2,
+      "alley": false,
+      "graffiti_spots": 2,
+      "breakables": 0,
+      "encounter": {
+        "wave": 8,
+        "thugs": 4,
+        "brute": true
+      }
+    },
+    {
+      "id": 22,
+      "x": 4,
+      "y": 3,
+      "type": "industrial",
+      "floors": 9,
+      "alley": true,
+      "graffiti_spots": 1,
+      "breakables": 1,
+      "encounter": null
+    },
+    {
+      "id": 23,
+      "x": 5,
+      "y": 3,
+      "type": "plaza",
+      "floors": 0,
+      "alley": false,
+      "graffiti_spots": 3,
+      "breakables": 5,
+      "encounter": null
+    },
+    {
+      "id": 24,
+      "x": 0,
+      "y": 4,
+      "type": "residential",
+      "floors": 1,
+      "alley": true,
+      "graffiti_spots": 0,
+      "breakables": 6,
+      "encounter": {
+        "wave": 3,
+        "thugs": 2,
+        "brute": false
+      }
+    },
+    {
+      "id": 25,
+      "x": 1,
+      "y": 4,
+      "type": "warehouse",
+      "floors": 4,
+      "alley": true,
+      "graffiti_spots": 2,
+      "breakables": 2,
+      "encounter": {
+        "wave": 4,
+        "thugs": 5,
+        "brute": true
+      }
+    },
+    {
+      "id": 26,
+      "x": 2,
+      "y": 4,
+      "type": "plaza",
+      "floors": 0,
+      "alley": false,
+      "graffiti_spots": 3,
+      "breakables": 0,
+      "encounter": null
+    },
+    {
+      "id": 27,
+      "x": 3,
+      "y": 4,
+      "type": "warehouse",
+      "floors": 11,
+      "alley": true,
+      "graffiti_spots": 2,
+      "breakables": 5,
+      "encounter": {
+        "wave": 1,
+        "thugs": 2,
+        "brute": false
+      }
+    },
+    {
+      "id": 28,
+      "x": 4,
+      "y": 4,
+      "type": "warehouse",
+      "floors": 11,
+      "alley": true,
+      "graffiti_spots": 3,
+      "breakables": 2,
+      "encounter": null
+    },
+    {
+      "id": 29,
+      "x": 5,
+      "y": 4,
+      "type": "warehouse",
+      "floors": 3,
+      "alley": false,
+      "graffiti_spots": 1,
+      "breakables": 0,
+      "encounter": null
+    },
+    {
+      "id": 30,
+      "x": 0,
+      "y": 5,
+      "type": "park",
+      "floors": 0,
+      "alley": true,
+      "graffiti_spots": 3,
+      "breakables": 6,
+      "encounter": null
+    },
+    {
+      "id": 31,
+      "x": 1,
+      "y": 5,
+      "type": "park",
+      "floors": 0,
+      "alley": false,
+      "graffiti_spots": 3,
+      "breakables": 2,
+      "encounter": null
+    },
+    {
+      "id": 32,
+      "x": 2,
+      "y": 5,
+      "type": "park",
+      "floors": 0,
+      "alley": true,
+      "graffiti_spots": 1,
+      "breakables": 2,
+      "encounter": null
+    },
+    {
+      "id": 33,
+      "x": 3,
+      "y": 5,
+      "type": "residential",
+      "floors": 7,
+      "alley": false,
+      "graffiti_spots": 1,
+      "breakables": 0,
+      "encounter": null
+    },
+    {
+      "id": 34,
+      "x": 4,
+      "y": 5,
+      "type": "plaza",
+      "floors": 0,
+      "alley": true,
+      "graffiti_spots": 3,
+      "breakables": 3,
+      "encounter": null
+    },
+    {
+      "id": 35,
+      "x": 5,
+      "y": 5,
+      "type": "residential",
+      "floors": 8,
+      "alley": false,
+      "graffiti_spots": 2,
+      "breakables": 4,
+      "encounter": null
+    }
+  ],
+  "spawn_block": 0,
+  "boss_block": 35,
+  "superposition": {
+    "block_id": 25,
+    "variant": "B",
+    "decided_by": "parity of quantum value data[0]",
+    "value": 15697
+  },
+  "entangled": {
+    "pair": [
+      33,
+      34
+    ],
+    "shared_state": "open",
+    "decided_by": "pair offset from the seeded PRNG stream (master seed derives from all 16 quantum values); shared state from parity of quantum value data[2]",
+    "values": [
+      63887,
+      21804
+    ]
+  },
+  "counts": {
+    "blocks": 36,
+    "encounters": 8,
+    "graffiti_spots": 59,
+    "breakables": 100,
+    "alleys": 14
+  }
+}
