@@ -101,7 +101,7 @@ const FIGHTERS = [
     wave: { name: 'DRAGON WAVE', dmg: 24, speed: 7.5, color: 0xff7a2a, cost: 15 },
     spin: { name: 'DRAGON CYCLONE', dmg: 18, color: 0xff7a2a, dur: 0.62, cost: 20 },
     bfname: 'STREET DASH', blitzname: 'DRAGON BLITZ', duname: 'SKY UPPER',
-    mega: { name: "DRAGON'S JUDGMENT" },
+    mega: { name: "DRAGON'S JUDGMENT" }, furyname: 'DRAGON FURY',
     stance: { name: "RUSH STANCE", dmg: 0.85, spd: 1.25, desc: "All hands, no brakes. Faster, lighter hits." },
     stanceFin: { name: "HUNDRED HAND SLAP", kind: 'flurry', color: 0xff7a2a, desc: 'Rapid open-palm flurry. Eats guards alive.' },
     fin: 'launch', finname: 'LAUNCHER', findesc: 'Pop-up finisher — juggle them in the air',
@@ -134,7 +134,7 @@ const FIGHTERS = [
     wave: { name: 'PHANTOM WAVE', dmg: 22, speed: 8, color: 0x9a7bff, cost: 15 },
     spin: { name: 'GHOST CYCLONE', dmg: 16, color: 0x9a7bff, dur: 0.62, cost: 20 },
     bfname: 'PHASE STEP', blitzname: 'PHANTOM BLITZ', duname: 'WRAITH RISE',
-    mega: { name: 'MIDNIGHT REQUIEM' },
+    mega: { name: 'MIDNIGHT REQUIEM' }, furyname: 'WRAITH FURY',
     stance: { name: "WRAITH STANCE", dmg: 1.2, spd: 0.95, desc: "Blinks hit harder. Meaner, not faster." },
     stanceFin: { name: "AFTERIMAGE ASSAULT", kind: 'blinkback', color: 0x9a7bff, desc: 'Blink through them — strike from behind.' },
     fin: 'blink', finname: 'BLINK STRIKE', findesc: 'Teleports behind — the unseen finisher',
@@ -155,7 +155,7 @@ const FIGHTERS = [
       ['GRAPPLE', 'GRP near a foe', 'Quick snatch suplex — fast but light. On a staggered foe: PHANTOM DRIVER finisher.'],
       ['COMBO ROUTE', 'PHANTOM STEP > FANG FLICKER x3', 'Teleport in, blur them with speed. Never stand still.'],
       ['BLOCK', 'HOLD DDG / hold L', 'Guard stance: damage becomes chip. Heavies still hurt.'],
-      ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
+      ['WRAITH FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
       ['BLINK FLURRY', '↓ + SPC (50 meter)', 'Blink between the 3 nearest enemies.'],
     ] },
   { id: 'brick', wrestle: 'RENT-A-POWERBOMB',
@@ -171,7 +171,7 @@ const FIGHTERS = [
     wave: { name: 'SEISMIC WAVE', dmg: 28, speed: 6, color: 0xffb02e, cost: 18 },
     spin: { name: 'WRECKING BALL', dmg: 22, color: 0xffb02e, dur: 0.7, cost: 25 },
     bfname: 'PAVEMENT RUSH', blitzname: 'BATTERING RAM', duname: 'HIGH-RISE',
-    mega: { name: 'RENT DUE' },
+    mega: { name: 'RENT DUE' }, furyname: 'EVICTION FURY',
     stance: { name: "PAYLOAD STANCE", dmg: 1.35, spd: 0.78, desc: "The wall walks forward." },
     stanceFin: { name: "WRECKING BALL", kind: 'spin', color: 0xffb02e, desc: '360° wrecking spin. The whole circle pays.' },
     fin: 'slam', finname: 'CURB STOMP', findesc: 'AOE slam — shakes the whole block',
@@ -191,7 +191,7 @@ const FIGHTERS = [
       ['TAG SPOT', 'TAUNT near a glowing wall', 'Spray the wall (3s, vulnerable). Big cash + 15 REP.'],
       ['CHAIN GRAPPLE', 'GRP near a foe', 'Grab opens with knee strikes into RENT-A-POWERBOMB. GRP in the gold window to chain: EVICTION NOTICE, then FORECLOSURE (launcher).'],
       ['BLOCK', 'HOLD DDG / hold L', 'Guard stance: damage becomes chip. Heavies still hurt.'],
-      ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
+      ['EVICTION FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
       ['SEISMIC SLAM', '↓ + SPC (50 meter)', 'Ground pound launches everyone nearby.'],
     ] },
   { id: 'kingpin', wrestle: 'HOSTILE SUPLEX',
@@ -207,7 +207,7 @@ const FIGHTERS = [
     wave: { name: 'EMPIRE WAVE', dmg: 26, speed: 7, color: 0xffd166, cost: 16 },
     spin: { name: 'EXECUTIVE ORDER', dmg: 20, color: 0xffd166, dur: 0.62, cost: 22 },
     bfname: 'HOSTILE MARCH', blitzname: 'ROYAL CHARGE', duname: 'THRONE RISE',
-    mega: { name: 'HOSTILE TAKEOVER' },
+    mega: { name: 'HOSTILE TAKEOVER' }, furyname: 'ROYAL FURY',
     stance: { name: "IRON THRONE", dmg: 1.2, spd: 0.92, desc: "Every decree lands heavier." },
     stanceFin: { name: "ROYAL EDICT", kind: 'pound', color: 0xffd166, desc: 'Decree from above: radial shockwave slam.' },
     fin: 'gavel', finname: 'GAVEL DROP', findesc: 'Heavy single hit — long hit-stop',
@@ -227,7 +227,7 @@ const FIGHTERS = [
       ['TAG SPOT', 'TAUNT near a glowing wall', 'Spray the wall (3s, vulnerable). Big cash + 15 REP.'],
       ['CHAIN GRAPPLE', 'GRP near a foe', 'Grab opens with knee strikes into HOSTILE SUPLEX. GRP in the gold window to chain: ROYAL DECREE, then HOSTILE TAKEOVER (launcher).'],
       ['BLOCK', 'HOLD DDG / hold L', 'Guard stance: damage becomes chip. Heavies still hurt.'],
-      ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
+      ['ROYAL FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
       ["KINGPIN'S WRATH", '↓ + SPC (50 meter)', 'Massive shockwave around him.'],
     ] },
   { id: 'sledge', wrestle: 'DEMOLITION DRIVER',
@@ -244,7 +244,7 @@ const FIGHTERS = [
     wave: { name: 'CYCLONE WAVE', dmg: 22, speed: 7, color: 0x80ed99, cost: 15 },
     spin: { name: 'IRON CYCLONE', dmg: 16, color: 0x80ed99, dur: 0.62, cost: 20 },
     bfname: 'WRECKING RUSH', blitzname: 'SLEDGEHAMMER RUN', duname: 'CRANE UPPER',
-    mega: { name: 'DEMOLITION DAY' },
+    mega: { name: 'DEMOLITION DAY' }, furyname: 'WRECKER FURY',
     stance: { name: "DEMOLITION STANCE", dmg: 1.3, spd: 0.85, desc: "Swinging for the fences." },
     stanceFin: { name: "SCRAP YARD", kind: 'smash', color: 0x8a929e, desc: 'Overhead crusher. Launches the whole pack.' },
     fin: 'demo', finname: 'DEMOLITION', findesc: 'Far knockback — total wreckage',
@@ -264,7 +264,7 @@ const FIGHTERS = [
       ['TAG SPOT', 'TAUNT near a glowing wall', 'Spray the wall (3s, vulnerable). Big cash + 15 REP.'],
       ['CHAIN GRAPPLE', 'GRP near a foe', 'Grab opens with bodyshots into YARD TOSS. GRP in the gold window to chain: SCRAP SUPLEX, GIRDER GERMAN, then DEMOLITION DAY (launcher).'],
       ['BLOCK', 'HOLD DDG / hold L', 'Guard stance: damage becomes chip. Heavies still hurt.'],
-      ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
+      ['WRECKER FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
       ['WRECKING SWING', '↓ + SPC (50 meter)', '360° swing clears the whole circle.'],
     ] },
   { id: 'viper', wrestle: 'VENOM POWERBOMB',
@@ -276,7 +276,7 @@ const FIGHTERS = [
     wave: { name: 'SERPENT WAVE', dmg: 20, speed: 8.5, color: 0x7cff6b, cost: 14 },
     spin: { name: 'COIL SPIN', dmg: 15, color: 0x7cff6b, dur: 0.6, cost: 18 },
     bfname: 'SERPENT DASH', blitzname: 'VIPER STRIKE', duname: 'COIL SPRING',
-    mega: { name: "SERPENT'S COIL" },
+    mega: { name: "SERPENT'S COIL" }, furyname: 'VENOM FURY',
     stance: { name: "COIL STANCE", dmg: 1.1, spd: 1.22, desc: "Strike from anywhere." },
     stanceFin: { name: "SERPENT'S EMBRACE", kind: 'linedash', color: 0x4dff88, desc: 'Coil through the line — everything gets bit.' },
     fin: 'dot', finname: 'FANG BARB', findesc: 'Venom keeps chewing — damage over time',
@@ -296,7 +296,7 @@ const FIGHTERS = [
       ['TAG SPOT', 'TAUNT near a glowing wall', 'Spray the wall (3s, vulnerable). Big cash + 15 REP.'],
       ['GRAPPLE', 'GRP near a foe', 'Quick snatch suplex — fast but light. On a staggered foe: VENOM POWERBOMB finisher.'],
       ['BLOCK', 'HOLD DDG / hold L', 'Guard stance: damage becomes chip. Heavies still hurt.'],
-      ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
+      ['VENOM FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
       ['VENOM DASH', '↓ + SPC (50 meter)', 'Dash in a line, striking everything.'],
     ] },
   { id: 'dust', wrestle: 'DUST DEVIL DRIVER',
@@ -307,35 +307,42 @@ const FIGHTERS = [
     ki: { name: 'SAND BLAST', dmg: 8, speed: 15, color: 0xd8b56b, cost: 5 },
     wave: { name: 'DUST STORM', dmg: 23, speed: 7, color: 0xd8b56b, cost: 15 },
     spin: { name: 'DESERT CYCLONE', dmg: 17, color: 0xd8b56b, dur: 0.62, cost: 20 },
-    bfname: 'DUST RUSH', blitzname: 'DUST DEVIL', duname: 'HABOOB RISE',
-    mega: { name: 'DUST BOWL' },
+    bfname: 'DUST RUSH', blitzname: 'TUMBLEWEED', duname: 'HABOOB RISE',
+    mega: { name: 'DUST BOWL' }, furyname: 'DESERT FURY',
     stance: { name: "STORM STANCE", dmg: 1.05, spd: 1.3, desc: "Become the weather." },
     stanceFin: { name: "SANDSTORM", kind: 'storm', color: 0xd8b25a, desc: 'The storm closes in. Nowhere to stand.' },
     fin: 'cyclone', finname: 'CYCLONE LIFT', findesc: 'Extended air — juggle them longer',
     moves: [
       ['DUST JAB', 'HIT', 'Fastest hands on the block. Chains into cross and kick.'],
       ['SMOKE STEP', '→ + HIT', 'Dust-step punch. Closes distance like smoke.'],
-      ['DUST DEVIL', '→→ + HIT', 'Blitz: double-tap toward, then HIT. Lunging character strike.'],
+      ['TUMBLEWEED', '→→ + HIT', 'Blitz: double-tap toward, then HIT. Lunging character strike.'],
       ['WHIP BACKFIST', '← + HIT', 'Slip back, whipping backfist.'],
       ['DUST-CLOUD SWEEP', '↓ + HIT', 'Dust-cloud sweep — launches for juggles.'],
       ['STORM BACKHAND', 'HVY', 'The backhand of the storm. Big damage.'],
       ['SANDSTORM', 'STANCE + HVY', 'The storm closes in. Nowhere to stand.'],
       ['CYCLONE KICK', 'JUMP, then HIT', 'Aerial cyclone kick.'],
-      ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
-      ['DUST DEVIL', '↓ + SPC (50 meter)', 'Spinning AOE that travels through the pack.'],
+      ['DESPERATION', 'DDG ×2', '360° panic spin. Banks 10% HP as rally — attack to win it back.'],
+      ['TAUNT', 'TAUNT btn / T', 'Talk trash, gain special meter.'],
+      ['TECH', 'HIT while knocked down', 'Instant recovery + bounce + brief invuln. Never helpless.'],
+      ['DUST LAUNCHER', '↓ + HVY', 'Universal overhead launcher. Pops them up for juggles.'],
+      ['TAG SPOT', 'TAUNT near a glowing wall', 'Spray the wall (3s, vulnerable). Big cash + 15 REP.'],
       ['GRAPPLE', 'GRP near a foe', 'Quick snatch suplex — fast but light. On a staggered foe: DUST DEVIL DRIVER finisher.'],
+      ['COMBO ROUTE', 'SMOKE STEP > DUST-CLOUD SWEEP > CYCLONE KICK', 'Close like smoke, pop them up, stay in the air where nobody can touch you.'],
+      ['BLOCK', 'HOLD DDG / hold L', 'Guard stance: damage becomes chip. Heavies still hurt.'],
+      ['DESERT FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
+      ['DUST DEVIL', '↓ + SPC (50 meter)', 'Spinning AOE that travels through the pack.'],
     ] },
   { id: 'jack', wrestle: 'HARVEST SUPLEX',
     archetype: 'allrounder',
     grapple: { range: 2.1, dmgMul: 1.0, chains: null }, name: 'JACK', animTune: { atk: 1.0 }, tag: 'He wears the harvest. The harvest wears you.', bio: "The harvest festival fallen king. Wears the season like armor. Fights to remind the block what it felt like before the concrete took over.", hp: 95, dmg: 1.05, spd: 1.05,
     unlock: { type: 'boss', boss: 'pumpkinking' }, head: 'pumpkin', tint: 0xe07b1f,
     spc2: { name: 'CANDLE RUSH', cost: 35, desc: 'Burning dash: leaves a fire trail through the pack.' },
-    qcf: { name: 'PUMPKIN BOMB', sigkind: 'fireball', kind: 'fire', dmg: 34, speed: 8, color: 0xff7a1a, arc: 1, desc: 'Lobbed flaming pumpkin', tag: 'Lobbed pumpkin bomb — 25 energy' },
+    qcf: { name: 'PUMPKIN BOMB', sigkind: 'pumpkin', kind: 'pumpkin', dmg: 34, speed: 8, color: 0xff7a1a, arc: 1, desc: 'Lobbed pumpkin — smashes for splash damage', tag: 'Lobbed pumpkin — 25 energy' },
     ki: { name: 'JACK-O-BOLT', dmg: 9, speed: 14, color: 0xff7a1a, cost: 5 },
     wave: { name: 'HARVEST WAVE', dmg: 25, speed: 7, color: 0xff7a1a, cost: 16 },
     spin: { name: 'PUMPKIN SPIN', dmg: 18, color: 0xff7a1a, dur: 0.62, cost: 20 },
     bfname: 'PATCH SPRINT', blitzname: 'HARVEST RUSH', duname: 'SCARECROW RISE',
-    mega: { name: 'GREAT PUMPKIN' },
+    mega: { name: 'GREAT PUMPKIN' }, furyname: 'HARVEST FURY',
     stance: { name: "HARVEST STANCE", dmg: 1.25, spd: 0.9, desc: "The patch feeds on pain." },
     stanceFin: { name: "HARVEST MOON", kind: 'launcher', color: 0xff8c2a, desc: 'Rising gourd uppercut. Sends them skyward.' },
     fin: 'launch', finname: 'PORCH STOMP', findesc: 'Curb stomp with a burning grin',
@@ -354,7 +361,7 @@ const FIGHTERS = [
       ['DUST LAUNCHER', '↓ + HVY', 'Universal overhead launcher. Pops them up for juggles.'],
       ['TAG SPOT', 'TAUNT near a glowing wall', 'Spray the wall (3s, vulnerable). Big cash + 15 REP.'],
       ['GRAPPLE', 'GRP near a foe', 'Quick snatch suplex — fast but light. On a staggered foe: HARVEST SUPLEX finisher.'],
-      ['DRAGON FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
+      ['HARVEST FURY', 'SPC (full meter)', 'Signature: shockwave hits everyone close.'],
       ['CANDLE RUSH', '↓ + SPC (50 meter)', 'Burning dash through the pack.'],
       ['BLOCK', 'HOLD DDG / hold L', 'Guard stance: damage becomes chip. Heavies still hurt.'],
     ] },
@@ -362,7 +369,7 @@ const FIGHTERS = [
 // ---------- fighting-game move sets: motion inputs + energy costs per fighter ----------
 for (const f of FIGHTERS) {
   for (const m of f.moves) {
-    if (m[0] === 'DRAGON FURY') m[2] = '60 energy: screen-filling spin blast';
+    if (m[1] === 'SPC (full meter)') m[2] = '60 energy: screen-filling spin blast';
     else if (m[1].startsWith('↓ + SPC')) m[1] = '↓ + SPC (35 energy)';
     else if (m[0] === 'TAUNT') m[2] = 'Talk trash, gain energy.';
   }
@@ -3811,10 +3818,12 @@ function positionWarn(e) {
 
 // ---------- player combat ----------
 const ATK = [ // [clip, timeScale, impact delay, dmg, label, hitstop, shake]
-  // P15 hitstop retune: toward genre norms (SF 9f lights / 13f heavies) — jab 0.10 / cross 0.12 / kick 0.16
-  ['Melee_Unarmed_Attack_Punch_A', 1.9, 0.16, 9, 'JAB', 0.10, 0.12],
-  ['Melee_Unarmed_Attack_Punch_A', 2.1, 0.15, 10, 'CROSS', 0.12, 0.15],
-  ['Melee_Unarmed_Attack_Kick', 1.7, 0.2, 15, 'KICK', 0.16, 0.25],
+  // Hit-stop (owner feel law 2026-10-06, retuned 2026-11-07): normal string hits stay inside the
+  // 60-90ms cap — jab 0.06 / cross 0.075 / kick 0.09. Big hit-stop is reserved for heavies,
+  // counters, KOs, finishers and megas, which set their own values outside this table.
+  ['Melee_Unarmed_Attack_Punch_A', 1.9, 0.16, 9, 'JAB', 0.06, 0.12],
+  ['Melee_Unarmed_Attack_Punch_A', 2.1, 0.15, 10, 'CROSS', 0.075, 0.15],
+  ['Melee_Unarmed_Attack_Kick', 1.7, 0.2, 15, 'KICK', 0.09, 0.25],
 ];
 // unique 4th-hit finishers: the every-3rd-hit launcher is per-fighter now
 function doFinisher(t) {
@@ -4751,7 +4760,7 @@ function doSpecial() {
   if (player.energy < 60) { popText('NOT ENOUGH ENERGY', 'bad', innerWidth / 2, innerHeight * 0.4); return; }
   player.energy = Math.max(0, player.energy - 60);
   slowmo = 0.35; slowmoT = 0.8; shake = 0.6; flash('#ff4fd8');
-  banner('DRAGON FURY!', 'spc');
+  banner((fd.furyname || 'DRAGON FURY') + '!', 'spc');
   sfx('hit3', 1, false, 0.6); sfx('bell', 0.7, false, 0.8);
   burst(player.root.position.clone().add(new THREE.Vector3(0, 1, 0)), 40, 0xff4fd8, 7);
   for (const e of enemies.slice()) {
@@ -6150,7 +6159,7 @@ const projs = []; // {spr,x,y,z,vx,vy,vz,kind,dmg,from,color,pierce,life,arc,rad
 function fireProj(o) {
   const mat = new THREE.SpriteMaterial({ map: sparkTex, color: o.color, transparent: true, opacity: 1, depthWrite: false });
   const s = new THREE.Sprite(mat);
-  const sc = o.kind === 'beam' ? [1.9, 0.6] : o.kind === 'shock' ? [1.3, 0.55] : o.kind === 'orb' ? [1.15, 1.15] : o.kind === 'ki' ? [0.55, 0.55] : o.kind === 'wave' ? [1.7, 1.0] : [0.9, 0.9];
+  const sc = o.kind === 'beam' ? [1.9, 0.6] : o.kind === 'shock' ? [1.3, 0.55] : o.kind === 'orb' ? [1.15, 1.15] : o.kind === 'pumpkin' ? [1.05, 0.95] : o.kind === 'ki' ? [0.55, 0.55] : o.kind === 'wave' ? [1.7, 1.0] : [0.9, 0.9];
   s.scale.set(sc[0], sc[1], 1);
   s.position.set(o.x, o.y || 1.15, o.z);
   scene.add(s);
@@ -6161,10 +6170,10 @@ function fireProj(o) {
 function projHitEnemy(p, e) {
   if (p.hitSet.has(e)) return;
   p.hitSet.add(e);
-  landHit(e, Math.round(p.dmg), p.label || (p.kind === 'orb' ? 'ORB BURST' : 'PROJ'), 0.06, 0.35, p.kind === 'orb' || p.kind === 'spin', false);
+  landHit(e, Math.round(p.dmg), p.label || (p.kind === 'orb' ? 'ORB BURST' : p.kind === 'pumpkin' ? 'PUMPKIN SMASH' : 'PROJ'), 0.06, 0.35, p.kind === 'orb' || p.kind === 'pumpkin' || p.kind === 'spin', false);
   sparkFX(p.x, p.y, p.z, p.color, 10);
-  if (p.kind === 'orb') { // explosive orb: AOE
-    for (const o of enemies) { if (o !== e && !o.dead && o.hp > 0 && Math.abs(o.px - p.x) < 2.4 && Math.abs(o.pz - p.z) < 1.8) landHit(o, Math.round(p.dmg * 0.7), 'ORB BURST', 0.06, 0.4, true, false); }
+  if (p.kind === 'orb' || p.kind === 'pumpkin') { // explosive orb / smashed pumpkin: AOE
+    for (const o of enemies) { if (o !== e && !o.dead && o.hp > 0 && Math.abs(o.px - p.x) < 2.4 && Math.abs(o.pz - p.z) < 1.8) landHit(o, Math.round(p.dmg * 0.7), p.kind === 'pumpkin' ? 'PUMPKIN SMASH' : 'ORB BURST', 0.06, 0.4, true, false); }
     sparkFX(p.x, p.y, p.z, 0xffffff, 16); shake=Math.max(shake,0.5); sfx(180, 0.4, 'sawtooth', 0.5);
   }
   addHitstop(0.05);
@@ -6175,7 +6184,10 @@ function updateProjs(dt) {
     p.life -= dt;
     if (p.arc) p.vy -= 14 * dt;
     p.x += p.vx * dt; p.z += p.vz * dt; p.y += p.vy * dt;
-    if (p.y < 0.15) { p.y = 0.15; p.vy = 0; if (p.arc) { sparkFX(p.x, 0.3, p.z, p.color, 6); p.life = 0; } }
+    if (p.y < 0.15) { p.y = 0.15; p.vy = 0; if (p.arc) { sparkFX(p.x, 0.3, p.z, p.color, 6); if (p.kind === 'pumpkin' && p.from === 'p') { // lobbed pumpkin smashes on landing: splash damage
+          for (const o of enemies) { if (!o.dead && o.hp > 0 && Math.abs(o.px - p.x) < 2.4 && Math.abs(o.pz - p.z) < 1.8) landHit(o, Math.round(p.dmg * 0.7), 'PUMPKIN SMASH', 0.06, 0.4, true, false); }
+          burst(new THREE.Vector3(p.x, 0.3, p.z), 14, p.color, 5); shake = Math.max(shake, 0.5); sfx(180, 0.4, 'sawtooth', 0.5);
+        } p.life = 0; } }
     p.spr.position.set(p.x, p.y, p.z);
     p.spr.material.rotation += dt * 9;
     if (Math.random() < 0.45) sparkFX(p.x, p.y, p.z, p.color, 2);
@@ -6218,6 +6230,7 @@ function doMotionSpecial(kind, free) {
   if (kind === 'qcf') {
     // SIGNATURE ATTACKS (owner 2026-10-06): only Kid Blue throws a fireball.
     // Every fighter's ↓→ + HIT is their own personal special, SF-style.
+    // Jack's PUMPKIN BOMB is a physical lobbed pumpkin (owner ruling 2026-11-07): arc + splash, no fire.
     const pr = fd.qcf, dmgM = player.dmgMult;
     const sp = screenPos(player.root.position);
     const present = () => {
@@ -6229,7 +6242,7 @@ function doMotionSpecial(kind, free) {
         (pr.sigkind === 'fireball' || pr.sigkind === 'orb' || pr.sigkind === 'groundwave') ? 'flame' : 'magic');
       if (navigator.vibrate) navigator.vibrate(25);
     };
-    if (pr.sigkind === 'fireball' || pr.sigkind === 'orb') {
+    if (pr.sigkind === 'fireball' || pr.sigkind === 'orb' || pr.sigkind === 'pumpkin') {
       playAnim(player, 'Melee_Unarmed_Attack_Punch_A', { once: true, dur: 0.35 });
       player.busy = Math.max(player.busy, 0.3);
       fireProj({ x: player.px + player.face * 0.8, z: player.pz, y: 1.15, vx: player.face * pr.speed, vy: pr.arc ? 4.5 : 0, kind: pr.kind, label: pr.name, dmg: pr.dmg * dmgM, color: pr.color, fromPlayer: true, life: pr.sigkind === 'orb' ? 2.4 : 1.5, radius: 0.55, arc: pr.arc || 0 });
