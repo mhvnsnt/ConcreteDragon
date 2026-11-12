@@ -91,3 +91,8 @@ verified tree SHAs instead of trusting a local checkout.
 
 GOTCHA: `gh`'s `-f content=@file` does NOT expand `@file` for the blobs API —
 base64 the file explicitly (e.g. `base64.b64encode`) and pass `encoding: "base64"`.
+
+## concrete-dragon-scene-builder (scene direction skill)
+- `skills/concrete-dragon-scene-builder/SKILL.md` + `skills/concrete-dragon-scene-builder/project-bible.md`
+- Use this skill whenever anyone asks to make a scene, build a prompt for a scene, do the next scene, or start a new episode. Trigger phrasings: "make a scene where…", "next scene:", "build the prompt for this scene", "new episode".
+- Chain: Idea → shots → timestamps → camera → actions → dialogue → references → final prompt. Principle: whatever the prompt leaves undefined, the model invents. World: the skill's project-bible.md, backed by this repo's own canon docs (see the skill for paths).
