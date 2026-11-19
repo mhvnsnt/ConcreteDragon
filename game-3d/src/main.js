@@ -5384,7 +5384,117 @@ function setupInput() {
     if ((k === 'arrowdown' || k === 's') && stick.dy > 0) stick.dy = 0;
     if (k === 'l') ddgUp(); // BLOCK (defense lane): release L = stop block or dodge on tap
   });
+  setupGamepad(); // XBOX lane (2026-11-09): Gamepad API polling, see below
   addEventListener('resize', resize);
+}
+
+// ---------- XBOX / GAMEPAD input (Gamepad API, standard mapping) ----------
+// Built for the Xbox Dev Mode lane (2026-11-09): the same web build runs in
+// Xbox Edge and in the xbox-shell/ UWP WebView wrapper, so a controller has
+// to drive everything touch does. Mapping (standard-mapping button indices):
+//   Left stick / D-pad  move (feeds the same `stick` vector as touch/keys)
+//   A (0)               punch / tech-out · menus: confirm
+//   B (1)               heavy (the kick end of the HIT chain) · menus: back
+//   X (2)               special
+//   Y (3, hold)         block stance, release = dodge tap (same as DDG button)
+//   LB (4) grapple · RB (5) jump · View (8) taunt (double-press = stance swap)
+//   Menu/Start (9)      pause
+// Touch and keyboard paths are untouched; the pad only writes `stick` while
+// it is actively deflected and yields the moment a touch stick is grabbed.
+const pad = { idx: null, prev: [], yHeld: false, moveActive: false, toastT: 0 };
+function padToast(msg) {
+  let d = $('padToast');
+  if (!d) {
+    d = document.createElement('div'); d.id = 'padToast';
+    d.style.cssText = 'position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:9999;background:rgba(8,10,8,.88);color:#9dff57;font:700 13px Arial,sans-serif;letter-spacing:.4px;padding:8px 16px;border-radius:999px;border:1px solid #9dff57;pointer-events:none;transition:opacity .4s';
+    document.body.appendChild(d);
+  }
+  d.textContent = msg; d.style.opacity = '1';
+  clearTimeout(pad.toastT); pad.toastT = setTimeout(() => { d.style.opacity = '0'; }, 2600);
+}
+function padConfirm() { // A button outside a fight: advance the current screen
+  try {
+    if (paused) { $('resumeBtn').click(); return; }
+    if (state === 'title') { unlockAudio(); playIntro(); }
+    else if (state === 'select') { unlockAudio(); $('fightBtn').click(); }
+    else if (state === 'mission') { const go = document.querySelector('.mcard .go'); if (go) { unlockAudio(); go.click(); } }
+    else if (state === 'results') { $('againBtn').click(); }
+  } catch (e) { /* menu DOM not up yet */ }
+}
+function padBack() { // B button outside a fight
+  try {
+    if (paused) { togglePause(false); return; }
+    if (state === 'select') $('selectBackBtn').click();
+    else if (state === 'mission') $('backBtn').click();
+  } catch (e) { /* menu DOM not up yet */ }
+}
+function padCycleFighter(dir) { // D-pad left/right on the select screen
+  const cards = [...document.querySelectorAll('#cards .card:not(.locked)')];
+  if (!cards.length) return;
+  let cur = cards.findIndex((c) => c.classList.contains('panel9g'));
+  if (cur < 0) cur = 0;
+  const next = cards[(cur + dir + cards.length) % cards.length];
+  if (next && next.onclick) next.onclick();
+}
+function setupGamepad() {
+  addEventListener('gamepadconnected', (e) => { pad.idx = e.gamepad.index; padToast('🎮 Controller connected'); });
+  addEventListener('gamepaddisconnected', (e) => { if (pad.idx === e.gamepad.index) pad.idx = null; padToast('🎮 Controller disconnected'); });
+  const btn = (gp, i) => !!(gp.buttons[i] && gp.buttons[i].pressed);
+  function poll() {
+    requestAnimationFrame(poll);
+    let gp = null;
+    try {
+      const gps = navigator.getGamepads ? navigator.getGamepads() : [];
+      if (pad.idx !== null && gps[pad.idx]) gp = gps[pad.idx];
+      else for (const g of gps) if (g && g.connected) { gp = g; pad.idx = g.index; break; }
+    } catch (e) { /* no gamepad support (old WebView) — touch/keys still rule */ }
+    if (!gp) {
+      if (pad.moveActive && !stick.active) { stick.dx = 0; stick.dy = 0; pad.moveActive = false; }
+      if (pad.yHeld) { ddgUp(); pad.yHeld = false; }
+      pad.prev = []; return;
+    }
+    const edge = (i) => btn(gp, i) && !pad.prev[i];
+    // --- movement: left stick (deadzone 0.22) with D-pad override ---
+    let mx = gp.axes[0] || 0, my = gp.axes[1] || 0;
+    if (Math.abs(mx) < 0.22) mx = 0; if (Math.abs(my) < 0.22) my = 0;
+    if (btn(gp, 14)) mx = -1; if (btn(gp, 15)) mx = 1;
+    if (btn(gp, 12)) my = -1; if (btn(gp, 13)) my = 1;
+    if (state === 'fight' && !paused && !missionOver) {
+      if (mx || my) { stick.dx = mx; stick.dy = my; pad.moveActive = true; }
+      else if (pad.moveActive && !stick.active) { stick.dx = 0; stick.dy = 0; pad.moveActive = false; }
+    } else if (pad.moveActive && !stick.active) { stick.dx = 0; stick.dy = 0; pad.moveActive = false; }
+    // --- select screen: D-pad left/right picks a fighter ---
+    if (state === 'select') { if (edge(15)) padCycleFighter(1); if (edge(14)) padCycleFighter(-1); }
+    // --- Y hold = block stance (release fires the dodge tap, same as DDG) ---
+    const yNow = btn(gp, 3);
+    if (state === 'fight' && !paused) {
+      if (yNow && !pad.yHeld) ddgDown();
+      if (!yNow && pad.yHeld) ddgUp();
+    } else if (pad.yHeld && !yNow) ddgUp();
+    pad.yHeld = yNow;
+    // --- face / system buttons (edge-triggered) ---
+    if (edge(9) && state === 'fight') { pad.startEdges = (pad.startEdges || 0) + 1; togglePause(); } // Start/Menu
+    if (edge(0)) { // A
+      unlockAudio();
+      if (cine) endCine();
+      else if (state === 'fight' && !missionOver) {
+        if (paused) togglePause(false);
+        else if (player && player.knockT > 0) doTech(); else doPunch();
+      } else padConfirm();
+    }
+    if (edge(1)) { // B
+      if (state === 'fight' && !paused && !missionOver) doHeavy(); else padBack();
+    }
+    if (edge(2) && state === 'fight' && !paused) doSpecial(); // X
+    if (edge(4) && state === 'fight' && !paused) doGrapple(); // LB
+    if (edge(5) && state === 'fight' && !paused) doJump(); // RB
+    if (edge(8) && state === 'fight' && !paused) { // View: taunt / double = stance
+      const now = performance.now();
+      if (now - tauntLastT < 350) { tauntLastT = 0; doStance(); } else { tauntLastT = now; doTaunt(); }
+    }
+    pad.prev = gp.buttons.map((b) => !!b.pressed);
+  }
+  requestAnimationFrame(poll);
 }
 
 // ---------- enemy AI ----------
@@ -7081,6 +7191,7 @@ window.__cdtest = {
   simDbg: () => ({ hs: +hitstop.toFixed(3), sm: slowmo, smT: +slowmoT.toFixed(3), st: state }),
   atkHsDbg: () => ATK.map(a => a[5]), // P15: hitstop column of the attack table [jab, cross, kick]
   atkIdxDbg: () => atkIdx, // P15: string position (predicts jab/cross/launcher for the next punch)
+  padDbg: () => ({ idx: pad.idx, buttonsSeen: pad.prev.length, moveActive: pad.moveActive, yHeld: pad.yHeld, startEdges: pad.startEdges || 0, paused, stick: { dx: +stick.dx.toFixed(2), dy: +stick.dy.toFixed(2) } }), // XBOX lane: gamepad poll state
   dbgFinisher: () => { const e = enemies.find(x => x.hp > 0 && !x.boss); if (!e || !player) return null; doFinisher(e); return 'LAUNCHER'; }, // P15: drive the real finisher path (the 3rd-hit foot gate is animation-dependent; this tests the retuned landHit directly)
   atkBufDbg: () => !!(player && player.atkBuf), // P15: true while a HIT press is buffered during hitstop
   hsMaxDbg: () => +((T.hsMax || 0).toFixed(3)), hsMaxClear: () => { T.hsMax = 0; return true; }, // P15: peak hitstop since clear
