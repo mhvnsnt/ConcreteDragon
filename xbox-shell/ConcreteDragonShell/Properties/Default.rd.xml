@@ -1,0 +1,7 @@
+<Directives xmlns="http://schemas.microsoft.com/netfx/2013/01/metadata">
+  <Application>
+    <!-- .NET Native runtime directives (VS UWP template default):
+         keep the app's own types available to XAML/reflection. -->
+    <Assembly Name="*Application*" Dynamic="Required All" />
+  </Application>
+</Directives>
